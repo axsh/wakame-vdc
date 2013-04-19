@@ -83,6 +83,14 @@ module Dolphin
       SuccessObject.new(event)
     end
 
+    def get_notification(notification)
+      notification = query_processor.get_notification(notification)
+      if query_processor_failed?(notification)
+        return FailureObject.new('Failed to get notification')
+      end
+      SuccessObject.new(notification)
+    end
+
     def put_notification(notification)
       notification = query_processor.put_notification(notification)
       if query_processor_failed?(notification)
