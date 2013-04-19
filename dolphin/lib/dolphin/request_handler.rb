@@ -44,7 +44,8 @@ module Dolphin
 
     post '/events' do |request|
       run(request) do
-        raise 'Not found notification_id' unless @notification_id
+        required 'notification_id'
+
         raise 'Nothing parameters.' if @params.blank?
 
         event = {}
@@ -85,8 +86,28 @@ module Dolphin
       end
     end
 
+    get '/notifications' do |request|
+      run(request) do
+        required 'notification_id'
+
+        notification = {}
+        notification[:id] = @notification_id
+
+        result = worker.get_notification(notification)
+        raise result.message if result.fail?
+        raise "Not found notification id" if result.message.nil?
+
+        response_params = {
+          :results => result.message,
+          :message => 'OK'
+        }
+        respond_with response_params
+      end
+    end
+
     post '/notifications' do |request|
       run(request) do
+        required 'notification_id'
         raise 'Nothing parameters.' if @params.blank?
 
         unsupported_sender_types = @params.keys - Sender::TYPES
@@ -96,6 +117,23 @@ module Dolphin
         notification[:id] = @notification_id
         notification[:methods] = @params
         result = worker.put_notification(notification)
+        raise result.message if result.fail?
+
+        response_params = {
+          :message => 'OK'
+        }
+        respond_with response_params
+      end
+    end
+
+    delete '/notifications' do |request|
+      run(request) do
+        required 'notification_id'
+
+        notification = {}
+        notification[:id] = @notification_id
+
+        result = worker.delete_notification(notification)
         raise result.message if result.fail?
 
         response_params = {

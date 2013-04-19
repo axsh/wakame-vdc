@@ -28,6 +28,12 @@ module Dolphin
       send('notification', 'put', notification_id, methods)
     end
 
+    def delete_notification(notification)
+      logger :info, notification
+      notification_id = notification[:id]
+      send('notification', 'delete', notification_id)
+    end
+
     private
     def send(model_name, method, *args)
       begin

@@ -4,7 +4,6 @@
 require 'net/http'
 require 'uri'
 require 'json'
-require 'extlib/blank'
 
 host = ENV['DOLPHIN_HOST'] || '127.0.0.1'
 port = ENV['DOLPHIN_PORT'] || 9004
@@ -30,8 +29,8 @@ methods = {
   }
 }
 
-methods['email']['cc'] = mail_cc unless mail_cc.blank?
-methods['email']['bcc'] = mail_bcc unless mail_bcc.blank?
+methods['email']['cc'] = mail_cc unless mail_cc.empty?
+methods['email']['bcc'] = mail_bcc unless mail_bcc.empty?
 
 request = Net::HTTP::Post.new(uri.request_uri, headers)
 request.body = methods.to_json
@@ -42,4 +41,3 @@ http.start do |h|
   response = h.request(request)
   puts JSON.parse(response.body)
 end
-

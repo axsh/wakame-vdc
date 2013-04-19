@@ -17,6 +17,10 @@ module Dolphin
 
         db.insert('notifications', row_key, {column_name => value})
       end
+
+      def delete(id)
+        db.remove('notifications', id)
+      end
     end
   end
 end

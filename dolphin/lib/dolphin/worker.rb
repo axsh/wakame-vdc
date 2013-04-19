@@ -35,6 +35,11 @@ module Dolphin
       end
 
       notifications.each do |sender_type, values|
+        if values.empty?
+          logger :info, "Skip to notify message because notifications was empty."
+          next
+        end
+
         unless Sender::TYPES.include? sender_type
           log_message = "Not found sender #{sender_type}"
           logger :error, log_message
@@ -83,10 +88,26 @@ module Dolphin
       SuccessObject.new(event)
     end
 
+    def get_notification(notification)
+      notification = query_processor.get_notification(notification)
+      if query_processor_failed?(notification)
+        return FailureObject.new('Failed to get notification')
+      end
+      SuccessObject.new(notification)
+    end
+
     def put_notification(notification)
       notification = query_processor.put_notification(notification)
       if query_processor_failed?(notification)
         return FailureObject.new('Failed to put notification')
+      end
+      SuccessObject.new(notification)
+    end
+
+    def delete_notification(notification)
+      notification = query_processor.delete_notification(notification)
+      if query_processor_failed?(notification)
+        return FailureObject.new('Failed to delete notification')
       end
       SuccessObject.new(notification)
     end
