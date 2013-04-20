@@ -49,7 +49,7 @@ module Dcmgr::VNet::NetworkModes
 
       # Security group rules
       security_groups.each { |secgroup|
-        tasks += self.netfilter_secgroup_tasks(secgroup)
+        tasks += self.netfilter_secgroup_tasks(vnic, secgroup)
 
         # Accept ARP from referencing security groups
         ref_vnics = secgroup[:referencers].values.map {|rg| rg.values}.flatten.uniq
@@ -112,8 +112,8 @@ module Dcmgr::VNet::NetworkModes
       tasks
     end
 
-    def netfilter_secgroup_tasks(secgroup)
-      [Dcmgr::VNet::Tasks::SecurityGroup.new(secgroup)]
+    def netfilter_secgroup_tasks(vnic, secgroup)
+      [Dcmgr::VNet::Tasks::SecurityGroup.new(vnic, secgroup)]
     end
 
     def netfilter_drop_tasks(vnic,node)
