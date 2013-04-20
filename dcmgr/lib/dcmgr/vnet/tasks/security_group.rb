@@ -6,9 +6,11 @@ module Dcmgr
 
       class SecurityGroup < Task
         include Dcmgr::VNet::Netfilter
-        def initialize(group_map)
+        def initialize(vnic, group_map)
           super()
 
+          @vnic = vnic
+          
           # Parse the rules in case they are referencing other security groups
           parsed_rules = group_map[:rules].map { |rule|
             ref_group_id = rule[:ip_source].scan(/sg-\w+/).first
@@ -30,6 +32,8 @@ module Dcmgr
           }.flatten.uniq.compact
 
           parsed_rules.each { |rule|
+            self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-ip-src #{rule[:ip_source]} --arp-ip-dst #{@vnic[:address]} -j ACCEPT")
+
             case rule[:ip_protocol]
             when 'tcp', 'udp'
               if rule[:ip_fport] == rule[:ip_tport]
