@@ -17,10 +17,18 @@ module Dcmgr
         include Dcmgr::Logger
         include CacheErrors
 
+        EMPTY_CACHE_SET = {
+          :empty_vnics => {}.freeze,
+          :security_groups => {}.freeze,
+          :networks => {}.freeze
+        }.freeze
+
         def initialize(node)
           # Initialize the values needed to do rpc requests
           @node = node
           @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
+          # expects to be replaced by #update() method as soon as possible.
+          @cache = EMPTY_CACHE_SET
         end
 
         #****************#
