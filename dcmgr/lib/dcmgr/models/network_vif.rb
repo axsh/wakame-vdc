@@ -264,7 +264,7 @@ module Dcmgr::Models
       return nil unless lease.is_a?(NetworkVifIpLease)
       return nil unless lease.network_vif == self
 
-      if lease.ip_handle
+      if lease.ip_handle && lease.ip_handle.deleted_at.nil?
         lease.detach_vif
       else
         lease.destroy

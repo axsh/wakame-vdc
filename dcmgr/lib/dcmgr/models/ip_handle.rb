@@ -73,8 +73,7 @@ module Dcmgr::Models
     end
 
     def before_destroy
-      raise "Cannot destroy an IP handle that is still leased by a Network Vif." unless self.can_destroy
-      self.ip_lease.destroy unless self.ip_lease.nil?
+      self.ip_lease.destroy unless self.ip_lease.nil? || self.ip_lease.network_vif
       super
     end
 

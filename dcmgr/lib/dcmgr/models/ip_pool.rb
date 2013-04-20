@@ -23,6 +23,13 @@ module Dcmgr::Models
 
     def validate
       # Validate expire values. Limit to reasonable length of time to avoid integer overflow.
+      super
+    end
+
+    def before_destroy
+      self.ip_handles_dataset.destroy
+
+      super
     end
 
   end
