@@ -10,31 +10,28 @@
 
 ## variables
 
-ip_pool_uuid=
+ip_pool_id=
 dc_networks="public"
 display_name="shunit2"
-ip_handle_uuid=
 
 ## functions
 
 ###
 
 function test_create_ip_pool() {
-  local opts="
-    --dc-networks=${dc_networks}
-    --display-name=${display_name}
-  "
-  ip_pool_uuid=$(run_cmd ip_pool create ${opts} | hash_value id)
+  local dc_networks=${dc_networks}
+  local display_name=${display_name}
+  ip_pool_id=$(run_cmd ip_pool create | hash_value id)
   assertEquals $? 0
 }
 
 function test_show_ip_pool() {
-  run_cmd ip_pool show ${ip_pool_uuid}
+  run_cmd ip_pool show ${ip_pool_id}
   assertEquals $? 0
 }
 
 function test_destroy_ip_pool() {
-  run_cmd ip_pool destroy ${ip_pool_uuid}
+  run_cmd ip_pool destroy ${ip_pool_id}
   assertEquals $? 0
 }
 
