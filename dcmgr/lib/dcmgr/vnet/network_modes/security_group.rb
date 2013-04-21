@@ -30,6 +30,7 @@ module Dcmgr::VNet::NetworkModes
       tasks << AcceptARPFromDNS.new(network[:dns_server],enable_logging,"A arp from_dns #{vnic[:uuid]}: ") unless network[:dns_server].nil?
       tasks << DropIpSpoofing.new(vnic[:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
       tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
+      tasks << AcceptGARPFromGateway.new(network[:ipv4_gw],enable_logging,"A garp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
       tasks << AcceptArpBroadcast.new(host_addr,enable_logging,"A arp bc #{vnic[:uuid]}: ")
 
       # General ip layer tasks
