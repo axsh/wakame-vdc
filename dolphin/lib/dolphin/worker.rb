@@ -89,7 +89,8 @@ module Dolphin
     end
 
     def get_notification(notification)
-      notification = query_processor.get_notification(notification)
+      notification_id = notification[:id]
+      notification = query_processor.get_notification(notification_id)
       if query_processor_failed?(notification)
         return FailureObject.new('Failed to get notification')
       end
