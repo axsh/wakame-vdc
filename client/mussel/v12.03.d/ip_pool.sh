@@ -19,7 +19,7 @@ task_create() {
 
 task_ip_handles() {
   local namespace=$1 cmd=$2 uuid=$3
-  call_api -X DELETE $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
+  call_api -X GET $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
 }
 
 task_acquire() {
