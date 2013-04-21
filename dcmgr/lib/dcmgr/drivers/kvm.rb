@@ -43,11 +43,15 @@ module Dcmgr
         # tcp listen ports for KVM monitor and VNC console
         monitor_port = pick_tcp_listen_port
         vnc_port = pick_tcp_listen_port
+        serial_port = pick_tcp_listen_port
         File.open(File.expand_path('monitor.port', hc.inst_data_dir), "w") { |f|
           f.write(monitor_port)
         }
         File.open(File.expand_path('vnc.port', hc.inst_data_dir), "w") { |f|
           f.write(vnc_port)
+        }
+        File.open(File.expand_path('serial.port', hc.inst_data_dir), "w") { |f|
+          f.write(serial_port)
         }
 
         # run vm
@@ -56,6 +60,7 @@ module Dcmgr
                "-pidfile %s",
                "-daemonize",
                "-monitor telnet:127.0.0.1:%d,server,nowait",
+               "-serial telnet:127.0.0.1:%d,server,nowait",
                "-no-shutdown",
                driver_configuration.qemu_options,
                ]
@@ -65,7 +70,8 @@ module Dcmgr
               inst[:uuid],
               vnc_port - 5900, # KVM -vnc offsets 5900
               File.expand_path('kvm.pid', hc.inst_data_dir),
-              monitor_port
+              monitor_port,
+              serial_port
              ]
 
         cmd << "-drive file=%s,media=disk,boot=on,index=0,cache=none,if=#{drive_model(hc)}"
