@@ -33,30 +33,6 @@ function test_show_ip_pool() {
   assertEquals $? 0
 }
 
-#function test_update_security_group_icmp() {
-#  cat <<-EOS > ${rule_path}
-#	icmp:-1,-1,ip4:0.0.0.0/0
-#	EOS
-#  run_cmd security_group update ${security_group_uuid}
-#  assertEquals $? 0
-#}
-#
-#function test_update_security_group_udp() {
-#  cat <<-EOS > ${rule_path}
-#	udp:53,53,ip4:0.0.0.0/0
-#	EOS
-#  run_cmd security_group update ${security_group_uuid}
-#  assertEquals $? 0
-#}
-#
-#function test_flush_rule() {
-#  cat <<-EOS > ${rule_path}
-#	#
-#	EOS
-#  run_cmd security_group update ${security_group_uuid}
-#  assertEquals $? 0
-#}
-
 function test_destroy_ip_pool() {
   run_cmd ip_pool destroy ${ip_pool_uuid}
   assertEquals $? 0
