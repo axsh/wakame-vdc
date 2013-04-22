@@ -26,8 +26,8 @@ module Dcmgr::VNet::NetworkModes
 
       # General data link layer tasks
       tasks << AcceptARPToHost.new(host_addr,vnic[:address],enable_logging,"A arp to_host #{vnic[:uuid]}: ")
-      tasks << AcceptARPFromGateway.new(network[:ipv4_gw],enable_logging,"A arp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
-      tasks << AcceptARPFromDNS.new(network[:dns_server],enable_logging,"A arp from_dns #{vnic[:uuid]}: ") unless network[:dns_server].nil?
+      tasks << AcceptARPFromGateway.new(network[:ipv4_gw],vnic[:address],enable_logging,"A arp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
+      tasks << AcceptARPFromDNS.new(network[:dns_server],vnic[:address],enable_logging,"A arp from_dns #{vnic[:uuid]}: ") unless network[:dns_server].nil?
       tasks << DropIpSpoofing.new(vnic[:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
       tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
       tasks << AcceptGARPFromGateway.new(network[:ipv4_gw],enable_logging,"A garp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
@@ -57,6 +57,7 @@ module Dcmgr::VNet::NetworkModes
         tasks += self.netfilter_arp_isolation_tasks(vnic,ref_vnics,node)
       }
 
+      tasks << AcceptARPReply.new(vnic[:address],clean_mac(vnic[:mac_addr]),enable_logging,"A arp reply #{vnic[:uuid]}: ")
       tasks
     end
 

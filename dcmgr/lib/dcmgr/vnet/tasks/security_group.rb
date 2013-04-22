@@ -32,7 +32,7 @@ module Dcmgr
           }.flatten.uniq.compact
 
           parsed_rules.each { |rule|
-            self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-ip-src #{rule[:ip_source]} --arp-ip-dst #{@vnic[:address]} -j ACCEPT")
+            self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-opcode Request --arp-ip-src #{rule[:ip_source]} --arp-ip-dst #{@vnic[:address]} -j ACCEPT")
 
             case rule[:ip_protocol]
             when 'tcp', 'udp'
