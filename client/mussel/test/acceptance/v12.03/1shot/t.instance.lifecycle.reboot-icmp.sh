@@ -43,8 +43,18 @@ function test_wait_for_network_not_to_be_ready_after_rebooting() {
   assertEquals $? 0
 }
 
+function test_wait_for_sshd_not_to_be_ready_after_rebooting() {
+  wait_for_sshd_not_to_be_ready ${instance_ipaddr}
+  assertEquals $? 0
+}
+
 function test_wait_for_network_to_be_ready_after_rebooting() {
   wait_for_network_to_be_ready ${instance_ipaddr}
+  assertEquals $? 0
+}
+
+function test_wait_for_sshd_to_be_ready_after_rebooting() {
+  wait_for_sshd_to_be_ready ${instance_ipaddr}
   assertEquals $? 0
 }
 

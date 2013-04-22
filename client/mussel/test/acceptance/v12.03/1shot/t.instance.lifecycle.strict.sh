@@ -68,6 +68,11 @@ function test_wait_for_network_not_to_be_ready_after_stopping() {
   assertEquals $? 0
 }
 
+function test_wait_for_sshd_not_to_be_ready_after_stopping() {
+  wait_for_sshd_not_to_be_ready ${instance_ipaddr}
+  assertEquals $? 0
+}
+
 ## halted  -> start
 
 function test_start_instance() {
@@ -80,6 +85,11 @@ function test_start_instance() {
 
 function test_wait_for_network_to_be_ready_after_starting() {
   wait_for_network_to_be_ready ${instance_ipaddr}
+  assertEquals $? 0
+}
+
+function test_wait_for_sshd_to_be_ready_after_starting() {
+  wait_for_sshd_to_be_ready ${instance_ipaddr}
   assertEquals $? 0
 }
 
