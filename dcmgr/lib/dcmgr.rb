@@ -362,6 +362,7 @@ module Dcmgr
       autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
       autoload :TranslateLoggingAddress, 'dcmgr/vnet/tasks/translate_logging_address'
       autoload :AcceptGARPFromGateway, 'dcmgr/vnet/tasks/accept_garp_from_gateway'
+      autoload :AcceptARPReply, 'dcmgr/vnet/tasks/accept_arp_reply'
     end
 
   end
