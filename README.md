@@ -69,6 +69,14 @@ RHEL6/CentOS6
     # ./tests/vdc.sh install::rhel
     # ./tests/vdc.sh run
 
+Users
+-----
+
+* Kyushu Electric Power Co., Ltd. ( http://www.kyuden.co.jp/en_index.html )
+* National Institute of Informatics ( http://www.nii.ac.jp/en/ )
+* NTT PC Communications ( http://www.nttpc.co.jp/english/ )
+
+If you already use this software, please let me know. Thank you.
 
 License
 ---------
