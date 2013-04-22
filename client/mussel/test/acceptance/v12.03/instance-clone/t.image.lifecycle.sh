@@ -33,6 +33,9 @@ function test_backup_instance_and_destroy() {
   ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} "hostname > ${hostname_txt}"
   assertEquals $? 0
 
+  ancestral_hostname=$(ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)
+  assertEquals $? 0
+
   run_cmd instance poweroff ${instance_uuid} >/dev/null
   retry_until "document_pair? instance ${instance_uuid} state halted"
 
@@ -89,8 +92,8 @@ function test_show_saved_hostname() {
 }
 
 function test_compare_instance_hostname_with_saved_hostname() {
-  assertNotEquals \
-    "$(run_cmd instance show ${instance_uuid} | hash_value hostname)" \
+  assertEquals \
+    "${ancestral_hostname}" \
     "$(ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} cat ${hostname_txt})"
 }
 
