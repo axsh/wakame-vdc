@@ -69,11 +69,6 @@ function test_wait_for_sshd_to_be_ready() {
   assertEquals $? 0
 }
 
-function test_remove_ssh_known_host_entry() {
-  remove_ssh_known_host_entry ${instance_ipaddr}
-  assertEquals $? 0
-}
-
 function test_compare_instance_hostname() {
   assertEquals \
     "$(run_cmd instance show ${instance_uuid} | hash_value hostname)" \
