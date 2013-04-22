@@ -19,12 +19,23 @@ is_public=${is_public:-}
 backup_object_uuid=
 new_image_uuid=
 
+hostname_txt=hostname.txt
+ssh_user=root
+
 ## functions
 
 ### step
 
 function test_backup_instance_and_destroy() {
   create_instance
+
+  instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
+  ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} "hostname > ${hostname_txt}"
+  assertEquals $? 0
+
+  ancestral_hostname=$(ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)
+  assertEquals $? 0
+
   run_cmd instance poweroff ${instance_uuid} >/dev/null
   retry_until "document_pair? instance ${instance_uuid} state halted"
 
@@ -69,15 +80,21 @@ function test_wait_for_sshd_to_be_ready() {
   assertEquals $? 0
 }
 
-function test_remove_ssh_known_host_entry() {
-  remove_ssh_known_host_entry ${instance_ipaddr}
-  assertEquals $? 0
-}
-
 function test_compare_instance_hostname() {
   assertEquals \
     "$(run_cmd instance show ${instance_uuid} | hash_value hostname)" \
-    "$(ssh root@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)"
+    "$(ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)"
+}
+
+function test_show_saved_hostname() {
+  ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} cat ${hostname_txt}
+  assertEquals $? 0
+}
+
+function test_compare_instance_hostname_with_saved_hostname() {
+  assertEquals \
+    "${ancestral_hostname}" \
+    "$(ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} cat ${hostname_txt})"
 }
 
 #### <- basic logging-in test
