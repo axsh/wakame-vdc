@@ -2,6 +2,7 @@
 require 'isono'
 require 'fileutils'
 require 'ipaddress'
+require 'yaml'
 
 module Dcmgr
   module Rpc
@@ -166,18 +167,9 @@ module Dcmgr
       def setup_metadata_drive
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :setup_metadata_drive, [@hva_ctx, get_metadata_items])
-      end
-
-      def mount_metadata_drive_for_host
-        mount_path = "#{@hva_ctx.inst_data_dir}/metadata_host"
-        FileUtils.mkdir(mount_path) unless File.exists?(mount_path)
-        mount_metadata_drive(@hva_ctx, mount_path)
-      end
-
-      def umount_metadata_drive_for_host
-        mount_path = "#{@hva_ctx.inst_data_dir}/metadata_host"
-        umount_metadata_drive(@hva_ctx, mount_path)
-      end
+        # export as single yaml file.
+        @hva_ctx.dump_instance_parameter('metadata.yml', YAML.dump(get_metadata_items))
+       end
 
       def get_metadata_items
         vnic = @inst[:instance_nics].first
@@ -273,7 +265,6 @@ module Dcmgr
         raise "Invalid instance state: #{@inst[:state]}" unless %w(initializing).member?(@inst[:state].to_s)
 
         setup_metadata_drive
-        mount_metadata_drive_for_host
 
         check_interface
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -358,8 +349,6 @@ module Dcmgr
           raise "Invalid instance state: #{@inst[:state]}"
         end
 
-        umount_metadata_drive_for_host
-
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})
           ignore_error { terminate_instance(true) }
@@ -395,8 +384,6 @@ module Dcmgr
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
-
-        umount_metadata_drive_for_host
 
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:stopping})
@@ -514,8 +501,6 @@ module Dcmgr
 
         update_state_file(:halting)
 
-        umount_metadata_drive_for_host
-
         @hva_ctx.logger.info("Turning power off")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweroff_instance, [@hva_ctx])
@@ -531,7 +516,6 @@ module Dcmgr
         update_instance_state({:state=>:starting}, [])
 
         setup_metadata_drive
-        mount_metadata_drive_for_host
 
         @hva_ctx.logger.info("Turning power on")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
