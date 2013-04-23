@@ -39,6 +39,10 @@ module Dcmgr
       end
 
       def run_instance(hc)
+        poweron_instance(hc)
+      end
+      
+      def poweron_instance(hc)
 
         # tcp listen ports for KVM monitor and VNC console
         monitor_port = pick_tcp_listen_port
@@ -101,23 +105,7 @@ module Dcmgr
       end
 
       def terminate_instance(hc)
-        begin
-          connect_monitor(hc) { |t|
-            t.cmd("quit")
-          }
-        rescue Errno::ECONNRESET => e
-          # succssfully terminated the process
-        rescue => e
-          kvm_pid = File.read(File.expand_path('kvm.pid', hc.inst_data_dir))
-          if kvm_pid.nil? || kvm_pid == ''
-            kvm_pid=`pgrep -u root -f vdc-#{hc.inst_id}`
-          end
-          if kvm_pid.to_s =~ /^\d+$/
-            sh("/bin/kill -9 #{kvm_pid}") rescue logger.error($!)
-          else
-            logger.error("Can not find the KVM process. Skipping: #{hc.inst_id}")
-          end
-        end
+        poweroff_instance(hc)
       end
 
       def reboot_instance(hc)
@@ -212,16 +200,23 @@ module Dcmgr
       end
 
       def poweroff_instance(hc)
-        connect_monitor(hc) { |t|
-          t.cmd("system_powerdown")
-        }
-      end
-
-      def poweron_instance(hc)
-        connect_monitor(hc) { |t|
-          t.cmd("system_reset")
-          t.cmd("cont")
-        }
+        begin
+          connect_monitor(hc) { |t|
+            t.cmd("quit")
+          }
+        rescue Errno::ECONNRESET => e
+          # succssfully terminated the process
+        rescue => e
+          kvm_pid = File.read(File.expand_path('kvm.pid', hc.inst_data_dir))
+          if kvm_pid.nil? || kvm_pid == ''
+            kvm_pid=`pgrep -u root -f vdc-#{hc.inst_id}`
+          end
+          if kvm_pid.to_s =~ /^\d+$/
+            sh("/bin/kill -9 #{kvm_pid}") rescue logger.error($!)
+          else
+            logger.error("Can not find the KVM process. Skipping: #{hc.inst_id}")
+          end
+        end
       end
 
       private
