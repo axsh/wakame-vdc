@@ -54,6 +54,15 @@ module Dcmgr
         @instance_logger = InstanceLogger.new(self)
       end
 
+      # Save instance/VM parameter as plane file under inst_data_dir().
+      #
+      # For reading from shell script, "\n" is inserted to end of buffer.
+      def dump_instance_parameter(rel_path, buf)
+        File.open(File.expand_path(rel_path, self.inst_data_dir()), 'w'){ |f|
+          f.puts(buf)
+        }
+      end
+
       class InstanceLogger
         def initialize(hva_context)
           @hva_context = hva_context

@@ -8,8 +8,8 @@ account_id=${account_id:?"account_id needs to be set"}
 cd ${VDC_ROOT}/dcmgr/
 
 image_features_opts=
-kvm -device ? 2>&1 | egrep 'name "lsi' -q || {
-  image_features_opts="--virtio"
+[[ $hypervisor == "kvm" ]] && {
+  image_features_opts="--virtio --acpi"
 }
 
 shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo1 --display-name="'local storage'" --base-uri="'file://${vdc_data}/images/'" --storage-type=local --description="'local backup storage under ${vdc_data}/images/'" --node-id="bksta.demo1"

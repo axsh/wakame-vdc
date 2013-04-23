@@ -37,6 +37,7 @@ module Dcmgr
     autoload :Network, 'dcmgr/constants/network'
     autoload :Tag, 'dcmgr/constants/tag'
     autoload :LoadBalancer, 'dcmgr/constants/load_balancer'
+    autoload :Image, 'dcmgr/constants/image'
   end
   Const = Constants
 
