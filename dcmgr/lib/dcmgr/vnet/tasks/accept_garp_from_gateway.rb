@@ -17,7 +17,7 @@ module Dcmgr
         def initialize(gw_ip,enable_logging = false,log_prefix = nil)
           super()
           self.gw_ip = gw_ip
-          self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-gratuitous --arp-ip-dst=#{self.gw_ip} #{EbtablesRule.log_arp(log_prefix) if enable_logging} -j ACCEPT")
+          self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-gratuitous --arp-ip-src=#{self.gw_ip} #{EbtablesRule.log_arp(log_prefix) if enable_logging} -j ACCEPT")
         end
       end
 
