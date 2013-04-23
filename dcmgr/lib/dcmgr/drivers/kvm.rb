@@ -87,13 +87,28 @@ module Dcmgr
           }
         end
         sh(cmd.join(' '), args)
+        run_sh = <<RUN_SH
+#!/bin/bash
+#{cmd.join(' ') % args}
+RUN_SH
 
         vifs.each { |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
             sh("/sbin/ip link set %s up", [vif[:uuid]])
             sh("#{Dcmgr.conf.brctl_path} addif %s %s", [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
+            run_sh += ("/sbin/ip link set %s up\n" % [vif[:uuid]])
+            run_sh += ("#{Dcmgr.conf.brctl_path} addif %s %s\n" % [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
           end
         }
+
+        # Dump as single shell script file to help failure recovery
+        # process of the user instance.
+        begin
+          hc.dump_instance_parameter('run.sh', run_sh)
+          File.chmod(0755, File.expand_path('run.sh', hc.inst_data_dir))
+        rescue => e
+          hc.logger.warn("Failed to export run.sh rescue script: #{e}")
+        end
 
         sleep 1
       end
