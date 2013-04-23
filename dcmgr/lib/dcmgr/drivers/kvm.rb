@@ -45,18 +45,12 @@ module Dcmgr
       def poweron_instance(hc)
 
         # tcp listen ports for KVM monitor and VNC console
-        monitor_port = pick_tcp_listen_port
-        vnc_port = pick_tcp_listen_port
-        serial_port = pick_tcp_listen_port
-        File.open(File.expand_path('monitor.port', hc.inst_data_dir), "w") { |f|
-          f.write(monitor_port)
-        }
-        File.open(File.expand_path('vnc.port', hc.inst_data_dir), "w") { |f|
-          f.write(vnc_port)
-        }
-        File.open(File.expand_path('serial.port', hc.inst_data_dir), "w") { |f|
-          f.write(serial_port)
-        }
+        monitor_tcp_port = pick_tcp_listen_port
+        vnc_tcp_port = pick_tcp_listen_port
+        serial_tcp_port = pick_tcp_listen_port
+        hc.dump_instance_parameter('monitor.port', monitor_tcp_port)
+        hc.dump_instance_parameter('vnc.port', vnc_tcp_port)
+        hc.dump_instance_parameter('serial.port', serial_tcp_port)
 
         # run vm
         inst = hc.inst
@@ -72,10 +66,10 @@ module Dcmgr
               inst[:memory_size],
               inst[:cpu_cores],
               inst[:uuid],
-              vnc_port - 5900, # KVM -vnc offsets 5900
+              vnc_tcp_port - 5900, # KVM -vnc offsets 5900
               File.expand_path('kvm.pid', hc.inst_data_dir),
-              monitor_port,
-              serial_port
+              monitor_tcp_port,
+              serial_tcp_port
              ]
 
         cmd << "-drive file=%s,media=disk,boot=on,index=0,cache=none,if=#{drive_model(hc)}"
@@ -93,13 +87,28 @@ module Dcmgr
           }
         end
         sh(cmd.join(' '), args)
+        run_sh = <<RUN_SH
+#!/bin/bash
+#{cmd.join(' ') % args}
+RUN_SH
 
         vifs.each { |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
             sh("/sbin/ip link set %s up", [vif[:uuid]])
             sh("#{Dcmgr.conf.brctl_path} addif %s %s", [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
+            run_sh += ("/sbin/ip link set %s up\n" % [vif[:uuid]])
+            run_sh += ("#{Dcmgr.conf.brctl_path} addif %s %s\n" % [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
           end
         }
+
+        # Dump as single shell script file to help failure recovery
+        # process of the user instance.
+        begin
+          hc.dump_instance_parameter('run.sh', run_sh)
+          File.chmod(0755, File.expand_path('run.sh', hc.inst_data_dir))
+        rescue => e
+          hc.logger.warn("Failed to export run.sh rescue script: #{e}")
+        end
 
         sleep 1
       end
