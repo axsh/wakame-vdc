@@ -6,9 +6,8 @@ module Dcmgr::Models
     taggable 'wmi'
     accept_service_type
 
-    BOOT_DEV_SAN=1
-    BOOT_DEV_LOCAL=2
-
+    include Dcmgr::Constants::Image
+    
     plugin Plugins::ResourceLabel
       
     many_to_one :backup_object, :class=>BackupObject, :dataset=> lambda { BackupObject.filter(:uuid=>self.backup_object_id[BackupObject.uuid_prefix.size + 1, 255]) }
@@ -49,6 +48,13 @@ module Dcmgr::Models
       unless HostNode::SUPPORTED_ARCH.member?(self.arch)
         errors.add(:arch, "Unsupported arch type: #{self.arch}")
       end
+
+      self.features.keys.each { |k|
+        unless FEATURES.member?(k.to_s)
+          errors.add(:features, "Unknown feature flag: #{k.to_s}")
+          break
+        end
+      }
     end
 
     # note on "lookup_account_id":
@@ -67,9 +73,8 @@ module Dcmgr::Models
     # TODO: more proper key&value validation.
     # Handles the feature blob column.
     def set_feature(key, value)
-      case key.to_sym
-      when :virtio
-        self.features[:virtio] = value
+      if FEATURES.member?(key.to_s)
+        self.features[key.to_sym] = value
       else
         raise "Unsupported feature: #{key}"
       end
