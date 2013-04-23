@@ -218,9 +218,9 @@ module Dcmgr
             # TODO: need an iface index number?
             "network/interfaces/macs/#{mac}/x-dns" => vnic[:ipv4][:network][:dns_server],
             "network/interfaces/macs/#{mac}/x-gateway" => vnic[:ipv4][:network][:ipv4_gw],
-            "network/interfaces/macs/#{mac}/x-netmask" => netaddr.prefix.to_ip,
+            "network/interfaces/macs/#{mac}/x-netmask" => netaddr.prefix.to_ip.to_s,
             "network/interfaces/macs/#{mac}/x-network" => vnic[:ipv4][:network][:ipv4_network],
-            "network/interfaces/macs/#{mac}/x-broadcast" => netaddr.broadcast,
+            "network/interfaces/macs/#{mac}/x-broadcast" => netaddr.broadcast.to_s,
             "network/interfaces/macs/#{mac}/x-metric" => vnic[:ipv4][:network][:metric],
           })
         }
@@ -523,6 +523,10 @@ module Dcmgr
         update_instance_state({:state=>:running}, [])
         create_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power on")
+      }, proc {
+        ignore_error {
+          update_instance_state({:state=>:halted}, [])
+        }
       }
 
       def event
