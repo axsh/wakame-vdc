@@ -80,6 +80,11 @@ module Dcmgr
               end
 
               def progress(percent)
+                if !(0.0 > percent.to_f)
+                  percent = 0
+                elsif 100.0 < percent.to_f
+                  percent = 100
+                end
                 self.call(:progress, percent)
               end
             }
