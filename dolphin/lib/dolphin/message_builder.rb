@@ -33,8 +33,12 @@ module Dolphin
       end
 
       def build_message(str, params)
-        template = TemplateBuilder.new
-        template.build(str, params)
+        begin
+          template = TemplateBuilder.new
+          template.build(str, params)
+        rescue SyntaxError => e
+          logger :error, e
+        end
       end
     end
 
