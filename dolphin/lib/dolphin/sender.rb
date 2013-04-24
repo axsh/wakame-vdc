@@ -12,10 +12,10 @@ module Dolphin
 
     TYPE = [:mail_senders].freeze
 
+    ActionMailer::Base.raise_delivery_errors = true
     case Dolphin.settings['mail']['type']
       when 'file'
         ActionMailer::Base.delivery_method = :file
-        ActionMailer::Base.raise_delivery_errors = true
         ActionMailer::Base.file_settings = {
           :location => '/var/tmp'
         }
