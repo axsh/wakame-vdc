@@ -35,8 +35,8 @@ module Dolphin
       end
 
       notifications.each do |sender_type, values|
-        if values.empty?
-          logger :info, "Skip to notify message because notifications was empty."
+        if values.blank?
+          logger :info, "Skip to notify message because notifications was blank."
           next
         end
 
