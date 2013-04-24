@@ -4,6 +4,7 @@ require 'celluloid'
 require 'action_mailer'
 require 'mail-iso-2022-jp'
 require 'extlib/blank'
+require 'time'
 
 module Dolphin
 
@@ -12,10 +13,10 @@ module Dolphin
 
     TYPE = [:mail_senders].freeze
 
+    ActionMailer::Base.raise_delivery_errors = true
     case Dolphin.settings['mail']['type']
       when 'file'
         ActionMailer::Base.delivery_method = :file
-        ActionMailer::Base.raise_delivery_errors = true
         ActionMailer::Base.file_settings = {
           :location => '/var/tmp'
         }
@@ -44,11 +45,14 @@ module Dolphin
       default :charset => 'ISO-2022-JP'
 
       def notify(notification_object)
+
+        time_now = DateTime.now.strftime('%a, %d %b %Y %H:%M:%S %z')
         send_params = {
           :from => notification_object.from,
           :to => notification_object.to,
           :subject => notification_object.subject,
-          :body => notification_object.body
+          :body => notification_object.body,
+          :date => time_now
         }
 
         unless notification_object.to.blank?
