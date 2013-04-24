@@ -4,6 +4,7 @@ require 'celluloid'
 require 'action_mailer'
 require 'mail-iso-2022-jp'
 require 'extlib/blank'
+require 'time'
 
 module Dolphin
 
@@ -44,11 +45,14 @@ module Dolphin
       default :charset => 'ISO-2022-JP'
 
       def notify(notification_object)
+
+        time_now = DateTime.now.strftime('%a, %d %b %Y %H:%M:%S %z')
         send_params = {
           :from => notification_object.from,
           :to => notification_object.to,
           :subject => notification_object.subject,
-          :body => notification_object.body
+          :body => notification_object.body,
+          :date => time_now
         }
 
         unless notification_object.to.blank?
