@@ -17,23 +17,15 @@
 ##
 . $(cd ${BASH_SOURCE[0]%/*} && pwd)/../functions/utils.sh
 . $(cd ${BASH_SOURCE[0]%/*} && pwd)/../functions/distro.sh
+. $(cd ${BASH_SOURCE[0]%/*} && pwd)/epel.sh
 
 ##
-function render_nginx_repo() {
-  cat <<-'EOS'
-	[nginx]
-	name=nginx repo
-	baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
-	gpgcheck=0
-	enabled=1
-	EOS
-}
 
-function install_nginx_repo() {
+function presetup_nginx() {
   local chroot_dir=$1
   [[ -d "${chroot_dir}" ]] || { echo "[ERROR] directory not found: ${chroot_dir} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
-  render_nginx_repo > ${chroot_dir}/etc/yum.repos.d/nginx.repo
+  install_epel ${chroot_dir}
 }
 
 function install_nginx_rpm() {
@@ -55,13 +47,6 @@ function configure_nginx() {
   [[ -d "${chroot_dir}" ]] || { echo "[ERROR] directory not found: ${chroot_dir} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   unprevent_nginx_starting ${chroot_dir}
-}
-
-function presetup_nginx() {
-  local chroot_dir=$1
-  [[ -d "${chroot_dir}" ]] || { echo "[ERROR] directory not found: ${chroot_dir} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
-
-  install_nginx_repo ${chroot_dir}
 }
 
 function install_nginx() {
