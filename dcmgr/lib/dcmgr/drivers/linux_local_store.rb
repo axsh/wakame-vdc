@@ -21,40 +21,41 @@ module Dcmgr
         Task::TaskSession.current[:backup_storage] = inst[:image][:backup_object][:backup_storage]
         @bkst_drv_class = BackupStorage.driver_class(inst[:image][:backup_object][:backup_storage][:storage_type])
 
-        logger.info("Deploying image file: #{inst[:image][:uuid]}: #{ctx.os_devpath}")
+        logger.info("Deploying image: #{inst[:image][:uuid]} from #{inst[:image][:backup_object][:uri]} to #{ctx.os_devpath}")
         # cmd_tuple has ["", []] array.
-        cmd_tuple =  if Dcmgr.conf.local_store.enable_image_caching && inst[:image][:is_cacheable]
-                       FileUtils.mkdir_p(vmimg_cache_dir) unless File.exist?(vmimg_cache_dir)
-                       download_to_local_cache(inst[:image][:backup_object])
-
-                       ["cat %s", [vmimg_cache_path()]]
+        cmd_tuple = if Dcmgr.conf.local_store.enable_image_caching && inst[:image][:is_cacheable]
+                      FileUtils.mkdir_p(vmimg_cache_dir) unless File.exist?(vmimg_cache_dir)
+                      download_to_local_cache(inst[:image][:backup_object])
+                      logger.debug("Copying #{vmimg_cache_path()} to #{ctx.os_devpath}")
+                      
+                      ["cat %s", [vmimg_cache_path()]]
+                    else
+                      if @bkst_drv_class.include?(BackupStorage::CommandAPI)
+                        # download_command() returns cmd_tuple.
+                        invoke_task(@bkst_drv_class,
+                                    :download_command,
+                                    [inst[:image][:backup_object], vmimg_tmp_path()])
                       else
-                        if @bkst_drv_class.include?(BackupStorage::CommandAPI)
-                          # download_command() returns cmd_tuple.
-                          invoke_task(@bkst_drv_class,
-                                      :download_command,
-                                      [inst[:image][:backup_object], vmimg_cache_path()])
-                        else
-                          logger.info("Downloading image file: #{ctx.os_devpath}")
-                          invoke_task(@bkst_drv_class,
-                                      :download, [inst[:image][:backup_object], vmimg_cache_path()])
-                          ["cat %s", [vmimg_cache_path()]]
-                        end
+                        logger.info("Downloading image file: #{ctx.os_devpath}")
+                        invoke_task(@bkst_drv_class,
+                                    :download, [inst[:image][:backup_object], vmimg_tmp_path()])
+                        logger.debug("Copying #{vmimg_tmp_path()} to #{ctx.os_devpath}")
+                        
+                        ["cat %s", [vmimg_tmp_path()]]
                       end
-
-        logger.debug("copying #{vmimg_cache_path()} to #{ctx.os_devpath}")
+                    end
+      
 
         pv_command = "pv -W -f -p -s #{inst[:image][:backup_object][:size]} |"
 
         case inst[:image][:backup_object][:container_format].to_sym
         when :tgz
           Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
-            # expect only one file is contained.
-            lst = shell.run!("tar -ztf #{vmimg_cache_path()}").out.split("\n")
             cmd_tuple[0] << "| #{pv_command} tar -zxS -C %s"
             cmd_tuple[1] += [tmpdir]
             shell.run!(*cmd_tuple)
-            File.rename(File.expand_path(lst.first, tmpdir), ctx.os_devpath)
+            
+            File.rename(File.expand_path(vmimg_basename(), tmpdir), ctx.os_devpath)
           }
         when :gz
           cmd_tuple[0] << "| %s | #{pv_command} cp --sparse=always /dev/stdin %s"
@@ -63,12 +64,10 @@ module Dcmgr
           shell.run!(*cmd_tuple)
         when :tar
           Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
-            # expect only one file is contained.
-            lst = shell.run!("tar -tf #{vmimg_cache_path()}").out.split("\n")
             cmd_tuple[0] << "| #{pv_command} tar -xS -C %s"
             cmd_tuple[1] += [tmpdir]
             shell.run!(*cmd_tuple)
-            File.rename(File.expand_path(lst.first, tmpdir), ctx.os_devpath)
+            File.rename(File.expand_path(vmimg_basename(), tmpdir), ctx.os_devpath)
           }
         else
           cmd_tuple[0] << "| #{pv_command} cp -p --sparse=always /dev/stdin %s"
@@ -79,9 +78,7 @@ module Dcmgr
         raise "Image file is not ready: #{ctx.os_devpath}" unless File.exist?(ctx.os_devpath)
 
       ensure
-        unless Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable] || @bkst_drv_class.include?(BackupStorage::CommandAPI)
-          File.unlink(vmimg_cache_path()) rescue nil
-        end
+        File.unlink(vmimg_tmp_path()) rescue nil
       end
 
       def upload_image(inst, ctx, bo, evcb)
@@ -100,6 +97,8 @@ module Dcmgr
 
             cmd_tuple[0] << " | " + cmd_tuple2[0]
             cmd_tuple[1] += cmd_tuple2[1]
+            logger.info("Executing command line: " + shell.format_tuple(*cmd_tuple))
+            stderr_buf=""
             r = shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
               sin.close
 
@@ -108,13 +107,15 @@ module Dcmgr
                   if l =~ /(\d+)/
                     evcb.progress($1.to_f)
                   end
+                  stderr_buf << l
                 end
               rescue EOFError
                 # ignore this error
               end
+              
             end
             unless r.exitstatus == 0
-              raise "Failed to run archive command line: #{cmd_tuple}"
+              raise "Failed to run archive & upload command: exitcode=#{r.exitstatus}\n#{stderr_buf}"
             end
 
             chksum = File.read(chksum_path).split(/\s+/).first
@@ -130,6 +131,8 @@ module Dcmgr
 
               cmd_tuple[0] << "> %s"
               cmd_tuple[1] += [bkup_tmp.path]
+              logger.info("Executing command line: " + shell.format_tuple(*cmd_tuple))
+              stderr_buf=""
               r = shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
                 sin.close
 
@@ -138,13 +141,14 @@ module Dcmgr
                     if l =~ /(\d+)/
                       evcb.progress($1.to_f)
                     end
+                    stderr_buf << l
                   end
                 rescue EOFError
                   # ignore this error
                 end
               end
               unless r.exitstatus == 0
-                raise "Failed to run archive command line: #{cmd_tuple}"
+                raise "Failed to run archive command: exitcode=#{r.exitstatus}\n#{stderr_buf}"
               end
 
               alloc_size = File.size(bkup_tmp.path)
@@ -175,14 +179,36 @@ module Dcmgr
         Dcmgr.conf.local_store.work_dir || '/var/tmp'
       end
 
+      def vmimg_tmp_path(basename=nil)
+        basename ||= begin
+                       @ctx.inst[:image][:backup_object][:uuid] + (@suffix ? @suffix : "")
+                     end
+        File.expand_path(basename, download_tmp_dir)
+      end
+
       def vmimg_cache_path(basename=nil)
         basename ||= begin
                        @ctx.inst[:image][:backup_object][:uuid] + (@suffix ? @suffix : "")
                      end
-        if (Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable]) || !@bkst_drv_class.include?(BackupStorage::CommandAPI)
-          File.expand_path(basename, (Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable] ? vmimg_cache_dir : download_tmp_dir))
+        if Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable]
+          File.expand_path(basename, vmimg_cache_dir)
         else
-          URI.parse(@ctx.inst[:image][:backup_object][:uri]).path
+          File.expand_path(basename, download_tmp_dir)
+        end
+      end
+
+      # Guess image file name extracted from archive.(.tar, .tar.gz, .tgz...)
+      def vmimg_basename
+        path = URI.parse(@ctx.inst[:image][:backup_object][:uri]).path
+        suffix = Const::BackupObject::CONTAINER_EXTS.keys.find { |i|
+          i = ".#{i}" if i !~ /^\./
+          File.basename(path)[-i.size, i.size] == i
+        }
+
+        if suffix
+          File.basename(path, ".#{suffix}")
+        else
+          File.basename(path)
         end
       end
 
