@@ -54,8 +54,10 @@ module Dcmgr
             cmd_tuple[0] << "| #{pv_command} tar -zxS -C %s"
             cmd_tuple[1] += [tmpdir]
             shell.run!(*cmd_tuple)
-            
-            File.rename(File.expand_path(vmimg_basename(), tmpdir), ctx.os_devpath)
+
+            # Use first file in the tmp directory as image file.
+            img_path = Dir["#{tmpdir}/*"].first
+            File.rename(img_path, ctx.os_devpath)
           }
         when :gz
           cmd_tuple[0] << "| %s | #{pv_command} cp --sparse=always /dev/stdin %s"
@@ -67,7 +69,10 @@ module Dcmgr
             cmd_tuple[0] << "| #{pv_command} tar -xS -C %s"
             cmd_tuple[1] += [tmpdir]
             shell.run!(*cmd_tuple)
-            File.rename(File.expand_path(vmimg_basename(), tmpdir), ctx.os_devpath)
+
+            # Use first file in the tmp directory as image file.
+            img_path = Dir["#{tmpdir}/*"].first
+            File.rename(img_path, ctx.os_devpath)
           }
         else
           cmd_tuple[0] << "| #{pv_command} cp -p --sparse=always /dev/stdin %s"
