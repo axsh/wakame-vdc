@@ -20,6 +20,7 @@ gem "racket", ">= 1.0.11"
 gem 'ripl'
 gem "rack-test", "0.6.2"
 gem 'posix-spawn'
+gem 'fuguta'
 
 gem 'isono', '0.2.18'
 

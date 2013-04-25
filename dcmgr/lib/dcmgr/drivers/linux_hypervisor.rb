@@ -21,7 +21,7 @@ module Dcmgr
       def_configuration do
         # TODO: create helper method to
         # Abstract class for Cgroup parameters
-        self.const_set(:Cgroup, Class.new(Dcmgr::Configuration))
+        self.const_set(:Cgroup, Class.new(Fuguta::Configuration))
 
         self.const_set(:CgroupBlkio, Class.new(self.const_get(:Cgroup)))
         self.const_get(:CgroupBlkio).module_eval do
