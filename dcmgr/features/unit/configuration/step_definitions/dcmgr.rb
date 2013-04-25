@@ -18,7 +18,7 @@ Given /^the following configuration is placed in dcmgr.conf$/ do |conf|
   end
 
   @dcmgr_conf_errors = []
-  Dcmgr::Configuration.walk_tree(Dcmgr.conf) do |c|
+  Fuguta::Configuration.walk_tree(Dcmgr.conf) do |c|
     c.validate(@dcmgr_conf_errors)
   end
 end

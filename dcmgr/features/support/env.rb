@@ -4,6 +4,7 @@ $LOAD_PATH.unshift File.expand_path('../../../lib', __FILE__)
 
 require 'dcmgr/rubygems'
 require 'dcmgr'
+require 'fuguta'
 
 
 Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,

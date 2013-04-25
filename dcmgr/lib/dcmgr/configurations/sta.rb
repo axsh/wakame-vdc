@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require "fuguta"
+
 module Dcmgr
   module Configurations
-    class Sta < Configuration
+    class Sta < Fuguta::Configuration
 
-      class RawBackingStore < Configuration
+      class RawBackingStore < Fuguta::Configuration
         param :snapshot_tmp_dir, :default=>'/var/tmp'
 
         def validate(errors)

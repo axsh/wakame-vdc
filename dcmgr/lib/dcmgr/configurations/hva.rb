@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require "fuguta"
+
 module Dcmgr
   module Configurations
-    class Hva < Configuration
+    class Hva < Fuguta::Configuration
 
-      class DcNetwork < Configuration
+      class DcNetwork < Fuguta::Configuration
         param :interface
         param :bridge
         param :bridge_type
@@ -30,7 +32,7 @@ module Dcmgr
         end
       end
 
-      class LocalStore < Configuration
+      class LocalStore < Fuguta::Configuration
         # enable local image cache under "vm_data_dir/_base"
         param :enable_image_caching, :default=>true
         param :image_cache_dir, :default => proc {
@@ -57,7 +59,7 @@ module Dcmgr
         end
       end
 
-      class BackupStorage < Configuration
+      class BackupStorage < Fuguta::Configuration
         param :local_storage_dir, :default => nil
 
         def validate(errors)
@@ -102,7 +104,7 @@ module Dcmgr
           c = Drivers::Hypervisor.driver_class(driver_type)
           # Drivers::Hypervisor follows the configuration class hierarchy standard from ConfigrationMethods module.
 
-          conf = ::Dcmgr::Configuration::ConfigurationMethods.find_configuration_class(c).new(self.instance_variable_get(:@subject)).parse_dsl(&blk)
+          conf = Fuguta::Configuration::ConfigurationMethods.find_configuration_class(c).new(self.instance_variable_get(:@subject)).parse_dsl(&blk)
           @config[:hypervisor_driver][c] = conf
         end
       end

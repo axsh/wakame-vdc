@@ -22,7 +22,7 @@ module Dcmgr
           }
         rescue NoMethodError => e
           abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
-        rescue Dcmgr::Configuration::ValidationError => e
+        rescue Fuguta::Configuration::ValidationError => e
           abort("Validation Error: #{path}\n  " +
                 e.errors.join("\n  ")
                 )
