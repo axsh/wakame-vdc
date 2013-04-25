@@ -93,7 +93,7 @@ module Dcmgr
         Task::TaskSession.current[:backup_storage] = bo[:backup_storage]
         @bkst_drv_class = BackupStorage.driver_class(bo[:backup_storage][:storage_type])
 
-        @snapshot_path = take_snapshot_for_backup(@ctx.os_dev_path)
+        @snapshot_path = take_snapshot_for_backup(@ctx.os_devpath)
         logger.info("#{@snapshot_path}")
         
         # upload image file
