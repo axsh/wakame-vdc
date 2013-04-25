@@ -54,8 +54,10 @@ module Dcmgr
             cmd_tuple[0] << "| #{pv_command} tar -zxS -C %s"
             cmd_tuple[1] += [tmpdir]
             shell.run!(*cmd_tuple)
-            
-            File.rename(File.expand_path(vmimg_basename(), tmpdir), ctx.os_devpath)
+
+            # Use first file in the tmp directory as image file.
+            img_path = Dir["#{tmpdir}/*"].first
+            File.rename(img_path, ctx.os_devpath)
           }
         when :gz
           cmd_tuple[0] << "| %s | #{pv_command} cp --sparse=always /dev/stdin %s"
@@ -67,7 +69,10 @@ module Dcmgr
             cmd_tuple[0] << "| #{pv_command} tar -xS -C %s"
             cmd_tuple[1] += [tmpdir]
             shell.run!(*cmd_tuple)
-            File.rename(File.expand_path(vmimg_basename(), tmpdir), ctx.os_devpath)
+
+            # Use first file in the tmp directory as image file.
+            img_path = Dir["#{tmpdir}/*"].first
+            File.rename(img_path, ctx.os_devpath)
           }
         else
           cmd_tuple[0] << "| #{pv_command} cp -p --sparse=always /dev/stdin %s"
@@ -83,15 +88,17 @@ module Dcmgr
 
       def upload_image(inst, ctx, bo, evcb)
         @ctx = ctx
-        take_snapshot_for_backup()
-        snapshot_path = ctx.os_devpath
+        @bo = bo
 
         Task::TaskSession.current[:backup_storage] = bo[:backup_storage]
         @bkst_drv_class = BackupStorage.driver_class(bo[:backup_storage][:storage_type])
 
+        @snapshot_path = take_snapshot_for_backup(@ctx.os_dev_path)
+        logger.info("#{@snapshot_path}")
+        
         # upload image file
         if @bkst_drv_class.include?(BackupStorage::CommandAPI)
-          archive_from_snapshot(ctx, snapshot_path) do |cmd_tuple, chksum_path, size_path|
+          archive_from_snapshot(ctx, @snapshot_path) do |cmd_tuple, chksum_path, size_path|
             cmd_tuple2 = invoke_task(@bkst_drv_class,
                                      :upload_command, [nil, bo])
 
@@ -124,7 +131,7 @@ module Dcmgr
             evcb.setattr(chksum, alloc_size.to_i)
           end
         else
-          archive_from_snapshot(ctx, snapshot_path) do |cmd_tuple, chksum_path, size_path|
+          archive_from_snapshot(ctx, @snapshot_path) do |cmd_tuple, chksum_path, size_path|
             bkup_tmp = Tempfile.new(inst[:uuid], download_tmp_dir)
             begin
               bkup_tmp.close(false)
@@ -270,8 +277,10 @@ module Dcmgr
         end
       end
 
-      def take_snapshot_for_backup()
+      def take_snapshot_for_backup(image_path)
+        image_path
       end
+
       def clean_snapshot_for_backup()
       end
 
