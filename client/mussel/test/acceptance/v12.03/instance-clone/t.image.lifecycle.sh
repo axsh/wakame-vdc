@@ -39,7 +39,7 @@ function test_backup_instance_and_destroy() {
   wait_for_sshd_to_be_ready ${instance_ipaddr}
   assertEquals $? 0
 
-  ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} "hostname > ${hostname_txt}"
+  ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} "hostname > ${hostname_txt}; sync"
   assertEquals $? 0
 
   ancestral_hostname=$(ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)
