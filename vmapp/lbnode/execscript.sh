@@ -35,3 +35,4 @@ install_fcgiwrap              ${chroot_dir}
 configure_fcgiwrap_nginx      ${chroot_dir}
 configure_fcgiwrap_spawn_fcgi ${chroot_dir}
 install_fcgiwrap_envcgi       ${chroot_dir}
+install_fcgiwrap_sleepcgi       ${chroot_dir}
