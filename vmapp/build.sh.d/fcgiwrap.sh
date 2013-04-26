@@ -106,6 +106,32 @@ function install_fcgiwrap_envcgi() {
   chmod 755 ${chroot_dir}/usr/share/nginx/html/cgi-bin/env.cgi
 }
 
+function render_fcgiwrap_sleepcgi() {
+  cat <<-EOS
+	#!/bin/bash
+	#
+	# requires:
+	#  bash
+	#  env, sort
+	#
+	cat <<_HEADER_
+	Content-type: text/plain
+	
+	_HEADER_
+	
+	/bin/sleep 600
+	EOS
+}
+
+function install_fcgiwrap_sleepcgi() {
+  local chroot_dir=$1
+  [[ -d "${chroot_dir}" ]] || { echo "[ERROR] directory not found: ${chroot_dir} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  mkdir -p ${chroot_dir}/usr/share/nginx/html/cgi-bin
+  render_fcgiwrap_sleepcgi > ${chroot_dir}/usr/share/nginx/html/cgi-bin/sleep.cgi
+  chmod 755 ${chroot_dir}/usr/share/nginx/html/cgi-bin/sleep.cgi
+}
+
 function render_fcgiwrap_nginx() {
   cat <<-'EOS'
 	server {

@@ -27,6 +27,11 @@ function test_install_fcgiwrap_envcgi() {
   assertEquals $? 0
 }
 
+function test_install_fcgiwrap_sleepcgi() {
+  install_fcgiwrap_sleepcgi ${chroot_dir}
+  assertEquals $? 0
+}
+
 ## shunit2
 
 . ${shunit2_file}
