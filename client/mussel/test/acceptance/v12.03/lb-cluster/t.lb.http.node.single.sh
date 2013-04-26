@@ -14,6 +14,7 @@
 ## variables
 
 target_instance_num=${target_instance_num:-1}
+client_ipaddr=${client_ipaddr:-10.0.2.2}
 
 ## functions
 
@@ -32,6 +33,12 @@ function test_http_get_for_registerd_lb() {
     retry_until [[ '"$(curl -fsSkL http://${load_balancer_ipaddr}/)"' == "${instance_uuid}" ]]
     assertEquals $? 0
   done
+}
+
+function test_http_header() {
+  lcoal lbnode_env=$(curl -fsSkL http://${load_balancer_ipaddr}/cgi-bin/env.cgi)
+  assertEquals ${client_ipaddr} $(echo "${lbnode_env}" | grep HTTP_X_FORWARDED_FOR)
+  assertEquals "http" $(echo "${lbnode_env}" | grep HTTP_X_FORWARDED_PROTO)
 }
 
 function test_unregister_instances_from_load_balancer() {

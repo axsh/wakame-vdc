@@ -34,6 +34,10 @@ private_key=${private_key:-}
 public_key=${public_key:-}
 httpchk=${httpchk:-}
 
+### cookie file
+
+cookie_path=$(generate_cache_file_path cookie)
+
 ## functions
 
 ### load_balancer
