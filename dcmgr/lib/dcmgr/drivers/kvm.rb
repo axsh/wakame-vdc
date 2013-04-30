@@ -19,6 +19,9 @@ module Dcmgr
         }
 
         param :qemu_options, :default=>'-no-kvm-pit-reinjection'
+
+        param :serial_port_options, :default=>'telnet:127.0.0.1:%d,server,nowait'
+        param :vnc_options, :default=>'127.0.0.1:%d'
       end
 
       # 0x0-2 are reserved by KVM.
@@ -46,31 +49,36 @@ module Dcmgr
 
         # tcp listen ports for KVM monitor and VNC console
         monitor_tcp_port = pick_tcp_listen_port
-        vnc_tcp_port = pick_tcp_listen_port
-        serial_tcp_port = pick_tcp_listen_port
         hc.dump_instance_parameter('monitor.port', monitor_tcp_port)
-        hc.dump_instance_parameter('vnc.port', vnc_tcp_port)
-        hc.dump_instance_parameter('serial.port', serial_tcp_port)
 
         # run vm
         inst = hc.inst
-        cmd = ["%s -m %d -smp %d -name vdc-%s -vnc :%d",
+        cmd = ["%s -m %d -smp %d -name vdc-%s",
                "-pidfile %s",
                "-daemonize",
                "-monitor telnet:127.0.0.1:%d,server,nowait",
-               "-serial telnet:127.0.0.1:%d,server,nowait",
-               "-no-shutdown",
                driver_configuration.qemu_options,
                ]
         args=[driver_configuration.qemu_path,
               inst[:memory_size],
               inst[:cpu_cores],
               inst[:uuid],
-              vnc_tcp_port - 5900, # KVM -vnc offsets 5900
               File.expand_path('kvm.pid', hc.inst_data_dir),
               monitor_tcp_port,
-              serial_tcp_port
              ]
+
+        if driver_configuration.vnc_options
+          vnc_tcp_port = pick_tcp_listen_port
+          hc.dump_instance_parameter('vnc.port', vnc_tcp_port)
+          # KVM -vnc port number offset is 5900
+          cmd << '-vnc ' + (driver_configuration.vnc_options.to_s % [vnc_tcp_port - 5900])
+        end
+
+        if driver_configuration.serial_port_options
+          serial_tcp_port = pick_tcp_listen_port
+          hc.dump_instance_parameter('serial.port', serial_tcp_port)
+          cmd << '-serial ' + (driver_configuration.serial_port_options.to_s % [serial_tcp_port])
+        end
 
         cmd << "-drive file=%s,media=disk,boot=on,index=0,cache=none,if=#{drive_model(hc)}"
         args << hc.os_devpath

@@ -93,9 +93,12 @@ module Dcmgr::Models
     end
 
     # Notify that the job is finished successfully.
-    def finish_success()
+    def finish_success(finish_message=nil)
       raise "Already terminated" if finished?
       finish_entry('success')
+      if finish_message
+        self.finish_message = finish_message
+      end
       self.save_changes
     end
     
@@ -111,7 +114,7 @@ module Dcmgr::Models
         self.worker_id = nil
       else
         finish_entry('fail')
-        self.failure_reason = failure_reason
+        self.finish_message = failure_reason
       end
       self.save_changes
     end

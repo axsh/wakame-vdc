@@ -76,6 +76,11 @@ class CopyProcessor < Isono::NodeModules::Base
     if uri.nil?
       raise "Unknown destination: #{params[:destination]}"
     end
+    if DestinationMonitor.new(@node).alive_destination?(params[:destination])
+      logger.error("#{params[:destination]} is not alive destination. Requeing the job.")
+      # TODO: requeue the job
+      return
+    end
 
     uri.path += '/submit_pull_job'
     
@@ -167,6 +172,7 @@ class CopyProcessor < Isono::NodeModules::Base
                "tee >(md5sum > '#{chksum_path}') >(wc -c > '#{size_path}')",
                upload_command
               ]
+    logger.info("Execute: #{cmd_lst.join(' | ')}")
     r = shell.popen4(cmd_lst.join(' | ')) do |pid, sin, sout, eout|
       sin.close
       
@@ -192,7 +198,7 @@ class CopyProcessor < Isono::NodeModules::Base
       logger.error("Verify failed with Wrong size: #{@backup_object[:uuid]} expected size=#{@backup_object[:allocation_size]}, real size=#{alloc_size}")
       raise "Verification Failure"
     elsif @backup_object[:checksum] != chksum
-      logger.error("Verify failed with wrong check sum: #{@backup_object[:uuid]} expected=#{@backup_object[:checksum]}, caluculated=#{chksum}")
+      logger.error("Verify failed with wrong check sum: #{@backup_object[:uuid]} expected=#{@backup_object[:checksum]}, calculated=#{chksum}")
       raise "Verification Failure"
     end
     
@@ -204,8 +210,9 @@ class CopyProcessor < Isono::NodeModules::Base
     end
     
   ensure
-    FileUtils.remove_entry_secure chksum_path, true
-    FileUtils.remove_entry_secure size_path, true
+    if tmpdir.is_a?(String) && File.directory?(tmpdir)
+      FileUtils.remove_entry_secure tmpdir, true
+    end
   end
 
   private
@@ -255,6 +262,12 @@ class DestinationMonitor < Isono::NodeModules::Base
 
     EM.next_tick(&do_http_ping)
     EM.add_periodic_timer(10, &do_http_ping)
+  end
+
+  def alive_destination?(destination)
+    d = @destinations[destination]
+    return false unless d
+    d[:status]
   end
 end
 
