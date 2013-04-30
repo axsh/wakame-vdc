@@ -198,7 +198,7 @@ class CopyProcessor < Isono::NodeModules::Base
       logger.error("Verify failed with Wrong size: #{@backup_object[:uuid]} expected size=#{@backup_object[:allocation_size]}, real size=#{alloc_size}")
       raise "Verification Failure"
     elsif @backup_object[:checksum] != chksum
-      logger.error("Verify failed with wrong check sum: #{@backup_object[:uuid]} expected=#{@backup_object[:checksum]}, caluculated=#{chksum}")
+      logger.error("Verify failed with wrong check sum: #{@backup_object[:uuid]} expected=#{@backup_object[:checksum]}, calculated=#{chksum}")
       raise "Verification Failure"
     end
     
