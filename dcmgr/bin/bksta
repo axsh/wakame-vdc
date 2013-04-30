@@ -210,8 +210,9 @@ class CopyProcessor < Isono::NodeModules::Base
     end
     
   ensure
-    FileUtils.remove_entry_secure chksum_path, true
-    FileUtils.remove_entry_secure size_path, true
+    if tmpdir.is_a?(String) && File.directory?(tmpdir)
+      FileUtils.remove_entry_secure tmpdir, true
+    end
   end
 
   private
