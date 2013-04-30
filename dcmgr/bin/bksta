@@ -172,6 +172,7 @@ class CopyProcessor < Isono::NodeModules::Base
                "tee >(md5sum > '#{chksum_path}') >(wc -c > '#{size_path}')",
                upload_command
               ]
+    logger.info("Execute: #{cmd_lst.join(' | ')}")
     r = shell.popen4(cmd_lst.join(' | ')) do |pid, sin, sout, eout|
       sin.close
       
