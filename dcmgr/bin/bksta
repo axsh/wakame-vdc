@@ -76,6 +76,11 @@ class CopyProcessor < Isono::NodeModules::Base
     if uri.nil?
       raise "Unknown destination: #{params[:destination]}"
     end
+    if DestinationMonitor.new(@node).alive_destination?(params[:destination])
+      logger.error("#{params[:destination]} is not alive destination. Requeing the job.")
+      # TODO: requeue the job
+      return
+    end
 
     uri.path += '/submit_pull_job'
     
@@ -255,6 +260,12 @@ class DestinationMonitor < Isono::NodeModules::Base
 
     EM.next_tick(&do_http_ping)
     EM.add_periodic_timer(10, &do_http_ping)
+  end
+
+  def alive_destination?(destination)
+    d = @destinations[destination]
+    return false unless d
+    d[:status]
   end
 end
 
