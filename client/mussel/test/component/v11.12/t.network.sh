@@ -25,16 +25,16 @@ function setUp() {
 function test_network_create() {
   local cmd=create
 
+  local description=shunit2
   local gw=192.0.2.1
   local network=192.0.2.0
   local prefix=24
-  local description=shunit2
 
   local params="
+    description=${description}
     gw=${gw}
     network=${network}
     prefix=${prefix}
-    description=${description}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
