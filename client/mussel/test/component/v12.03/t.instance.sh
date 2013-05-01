@@ -55,34 +55,34 @@ function test_instance_index_stateful() {
 function test_instance_create_no_opts() {
   local cmd=create
 
-  local image_id=wmi-lucid5d
-  local instance_spec_name=is-small
-  local security_groups=sg-demofgr
-  local ssh_key_id=ssh-demo
-  local hypervisor=openvz
   local cpu_cores=1
-  local memory_size=1024
   local display_name=shunit2
   local hostname=shunit2
-  local vifs="{}"
-  local user_data=asdf
+  local hypervisor=openvz
+  local image_id=wmi-lucid5d
+  local instance_spec_name=is-small
+  local memory_size=1024
+  local security_groups=sg-demofgr
   local service_type=std
+  local ssh_key_id=ssh-demo
+  local user_data=asdf
+  local vifs="{}"
 
   local opts=""
 
   local params="
-    image_id=${image_id}
-    instance_spec_name=${instance_spec_name}
-    security_groups[]=${security_groups}
-    ssh_key_id=${ssh_key_id}
-    hypervisor=${hypervisor}
     cpu_cores=${cpu_cores}
-    memory_size=${memory_size}
     display_name=${display_name}
     hostname=${hostname}
-    vifs=${vifs}
-    user_data=${user_data}
+    hypervisor=${hypervisor}
+    image_id=${image_id}
+    instance_spec_name=${instance_spec_name}
+    memory_size=${memory_size}
+    security_groups[]=${security_groups}
     service_type=${service_type}
+    ssh_key_id=${ssh_key_id}
+    user_data=${user_data}
+    vifs=${vifs}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
@@ -92,46 +92,46 @@ function test_instance_create_no_opts() {
 function test_instance_create_opts() {
   local cmd=create
 
-  local image_id=wmi-shunit2
-  local instance_spec_name=is-shunit2
-  local security_groups=sg-shunit2
-  local ssh_key_id=ssh-shunit2
-  local hypervisor=shunit2
   local cpu_cores=2
-  local memory_size=2048
   local display_name=shunit2
   local hostname=shunit2
-  local vifs="{}"
-  local user_data=asdf
+  local hypervisor=shunit2
+  local image_id=wmi-shunit2
+  local instance_spec_name=is-shunit2
+  local memory_size=2048
+  local security_groups=sg-shunit2
   local service_type=std
+  local ssh_key_id=ssh-shunit2
+  local user_data=asdf
+  local vifs="{}"
 
   local opts="
-    --image-id=${image_id}
-    --instance-spec-name=${instance_spec_name}
-    --security-groups=${security_groups}
-    --hypervisor=${hypervisor}
     --cpu-cores=${cpu_cores}
-    --memory-size=${memory_size}
     --display-name=${display_name}
     --host-name=${hostname}
-    --vifs=${vifs}
-    --user-data=${user_data}
+    --hypervisor=${hypervisor}
+    --image-id=${image_id}
+    --instance-spec-name=${instance_spec_name}
+    --memory-size=${memory_size}
+    --security-groups=${security_groups}
     --service-type=${service_type}
+    --user-data=${user_data}
+    --vifs=${vifs}
   "
 
   local params="
-    image_id=${image_id}
-    instance_spec_name=${instance_spec_name}
-    security_groups[]=${security_groups}
-    ssh_key_id=${ssh_key_id}
-    hypervisor=${hypervisor}
     cpu_cores=${cpu_cores}
-    memory_size=${memory_size}
     display_name=${display_name}
     hostname=${hostname}
-    vifs=${vifs}
-    user_data=${user_data}
+    hypervisor=${hypervisor}
+    image_id=${image_id}
+    instance_spec_name=${instance_spec_name}
+    memory_size=${memory_size}
+    security_groups[]=${security_groups}
     service_type=${service_type}
+    ssh_key_id=${ssh_key_id}
+    user_data=${user_data}
+    vifs=${vifs}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
@@ -141,46 +141,46 @@ function test_instance_create_opts() {
 function test_instance_create_opts_vif_file() {
   local cmd=create
 
-  local image_id=wmi-shunit2
-  local instance_spec_name=is-shunit2
-  local security_groups=sg-shunit2
-  local ssh_key_id=ssh-shunit2
-  local hypervisor=shunit2
   local cpu_cores=2
-  local memory_size=2048
   local display_name=shunit2
   local hostname=shunit2
-  local vifs=${vifs_file}
-  local user_data=asdf
+  local hypervisor=shunit2
+  local image_id=wmi-shunit2
+  local instance_spec_name=is-shunit2
+  local memory_size=2048
+  local security_groups=sg-shunit2
   local service_type=std
+  local ssh_key_id=ssh-shunit2
+  local user_data=asdf
+  local vifs=${vifs_file}
 
   local opts="
-    --image-id=${image_id}
-    --instance-spec-name=${instance_spec_name}
-    --security-groups=${security_groups}
-    --hypervisor=${hypervisor}
     --cpu-cores=${cpu_cores}
-    --memory-size=${memory_size}
     --display-name=${display_name}
     --host-name=${hostname}
-    --vifs=${vifs}
-    --user-data=${user_data}
+    --hypervisor=${hypervisor}
+    --image-id=${image_id}
+    --instance-spec-name=${instance_spec_name}
+    --memory-size=${memory_size}
+    --security-groups=${security_groups}
     --service-type=${service_type}
+    --user-data=${user_data}
+    --vifs=${vifs}
   "
 
   local params="
-    image_id=${image_id}
-    instance_spec_name=${instance_spec_name}
-    security_groups[]=${security_groups}
-    ssh_key_id=${ssh_key_id}
-    hypervisor=${hypervisor}
     cpu_cores=${cpu_cores}
-    memory_size=${memory_size}
     display_name=${display_name}
     hostname=${hostname}
-    vifs@${vifs}
-    user_data=${user_data}
+    hypervisor=${hypervisor}
+    image_id=${image_id}
+    instance_spec_name=${instance_spec_name}
+    memory_size=${memory_size}
+    security_groups[]=${security_groups}
     service_type=${service_type}
+    ssh_key_id=${ssh_key_id}
+    user_data=${user_data}
+    vifs@${vifs}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
@@ -190,46 +190,46 @@ function test_instance_create_opts_vif_file() {
 function test_instance_create_opts_user_data_file() {
   local cmd=create
 
-  local image_id=wmi-shunit2
-  local instance_spec_name=is-shunit2
-  local security_groups=sg-shunit2
-  local ssh_key_id=ssh-shunit2
-  local hypervisor=shunit2
   local cpu_cores=2
-  local memory_size=2048
   local display_name=shunit2
   local hostname=shunit2
-  local vifs="{}"
-  local user_data=${user_data_file}
+  local hypervisor=shunit2
+  local image_id=wmi-shunit2
+  local instance_spec_name=is-shunit2
+  local memory_size=2048
+  local security_groups=sg-shunit2
   local service_type=std
+  local ssh_key_id=ssh-shunit2
+  local user_data=${user_data_file}
+  local vifs="{}"
 
   local opts="
-    --image-id=${image_id}
-    --instance-spec-name=${instance_spec_name}
-    --security-groups=${security_groups}
-    --hypervisor=${hypervisor}
     --cpu-cores=${cpu_cores}
-    --memory-size=${memory_size}
     --display-name=${display_name}
     --host-name=${hostname}
-    --vifs=${vifs}
-    --user-data=${user_data}
+    --hypervisor=${hypervisor}
+    --image-id=${image_id}
+    --instance-spec-name=${instance_spec_name}
+    --memory-size=${memory_size}
+    --security-groups=${security_groups}
     --service-type=${service_type}
+    --user-data=${user_data}
+    --vifs=${vifs}
   "
 
   local params="
-    image_id=${image_id}
-    instance_spec_name=${instance_spec_name}
-    security_groups[]=${security_groups}
-    ssh_key_id=${ssh_key_id}
-    hypervisor=${hypervisor}
     cpu_cores=${cpu_cores}
-    memory_size=${memory_size}
     display_name=${display_name}
     hostname=${hostname}
-    vifs=${vifs}
-    user_data@${user_data}
+    hypervisor=${hypervisor}
+    image_id=${image_id}
+    instance_spec_name=${instance_spec_name}
+    memory_size=${memory_size}
+    security_groups[]=${security_groups}
     service_type=${service_type}
+    ssh_key_id=${ssh_key_id}
+    user_data@${user_data}
+    vifs=${vifs}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
@@ -276,14 +276,14 @@ function test_instance_backup() {
 
   local description=shunit2
   local display_name=shunit2
-  local is_public=false
   local is_cacheable=false
+  local is_public=false
 
   local params="
     description=${description}
     display_name=${display_name}
-    is_public=${is_public}
     is_cacheable=${is_cacheable}
+    is_public=${is_public}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
