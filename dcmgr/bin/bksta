@@ -340,26 +340,27 @@ class APIProxy < Sinatra::Base
   end
   post '/submit_pull_job' do
     src = params['src']
-    if src.nil?
-      error(400, "Invalid parameter: src")
+    if !src.is_a?(String)
+      error(400, "Invalid parameter: src: #{params['src']}")
     end
 
-    new_bo_data = {}
-    if params['backup_object']
-      %w(account_id display_name service_type size allocation_size container_format checksum description).each { |k|
-        new_bo_data[k.to_sym]=params['backup_object'][k.to_s]
-      }
-    else
-      error(400, "Invalid parameter: backup_object")
+    if !params['backup_object'].is_a?(Hash)
+      error(400, "Invalid parameter: backup_object: #{params['backup_object']}")
+    end
+
+    # optional parameter.
+    if params['image'] && !params['image'].is_a?(Hash)
+      error(400, "Invalid parameter: image: #{params['image']}")
     end
 
     job_params = {:src=>params['src']}
     Fiber.new do
       begin
         if params['image']
-          job_params.merge!(rpc_request('sta-collector', 'register_image_transfer', @node.node_id, params['image'], new_bo_data))
+          job_params.merge!(rpc_request('sta-collector', 'register_image_transfer', @node.node_id, params['image'], params['backup_object']))
+          bo = job_params[:backup_object]
         else
-          bo = job_params[:backup_object] = rpc_request('sta-collector', 'register_backup_object_transfer', @node.node_id, new_bo_data)
+          bo = job_params[:backup_object] = rpc_request('sta-collector', 'register_backup_object_transfer', @node.node_id, params['backup_object'])
         end
       rescue ::Exception => e
         logger.error(e)
