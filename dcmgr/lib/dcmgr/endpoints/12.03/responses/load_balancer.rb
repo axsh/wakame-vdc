@@ -70,7 +70,9 @@ module Dcmgr::Endpoints::V1203::Responses
               },
               :httpchk=>{:path => self[:httpchk_path]}
         )
-        th.delete(:httpchk_path)
+
+        # TODO: Remove comment(#). httpchk_path is duplicate.
+        # th.delete(:httpchk_path)
         th
       }
     end
