@@ -46,13 +46,6 @@ function test_sticky_session() {
 }
 
 function test_balance_algorithm_source() {
-  balance_algorithm="leastconn" run_cmd load_balancer update ${load_balancer_uuid}
-
-  for instance_uuid in $(cat ${instance_uuids_path}); do
-    retry_until [[ '"$(curl -fsSkL http://${load_balancer_ipaddr}/)"' == "${instance_uuid}" ]]
-    assertEquals $? 0
-  done
-
   balance_algorithm="source" run_cmd load_balancer update ${load_balancer_uuid}
   sleep 1
 
@@ -69,11 +62,7 @@ function test_balance_algorithm_source() {
 
 function test_balance_algorithm_leastconn() {
   balance_algorithm="leastconn" run_cmd load_balancer update ${load_balancer_uuid}
-
-  for instance_uuid in $(cat ${instance_uuids_path}); do
-    retry_until [[ '"$(curl -fsSkL http://${load_balancer_ipaddr}/)"' == "${instance_uuid}" ]]
-    assertEquals $? 0
-  done
+  sleep 1
 
   trap "kill -9 ${pids} 2>/dev/null" ERR
 
@@ -101,6 +90,11 @@ function test_unregister_instances_from_load_balancer() {
 
   retry_while "curl -fsSkL http://${load_balancer_ipaddr}/"
   assertEquals $? 0
+}
+
+function setUp() {
+  balance_algorithm="leastconn" run_cmd load_balancer update ${load_balancer_uuid}
+  sleep 1
 }
 
 ## shunit2
