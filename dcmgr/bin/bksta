@@ -76,10 +76,9 @@ class CopyProcessor < Isono::NodeModules::Base
     if uri.nil?
       raise "Unknown destination: #{params[:destination]}"
     end
-    if DestinationMonitor.new(@node).alive_destination?(params[:destination])
-      logger.error("#{params[:destination]} is not alive destination. Requeing the job.")
+    unless DestinationMonitor.new(@node).alive_destination?(params[:destination])
       # TODO: requeue the job
-      return
+      raise "#{params[:destination]} is not alive destination."
     end
 
     uri.path += '/submit_pull_job'
