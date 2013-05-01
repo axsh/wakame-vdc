@@ -76,10 +76,9 @@ class CopyProcessor < Isono::NodeModules::Base
     if uri.nil?
       raise "Unknown destination: #{params[:destination]}"
     end
-    if DestinationMonitor.new(@node).alive_destination?(params[:destination])
-      logger.error("#{params[:destination]} is not alive destination. Requeing the job.")
+    unless DestinationMonitor.new(@node).alive_destination?(params[:destination])
       # TODO: requeue the job
-      return
+      raise "#{params[:destination]} is not alive destination."
     end
 
     uri.path += '/submit_pull_job'
@@ -187,7 +186,7 @@ class CopyProcessor < Isono::NodeModules::Base
       end
     end
     unless r.exitstatus == 0
-      raise "Failed to run archive command line: #{cmd_lst.join(" | ")}"
+      raise "Failed to run transfer command line: #{cmd_lst.join(" | ")}"
     end
     
     chksum = File.read(chksum_path).split(/\s+/).first
@@ -195,7 +194,7 @@ class CopyProcessor < Isono::NodeModules::Base
 
     # verify result from backup object database entry.
     if @backup_object[:allocation_size] != alloc_size.to_i
-      logger.error("Verify failed with Wrong size: #{@backup_object[:uuid]} expected size=#{@backup_object[:allocation_size]}, real size=#{alloc_size}")
+      logger.error("Verify failed with wrong size: #{@backup_object[:uuid]} expected size=#{@backup_object[:allocation_size]}, real size=#{alloc_size}")
       raise "Verification Failure"
     elsif @backup_object[:checksum] != chksum
       logger.error("Verify failed with wrong check sum: #{@backup_object[:uuid]} expected=#{@backup_object[:checksum]}, calculated=#{chksum}")
@@ -208,7 +207,12 @@ class CopyProcessor < Isono::NodeModules::Base
     if @image_id
       rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available})
     end
-    
+
+  rescue ::Exception => e
+    unless Thread.current[:job].retry?
+      delete_failed_resources
+    end
+    raise
   ensure
     if tmpdir.is_a?(String) && File.directory?(tmpdir)
       FileUtils.remove_entry_secure tmpdir, true
@@ -216,6 +220,13 @@ class CopyProcessor < Isono::NodeModules::Base
   end
 
   private
+
+  def delete_failed_resources
+    rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+    if @image_id
+      rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+    end
+  end
 
   def rpc
     Isono::NodeModules::RpcChannel.new(@node)
@@ -340,26 +351,27 @@ class APIProxy < Sinatra::Base
   end
   post '/submit_pull_job' do
     src = params['src']
-    if src.nil?
-      error(400, "Invalid parameter: src")
+    if !src.is_a?(String)
+      error(400, "Invalid parameter: src: #{params['src']}")
     end
 
-    new_bo_data = {}
-    if params['backup_object']
-      %w(account_id display_name service_type size allocation_size container_format checksum description).each { |k|
-        new_bo_data[k.to_sym]=params['backup_object'][k.to_s]
-      }
-    else
-      error(400, "Invalid parameter: backup_object")
+    if !params['backup_object'].is_a?(Hash)
+      error(400, "Invalid parameter: backup_object: #{params['backup_object']}")
+    end
+
+    # optional parameter.
+    if params['image'] && !params['image'].is_a?(Hash)
+      error(400, "Invalid parameter: image: #{params['image']}")
     end
 
     job_params = {:src=>params['src']}
     Fiber.new do
       begin
         if params['image']
-          job_params.merge!(rpc_request('sta-collector', 'register_image_transfer', @node.node_id, params['image'], new_bo_data))
+          job_params.merge!(rpc_request('sta-collector', 'register_image_transfer', @node.node_id, params['image'], params['backup_object']))
+          bo = job_params[:backup_object]
         else
-          bo = job_params[:backup_object] = rpc_request('sta-collector', 'register_backup_object_transfer', @node.node_id, new_bo_data)
+          bo = job_params[:backup_object] = rpc_request('sta-collector', 'register_backup_object_transfer', @node.node_id, params['backup_object'])
         end
       rescue ::Exception => e
         logger.error(e)
