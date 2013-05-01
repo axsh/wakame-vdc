@@ -352,7 +352,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
 
     lb_ports = inbounds.collect {|i| i[:port] }
-    validates_same_port(lb_ports)
+    validates_duplicate_port(lb_ports)
 
     lb_protocols = inbounds.collect {|i| i[:protocol] }
     accept_port = accept_port(inbounds)
@@ -639,9 +639,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     nil
   end
 
-  def validates_same_port(lb_ports)
+  def validates_duplicate_port(lb_ports)
     result = lb_ports.group_by{|e|e}.values.collect{|e|e.count}.find{|e| e > 1}
-    raise E::InvalidLoadBalancerPort unless result.nil?
+    raise E::DuplicateLoadBalancerPort unless result.nil?
   end
 
 end
