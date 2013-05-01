@@ -207,7 +207,12 @@ class CopyProcessor < Isono::NodeModules::Base
     if @image_id
       rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available})
     end
-    
+
+  rescue ::Exception => e
+    unless Thread.current[:job].retry?
+      delete_failed_resources
+    end
+    raise
   ensure
     if tmpdir.is_a?(String) && File.directory?(tmpdir)
       FileUtils.remove_entry_secure tmpdir, true
@@ -215,6 +220,13 @@ class CopyProcessor < Isono::NodeModules::Base
   end
 
   private
+
+  def delete_failed_resources
+    rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+    if @image_id
+      rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+    end
+  end
 
   def rpc
     Isono::NodeModules::RpcChannel.new(@node)
