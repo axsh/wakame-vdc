@@ -441,7 +441,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.display_name = params[:display_name]
     end
 
-    lb.cookie_name = params[:cookie_name]
+    if !params[:cookie_name].blank?
+      lb.cookie_name = params[:cookie_name]
+    end
+
     lb.save_changes
 
     if !params[:port].blank? && !params[:protocol].blank?
