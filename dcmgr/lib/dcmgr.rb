@@ -23,21 +23,12 @@ module Dcmgr
   }
 
   module Constants
-    module BackupObject
-      CONTAINER_FORMAT={:tgz=>['tar.gz', 'tgz'], :tar=>['tar'], :gz=>['gz'], :none=>[]}.freeze
-      CONTAINER_FORMAT_NAMES=CONTAINER_FORMAT.keys.freeze
-      CONTAINER_EXTS=Hash[*CONTAINER_FORMAT.map{|k,v|
-                            v.map { |v2|
-                              [v2, k]
-                            }
-                          }.flatten].freeze
-    end
-
     autoload :Instance, 'dcmgr/constants/instance'
     autoload :Network, 'dcmgr/constants/network'
     autoload :Tag, 'dcmgr/constants/tag'
     autoload :LoadBalancer, 'dcmgr/constants/load_balancer'
     autoload :Image, 'dcmgr/constants/image'
+    autoload :BackupObject, 'dcmgr/constants/backup_object'
   end
   Const = Constants
 
