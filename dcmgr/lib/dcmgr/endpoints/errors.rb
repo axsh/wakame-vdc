@@ -170,6 +170,7 @@ module Dcmgr
     define_error(:LoadBalancerNotPermitted, 404, '191')
     define_error(:InvalidLoadBalancerInstancePort, 404, '192')
     define_error(:InvalidLoadBalancerInstanceProtocol, 404, '193')
+    define_error(:DuplicateLoadBalancerPort, 400, '194')
 
   end
 end
