@@ -62,6 +62,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   post do
     inbounds = get_inbounds
     lb_ports = inbounds.collect {|i| i[:port] }
+    validates_duplicate_port(lb_ports)
+
     lb_protocols = inbounds.collect {|i| i[:protocol] }
     accept_port = accept_port(inbounds)
     connect_port = connect_port(inbounds)
@@ -94,8 +96,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.cookie_name = params[:cookie_name]
     end
 
-    if params[:httpchk] && params[:httpchk][:path]
-      lb.httpchk_path = params[:httpchk][:path]
+    if params['httpchk'] && params['httpchk']['path']
+      lb.httpchk_path = params['httpchk']['path']
     end
 
     lb.public_key = params[:public_key] || ''
@@ -350,6 +352,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
 
     lb_ports = inbounds.collect {|i| i[:port] }
+    validates_duplicate_port(lb_ports)
+
     lb_protocols = inbounds.collect {|i| i[:protocol] }
     accept_port = accept_port(inbounds)
     connect_port = connect_port(inbounds)
@@ -388,8 +392,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.instance_port = params[:instance_port]
     end
 
-    if !params[:httpchk].blank? && !params[:httpchk][:path].blank?
-      lb.httpchk_path = params[:httpchk][:path]
+    if !params['httpchk'].blank? && !params['httpchk']['path'].blank?
+      lb.httpchk_path = params['httpchk']['path']
       raise E::InvalidLoadBalancerHttpChkPath, lb.errors[:httpchk_path].first if !lb.valid?
     end
 
@@ -435,7 +439,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.display_name = params[:display_name]
     end
 
-    lb.cookie_name = params[:cookie_name]
+    if !params[:cookie_name].blank?
+      lb.cookie_name = params[:cookie_name]
+    end
+
     lb.save_changes
 
     if !params[:port].blank? && !params[:protocol].blank?
@@ -633,6 +640,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       end
     }
     nil
+  end
+
+  def validates_duplicate_port(lb_ports)
+    raise E::DuplicateLoadBalancerPort unless lb_ports.uniq == lb_ports
   end
 
 end
