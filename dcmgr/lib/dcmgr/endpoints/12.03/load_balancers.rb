@@ -643,8 +643,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   def validates_duplicate_port(lb_ports)
-    result = lb_ports.group_by{|e|e}.values.collect{|e|e.count}.find{|e| e > 1}
-    raise E::DuplicateLoadBalancerPort unless result.nil?
+    raise E::DuplicateLoadBalancerPort unless lb_ports.uniq == lb_ports
   end
 
 end
