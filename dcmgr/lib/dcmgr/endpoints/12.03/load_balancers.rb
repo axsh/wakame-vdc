@@ -96,8 +96,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.cookie_name = params[:cookie_name]
     end
 
-    if params[:httpchk] && params[:httpchk][:path]
-      lb.httpchk_path = params[:httpchk][:path]
+    if params[:httpchk]
+      httpchk = convert_httpchk(params[:httpchk])
+      lb.httpchk_path = httpchk['path']
     end
 
     lb.public_key = params[:public_key] || ''
@@ -392,8 +393,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.instance_port = params[:instance_port]
     end
 
-    if !params[:httpchk].blank? && !params[:httpchk][:path].blank?
-      lb.httpchk_path = params[:httpchk][:path]
+    if !params[:httpchk].blank?
+      httpchk = convert_httpchk(params[:httpchk])
+      lb.httpchk_path = httpchk['path']
       raise E::InvalidLoadBalancerHttpChkPath, lb.errors[:httpchk_path].first if !lb.valid?
     end
 
@@ -644,4 +646,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     raise E::DuplicateLoadBalancerPort unless result.nil?
   end
 
+  def convert_httpchk(httpchk)
+    if httpchk['path'].nil?
+      httpchk['path'] = ''
+    elsif httpchk.is_a?(String)
+      begin
+        httpchk = JSON::load(httpchk)
+      rescue JSON::ParserError
+        raise E::InvalidParameter, httpchk
+      end
+    end
+    httpchk
+  end
 end
