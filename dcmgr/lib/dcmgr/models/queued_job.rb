@@ -54,7 +54,7 @@ module Dcmgr::Models
       end
     end
 
-    def self.pop(queue_name, worker_id)
+    def self.pop(queue_name, worker_id, opts={})
       db.transaction do
         # Fetch the last item.
         job = self.dataset.filter(:queue_name=>queue_name,
@@ -65,6 +65,10 @@ module Dcmgr::Models
           update = {:worker_id=>worker_id, :state=>'running'}
           if job.started_at.nil?
             update[:started_at]=Time.now.utc
+          end
+          if job.retry_count == 0 && job.retry_max == 0 && opts[:retry_max_if_zero].to_i > 0
+            # Set default retry max value per queue.
+            update[:retry_max] = opts[:retry_max_if_zero].to_i
           end
           job.set(update)
           job.save_changes
