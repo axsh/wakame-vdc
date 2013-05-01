@@ -96,8 +96,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.cookie_name = params[:cookie_name]
     end
 
-    if params['httpchk'] && params['httpchk']['path']
-      lb.httpchk_path = params['httpchk']['path']
+    if params[:httpchk_path]
+      lb.httpchk_path = params[:httpchk_path]
     end
 
     lb.public_key = params[:public_key] || ''
@@ -392,8 +392,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.instance_port = params[:instance_port]
     end
 
-    if !params['httpchk'].blank? && !params['httpchk']['path'].blank?
-      lb.httpchk_path = params['httpchk']['path']
+    if !params[:httpchk_path].blank?
+      lb.httpchk_path = params[:httpchk_path]
       raise E::InvalidLoadBalancerHttpChkPath, lb.errors[:httpchk_path].first if !lb.valid?
     end
 
