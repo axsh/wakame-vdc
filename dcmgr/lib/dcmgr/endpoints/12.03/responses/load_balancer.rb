@@ -58,7 +58,7 @@ module Dcmgr::Endpoints::V1203::Responses
         }
 
         allow_list = self[:allow_list].split(',') unless self[:allow_list].blank?
-        th = to_hash.merge(:id=>canonical_uuid,
+        to_hash.merge(:id=>canonical_uuid,
               :state=>state,
               :status=>status,
               :target_vifs=> target_vifs,
@@ -68,12 +68,7 @@ module Dcmgr::Endpoints::V1203::Responses
               :inbounds => load_balancer_inbounds_dataset.alives.all.map {|m|
                 LoadBalancerInbound.new(m).generate
               },
-              :httpchk=>{:path => self[:httpchk_path]}
         )
-
-        # TODO: Remove comment(#). httpchk_path is duplicate.
-        # th.delete(:httpchk_path)
-        th
       }
     end
   end
