@@ -62,7 +62,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   post do
     inbounds = get_inbounds
     lb_ports = inbounds.collect {|i| i[:port] }
-    validates_same_port(lb_ports)
+    validates_duplicate_port(lb_ports)
 
     lb_protocols = inbounds.collect {|i| i[:protocol] }
     accept_port = accept_port(inbounds)
