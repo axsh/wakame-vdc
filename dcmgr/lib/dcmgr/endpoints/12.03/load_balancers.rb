@@ -636,6 +636,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   def secure_protocol(inbounds)
     inbounds.each {|_in|
       if Dcmgr::Models::LoadBalancer::SECURE_PROTOCOLS.include?(_in[:protocol])
+        raise InvalidLoadBalancerPublicKey if params[:public_key].blank?
+        raise InvalidLoadBalancerPrivateKey if params[:private_key].blank?
         return _in[:protocol]
       end
     }
