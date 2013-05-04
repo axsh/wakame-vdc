@@ -54,7 +54,7 @@ module Dcmgr::Models
       end
     end
 
-    def self.pop(queue_name, worker_id)
+    def self.pop(queue_name, worker_id, opts={})
       db.transaction do
         # Fetch the last item.
         job = self.dataset.filter(:queue_name=>queue_name,
@@ -62,11 +62,17 @@ module Dcmgr::Models
                                   :worker_id=>nil,
                                   ).order(Sequel.asc(:id)).for_update.first
         if !job.nil?
-          update = {:worker_id=>worker_id, :state=>'running'}
+          job.set({:worker_id=>worker_id, :state=>'running'})
           if job.started_at.nil?
-            update[:started_at]=Time.now.utc
+            job.started_at=Time.now.utc
+            if job.retry_max == 0 && opts[:retry_max_if_zero].to_i > 0
+              # Set default retry max value per queue.
+              job.retry_max = opts[:retry_max_if_zero].to_i
+            end
           end
-          job.set(update)
+          
+          # increment at begging of the job.
+          job.retry_count += 1
           job.save_changes
         end
         job
@@ -105,17 +111,15 @@ module Dcmgr::Models
     # Notify that the job is finished successfully.
     def finish_fail(failure_reason)
       raise "Already terminated" if finished?
-      
-      if self.retry_max < self.retry_count
-        # Push back the job state to be stored in the queue. But
-        # retry_count is incremented.
-        self.retry_count += 1
+
+      if self.retry_max > self.retry_count
+        # Push back the job state to be stored in the queue.
         self.state = 'pending'
         self.worker_id = nil
       else
         finish_entry('fail')
-        self.finish_message = failure_reason
       end
+      self.finish_message = failure_reason
       self.save_changes
     end
 

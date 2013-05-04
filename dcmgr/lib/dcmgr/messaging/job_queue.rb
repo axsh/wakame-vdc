@@ -39,7 +39,7 @@ module Dcmgr
 
         def pop(queue_name, worker_id, opts={})
           opts = {}.merge(opts)
-          job = Models::QueuedJob.pop(queue_name, worker_id)
+          job = Models::QueuedJob.pop(queue_name, worker_id, opts)
           job && job.to_hash
         end
 
@@ -77,7 +77,7 @@ module Dcmgr
         def pop(queue_name, worker_id, opts={}, &blk)
           opts = {}.merge(opts)
           rpc.request('jobqueue-proxy', 'pop',
-                      queue_name, worker_id, &blk)
+                      queue_name, worker_id, opts, &blk)
         end
 
         def cancel(job_id, &blk)
