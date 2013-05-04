@@ -40,8 +40,6 @@ function render_secg_rule() {
 function oneTimeSetUp() {
   # create
   for i in $(eval echo "{1..${target_instance_num:-1}}"); do
-    instance_uuid= security_group_uuid=
-    # don't clear ssh_key_pair_uuid= to apply same keypair to instances
     create_instance
     echo ${instance_uuid} >> ${instance_uuids_path}
   done

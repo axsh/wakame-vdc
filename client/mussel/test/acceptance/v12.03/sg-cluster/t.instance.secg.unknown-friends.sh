@@ -17,6 +17,11 @@ unknown_ipaddrs=
 
 ## functions
 
+function before_create_instance() {
+  # don't clear ssh_key_pair_uuid= to apply same keypair to instances
+  instance_uuid= security_group_uuid=
+}
+
 ### step
 
 function test_ping_to_unknown_instances() {
