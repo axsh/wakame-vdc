@@ -117,7 +117,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
     load_balancer_engine = params[:engine] || 'haproxy'
-    lb_spec.convert(load_balancer_engine, params[:max_connection])
+    begin
+      lb_spec.convert(load_balancer_engine, params[:max_connection])
+    rescue => e
+      logger.error(e)
+      raise E::InvalidLoadBalancerSpec
+    end
 
     # make params for internal request.
     request_params = {'image_id' => lb_conf.image_id,
