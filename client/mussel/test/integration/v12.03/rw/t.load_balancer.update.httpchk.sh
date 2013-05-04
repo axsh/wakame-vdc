@@ -10,20 +10,10 @@
 . ${BASH_SOURCE[0]%/*}/helper_load_balancer.sh
 
 ## variables
-httpchk=${httpchk:-}
-httpchk_path=${httpchk_path:-${BASH_SOURCE[0]%/*}/httpchk.$$}
 
 ### optional
 
 ## functions
-
-function render_httpchk_table() {
-  cat <<-EOS
-	{
-	"path":"/index.html"
-	}
-	EOS
-}
 
 function oneTimeSetUp() {
   :
@@ -38,7 +28,6 @@ function setUp() {
 }
 
 function tearDown() {
-  rm -f ${httpchk_path}
   destroy_load_balancer
 }
 
@@ -53,13 +42,12 @@ function test_update_load_balancer_httpchk() {
   ex_httpchk="$(run_cmd load_balancer show ${load_balancer_uuid} | hash_value httpchk_path)"
   assertEquals "${ex_httpchk}" "''"
 
-  render_httpchk_table > ${httpchk_path}
-  httpchk=${httpchk_path}
+  local httpchk_path="/index.html"
 
   run_cmd load_balancer update ${load_balancer_uuid}
 
   ex_httpchk="$(run_cmd load_balancer show ${load_balancer_uuid} | hash_value httpchk_path)"
-  assertEquals "${ex_httpchk}" "/index.html"
+  assertEquals "${ex_httpchk}" ${httpchk_path}
 }
 
 ## shunit2

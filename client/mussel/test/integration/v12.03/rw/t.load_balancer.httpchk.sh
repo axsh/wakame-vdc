@@ -10,18 +10,10 @@
 . ${BASH_SOURCE[0]%/*}/helper_load_balancer.sh
 
 ## variables
-httpchk=${httpchk:-}
-httpchk_path=${httpchk_path:-${BASH_SOURCE[0]%/*}/httpchk.$$}
 
 ### optional
 
 ## functions
-
-function render_httpchk_table() {
-  cat <<-EOS
-	{"path":"/index.html"}
-	EOS
-}
 
 function oneTimeSetUp() {
   :
@@ -32,12 +24,10 @@ function oneTimeTearDown() {
 }
 
 function setUp() {
-  render_httpchk_table > ${httpchk_path}
-  httpchk=${httpchk_path} 
+  :
 }
 
 function tearDown() {
-  rm -f ${httpchk_path}
   destroy_load_balancer
 }
 
@@ -45,9 +35,13 @@ function tearDown() {
 
 function test_create_load_balancer_httpchk() {
 
-  load_balancer_uuid="$(run_cmd load_balancer create | hash_value id)"
-  assertEquals $? 0
+  local httpchk_path="/index.html"
 
+  create_output="$(run_cmd load_balancer create)"
+  assertEquals $? 0
+  assertEquals ${httpchk_path} $(echo "${create_output}" | hash_value httpchk_path)
+
+  load_balancer_uuid=$(echo "${create_output}" | hash_value id)
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
   assertEquals $? 0
 }

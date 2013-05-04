@@ -57,7 +57,7 @@ function test_ip_pool_ip_handles() {
   local cmd=ip_handles
   local uuid=shunit2
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X DELETE $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+               "curl -X GET $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 function test_ip_pool_acquire() {
