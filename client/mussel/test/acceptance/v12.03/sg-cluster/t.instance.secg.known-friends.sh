@@ -2,7 +2,6 @@
 #
 # requires:
 #  bash
-#  cat, ssh-keygen, ping, rm
 #
 
 ## include files
