@@ -17,6 +17,9 @@ port="8443"
 protocol="ssl"
 instance_protocol="tcp"
 
+load_balancer_private_key=$(ssl_output_dir)/${common_name}.key.pem
+load_balancer_public_key=$(ssl_output_dir)/${common_name}.crt.pem
+
 target_instance_num=${target_instance_num:-1}
 client_ipaddr=${client_ipaddr:-10.0.2.2}
 
@@ -42,8 +45,8 @@ function test_ssl_for_registerd_lb() {
 
 function test_http_header() {
   local lbnode_env=$(curl -fsSkL https://${load_balancer_ipaddr}:${port}/cgi-bin/env.cgi)
-  assertNull "$(echo ${lbnode_env} | grep HTTP_X_FORWARDED_FOR)"
-  assertNull "$(echo ${lbnode_env} | grep HTTP_X_FORWARDED_PROTO)"
+  assertNull "HTTP_X_FORWARDED_FOR should be null" "$(echo ${lbnode_env} | grep HTTP_X_FORWARDED_FOR)"
+  assertNull "HTTP_X_FORWARDED_PROTO should be null" "$(echo ${lbnode_env} | grep HTTP_X_FORWARDED_PROTO)"
 }
 
 function test_unregister_instances_from_load_balancer() {
