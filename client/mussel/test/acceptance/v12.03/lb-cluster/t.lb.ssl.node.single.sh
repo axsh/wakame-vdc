@@ -22,6 +22,7 @@ load_balancer_public_key=$(ssl_output_dir)/${common_name}.crt.pem
 
 target_instance_num=${target_instance_num:-1}
 client_ipaddr=${client_ipaddr:-10.0.2.2}
+repeat_count=5
 
 ## functions
 
@@ -49,6 +50,59 @@ function test_http_header() {
   assertNull "HTTP_X_FORWARDED_PROTO should be null" "$(echo ${lbnode_env} | grep HTTP_X_FORWARDED_PROTO)"
 }
 
+function test_sticky_session_does_not_work() {
+  for instance_uuid in $(cat ${instance_uuids_path}); do
+    retry_until [[ '"$(curl -fsSkL https://${load_balancer_ipaddr}:${port}/)"' == "${instance_uuid}" ]]
+    assertEquals $? 0
+  done
+
+  curl -fsSkL -c ${cookie_path} https://${load_balancer_ipaddr}:${port}/
+
+  for instance_uuid in $(cat ${instance_uuids_path}); do
+    retry_until [[ '"$(curl -fsSkL -b ${cookie_path} https://${load_balancer_ipaddr}:${port}/)"' == "${instance_uuid}" ]]
+    assertEquals $? 0
+  done
+}
+
+function test_balance_algorithm_source() {
+  balance_algorithm="source" run_cmd load_balancer update ${load_balancer_uuid}
+  sleep 1
+
+  local expected_instance_uuid=$(curl -fsSkL https://${load_balancer_ipaddr}:${port}/)
+  echo "expected_instance_uuid: ${expected_instance_uuid}"
+
+  for i in $(seq 1 ${repeat_count}); do
+    sleep 1
+    local actual_instance_uuid=$(curl -fsSkL https://${load_balancer_ipaddr}:${port}/)
+    echo "${i}. actual_instance_uuid: ${actual_instance_uuid}"
+    assertEquals "should be the same uuid" ${expected_instance_uuid} ${actual_instance_uuid}
+  done
+}
+
+function test_balance_algorithm_leastconn() {
+  balance_algorithm="leastconn" run_cmd load_balancer update ${load_balancer_uuid}
+  sleep 1
+
+  trap "kill -9 ${pids} 2>/dev/null" ERR
+
+  for i in $(seq 1 $((${target_instance_num} - 1))); do
+    curl -fsSkL https://${load_balancer_ipaddr}:${port}/cgi-bin/sleep.cgi > /dev/null 2>&1 &
+    pids="${pids} $!"
+  done
+
+  local expected_instance_uuid=$(curl -fsSkL -c ${cookie_path} https://${load_balancer_ipaddr}:${port}/)
+  echo "expected_instance_uuid: ${expected_instance_uuid}"
+
+  for i in $(seq 1 ${repeat_count}); do
+    sleep 1
+    local actual_instance_uuid=$(curl -fsSkL https://${load_balancer_ipaddr}:${port}/)
+    echo "${i}. actual_instance_uuid: ${actual_instance_uuid}"
+    assertEquals "should be the same uuid" ${expected_instance_uuid} ${actual_instance_uuid}
+  done
+
+  kill -9 ${pids} 2>/dev/null
+}
+
 function test_unregister_instances_from_load_balancer() {
   vifs="$(cat ${instance_vifs_path})" run_cmd load_balancer unregister ${load_balancer_uuid}
   assertEquals $? 0
@@ -62,6 +116,11 @@ function test_http_get_for_unregisterd_lb() {
     retry_while [[ '"$(curl -fsSkL https://${load_balancer_ipaddr}:${port}/)"' == "${instance_uuid}" ]]
     assertEquals $? 0
   done
+}
+
+function setUp() {
+  balance_algorithm="leastconn" run_cmd load_balancer update ${load_balancer_uuid}
+  sleep 1
 }
 
 ## shunit2
