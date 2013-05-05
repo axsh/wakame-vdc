@@ -346,8 +346,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
   put '/:id' do
     raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
-    raise E::InvalidLoadBalancerInstancePort unless params[:instance_port].is_a?(String)
-    raise E::InvalidLoadBalancerInstanceProtocol unless params[:instance_protocol].is_a?(String)
 
     lb = find_by_uuid(:LoadBalancer, params['id'])
     if !params[:port].blank? && !params[:protocol].blank?
@@ -389,11 +387,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
 
     if !params[:instance_protocol].blank?
+      raise E::InvalidLoadBalancerInstanceProtocol unless params[:instance_protocol].is_a?(String)
       lb.instance_protocol = params[:instance_protocol]
       raise E::InvalidLoadBalancerInstanceProtocol, lb.errors[:instance_protocol] if !lb.valid?
     end
 
     if !params[:instance_port].blank?
+      raise E::InvalidLoadBalancerInstancePort unless params[:instance_port].is_a?(String)
       lb.instance_port = params[:instance_port]
     end
 
