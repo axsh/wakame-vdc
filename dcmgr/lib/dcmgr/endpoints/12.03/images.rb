@@ -23,8 +23,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
       scope[:account_id]=params[:account_id]
     end
 
-    if params[:is_public]
-      scope[:is_public]=1
+    unless params[:is_public].blank?
+      scope[:is_public]= (params[:is_public].to_s == 'true' ? 1 : 0)
     end
     unless scope.empty?
       ds = ds.filter( scope.map {|k,v| "#{k} = ?" }.join(' OR '), *scope.values )
