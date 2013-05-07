@@ -100,8 +100,20 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.httpchk_path = params[:httpchk_path]
     end
 
-    lb.public_key = params[:public_key] || ''
-    lb.private_key = params[:private_key] || ''
+    if secure_protocol
+      raise E::InvalidLoadBalancerPublicKey if params[:public_key].blank?
+      raise E::InvalidLoadBalancerPrivateKey if params[:private_key].blank?
+
+      lb.public_key = params[:public_key]
+      lb.private_key = params[:private_key]
+
+      raise E::EncryptionAlgorithmNotSupported if !lb.check_encryption_algorithm
+      raise E::InvalidLoadBalancerPublicKey if !lb.check_public_key
+      raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
+    else
+      lb.public_key = ''
+      lb.private_key = ''
+    end
 
     amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
 
@@ -161,12 +173,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.save
 
     inbounds.each {|i| lb.add_inbound(i[:protocol], i[:port]) }
-
-    if lb.is_secure?
-      raise E::EncryptionAlgorithmNotSupported if !lb.check_encryption_algorithm
-      raise E::InvalidLoadBalancerPublicKey if !lb.check_public_key
-      raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
-    end
 
     config_params = {
       :name => 'start:haproxy',
@@ -641,8 +647,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   def secure_protocol(inbounds)
     inbounds.each {|_in|
       if Dcmgr::Models::LoadBalancer::SECURE_PROTOCOLS.include?(_in[:protocol])
-        raise E::InvalidLoadBalancerPublicKey if params[:public_key].blank?
-        raise E::InvalidLoadBalancerPrivateKey if params[:private_key].blank?
         return _in[:protocol]
       end
     }
