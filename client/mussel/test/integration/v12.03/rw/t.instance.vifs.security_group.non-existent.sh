@@ -30,7 +30,7 @@ function render_vif_table() {
 
 ###
 
-function test_show_instance_vifs_null() {
+function test_create_instance_vifs_security_group_non_existent() {
   render_vif_table > ${vifs_path}
   vifs=${vifs_path}
   echo vifs
