@@ -260,6 +260,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         check_network_ip_combo(temp["nat_network"], temp["nat_ipv4_addr"])
         is_manual_ip_set = true
       end
+
+      [temp["security_groups"]].flatten.select{|s| !s.blank?}.each do |security_group_uuid|
+        raise E::UnknownSecurityGroup unless find_by_uuid(M::SecurityGroup, security_group_uuid)
+      end
     }
 
     # params is a Mash object. so coverts to raw Hash object.
