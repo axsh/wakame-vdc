@@ -123,9 +123,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     security_group_rules = build_security_group_rules(lb_ports, allow_list)
     firewall_security_group = create_security_group(security_group_rules)
-    # The instance security group has no rules. It's just there to allow
-    # communication between the LB and its instances
-    instance_security_group = create_security_group([])
 
     lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
     load_balancer_engine = params[:engine] || 'haproxy'
@@ -145,7 +142,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                         'eth0' => {
                           'index' => C::PUBLIC_DEVICE_INDEX.to_s,
                           'network' => lb_conf.instances_network,
-                          'security_groups' => [firewall_security_group, instance_security_group],
+                          'security_groups' => firewall_security_group,
                         },
                         'eth1' =>{
                           'index' => C::MANAGEMENT_DEVICE_INDEX.to_s,
@@ -253,7 +250,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     }
 
     targets = []
-    lb_inst_secg_id = lb.instance_security_group.canonical_uuid
     target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
@@ -261,7 +257,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
       # register instance to load balancer.
       lb.add_target(uuid)
-      set_vif_sg(:add,uuid,lb_inst_secg_id)
+
+      # The instance security group has no rules. It's just there to allow
+      # communication between the LB and its instances
+      lb_inst_secg_id = create_security_group([])
+
+      set_vif_sg(:add, uuid, lb_inst_secg_id)
+      set_vif_sg(:add, lb.global_vif.canonical_uuid, lb_inst_secg_id)
+      M::SecurityGroup[lb_inst_secg_id].set_label(lb.label, lb.canonical_uuid)
     end
 
     config_vifs = (request_vifs + hold_vifs).uniq
@@ -296,13 +299,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     # remove load balancer targets
     remove_vifs = request_vifs & hold_vifs
-    lb.remove_targets(remove_vifs)
 
     # update security groups to registered instance.
-    lb_secg_uuid = lb.instance_security_group.canonical_uuid
     remove_vifs.each do |vif_uuid|
-      set_vif_sg(:remove,vif_uuid,lb_secg_uuid)
+      lb_inst_secg = lb.instance_security_group(vif_uuid)
+      lb_inst_secg_id = lb_inst_secg.canonical_uuid
+
+      set_vif_sg(:remove, vif_uuid, lb_inst_secg_id)
+      set_vif_sg(:remove, lb.global_vif.canonical_uuid, lb_inst_secg_id)
+      lb.remove_instance_security_group(lb_inst_secg_id)
     end
+
+    lb.remove_targets(remove_vifs)
 
     inbounds = lb.inbounds
     lb_ports = inbounds.collect {|i| i[:port] }
@@ -557,14 +565,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   def create_security_group(rules)
-   http_status, headers, body = internal_request("/api/12.03/security_groups.json",{
+    path = "/security_groups.json"
+    uri = "/api/12.03/#{path}"
+    http_status, headers, body = internal_request(uri,{
       'account_id' => @account.canonical_uuid,
       'rule' => rules.join("\n"),
       'service_type' => C::SERVICE_TYPE,
       'description' => '',
       'display_name' => ''
     }, {
-      'PATH_INFO' => '/security_groups',
+      'PATH_INFO' => "#{path}",
+      'REQUEST_METHOD' => 'POST',
+      'REQUEST_URI' => uri,
+      'REQUEST_PATH' => uri
     })
     body['uuid']
   end
