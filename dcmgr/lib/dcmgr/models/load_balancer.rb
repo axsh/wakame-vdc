@@ -106,11 +106,6 @@ module Dcmgr::Models
       true
     end
 
-    # The instance security group is always the one without rules
-    def instance_security_group
-      self.global_vif.security_groups.find {|g| g.rule.empty? }
-    end
-
     def firewall_security_group
       self.global_vif.security_groups.find {|g| !g.rule.empty? }
     end
@@ -163,6 +158,16 @@ module Dcmgr::Models
         lbt.destroy
       }
       targets
+    end
+
+    def instance_security_group(instance_network_vif_uuid)
+       LoadBalancerTarget.get_security_group(canonical_uuid, instance_network_vif_uuid)
+    end
+
+    def remove_instance_security_group(security_group_id)
+      sg = SecurityGroup[security_group_id]
+      sg.unset_label(label)
+      sg.destroy
     end
 
     def get_target_servers(options = {})
@@ -304,6 +309,10 @@ module Dcmgr::Models
 
     def global_vif
       self.instance.network_vif_dataset.where(:device_index => PUBLIC_DEVICE_INDEX).first
+    end
+
+    def label
+      ['load_balancer', uuid].join('.')
     end
 
     private
