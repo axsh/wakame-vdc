@@ -79,7 +79,7 @@ function test_balance_algorithm_leastconn() {
 
 function setUp() {
   balance_algorithm="leastconn" run_cmd load_balancer update ${load_balancer_uuid}
-  sleep 1
+  sleep ${sleep_sec}
 }
 
 ## shunit2
