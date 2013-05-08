@@ -24,7 +24,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
     end
 
     unless params[:is_public].blank?
-      scope[:is_public]= (params[:is_public].to_s == 'true' ? 1 : 0)
+      scope[:is_public]=  case params[:is_public]
+                          when 'true', 'false'
+                            params[:is_public].to_s == 'true' ? 1 : 0
+                          when '1', '0'
+                            params[:is_public].to_i
+                          else
+                            raise E::InvalidParameter, :is_public
+                          end
     end
     unless scope.empty?
       ds = ds.filter( scope.map {|k,v| "#{k} = ?" }.join(' OR '), *scope.values )
