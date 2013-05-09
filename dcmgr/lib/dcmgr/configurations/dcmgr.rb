@@ -263,6 +263,9 @@ module Dcmgr
       # header.
       param :skip_quota_evaluation, :default=>false
 
+      # default instance poweroff behavior
+      param :default_force_poweroff_instance, :default => true
+
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]
         errors << "amqp_server_uri is undefined." unless @config[:amqp_server_uri]

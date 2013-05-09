@@ -578,19 +578,25 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   # Halt the running instance.
   put '/:id/poweroff' do
     instance = find_by_uuid(:Instance, params[:id])
-    raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
+    raise E::InvalidInstanceState, instance.state unless ['running', 'halting'].member?(instance.state)
 
-    force_shutdown = false
-    if params[:force_shutdown].to_s == 'true'
-      force_shutdown = true
-    end
+    force =
+      case params[:force].to_s
+      when 'true'
+        true
+      when 'false'
+        false
+      else
+        Dcmgr.conf.default_force_poweroff_instance
+      end
+    job_name = force ? 'poweroff' : 'soft_poweroff'
     
     instance.state = :halting
     instance.save
 
     on_after_commit do
-      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'poweroff',
-                             instance.canonical_uuid, force_shutdown)
+      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", job_name,
+                             instance.canonical_uuid)
     end
     respond_with({:instance_id=>instance.canonical_uuid,
                  })
