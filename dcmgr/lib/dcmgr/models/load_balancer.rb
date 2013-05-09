@@ -318,6 +318,7 @@ module Dcmgr::Models
     private
 
     def after_destroy
+      super
       remove_inbound
     end
 
