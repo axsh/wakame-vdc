@@ -580,12 +580,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
 
+    force_shutdown = false
+    if params[:force_shutdown].to_s == 'true'
+      force_shutdown = true
+    end
+    
     instance.state = :halting
     instance.save
 
     on_after_commit do
       Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'poweroff',
-                             instance.canonical_uuid)
+                             instance.canonical_uuid, force_shutdown)
     end
     respond_with({:instance_id=>instance.canonical_uuid,
                  })

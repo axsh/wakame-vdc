@@ -498,15 +498,21 @@ module Dcmgr
 
       job :poweroff, proc {
         @hva_ctx = HvaContext.new(self)
-        @inst_id = request.args[0]
+        @inst_id, @is_force_shutdown = request.args
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
 
         update_state_file(:halting)
 
         @hva_ctx.logger.info("Turning power off")
-        task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                            :poweroff_instance, [@hva_ctx])
-        update_instance_state({:state=>:halted}, [])
+        if @is_force_shutdown
+          task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                              :poweroff_instance, [@hva_ctx])
+          update_instance_state({:state=>:halted}, [])
+        else
+          task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                              :soft_poweroff_instance, [@hva_ctx])
+          # leave state change to instance monitor.
+        end
         destroy_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power off")
       }
