@@ -39,7 +39,7 @@ function test_sticky_session() {
 
 function test_balance_algorithm_source() {
   balance_algorithm="source" run_cmd load_balancer update ${load_balancer_uuid}
-  sleep 1
+  sleep ${sleep_sec}
 
   local expected_instance_uuid=$(curl -fsSkL http://${load_balancer_ipaddr}/)
   echo "expected_instance_uuid: ${expected_instance_uuid}"
@@ -54,7 +54,7 @@ function test_balance_algorithm_source() {
 
 function test_balance_algorithm_leastconn() {
   balance_algorithm="leastconn" run_cmd load_balancer update ${load_balancer_uuid}
-  sleep 1
+  sleep ${sleep_sec}
 
   trap "kill -9 ${pids} 2>/dev/null" ERR
 

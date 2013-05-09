@@ -10,7 +10,7 @@
 
 ## variables
 
-sleep_sec=10
+sleep_sec=3
 
 ## functions
 
