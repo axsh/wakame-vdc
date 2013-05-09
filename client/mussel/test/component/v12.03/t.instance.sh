@@ -330,9 +330,18 @@ function test_instance_poweron() {
 
 function test_instance_poweroff() {
   local cmd=poweroff
+  local force=true
 
-  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+  local opts="
+    --force=${force}
+  "
+
+  local params="
+    force=${force}
+  "
+
+  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${opts})" \
+               "curl -X PUT $(urlencode_data ${params}) $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ## shunit2
