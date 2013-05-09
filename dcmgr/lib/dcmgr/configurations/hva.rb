@@ -165,7 +165,6 @@ module Dcmgr
       # Allow hva to change instance state seems to be incomplete
       # transition.
       param :enable_instance_state_recovery, :default=>true
-      param :default_soft_poweroff_timeout_sec, :default=>10
 
       def validate(errors)
         if @config[:vm_data_dir].nil?
