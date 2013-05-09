@@ -540,8 +540,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['halted'].member?(instance.state)
 
+    # backup storage can be chosen in the order of:
+    #   1. query string
+    #   2. service type section in dcmgr.conf
+    #   3. same location as original backup object.
     bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[instance.service_type].backup_storage_id
-    bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
+    bkst = if bkst_uuid
+             bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
+           else
+             # 3rd case.
+             nil
+           end
 
     bo = instance.image.backup_object.entry_clone do |i|
       [:display_name, :description].each { |k|
@@ -552,6 +561,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       i.state = :pending
       i.account_id = @account.canonical_uuid
+      if bkst
+        i.backup_storage = bkst
+      end
     end
     image = instance.image.entry_clone do |i|
       [:display_name, :description, :is_public, :is_cacheable].each { |k|
