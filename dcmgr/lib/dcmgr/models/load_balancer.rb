@@ -164,9 +164,14 @@ module Dcmgr::Models
        LoadBalancerTarget.get_security_group(canonical_uuid, instance_network_vif_uuid)
     end
 
-    def remove_instance_security_group(security_group_id)
+    def remove_instance_security_group(instance_network_vif_uuid)
+      rl = ResourceLabel.filter(:name => label, :string_value => instance_network_vif_uuid).first
+      raise "Unknown value #{instance_network_vif_uuid} in resource label #{label}" if rl.nil?
+
+      security_group_id = rl.resource_uuid
       sg = SecurityGroup[security_group_id]
       sg.unset_label(label)
+      global_vif.remove_security_group(sg)
       sg.destroy
     end
 
@@ -318,6 +323,7 @@ module Dcmgr::Models
     private
 
     def after_destroy
+      super
       remove_inbound
     end
 
