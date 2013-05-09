@@ -264,7 +264,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
       set_vif_sg(:add, uuid, lb_inst_secg_id)
       set_vif_sg(:add, lb.global_vif.canonical_uuid, lb_inst_secg_id)
-      M::SecurityGroup[lb_inst_secg_id].set_label(lb.label, lb.canonical_uuid)
+      M::SecurityGroup[lb_inst_secg_id].set_label(lb.label, uuid)
     end
 
     config_vifs = (request_vifs + hold_vifs).uniq
@@ -306,8 +306,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb_inst_secg_id = lb_inst_secg.canonical_uuid
 
       set_vif_sg(:remove, vif_uuid, lb_inst_secg_id)
-      set_vif_sg(:remove, lb.global_vif.canonical_uuid, lb_inst_secg_id)
-      lb.remove_instance_security_group(lb_inst_secg_id)
+      lb.remove_instance_security_group(vif_uuid)
     end
 
     lb.remove_targets(remove_vifs)
