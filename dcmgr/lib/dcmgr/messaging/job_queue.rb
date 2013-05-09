@@ -28,7 +28,7 @@ module Dcmgr
       def submit(queue_name, resource_uuid, params, opts={}); end
       def pop(queue_name, worker_id, opts={}); end
       def cancel(job_id); end
-      def finish_success(job_id); end
+      def finish_success(job_id, finish_message=nil); end
       def finish_fail(job_id, failure_reason); end
       
       class Sequel < self
@@ -48,10 +48,10 @@ module Dcmgr
           job && job.to_hash
         end
 
-        def finish_success(job_id)
+        def finish_success(job_id, finish_message=nil)
           job = Models::QueuedJob[job_id]
           raise "Unknown Job: #{job_id}" if job.nil?
-          job.finish_success
+          job.finish_success(finish_message)
           job.to_hash
         end
 
@@ -85,9 +85,9 @@ module Dcmgr
                       job_id, &blk)
         end
 
-        def finish_success(job_id, &blk)
+        def finish_success(job_id, finish_message=nil, &blk)
           rpc.request('jobqueue-proxy', 'finish_success',
-                      job_id, &blk)
+                      job_id, finish_message, &blk)
         end
 
         def finish_fail(job_id, failure_reason, &blk)

@@ -9,6 +9,7 @@ module Dcmgr::Models
 
     plugin :serialization
     serialize_attributes :yaml, :params
+    serialize_attributes :yaml, :finish_message
     
     def validate
 
@@ -33,7 +34,7 @@ module Dcmgr::Models
     end
 
     def to_hash
-      super.merge({:params => self.params})
+      super.merge({:params => self.params, :finish_message=>self.finish_message})
     end
 
     # Insert new job entry to a queue.
@@ -86,6 +87,19 @@ module Dcmgr::Models
         job.finish_cancel
         job
       end
+    end
+
+    # typecast and structure hash data for finish_message column.
+    def finish_message=(msg)
+      msg = case msg
+            when Exception
+              {:message=>msg.message, :error_type=>msg.class.to_s}
+            when Hash, Array
+              msg
+            else
+              {:message=>msg.to_s}
+            end
+      super(msg)
     end
 
     def finished?()
