@@ -72,17 +72,19 @@ class CopyProcessor < Isono::NodeModules::Base
   def submit_pull_job(job)
     params = job[:params]
 
-    uri = Dcmgr.conf.destinations[params[:destination]].dup
+    uri = Dcmgr.conf.destinations[params[:destination]]
     if uri.nil?
       raise "Unknown destination: #{params[:destination]}"
     end
+    uri = uri.dup
     unless DestinationMonitor.new(@node).alive_destination?(params[:destination])
       # TODO: requeue the job
       raise "#{params[:destination]} is not alive destination."
     end
 
     uri.path += '/submit_pull_job'
-    
+
+    res = nil
     tryagain do
       post_params = params.merge({
         'src' => Dcmgr.conf.export_uri.to_s + "/" + params[:backup_object][:object_key],
@@ -94,9 +96,15 @@ class CopyProcessor < Isono::NodeModules::Base
         sleep 3
         raise "Failed to submit pull job: #{res} #{uri.to_s}"
       end
-
       true
     end
+
+    res_json = MultiJson.load(res.body)
+    res_data = {:destination=>params[:destination], :backup_object_id=>res_json['backup_object']['uuid']}
+    if res_json['image']
+      res_data[:image_id]=res_json['image']['uuid']
+    end
+    job.finish_message(res_data)
   end
   
   # Reset TaskSession per request.
