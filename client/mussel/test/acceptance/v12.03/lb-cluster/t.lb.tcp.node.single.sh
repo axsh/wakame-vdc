@@ -62,11 +62,6 @@ function test_tcp_for_unregisterd_lb() {
   done
 }
 
-function setUp() {
-  balance_algorithm="leastconn" run_cmd load_balancer update ${load_balancer_uuid}
-  sleep 1
-}
-
 ## shunit2
 
 . ${shunit2_file}

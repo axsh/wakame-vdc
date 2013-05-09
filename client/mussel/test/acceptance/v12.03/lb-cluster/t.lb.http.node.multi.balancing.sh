@@ -30,7 +30,6 @@ function test_sticky_session() {
   echo "expected_instance_uuid: ${expected_instance_uuid}"
 
   for i in $(seq 1 ${repeat_count}); do
-    sleep 1
     local actual_instance_uuid=$(curl -fsSkL -b ${cookie_path} http://${load_balancer_ipaddr}/)
     echo "${i}. actual_instance_uuid: ${actual_instance_uuid}"
     assertEquals "should be the same uuid" ${expected_instance_uuid} ${actual_instance_uuid}
@@ -45,7 +44,6 @@ function test_balance_algorithm_source() {
   echo "expected_instance_uuid: ${expected_instance_uuid}"
 
   for i in $(seq 1 ${repeat_count}); do
-    sleep 1
     local actual_instance_uuid=$(curl -fsSkL http://${load_balancer_ipaddr}/)
     echo "${i}. actual_instance_uuid: ${actual_instance_uuid}"
     assertEquals "should be the same uuid" ${expected_instance_uuid} ${actual_instance_uuid}
@@ -67,7 +65,6 @@ function test_balance_algorithm_leastconn() {
   echo "expected_instance_uuid: ${expected_instance_uuid}"
 
   for i in $(seq 1 ${repeat_count}); do
-    sleep 1
     local actual_instance_uuid=$(curl -fsSkL http://${load_balancer_ipaddr}/)
     echo "${i}. actual_instance_uuid: ${actual_instance_uuid}"
     assertEquals "should be the same uuid" ${expected_instance_uuid} ${actual_instance_uuid}
