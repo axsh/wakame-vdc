@@ -90,20 +90,22 @@ module Dcmgr
 
       def update_state_file(state)
         # Insert state file in the tmp directory for the recovery script to use
-        File.open(File.expand_path('state', @hva_ctx.inst_data_dir), 'w') {|f| f.puts(state) }
+        @hva_ctx.dump_instance_parameter('state', state)
       end
 
-      def update_instance_state(opts, ev)
+      def update_instance_state(opts, ev=nil)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
         rpc.request('hva-collector', 'update_instance', @inst_id, opts) do |req|
           req.oneshot = true
         end
-        ev = [ev] unless ev.is_a? Array
-        ev.each { |e|
-          event.publish(e, :args=>[@inst_id])
-        }
+        if ev
+          ev = [ev] unless ev.is_a? Array
+          ev.each { |e|
+            event.publish(e, :args=>[@inst_id])
+          }
+        end
 
-        update_state_file(opts[:state]) unless opts[:state].nil? || opts[:state] == :terminated || opts[:state] == :stopped
+        update_state_file(opts[:state]) unless opts[:state].nil?
       end
 
       def update_instance_state_to_terminated(opts)
@@ -304,7 +306,7 @@ module Dcmgr
         @hva_ctx.logger.info("Booting #{@inst_id}")
         raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
 
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
+        update_instance_state({:state=>:starting})
 
         # setup vm data folder
         inst_data_dir = @hva_ctx.inst_data_dir
@@ -357,7 +359,7 @@ module Dcmgr
         end
 
         begin
-          rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})
+          update_instance_state({:state=>:shuttingdown})
           ignore_error { terminate_instance(true) }
         ensure
           update_instance_state_to_terminated({:state=>:terminated,:terminated_at=>Time.now.utc})
@@ -393,7 +395,7 @@ module Dcmgr
         raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
 
         begin
-          rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:stopping})
+          update_instance_state({:state=>:stopping})
           ignore_error { terminate_instance(false) }
         ensure
           #
@@ -514,6 +516,20 @@ module Dcmgr
         update_instance_state({:state=>:halted}, [])
         destroy_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power off")
+      }
+
+      job :soft_poweroff, proc {
+        @hva_ctx = HvaContext.new(self)
+        @inst_id = request.args[0]
+        @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+
+        update_state_file(:halting)
+
+        @hva_ctx.logger.info("Turning soft power off")
+         task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                             :soft_poweroff_instance, [@hva_ctx])
+        destroy_instance_vnics(@inst)
+        @hva_ctx.logger.info("Turned soft power off")
       }
 
       job :poweron, proc {

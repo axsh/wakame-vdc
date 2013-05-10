@@ -58,9 +58,13 @@ module Dcmgr
       #
       # For reading from shell script, "\n" is inserted to end of buffer.
       def dump_instance_parameter(rel_path, buf)
+        # ignore error when try to put file to deleted instance.
+        return self unless File.directory?(self.inst_data_dir())
+        
         File.open(File.expand_path(rel_path, self.inst_data_dir()), 'w'){ |f|
           f.puts(buf)
         }
+        self
       end
 
       class InstanceLogger

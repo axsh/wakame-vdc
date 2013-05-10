@@ -162,6 +162,10 @@ module Dcmgr
         File.expand_path('script', DCMGR_ROOT)
       }
 
+      # Allow hva to change instance state seems to be incomplete
+      # transition.
+      param :enable_instance_state_recovery, :default=>true
+
       def validate(errors)
         if @config[:vm_data_dir].nil?
           errors << "vm_data_dir not set"

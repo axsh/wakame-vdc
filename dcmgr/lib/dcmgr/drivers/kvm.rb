@@ -236,6 +236,16 @@ RUN_SH
         end
       end
 
+      def soft_poweroff_instance(hc)
+        begin
+          connect_monitor(hc) { |t|
+            t.cmd("system_poweroff")
+          }
+        rescue Errno::ECONNRESET => e
+          # succssfully terminated the process
+        end
+      end
+
       private
       # Establish telnet connection to KVM monitor console
       def connect_monitor(hc, &blk)

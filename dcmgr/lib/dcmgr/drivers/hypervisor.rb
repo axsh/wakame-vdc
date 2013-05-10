@@ -46,6 +46,10 @@ module Dcmgr
       def check_instance(uuid)
       end
 
+      def soft_poweroff_instance(hc)
+        poweroff_instance(hc)
+      end
+
       def self.select_hypervisor(hypervisor)
         driver_class(hypervisor).new
       end
