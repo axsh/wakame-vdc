@@ -40,7 +40,7 @@ class CurlTransfer
   include OneLiner
   
   def pull_download_command(dst_uri)
-    ["curl -s '%s'", [dst_uri]]
+    ["curl -sS --keepalive-time %d '%s'", [60, dst_uri]]
   end
 end
 
