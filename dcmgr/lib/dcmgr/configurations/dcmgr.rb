@@ -170,7 +170,7 @@ module Dcmgr
       class LbServiceType < ServiceType
         param :image_id
         param :instance_spec_id
-        param :ssh_key_id
+        param :ssh_key_id, :default=>nil # optional
         param :amqp_server_uri, :default=>proc {
           parent.config[:amqp_server_uri]
         }
@@ -180,7 +180,6 @@ module Dcmgr
         def validate(errors)
           super
           [:image_id,
-           :ssh_key_id,
            :instances_network,
            :management_network,
            :host_node_scheduler,
