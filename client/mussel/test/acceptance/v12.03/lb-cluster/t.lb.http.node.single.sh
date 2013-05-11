@@ -14,7 +14,7 @@
 ## variables
 
 target_instance_num=${target_instance_num:-1}
-client_ipaddr=${client_ipaddr:-10.0.2.2}
+client_ipaddr=${client_ipaddr:-$(for i in $(ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)}
 
 ## functions
 
