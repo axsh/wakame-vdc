@@ -22,6 +22,7 @@ load_balancer_public_key=$(ssl_output_dir)/${common_name}.crt.pem
 
 target_instance_num=${target_instance_num:-3}
 repeat_count=5
+sleep_sec=10
 
 ## functions
 
