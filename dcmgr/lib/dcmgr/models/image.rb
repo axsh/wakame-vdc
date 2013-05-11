@@ -38,6 +38,15 @@ module Dcmgr::Models
       super
     end
 
+    def before_validation
+      # symbolize feature's key
+      self.features.keys.each { |k|
+        if k.is_a?(String) && FEATURES.member?(k.to_s)
+          self.features[k.to_sym] = self.features.delete(k)
+        end
+      }
+    end
+
     def validate
       super
 
