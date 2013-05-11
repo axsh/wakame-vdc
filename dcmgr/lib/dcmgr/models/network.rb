@@ -284,7 +284,8 @@ module Dcmgr::Models
         :dhcp_server => self.dhcp_server,
         :metadata_server => self.metadata_server,
         :metadata_server_port => self.metadata_server_port,
-        :network_mode => self.network_mode
+        :network_mode => self.network_mode,
+        :dc_network => self.dc_network.to_hash
       }
     end
 
