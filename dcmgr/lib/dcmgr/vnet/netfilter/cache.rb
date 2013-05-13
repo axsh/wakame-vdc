@@ -462,7 +462,7 @@ module Dcmgr
 
           friends = vnic_map[:security_groups].map {|group_id|
             @cache[:security_groups][group_id][:local_vnics].values
-          }.flatten.uniq
+          }.flatten
 
           friends.delete_if {|friend| friend[:uuid] == vnic_map[:uuid]}
 
@@ -490,15 +490,16 @@ module Dcmgr
         def get_all_friends(vnic_id)
           vnic_map = get_vnic(vnic_id)
           raise VNicNotFoundError, "VNic not found in cache: '#{vnic_id}'" if vnic_map.nil?
-          friends = {}
+          friends = []
           vnic_map[:security_groups].each {|group_id|
-            friends.merge! @cache[:security_groups][group_id][:local_vnics]
-            friends.merge! @cache[:security_groups][group_id][:foreign_vnics]
+            friends << @cache[:security_groups][group_id][:local_vnics].values
+            friends << @cache[:security_groups][group_id][:foreign_vnics].values
           }
 
-          friends.delete vnic_map[:uuid]
+          friends.flatten!
+          friends.delete_if {|vnic_map| vnic_map[:uuid] == vnic_id }
 
-          deep_clone friends.values
+          deep_clone friends
         end
 
         def get_all_empty_vnics()
