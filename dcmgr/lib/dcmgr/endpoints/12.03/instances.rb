@@ -688,7 +688,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
 
       monitor[:title] = params[:title] unless params[:title].blank?
-      monitor[:params] = params[:params] unless params[:params]
+      monitor[:params] = params[:params] unless params[:params].blank?
       @instance.update_monitor_item(params[:monitor_id], monitor)
 
       on_after_commit do
