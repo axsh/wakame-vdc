@@ -322,7 +322,9 @@ RUN_SH
         hc.inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
       end
 
-      Task::Tasklet.register(self.new)
+      Task::Tasklet.register(self) {
+        self.new
+      }
     end
   end
 end
