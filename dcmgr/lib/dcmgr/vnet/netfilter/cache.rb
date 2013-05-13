@@ -461,10 +461,11 @@ module Dcmgr
           raise VNicNotFoundError, "VNic not found in cache: '#{vnic_id}'" if vnic_map.nil?
 
           friends = vnic_map[:security_groups].map {|group_id|
+            next unless @cache[:security_groups][group_id]
             @cache[:security_groups][group_id][:local_vnics].values
-          }.flatten
+          }.flatten.compact
 
-          friends.delete_if {|friend| friend[:uuid] == vnic_map[:uuid]}
+          friends.delete_if {|friend| friend[:uuid] == vnic_id}
 
           deep_clone friends
         end
