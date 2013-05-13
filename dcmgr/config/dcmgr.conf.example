@@ -167,7 +167,6 @@ service_type("std", "StdServiceType") {
 
 service_type("lb", "LbServiceType") {
   image_id 'wmi-demolb'
-  ssh_key_id 'ssh-demo'
   instances_network 'nw-demo1'
   management_network 'nw-demo8'
   host_node_scheduler :LeastUsage
