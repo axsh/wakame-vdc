@@ -13,11 +13,13 @@ module Dolphin
       notification_id = event_object[:notification_id]
       message_template_id = event_object[:message_type]
 
-      if !notification_id
-        return SuccessObject.new(future_event)
+      future_event = query_processor.future.put_event(event_object)
+
+      # if notification_id not exists, doesn't send notification.
+      unless notification_id
+        return SuccessObject.new
       end
 
-      future_event = query_processor.future.put_event(event_object)
       future_notification = query_processor.future.get_notification(notification_id)
 
       # synchronized
