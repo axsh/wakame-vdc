@@ -44,7 +44,6 @@ module Dolphin
 
     post '/events' do |request|
       run(request) do
-        required 'notification_id'
 
         raise 'Nothing parameters.' if @params.blank?
 
