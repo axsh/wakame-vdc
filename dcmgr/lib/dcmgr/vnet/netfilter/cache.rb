@@ -129,6 +129,10 @@ module Dcmgr
                 @cache[:security_groups].values.each { |group|
                   group[:referencees][group_id][vnic_id] = result[:vnic] if group[:referencees].has_key?(group_id)
                   group[:referencers][group_id][vnic_id] = result[:vnic] if group[:referencers].has_key?(group_id)
+
+                  # Update the vnic in other places in the cache
+                  group[:local_vnics][vnic_id] = result[:vnic] if group[:local_vnics].has_key?(vnic_id)
+                  group[:foreign_vnics][vnic_id] = result[:vnic] if group[:foreign_vnics].has_key?(vnic_id)
                 }
               else
                 add_security_group(group_id)
