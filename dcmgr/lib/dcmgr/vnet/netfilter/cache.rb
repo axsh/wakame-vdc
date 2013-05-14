@@ -475,8 +475,14 @@ module Dcmgr
             @cache[:security_groups][group_id][:local_vnics].values
           }.flatten.compact
 
-          friends.delete_if {|friend| friend[:uuid] == vnic_id}
+          chk_dup = {}
+          friends.delete_if { |friend|
+            isdel = (friend[:uuid] == vnic_id || chk_dup.has_key?(friend[:uuid]))
+            chk_dup[friend[:uuid]]=1
+            isdel
+          }
 
+dump_cache('get_all_local_friends', [vnic_id])
           deep_clone friends
         end
 
@@ -508,8 +514,14 @@ module Dcmgr
           }
 
           friends.flatten!
-          friends.delete_if {|vnic_map| vnic_map[:uuid] == vnic_id }
+          chk_dup = {}
+          friends.delete_if { |friend|
+            isdel = (friend[:uuid] == vnic_id || chk_dup.has_key?(friend[:uuid]))
+            chk_dup[friend[:uuid]]=1
+            isdel
+          }
 
+#dump_cache('get_all_friends', [vnic_id])
           deep_clone friends
         end
 
