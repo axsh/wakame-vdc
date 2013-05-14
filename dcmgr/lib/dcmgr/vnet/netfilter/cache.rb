@@ -217,6 +217,12 @@ module Dcmgr
             end
           }
 
+          @cache[:security_groups].values.each { |sg|
+            if sg[:local_vnics][vnic_id]
+              sg[:local_vnics][vnic_id][:security_groups] -= [group_id]
+            end
+          }
+
           nil
         end
 
