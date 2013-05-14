@@ -83,23 +83,5 @@ __END
       super(M::SecurityGroup,uuid, fields)
     end
 
-    desc "apply UUID [options]", "Apply a security group to an instance"
-    method_option :instance, :type => :string, :required => :true, :desc => "The instance to apply the group to"
-    def apply(uuid)
-      group = M::SecurityGroup[uuid] || UnknownUUIDError.raise(uuid)
-      instance = M::Instance[options[:instance]] || UnknownUUIDError.raise(options[:instance])
-      Error.raise("Group #{uuid} is already applied to instance #{options[:instance]}.",100) if group.instances.member?(instance)
-      group.add_instance(instance)
-    end
-
-    desc "remove UUID [options]", "Remove a security group from an instance"
-    method_option :instance, :type => :string, :required => :true, :desc => "The instance to remove the group from"
-    def remove(uuid)
-      group = M::SecurityGroup[uuid] || UnknownUUIDError.raise(uuid)
-      instance = M::Instance[options[:instance]] || UnknownUUIDError.raise(options[:instance])
-      Error.raise("Group #{uuid} is not applied to instance #{options[:instance]}.",100) unless group.instances.member?(instance)
-      group.remove_instance(instance)
-    end
-
   end
 end
