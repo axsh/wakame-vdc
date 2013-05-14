@@ -8,7 +8,7 @@ require 'multi_json'
 module Dcmgr::Drivers
   class Zabbix < NetworkMonitoring
     include Dcmgr::Logger
-    include Dcmgr::Configuration::ConfigurationMethods
+    include Fuguta::Configuration::ConfigurationMethods
 
     def_configuration do
       param :api_uri
@@ -36,7 +36,7 @@ module Dcmgr::Drivers
 
       class RpcResponse
         def initialize(http_res)
-          raise ArgumentError unless http_res.is_a?(Net::HTTPResponse)
+          raise ArgumentError, "http_res must be a 'Net::HTTPResponse'. Got '#{http_res.class}'" unless http_res.is_a?(Net::HTTPResponse)
           @res = http_res
           @json = nil
         end
