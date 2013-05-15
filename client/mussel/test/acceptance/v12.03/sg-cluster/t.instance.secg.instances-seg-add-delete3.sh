@@ -53,6 +53,10 @@ function render_ssh_and_icmp_secg_rule() {
 	EOS
 }
 
+function render_empty_secg_rule() {
+	:
+}
+
 function before_create_instance() {
   # don't clear ssh_key_pair_uuid= to apply same keypair to instances
   instance_uuid=
@@ -151,13 +155,31 @@ function test_complex_security_group() {
   echo press ctrl-D. please check iptables dump
   cat
 
-  # no update security group
+  # update security group
   # add security group
+  render_empty_secg_rule > ${rule_path}
+  service_type=std description= display_name= run_cmd security_group update ${security_group_aaa}
+
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_xxx}
+
+  echo press ctrl-D. please check iptables dump
+  cat
+
+  # update security group
+  # add security group
+  render_empty_secg_rule > ${rule_path}
+  service_type=std description= display_name= run_cmd security_group update ${security_group_aaa}
+
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_yyy}
 
-  # no update security group
+  echo press ctrl-D. please check iptables dump
+  cat
+
+  # update security group
   # remove security group
+  render_secg_rule > ${rule_path}
+  service_type=std description= display_name= run_cmd security_group update ${security_group_default}
+
   security_group_id=${security_group_default} run_cmd network_vif remove_security_group ${vif_xxx}
   security_group_id=${security_group_default} run_cmd network_vif remove_security_group ${vif_yyy}
 
