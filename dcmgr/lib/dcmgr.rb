@@ -299,6 +299,7 @@ module Dcmgr
       autoload :IptablesRule, 'dcmgr/vnet/netfilter/iptables_rule'
       autoload :NetfilterTaskManager, 'dcmgr/vnet/netfilter/task_manager'
       autoload :VNicProtocolTaskManager, 'dcmgr/vnet/netfilter/task_manager'
+      autoload :CacheDumper, 'dcmgr/vnet/netfilter/cache_dumper'
     end
 
     module OpenFlow
