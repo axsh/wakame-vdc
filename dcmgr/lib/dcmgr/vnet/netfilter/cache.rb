@@ -213,8 +213,8 @@ module Dcmgr
           @cache[:security_groups].values.each { |group|
             group[:local_vnics].delete vnic_id
             group[:foreign_vnics].delete vnic_id
-            group[:referencers].delete vnic_id
-            group[:referencees].delete vnic_id
+            group[:referencers].values.each { |sg| sg.delete(vnic_id) }
+            group[:referencees].values.each { |sg| sg.delete(vnic_id) }
           }
 
           @cache[:empty_vnics].delete(vnic_id)
