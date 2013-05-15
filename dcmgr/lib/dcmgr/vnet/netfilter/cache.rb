@@ -219,6 +219,10 @@ module Dcmgr
 
           @cache[:empty_vnics].delete(vnic_id)
 
+          # clean sg from @cache[:security_groups] if :local_vnics
+          # becomes empty.
+          @cache[:security_groups].delete_if {|sg_id, v| v[:local_vnics].empty? }
+
           nil
         end
 
@@ -240,6 +244,10 @@ module Dcmgr
             end
           }
 
+          # clean sg from @cache[:security_groups] if :local_vnics
+          # becomes empty.
+          @cache[:security_groups].delete_if {|sg_id, v| v[:local_vnics].empty? }
+          
           nil
         end
 
