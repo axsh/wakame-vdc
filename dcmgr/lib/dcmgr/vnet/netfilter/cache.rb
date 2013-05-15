@@ -238,9 +238,15 @@ module Dcmgr
             end
           }
 
+          # update :security_groups hash in any vnics items.
           @cache[:security_groups].values.each { |sg|
-            if sg[:local_vnics][vnic_id]
-              sg[:local_vnics][vnic_id][:security_groups] -= [group_id]
+            sg[:local_vnics][vnic_id][:security_groups]   -= [group_id] if sg[:local_vnics][vnic_id]
+            sg[:foreign_vnics][vnic_id][:security_groups] -= [group_id] if sg[:foreign_vnics][vnic_id]
+            if sg[:referencers][group_id] && sg[:referencers][group_id][vnic_id]
+              sg[:referencers][group_id][vnic_id][:security_groups] -= [group_id]
+            end
+            if sg[:referencees][group_id] && sg[:referencees][group_id][vnic_id]
+              sg[:referencees][group_id][vnic_id][:security_groups] -= [group_id]
             end
           }
 
@@ -254,6 +260,18 @@ module Dcmgr
         def remove_foreign_vnic(group_id,vnic_id)
           group = @cache[:security_groups][group_id]
           group[:foreign_vnics].delete vnic_id unless group.nil?
+
+          # update :security_groups hash in any vnics items.
+          @cache[:security_groups].values.each { |sg|
+            sg[:local_vnics][vnic_id][:security_groups]   -= [group_id] if sg[:local_vnics][vnic_id]
+            sg[:foreign_vnics][vnic_id][:security_groups] -= [group_id] if sg[:foreign_vnics][vnic_id]
+            if sg[:referencers][group_id] && sg[:referencers][group_id][vnic_id]
+              sg[:referencers][group_id][vnic_id][:security_groups] -= [group_id]
+            end
+            if sg[:referencees][group_id] && sg[:referencees][group_id][vnic_id]
+              sg[:referencees][group_id][vnic_id][:security_groups] -= [group_id]
+            end
+          }
 
           nil
         end
