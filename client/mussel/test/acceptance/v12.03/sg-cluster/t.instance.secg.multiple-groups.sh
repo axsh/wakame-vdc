@@ -24,10 +24,6 @@ api_client_addr=$(for i in $(ip route get ${DCMGR_HOST} | head -1); do echo ${i}
 
 target_instance_num=${target_instance_num:-5}
 
-cat <<-EOS > ${rule_path}
-icmp:-1,-1,ip4:${api_client_addr}/32
-tcp:22,22,ip4:${api_client_addr}/32
-EOS
 rule=${rule_path}
 
 security_group_default=
@@ -41,7 +37,14 @@ ssh_and_icmp_security_group_uuid=
 
 function render_vif_table() {
   cat <<-EOS
-	{"eth0":{"index":"0","network":"${vifs_eth0_network_id}","security_groups":["${empty_security_group_uuid}","${ssh_and_icmp_security_group_uuid}","${security_group_default}"]}}
+	{"eth0":{"index":"0","network":"${vifs_eth0_network_id}","security_groups":["${empty_security_group_uuid}","${security_group_default}"]}}
+	EOS
+}
+
+function render_ssh_and_icmp_secg_rule() {
+  cat <<-EOS
+	icmp:-1,-1,ip4:${api_client_addr}/32
+	tcp:22,22,ip4:${api_client_addr}/32
 	EOS
 }
 
@@ -51,14 +54,13 @@ function before_create_instance() {
 }
 
 function oneTimeSetUp() {
-  security_group_default=$(run_cmd security_group create | hash_value id)
-  security_group_aaa=$(run_cmd security_group create | hash_value id)
-  security_group_bbb=$(run_cmd security_group create | hash_value id)
+  security_group_default=$(rule="#" display_name="default" run_cmd security_group create | hash_value id)
+  security_group_aaa=$(rule="#" display_name="aaa" run_cmd security_group create | hash_value id)
+  security_group_bbb=$(rule="#" display_name="bbb" run_cmd security_group create | hash_value id)
 
   # create
   for i in $(eval echo "{1..5}"); do
-    empty_security_group_uuid=$(display_name="empty${i}" run_cmd security_group create | hash_value id)
-    ssh_and_icmp_security_group_uuid=$(display_name="ssh ${instance_uuid}" run_cmd security_group create | hash_value id)
+    empty_security_group_uuid=$(rule="#" display_name="empty${i}" run_cmd security_group create | hash_value id)
     create_instance
     echo ${instance_uuid} >> ${instance_uuids_path}
     echo "$(cached_instance_param ${instance_uuid})"
@@ -66,6 +68,10 @@ function oneTimeSetUp() {
 
   # wait
   for instance_uuid in $(cat ${instance_uuids_path}); do
+    render_ssh_and_icmp_secg_rule > ${rule_path}
+    ssh_and_icmp_security_group_uuid=$(display_name="ssh-${instance_uuid}" run_cmd security_group create | hash_value id)
+    local vif_id="$(cached_instance_param ${instance_uuid} | hash_value vif_id)"
+    security_group_id=${ssh_and_icmp_security_group_uuid} run_cmd network_vif add_security_group ${vif_id}
     local instance_ipaddr="$(cached_instance_param ${instance_uuid} | hash_value address)"
     wait_for_network_to_be_ready ${instance_ipaddr}
     wait_for_sshd_to_be_ready    ${instance_ipaddr}
@@ -163,7 +169,14 @@ function test_complex_security_group() {
 
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_aaa_1}
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_aaa_2}
+
+  echo press ctrl-D
+  cat
+
   security_group_id=${security_group_bbb} run_cmd network_vif add_security_group ${vif_bbb_1}
+
+  echo press ctrl-D
+  cat
 
   security_group_id=${security_group_default} run_cmd network_vif remove_security_group ${vif_aaa_1} 
   security_group_id=${security_group_default} run_cmd network_vif remove_security_group ${vif_aaa_2} 
