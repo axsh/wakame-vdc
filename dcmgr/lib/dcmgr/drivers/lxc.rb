@@ -165,7 +165,9 @@ module Dcmgr
         render_template('lxc.conf', ctx.lxc_conf_path, binding)
       end
       
-      Task::Tasklet.register(self.new)
+      Task::Tasklet.register(self) {
+        self.new
+      }
     end
   end
 end

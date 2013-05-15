@@ -243,7 +243,9 @@ module Dcmgr
         hc.logger.info("Created CT config: #{hc.ct_mount_path}")
       end
 
-       Task::Tasklet.register(self.new)
+      Task::Tasklet.register(self) {
+        self.new
+      }
     end
   end
 end

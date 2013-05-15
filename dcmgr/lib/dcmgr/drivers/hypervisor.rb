@@ -56,6 +56,8 @@ module Dcmgr
 
       def self.driver_class(hypervisor)
         case hypervisor.to_s
+        when "dummy"
+          Dcmgr::Drivers::DummyHypervisor
         when "kvm"
           Dcmgr::Drivers::Kvm
         when "lxc"
