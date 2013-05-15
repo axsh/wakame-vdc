@@ -482,7 +482,6 @@ module Dcmgr
             isdel
           }
 
-dump_cache('get_all_local_friends', [vnic_id])
           deep_clone friends
         end
 
@@ -521,7 +520,6 @@ dump_cache('get_all_local_friends', [vnic_id])
             isdel
           }
 
-#dump_cache('get_all_friends', [vnic_id])
           deep_clone friends
         end
 
