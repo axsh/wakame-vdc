@@ -16,6 +16,8 @@ module Dcmgr
 
       def self.driver_class(hypervisor_name)
         case hypervisor_name.to_s
+        when "dummy"
+          Dcmgr::Drivers::DummyLocalStore
         when "kvm"
           Dcmgr::Drivers::LinuxLocalStore
         when "lxc"
