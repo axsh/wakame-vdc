@@ -316,15 +316,22 @@ module Dcmgr
         def remove_vnic_from_referencees(group_id,vnic_id)
           group = @cache[:security_groups].values.each {|local_group|
             ref_group = local_group[:referencees][group_id]
-            ref_group.delete vnic_id unless ref_group.nil?
+            if ref_group
+              ref_group.delete vnic_id
+              local_group[:referencees].delete(group_id) if ref_group.empty?
+            end
           }
 
           nil
         end
 
-        def remove_local_vnic(vnic_id)
-          vnic = @cache[:security_groups].each { |group_id,group|
-            remove_local_vnic_from_group(group_id) if group[:local_vnics].has_key?(vnic_id)
+        def remove_vnic_from_referencers(group_id,vnic_id)
+          group = @cache[:security_groups].values.each {|local_group|
+            ref_group = local_group[:referencers][group_id]
+            if ref_group
+              ref_group.delete vnic_id
+              local_group[:referencers].delete(group_id) if ref_group.empty?
+            end
           }
 
           nil
