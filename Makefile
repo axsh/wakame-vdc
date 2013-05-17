@@ -65,7 +65,6 @@ bundle-install-stamp:
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki $(CURDIR)/client/ruby-hijiki.saved
 	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --standalone --path vendor/bundle)
 	(cd $(CURDIR)/frontend/admin && bundle install --standalone --path vendor/bundle)
-	(cd $(CURDIR)/tests/cucumber && bundle install --standalone --path vendor/bundle)
 	(cd $(CURDIR)/dolphin && bundle install --standalone --path vendor/bundle)
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki.saved $(CURDIR)/client/ruby-hijiki
 
