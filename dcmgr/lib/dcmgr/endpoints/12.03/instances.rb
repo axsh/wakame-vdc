@@ -484,7 +484,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                 Dcmgr.messaging.event_publish("#{ref_sg.canonical_uuid}/referencer_removed",:args=>[group.canonical_uuid])
               }
               group.referencers.each { |ref_sg|
-                Dcmgr.messaging.event_publish("#{group.canonical_uuid}/referencer_removed",:args=>[ref_group.canonical_uuid])
+                Dcmgr.messaging.event_publish("#{group.canonical_uuid}/referencer_removed",:args=>[ref_sg.canonical_uuid])
               }
             end
           end
