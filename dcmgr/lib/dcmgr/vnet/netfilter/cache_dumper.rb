@@ -39,6 +39,7 @@ module Dcmgr
          [:remove_local_vnic_from_group, [:vnic_id, :group_id]],
          [:remove_foreign_vnic, [:group_id, :vnic_id]],
          [:remove_vnic_from_referencees, [:group_id, :vnic_id]],
+         [:remove_vnic_from_referencers, [:group_id, :vnic_id]],
          [:remove_referencer_from_group, [:group_id, :ref_group_id]],
          [:remove_security_group, [:group_id]],
          [:remove_network, [:network_id]],
