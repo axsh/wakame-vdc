@@ -60,7 +60,7 @@ module Dcmgr
         private
         def dump_cache(cache_method_name, cache_args)
           t = Time.now
-          File.open(File.expand_path("#{t.to_i}#{t.usec}.#{cache_method_name}", @dump_dir), "w") { |f|
+          File.open(File.expand_path(("%d%06d.%s" % [t.to_i, t.usec, cache_method_name]), @dump_dir), "w") { |f|
             f.puts "#{cache_method_name}(#{cache_args.join(', ')}), #{Thread.current}"
             f.puts ""
             PP.pp(@subject.instance_variable_get(:@cache), f, 200)
