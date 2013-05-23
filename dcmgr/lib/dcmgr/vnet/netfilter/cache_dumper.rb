@@ -17,7 +17,8 @@ module Dcmgr
       # 1368529518943902.add_security_group
       # 1368529518967889.add_network
       class CacheDumper
-        def initialize(subject, dump_dir=Dir.mktmpdir('hvanf'))
+        def initialize(subject, dump_dir=nil)
+          dump_dir ||= Dir.mktmpdir('hvanf')
           raise ArgumentError, "Only supports #{NetfilterCache} object" unless subject.is_a?(NetfilterCache)
           @subject = subject
           @dump_dir = dump_dir
