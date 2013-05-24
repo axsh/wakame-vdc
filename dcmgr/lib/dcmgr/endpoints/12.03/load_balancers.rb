@@ -224,14 +224,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
       # register instance to load balancer.
       lb.add_target(uuid)
-
-      # update security groups to registered instance.
-      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-      request_params = {
-        :id => vif.instance.canonical_uuid,
-        :security_groups => lb_security_groups + i_security_groups
+      lb_security_groups.each { |lb_inst_secg_id|
+        set_vif_sg(:add,uuid,lb_inst_secg_id)
       }
-      update_security_groups(request_params)
     end
 
     config_vifs = (request_vifs + hold_vifs).uniq
@@ -271,14 +266,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     # update security groups to registered instance.
     lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
     lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
-    remove_vifs.each do |uuid|
-      vif = find_by_uuid(:NetworkVif, uuid)
-      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-      request_params = {
-        :id => vif.instance.canonical_uuid,
-        :security_groups => i_security_groups - lb_security_groups
-      }
-      update_security_groups(request_params)
+
+    remove_vifs.each do |vif_uuid|
+      lb_security_groups.each {|lb_secg_uuid|
+      set_vif_sg(:remove,vif_uuid,lb_secg_uuid)
+    }
     end
 
     # update conifg in load balancer image.
@@ -494,11 +486,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     body['uuid']
   end
 
-  def update_security_groups(params)
-    path = "/instances/#{params[:id]}"
-    uri = "/api/12.03/#{path}.json"
+  def set_vif_sg(action,vif_id,sg_id)
+    path = "/network_vifs/#{vif_id}/#{action}_security_group"
+    uri = "/api/12.03/#{path}"
     http_status, headers, body = internal_request(uri,{
-      'security_groups' => params[:security_groups]
+      'security_group_id' => sg_id
     }, {
       'PATH_INFO' => "#{path}",
       'REQUEST_METHOD' => 'PUT',
