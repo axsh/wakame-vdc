@@ -76,9 +76,16 @@ module Dcmgr
       end
 
       def reboot_instance(ctx)
+        stamp_path = stamp_file_path(ctx.inst_id)
+        File.open(stamp_path, 'a+') { |f|
+          f.puts "reboot"
+        }
+
         sh("lxc-stop -n #{ctx.inst[:uuid]}")
         sh("lxc-wait -n %s -s STOPPED", [ctx.inst_id])
         sh("lxc-start -n %s -d -c %s/console.log", [ctx.inst[:uuid], ctx.inst_data_dir])
+
+        File.unlink(stamp_path)
       end
 
       def poweron_instance(ctx)
@@ -146,6 +153,11 @@ module Dcmgr
       end
 
       def check_instance(i)
+        if File.exists?(stamp_file_path(i))
+          logger.info("stamp file exists: #{i}")
+          return
+        end
+
         # `lxc-info -n i-abj0jbjk`.split
         # => ["state:", "RUNNING", "pid:", "6253"]
         #
@@ -164,6 +176,11 @@ module Dcmgr
 
         render_template('lxc.conf', ctx.lxc_conf_path, binding)
       end
+
+      def stamp_file_path(i)
+        File.expand_path("#{i}/stamp", Dcmgr.conf.vm_data_dir)
+      end
+
       
       Task::Tasklet.register(self) {
         self.new
