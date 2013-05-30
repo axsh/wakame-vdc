@@ -93,16 +93,7 @@ module Dcmgr
         mount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
 
         sh("lxc-start -d -n %s", [ctx.inst[:uuid], ctx.inst_data_dir])
-
-        tryagain do
-          begin
-            check_instance(ctx.inst[:uuid])
-            true
-          rescue
-            sleep 5
-            false
-          end
-        end
+        sh("lxc-wait -n %s -s RUNNING", [ctx.inst_id])
       end
 
       def poweroff_instance(ctx)
