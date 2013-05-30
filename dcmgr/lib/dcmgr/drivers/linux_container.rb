@@ -7,6 +7,27 @@ module Dcmgr
       include Dcmgr::Helpers::Cgroup::CgroupContextProvider
       include Dcmgr::Helpers::BlockDeviceHelper
 
+      module SkipCheckHelper
+        def self.stamp_path(instance_uuid)
+          File.expand_path("#{instance_uuid}/skip_check.stamp", Dcmgr.conf.vm_data_dir)
+        end
+
+        def self.skip_check?(instance_uuid)
+          if File.exists?(stamp_path(instance_uuid))
+            s = File.stat(stamp_path(instance_uuid))
+            return (Time.now - s.mtime) < 60.to_f
+          end
+          false
+        end
+
+        def self.skip_check(instance_uuid, &blk)
+          File.open(stamp_path(instance_uuid), 'w')
+          blk.call
+        ensure
+          File.unlink(stamp_path(instance_uuid)) rescue nil
+        end
+      end
+      
       protected
       def check_cgroup_mount
         File.readlines('/proc/mounts').any? {|l| l.split(/\s+/)[2] == 'cgroup' }

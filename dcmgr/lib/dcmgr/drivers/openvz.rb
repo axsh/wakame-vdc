@@ -193,9 +193,10 @@ module Dcmgr
       end
 
       def reboot_instance(hc)
-        # reboot container
-        sh("vzctl restart %s", [hc.inst_id])
-        hc.logger.info("Restarted container.")
+        SkipCheckHelper.skip_check(ctx.inst_id) {
+          sh("vzctl restart %s", [hc.inst_id])
+          hc.logger.info("Restarted container.")
+        }
       end
 
       def poweroff_instance(hc)
@@ -217,6 +218,11 @@ module Dcmgr
       end
 
       def check_instance(i)
+        if SkipCheckHelper.skip_check?(i)
+          logger.info("Skip check_instance during reboot process: #{i}")
+          return
+        end
+
         container_status = `vzctl status #{i}`.chomp.split(" ")[4]
         if container_status != "running"
           raise "Unable to find the openvz container: #{i}"
