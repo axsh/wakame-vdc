@@ -76,9 +76,11 @@ module Dcmgr
       end
 
       def reboot_instance(ctx)
-        sh("lxc-stop -n #{ctx.inst[:uuid]}")
-        sh("lxc-wait -n %s -s STOPPED", [ctx.inst_id])
-        sh("lxc-start -n %s -d -c %s/console.log", [ctx.inst[:uuid], ctx.inst_data_dir])
+        SkipCheckHelper.skip_check(ctx.inst_id) {
+          sh("lxc-stop -n #{ctx.inst[:uuid]}")
+          sh("lxc-wait -n %s -s STOPPED", [ctx.inst_id])
+          sh("lxc-start -n %s -d -c %s/console.log", [ctx.inst[:uuid], ctx.inst_data_dir])
+        }
       end
 
       def poweron_instance(ctx)
@@ -91,16 +93,7 @@ module Dcmgr
         mount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
 
         sh("lxc-start -d -n %s", [ctx.inst[:uuid], ctx.inst_data_dir])
-
-        tryagain do
-          begin
-            check_instance(ctx.inst[:uuid])
-            true
-          rescue
-            sleep 5
-            false
-          end
-        end
+        sh("lxc-wait -n %s -s RUNNING", [ctx.inst_id])
       end
 
       def poweroff_instance(ctx)
@@ -146,6 +139,11 @@ module Dcmgr
       end
 
       def check_instance(i)
+        if SkipCheckHelper.skip_check?(i)
+          logger.info("Skip check_instance during reboot process: #{i}")
+          return
+        end
+
         # `lxc-info -n i-abj0jbjk`.split
         # => ["state:", "RUNNING", "pid:", "6253"]
         #
@@ -164,6 +162,7 @@ module Dcmgr
 
         render_template('lxc.conf', ctx.lxc_conf_path, binding)
       end
+
       
       Task::Tasklet.register(self) {
         self.new

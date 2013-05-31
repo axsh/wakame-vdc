@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
 module Dcmgr::SpecConvertor

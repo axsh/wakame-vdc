@@ -12,7 +12,7 @@ gem 'rack-less', '3.0.2'
 gem 'less', '2.2.1'
 gem 'mysql2', '0.3.11'
 gem 'sequel', '3.43.0'
-gem 'padrino-sprockets', :git => "http://github.com/nightsailer/padrino-sprockets.git", :require => "padrino/sprockets"
+gem 'padrino-sprockets', '0.0.2', :require => "padrino/sprockets"
 gem 'coffee-script', '2.2.0'
 gem 'therubyracer', '0.10.2', :require => 'v8'
 gem 'unicorn', '4.5.0'

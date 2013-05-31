@@ -137,9 +137,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
 
     respond_with(R::TaskCopyTo.new(job).generate)
   end
-  
+
   def find_image_by_uuid(uuid)
-    item = M::Image[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
+    item = find_by_uuid(:Image, uuid) || raise(E::UnknownUUIDResource, uuid.to_s)
 
     if item.is_public == true
       # return immediatly when the public flag is set.
