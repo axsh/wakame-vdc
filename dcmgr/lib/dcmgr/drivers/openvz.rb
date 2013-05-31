@@ -193,7 +193,7 @@ module Dcmgr
       end
 
       def reboot_instance(hc)
-        SkipCheckHelper.skip_check(ctx.inst_id) {
+        SkipCheckHelper.skip_check(hc.inst_id) {
           sh("vzctl restart %s", [hc.inst_id])
           hc.logger.info("Restarted container.")
         }
