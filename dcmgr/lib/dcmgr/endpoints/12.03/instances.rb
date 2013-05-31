@@ -479,6 +479,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
             on_after_commit do
               Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_left",:args=>[vnic.canonical_uuid])
               Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/left_group",:args=>[group.canonical_uuid])
+
+              group.referencees.each { |ref_sg|
+                Dcmgr.messaging.event_publish("#{ref_sg.canonical_uuid}/referencer_removed",:args=>[group.canonical_uuid])
+              }
             end
           end
         }
@@ -493,6 +497,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
             on_after_commit do
               Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_joined",:args=>[vnic.canonical_uuid])
               Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/joined_group",:args=>[group.canonical_uuid])
+
+              group.referencees.each { |ref_sg|
+                Dcmgr.messaging.event_publish("#{ref_sg.canonical_uuid}/referencer_added",:args=>[group.canonical_uuid])
+              }
             end
           }
         end

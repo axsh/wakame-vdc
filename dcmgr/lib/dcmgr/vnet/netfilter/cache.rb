@@ -120,6 +120,7 @@ module Dcmgr
           if result[:vnic][:security_groups].empty?
             @cache[:empty_vnics][vnic_id] = result[:vnic]
           else
+            vnic = result[:vnic]
             result[:vnic][:security_groups].each { |group_id|
               logger.info "Adding #{vnic_id} to #{group_id}"
               if @cache[:security_groups].has_key?(group_id)
@@ -127,8 +128,21 @@ module Dcmgr
 
                 # Add to referencers and referencees
                 @cache[:security_groups].values.each { |group|
-                  group[:referencees][group_id][vnic_id] = result[:vnic] if group[:referencees].has_key?(group_id)
-                  group[:referencers][group_id][vnic_id] = result[:vnic] if group[:referencers].has_key?(group_id)
+                  # Add/Update vnic hash to the group.
+                  group[:referencees][group_id][vnic_id] = vnic if group[:referencees].has_key?(group_id)
+                  group[:referencers][group_id][vnic_id] = vnic if group[:referencers].has_key?(group_id)
+                  
+                  # Update exsiting vnic hashes in referencees and referencers tree.
+                  group[:referencees].values.each { |vnics|
+                    vnics[vnic_id] = vnic if vnics[vnic_id]
+                  }
+                  group[:referencers].values.each { |vnics|
+                    vnics[vnic_id] = vnic if vnics[vnic_id]
+                  }
+
+                  # Update the vnic in other places in the cache
+                  group[:local_vnics][vnic_id] = vnic if group[:local_vnics].has_key?(vnic_id)
+                  group[:foreign_vnics][vnic_id] = vnic if group[:foreign_vnics].has_key?(vnic_id)
                 }
               else
                 add_security_group(group_id)
@@ -144,19 +158,33 @@ module Dcmgr
         def add_vnic_to_security_group(vnic_id,group_id)
           logger.info "Adding #{vnic_id} to #{group_id}"
           if @cache[:security_groups].has_key?(group_id)
-            result = @rpc.request('hva-collector', 'get_netfilter_vnic_with_node_id', vnic_id)
-            raise VNicNotFoundError, "VNic #{vnic_id} doesn't exist" if result.nil?
-
-            @cache[:security_groups][group_id][result[:node_id] == @node.node_id ? :local_vnics : :foreign_vnics][vnic_id] = result[:vnic]
-            logger.debug "#{vnic_id} is a #{result[:node_id] == @node.node_id ? "local" : "foreign"} vnic in #{group_id}"
-            # Add to referencers and referencees
-            @cache[:security_groups].values.each { |group|
-              group[:referencees][group_id][vnic_id] = result[:vnic] if group[:referencees].has_key?(group_id)
-              group[:referencers][group_id][vnic_id] = result[:vnic] if group[:referencers].has_key?(group_id)
-            }
           else
             add_security_group(group_id)
           end
+          
+          result = @rpc.request('hva-collector', 'get_netfilter_vnic_with_node_id', vnic_id)
+          raise VNicNotFoundError, "VNic #{vnic_id} doesn't exist" if result.nil?
+
+          vnic = result[:vnic]
+          @cache[:security_groups][group_id][result[:node_id] == @node.node_id ? :local_vnics : :foreign_vnics][vnic_id] = vnic
+          logger.debug "#{vnic_id} is a #{result[:node_id] == @node.node_id ? "local" : "foreign"} vnic in #{group_id}"
+          @cache[:security_groups].values.each { |group|
+            # Add/Update vnic hash to the group.
+            group[:referencees][group_id][vnic_id] = vnic if group[:referencees].has_key?(group_id)
+            group[:referencers][group_id][vnic_id] = vnic if group[:referencers].has_key?(group_id)
+
+            # Update exsiting vnic hashes in referencees and referencers tree.
+            group[:referencees].values.each { |vnics|
+              vnics[vnic_id] = vnic if vnics[vnic_id]
+            }
+            group[:referencers].values.each { |vnics|
+              vnics[vnic_id] = vnic if vnics[vnic_id]
+            }
+            
+            # Update the vnic in other places in the cache
+            group[:local_vnics][vnic_id] = vnic if group[:local_vnics].has_key?(vnic_id)
+            group[:foreign_vnics][vnic_id] = vnic if group[:foreign_vnics].has_key?(vnic_id)
+          }
 
           nil
         end
@@ -167,8 +195,21 @@ module Dcmgr
           logger.info "Adding #{vnic_id} in groups #{vnic[:security_groups].join(",")} to referencers and referencees"
           @cache[:security_groups].values.each { |group|
             vnic[:security_groups].each { |group_id|
+              # Add/Update vnic hash to the group.
               group[:referencees][group_id][vnic_id] = vnic if group[:referencees].has_key?(group_id)
               group[:referencers][group_id][vnic_id] = vnic if group[:referencers].has_key?(group_id)
+              
+              # Update exsiting vnic hashes in referencees and referencers tree.
+              group[:referencees].values.each { |vnics|
+                vnics[vnic_id] = vnic if vnics[vnic_id]
+              }
+              group[:referencers].values.each { |vnics|
+                vnics[vnic_id] = vnic if vnics[vnic_id]
+              }
+
+              # Update the vnic in other places in the cache
+              group[:local_vnics][vnic_id] = vnic if group[:local_vnics].has_key?(vnic_id)
+              group[:foreign_vnics][vnic_id] = vnic if group[:foreign_vnics].has_key?(vnic_id)
             }
           }
 
@@ -180,8 +221,21 @@ module Dcmgr
           raise VNicNotFoundError, "VNic #{vnic_id} doesn't exist" if vnic.nil?
           logger.info "Adding #{vnic_id} in group #{group_id} to referencers and referencees"
           @cache[:security_groups].values.each { |group|
+            # Add/Update vnic hash to the group.
             group[:referencees][group_id][vnic_id] = vnic if group[:referencees].has_key?(group_id)
             group[:referencers][group_id][vnic_id] = vnic if group[:referencers].has_key?(group_id)
+
+            # Update exsiting vnic hashes in referencees and referencers tree.
+            group[:referencees].values.each { |vnics|
+              vnics[vnic_id] = vnic if vnics[vnic_id]
+            }
+            group[:referencers].values.each { |vnics|
+              vnics[vnic_id] = vnic if vnics[vnic_id]
+            }
+
+            # Update the vnic in other places in the cache
+            group[:local_vnics][vnic_id] = vnic if group[:local_vnics].has_key?(vnic_id)
+            group[:foreign_vnics][vnic_id] = vnic if group[:foreign_vnics].has_key?(vnic_id)
           }
 
           nil
@@ -196,11 +250,15 @@ module Dcmgr
           @cache[:security_groups].values.each { |group|
             group[:local_vnics].delete vnic_id
             group[:foreign_vnics].delete vnic_id
-            group[:referencers].delete vnic_id
-            group[:referencees].delete vnic_id
+            group[:referencers].values.each { |sg| sg.delete(vnic_id) }
+            group[:referencees].values.each { |sg| sg.delete(vnic_id) }
           }
 
           @cache[:empty_vnics].delete(vnic_id)
+
+          # clean sg from @cache[:security_groups] if :local_vnics
+          # becomes empty.
+          @cache[:security_groups].delete_if {|sg_id, v| v[:local_vnics].empty? }
 
           nil
         end
@@ -217,6 +275,22 @@ module Dcmgr
             end
           }
 
+          # update :security_groups hash in any vnics items.
+          @cache[:security_groups].values.each { |sg|
+            sg[:local_vnics][vnic_id][:security_groups]   -= [group_id] if sg[:local_vnics][vnic_id]
+            sg[:foreign_vnics][vnic_id][:security_groups] -= [group_id] if sg[:foreign_vnics][vnic_id]
+            if sg[:referencers][group_id] && sg[:referencers][group_id][vnic_id]
+              sg[:referencers][group_id][vnic_id][:security_groups] -= [group_id]
+            end
+            if sg[:referencees][group_id] && sg[:referencees][group_id][vnic_id]
+              sg[:referencees][group_id][vnic_id][:security_groups] -= [group_id]
+            end
+          }
+
+          # clean sg from @cache[:security_groups] if :local_vnics
+          # becomes empty.
+          @cache[:security_groups].delete_if {|sg_id, v| v[:local_vnics].empty? }
+          
           nil
         end
 
@@ -224,21 +298,40 @@ module Dcmgr
           group = @cache[:security_groups][group_id]
           group[:foreign_vnics].delete vnic_id unless group.nil?
 
+          # update :security_groups hash in any vnics items.
+          @cache[:security_groups].values.each { |sg|
+            sg[:local_vnics][vnic_id][:security_groups]   -= [group_id] if sg[:local_vnics][vnic_id]
+            sg[:foreign_vnics][vnic_id][:security_groups] -= [group_id] if sg[:foreign_vnics][vnic_id]
+            if sg[:referencers][group_id] && sg[:referencers][group_id][vnic_id]
+              sg[:referencers][group_id][vnic_id][:security_groups] -= [group_id]
+            end
+            if sg[:referencees][group_id] && sg[:referencees][group_id][vnic_id]
+              sg[:referencees][group_id][vnic_id][:security_groups] -= [group_id]
+            end
+          }
+
           nil
         end
 
         def remove_vnic_from_referencees(group_id,vnic_id)
           group = @cache[:security_groups].values.each {|local_group|
             ref_group = local_group[:referencees][group_id]
-            ref_group.delete vnic_id unless ref_group.nil?
+            if ref_group
+              ref_group.delete vnic_id
+              local_group[:referencees].delete(group_id) if ref_group.empty?
+            end
           }
 
           nil
         end
 
-        def remove_local_vnic(vnic_id)
-          vnic = @cache[:security_groups].each { |group_id,group|
-            remove_local_vnic_from_group(group_id) if group[:local_vnics].has_key?(vnic_id)
+        def remove_vnic_from_referencers(group_id,vnic_id)
+          group = @cache[:security_groups].values.each {|local_group|
+            ref_group = local_group[:referencers][group_id]
+            if ref_group
+              ref_group.delete vnic_id
+              local_group[:referencers].delete(group_id) if ref_group.empty?
+            end
           }
 
           nil
@@ -461,10 +554,16 @@ module Dcmgr
           raise VNicNotFoundError, "VNic not found in cache: '#{vnic_id}'" if vnic_map.nil?
 
           friends = vnic_map[:security_groups].map {|group_id|
+            next unless @cache[:security_groups][group_id]
             @cache[:security_groups][group_id][:local_vnics].values
-          }.flatten.uniq
+          }.flatten.compact
 
-          friends.delete_if {|friend| friend[:uuid] == vnic_map[:uuid]}
+          chk_dup = {}
+          friends.delete_if { |friend|
+            isdel = (friend[:uuid] == vnic_id || chk_dup.has_key?(friend[:uuid]))
+            chk_dup[friend[:uuid]]=1
+            isdel
+          }
 
           deep_clone friends
         end
@@ -490,15 +589,21 @@ module Dcmgr
         def get_all_friends(vnic_id)
           vnic_map = get_vnic(vnic_id)
           raise VNicNotFoundError, "VNic not found in cache: '#{vnic_id}'" if vnic_map.nil?
-          friends = {}
+          friends = []
           vnic_map[:security_groups].each {|group_id|
-            friends.merge! @cache[:security_groups][group_id][:local_vnics]
-            friends.merge! @cache[:security_groups][group_id][:foreign_vnics]
+            friends << @cache[:security_groups][group_id][:local_vnics].values
+            friends << @cache[:security_groups][group_id][:foreign_vnics].values
           }
 
-          friends.delete vnic_map[:uuid]
+          friends.flatten!
+          chk_dup = {}
+          friends.delete_if { |friend|
+            isdel = (friend[:uuid] == vnic_id || chk_dup.has_key?(friend[:uuid]))
+            chk_dup[friend[:uuid]]=1
+            isdel
+          }
 
-          deep_clone friends.values
+          deep_clone friends
         end
 
         def get_all_empty_vnics()

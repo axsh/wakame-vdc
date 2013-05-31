@@ -419,7 +419,7 @@ module Dcmgr
             }
           end
 
-          execute_commands(commands.flatten.uniq)
+          execute_commands(commands.flatten)
         end
 
         def remove_vnic_chains(vnic_map)
@@ -456,7 +456,7 @@ module Dcmgr
             }
           end
 
-          execute_commands(commands.flatten.uniq)
+          execute_commands(commands.flatten)
         end
 
         def handle_vnic_tasks(vnic,tasks,action)
@@ -494,7 +494,7 @@ module Dcmgr
             }
           }
 
-          execute_commands(commands.flatten.uniq)
+          execute_commands(commands.flatten)
         end
 
         def apply_vnic_tasks(vnic,tasks)
@@ -583,7 +583,7 @@ module Dcmgr
             }
           }
 
-          final_commands = commands.flatten.uniq.compact
+          final_commands = commands.flatten.compact
           puts final_commands.join("\n") if self.verbose_commands
 
           system(final_commands.join("\n"))
@@ -599,7 +599,7 @@ module Dcmgr
             }
           }
 
-          final_commands = commands.flatten.uniq.compact
+          final_commands = commands.flatten.compact
           puts final_commands.join("\n") if self.verbose_commands
 
           system(final_commands.join("\n"))
