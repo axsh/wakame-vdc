@@ -34,16 +34,22 @@ function test_get_instance_ipaddr() {
 ## reboot
 
 function test_reboot_instance() {
-  run_cmd instance reboot ${instance_uuid} >/dev/null
+  run_cmd instance reboot ${instance_uuid}
   assertEquals $? 0
 }
 
 function test_wait_for_network_not_to_be_ready_after_rebooting() {
+  # lxc is too fast to reboot(stop/start).
+  [[ "${hypervisor}" = "lxc" ]] && return 0
+
   wait_for_network_not_to_be_ready ${instance_ipaddr}
   assertEquals $? 0
 }
 
 function test_wait_for_sshd_not_to_be_ready_after_rebooting() {
+  # lxc is too fast to reboot(stop/start).
+  [[ "${hypervisor}" = "lxc" ]] && return 0
+
   wait_for_sshd_not_to_be_ready ${instance_ipaddr}
   assertEquals $? 0
 }
