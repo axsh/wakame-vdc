@@ -14,6 +14,9 @@
 network_id="nw-minimum"
 test_case_instance_uuid=
 
+RETRY_WAIT_SEC=1
+RETRY_SLEEP_SEC=1
+
 ## functions
 
 function needs_vif() { true; }

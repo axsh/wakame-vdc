@@ -9,7 +9,8 @@
 function retry_until() {
   local blk="$@"
 
-  local wait_sec=120
+  local wait_sec=${RETRY_WAIT_SEC:-120}
+  local sleep_sec=${RETRY_SLEEP_SEC:-3}
   local tries=0
   local start_at=$(date +%s)
 
@@ -17,7 +18,7 @@ function retry_until() {
     eval "${blk}" && {
       break
     } || {
-      sleep 3
+      sleep ${sleep_sec}
     }
 
     tries=$((${tries} + 1))
