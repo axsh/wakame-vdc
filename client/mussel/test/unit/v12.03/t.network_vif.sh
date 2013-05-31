@@ -19,7 +19,7 @@ declare namespace=network_vif
 function test_network_vif_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 ${namespace} [help|attach_external_ip|destroy|detach_external_ip|index|show|show_external_ip|xcreate]"
+  assertEquals "${res}" "$0 ${namespace} [help|add_security_group|attach_external_ip|destroy|detach_external_ip|index|remove_security_group|show|show_external_ip|xcreate]"
 }
 
 ## shunit2
