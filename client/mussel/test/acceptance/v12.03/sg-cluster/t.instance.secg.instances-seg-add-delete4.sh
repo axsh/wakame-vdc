@@ -7,6 +7,7 @@
 ## include files
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
+. ${BASH_SOURCE[0]%/*}/../../../helpers/interactive.sh
 
 ## variables
 
@@ -91,8 +92,8 @@ function oneTimeTearDown() {
     security_group_uuid="$(cached_instance_param ${instance_uuid} | egrep ' sg-'  | awk '{print $2}')"
 
     # check iptables vifs rule to deleted instance remaining
-    echo press ctrl-D. please check iptables dump ${instance_uuid}
-    cat
+    echo please check iptables dump ${instance_uuid}
+    interactive_suspend_test
 
     destroy_instance
   done
@@ -157,8 +158,8 @@ function test_complex_security_group() {
   echo
 
   echo setup finished
-  echo press ctrl-D. please check iptables dump
-  cat
+  echo please check iptables dump
+  interactive_suspend_test
 
   render_empty_secg_rule > ${rule_path}
   service_type=std description= display_name= run_cmd security_group update ${security_group_aaa}
@@ -166,8 +167,8 @@ function test_complex_security_group() {
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_xxx}
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_yyy}
 
-  echo press ctrl-D. please check iptables dump
-  cat
+  echo please check iptables dump
+  interactive_suspend_test
 
   # from xxx
   ssh ${ssh_user}@${ipaddr_xxx} -i ${ssh_key_pair_path} "ping -c 1 -W 3 ${ipaddr_yyy}"

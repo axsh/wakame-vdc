@@ -7,6 +7,7 @@
 ## include files
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
+. ${BASH_SOURCE[0]%/*}/../../../helpers/interactive.sh
 
 ## variables
 
@@ -112,8 +113,7 @@ function test_complex_security_group() {
   local ipaddr_aaa_2="$(cached_instance_param ${instance_aaa_2} | hash_value address)"
 
   echo setup finished
-  echo press ctrl-D to start tests
-  cat
+  interactive_suspend_test
 
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_aaa_1}
   security_group_id=${security_group_default} run_cmd network_vif remove_security_group ${vif_aaa_1} 

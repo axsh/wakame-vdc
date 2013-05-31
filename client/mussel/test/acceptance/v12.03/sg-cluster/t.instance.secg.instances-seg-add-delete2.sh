@@ -7,6 +7,7 @@
 ## include files
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
+. ${BASH_SOURCE[0]%/*}/../../../helpers/interactive.sh
 
 ## variables
 
@@ -152,8 +153,8 @@ function test_complex_security_group() {
   echo
 
   echo setup finished
-  echo press ctrl-D. please check iptables dump
-  cat
+  echo please check iptables dump
+  interactive_suspend_test
 
   # update security group
   # add security group
@@ -163,8 +164,8 @@ function test_complex_security_group() {
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_xxx}
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_yyy}
 
-  echo press ctrl-D. please check iptables dump
-  cat
+  echo please check iptables dump
+  interactive_suspend_test
 
   # update security group
   # remove security group
@@ -174,8 +175,8 @@ function test_complex_security_group() {
   security_group_id=${security_group_default} run_cmd network_vif remove_security_group ${vif_xxx}
   security_group_id=${security_group_default} run_cmd network_vif remove_security_group ${vif_yyy}
 
-  echo press ctrl-D. please check iptables dump
-  cat
+  echo please check iptables dump
+  interactive_suspend_test
 
   # from xxx
   ssh ${ssh_user}@${ipaddr_xxx} -i ${ssh_key_pair_path} "ping -c 1 -W 3 ${ipaddr_yyy}"
