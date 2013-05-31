@@ -164,19 +164,16 @@ function test_complex_security_group() {
   echo
 
   echo setup finished
-  echo press ctrl-D to start tests
-  cat
+  interactive_suspend_test
 
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_aaa_1}
   security_group_id=${security_group_aaa} run_cmd network_vif add_security_group ${vif_aaa_2}
 
-  echo press ctrl-D
-  cat
+  interactive_suspend_test
 
   security_group_id=${security_group_bbb} run_cmd network_vif add_security_group ${vif_bbb_1}
 
-  echo press ctrl-D
-  cat
+  interactive_suspend_test
 
   security_group_id=${security_group_default} run_cmd network_vif remove_security_group ${vif_aaa_1} 
   security_group_id=${security_group_default} run_cmd network_vif remove_security_group ${vif_aaa_2} 
