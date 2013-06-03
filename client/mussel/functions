@@ -5,6 +5,7 @@
 
 MUSSEL_PROMPT='$'
 MUSSEL_ARGS=
+MUSSEL_FRONTEND=${MUSSEL_FRONTEND:-noninteractive} # [ interactive | noninteractive ]
 
 function extract_args() {
   MUSSEL_ARGS=
