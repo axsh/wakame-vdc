@@ -173,7 +173,7 @@ function test_load_balancer_poweron() {
   local cmd=poweron
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ### poweroff
@@ -182,7 +182,7 @@ function test_load_balancer_poweroff() {
   local cmd=poweroff
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ## shunit2

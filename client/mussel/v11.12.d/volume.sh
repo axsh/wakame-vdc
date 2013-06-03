@@ -18,12 +18,12 @@ task_attach() {
   local uuid=$3 instance_id=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [vol-id] [inst-id]" >&2; return 1; }
 
-  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?instance_id=${instance_id}"
+  call_api -X PUT "$(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?instance_id=${instance_id}"
 }
 
 task_detach() {
   local uuid=$3 instance_id=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [vol-id] [inst-id]" >&2; return 1; }
 
-  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?instance_id=${instance_id}"
+  call_api -X PUT "$(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?instance_id=${instance_id}"
 }

@@ -296,7 +296,7 @@ function test_instance_reboot() {
   local cmd=reboot
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ### stop
@@ -305,7 +305,7 @@ function test_instance_stop() {
   local cmd=stop
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ### start
@@ -314,7 +314,7 @@ function test_instance_start() {
   local cmd=start
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ### poweron
@@ -323,7 +323,7 @@ function test_instance_poweron() {
   local cmd=poweron
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ### poweroff
