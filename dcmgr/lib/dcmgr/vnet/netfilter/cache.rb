@@ -623,16 +623,7 @@ module Dcmgr
           network_id = get_vnic(vnic_id)[:network_id]
           @cache[:networks][network_id][:network_mode_class]
         end
-
-        #################
-        # Debug methods #
-        #################
-        def dump
-          logger.debug @cache
-        end
-
       end
-
     end
   end
 end

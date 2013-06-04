@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'tmpdir'
 require 'pp'
 
 module Dcmgr
@@ -17,11 +16,22 @@ module Dcmgr
       # 1368529518943902.add_security_group
       # 1368529518967889.add_network
       class CacheDumper
-        def initialize(subject, dump_dir=nil)
-          dump_dir ||= Dir.mktmpdir('hvanf')
+        def initialize(subject, dump_dst=nil)
           raise ArgumentError, "Only supports #{NetfilterCache} object" unless subject.is_a?(NetfilterCache)
           @subject = subject
-          @dump_dir = dump_dir
+
+          case dump_dst
+          when String
+            if File.exists?(dump_dst) && File.directory?(dump_dst)
+              @dump_dst = Dir.open(dump_dst)
+            else
+              raise ArgumentError, "CacheDumper string destination must be a directory. #{dump_dst}"
+            end
+          when Dir, IO
+            @dump_dst = dump_dst
+          when NilClass
+            @dump_dst = STDOUT
+          end
         end
 
         # methods to alter @cache.
@@ -59,12 +69,27 @@ module Dcmgr
       
         private
         def dump_cache(cache_method_name, cache_args)
+          case @dump_dst
+          when Dir
+            dump_to_dir(@dump_dst.path, cache_method_name, cache_args)
+          when IO
+            dump_to_io(@dump_dst, cache_method_name, cache_args)
+          else
+            raise TypeError, "Unknown Type of @dump_dst: #{@dump_dst.class}"
+          end
+        end
+
+        def dump_to_dir(dir_path, cache_method_name, cache_args)
           t = Time.now
-          File.open(File.expand_path(("%d%06d.%s" % [t.to_i, t.usec, cache_method_name]), @dump_dir), "w") { |f|
-            f.puts "#{cache_method_name}(#{cache_args.join(', ')}), #{Thread.current}"
-            f.puts ""
-            PP.pp(@subject.instance_variable_get(:@cache), f, 200)
+          File.open(File.expand_path(("%d%06d.%s" % [t.to_i, t.usec, cache_method_name]), dir.path), "w") { |f|
+            dump_to_io(f, cache_method_name, cache_args)
           }
+        end
+
+        def dump_to_io(f, cache_method_name, cache_args)
+          f.puts "#{cache_method_name}(#{cache_args.join(', ')}), #{Thread.current}"
+          f.puts ""
+          PP.pp(@subject.instance_variable_get(:@cache), f, 200)
         end
 
         def method_missing(name, *args)
