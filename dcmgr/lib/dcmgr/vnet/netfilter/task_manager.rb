@@ -508,7 +508,9 @@ module Dcmgr
         def execute_commands(cmds)
           puts cmds.join("\n") if self.verbose_commands
           system(cmds.join("\n"))
-          system(self.netfilter_hook_script_path) unless self.netfilter_hook_script_path.nil?
+          if self.netfilter_hook_script_path && File.executable?(self.netfilter_hook_script_path)
+            system(self.netfilter_hook_script_path)
+          end
         end
 
         #def execute_commands_debug(cmds)

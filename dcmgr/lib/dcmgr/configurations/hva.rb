@@ -121,6 +121,7 @@ module Dcmgr
       param :bridge_novlan, :default=>0
       param :verbose_netfilter, :default=>false
       param :verbose_openflow, :default=>false
+      param :verbose_netfilter_cache, :default=>false
       param :packet_drop_log, :default => false
       param :debug_iptables, :default=>false
       param :use_ipset, :default=>false
