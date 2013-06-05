@@ -30,7 +30,7 @@ config.debug_iptables = false
 config.verbose_netfilter_cache = false
 
 # Dump iptables/ebtables to hva.log
-# config.netfilter_hook_script_path = File.join(File.expand_path('../../bin', __FILE__), 'netfilter-dump.sh')
+# config.netfilter_hook_script_path = File.join(File.expand_path('../../script', __FILE__), 'netfilter-dump.sh')
 
 # Use ipset for netfilter
 config.use_ipset       = false
