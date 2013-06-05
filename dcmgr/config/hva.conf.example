@@ -27,6 +27,7 @@ config.packet_drop_log = false
 
 # debug netfilter
 config.debug_iptables = false
+config.verbose_netfilter_cache = false
 
 # Use ipset for netfilter
 config.use_ipset       = false
