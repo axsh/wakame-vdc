@@ -52,7 +52,7 @@ EOF
         }
 
        # Generate raw image file from .gz compressed image file.
-        [[ "$f" != "${f%.gz}" ]] && [[ "$container_format" = "none" ]] && {
+        [[ "${f##*.}" != "gz" ]] && [[ "$container_format" = "none" ]] && {
           echo "gunzip $f with keeping sparse area ..."
           time gunzip -c "$f" | cp --sparse=always /dev/stdin "${localname}"
         }
