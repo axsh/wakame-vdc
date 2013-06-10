@@ -14,22 +14,31 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
   put '/:vif_id/add_security_group' do
     vnic = find_by_uuid(:NetworkVif, params[:vif_id])
-    group = find_by_uuid(:SecurityGroup, params[:security_group_id])
-    # I am using UnknownUUIDResource and not UnknownSecurityGroup because I want to throw the same error that's thrown
-    # by find_by_uuid if the group wasn't found in the database.
-    raise E::UnknownUUIDResource, params[:security_group_id].to_s unless group && group.account_id == vnic.account_id
 
-    if vnic.security_groups.member?(group)
-      raise E::DuplicatedSecurityGroup, "'#{params[:security_group_id]}' is already assigned to '#{params[:vif_id]}'"
+    # Both single and multiple SG allocation are supported
+    groups = case params[:security_group_id]
+    when String
+      group_ids = params[:security_group_id]
+      [find_by_uuid(:SecurityGroup, params[:security_group_id])]
+    when Array
+      group_ids = params[:security_group_id]
+      params[:security_group_id].map {|sg_id| find_by_uuid(:SecurityGroup, params[:security_group_id]) }
     end
 
-    vnic.add_security_group(group)
-    on_after_commit do
-      Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_joined",:args=>[vnic.canonical_uuid])
-      Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/joined_group",:args=>[group.canonical_uuid])
-    end
+    groups.each { |group|
+      # I am using UnknownUUIDResource and not UnknownSecurityGroup because I want to throw the same error that's thrown
+      # by find_by_uuid if the group wasn't found in the database.
+      raise E::UnknownUUIDResource, params[:security_group_id].to_s unless group && group.account_id == vnic.account_id
 
-    respond_with(R::NetworkVif.new(find_by_uuid(:NetworkVif, params[:vif_id])).generate)
+      if vnic.security_groups.member?(group)
+        raise E::DuplicatedSecurityGroup, "'#{params[:security_group_id]}' is already assigned to '#{params[:vif_id]}'"
+      end
+    }
+
+    Dcmgr.messaging.submit("sg_handler", "add_sgs_to_vnic", params[:vif_id], group_ids)
+
+    #TODO: Figure out the right response since the groups will be changed in an asynchoronous method
+    respond_with(R::NetworkVif.new(vnic.generate))
   end
 
   put '/:vif_id/remove_security_group' do
