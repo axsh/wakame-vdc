@@ -112,6 +112,7 @@ module Dcmgr
 
   module NodeModules
     autoload :StaCollector, 'dcmgr/node_modules/sta_collector'
+    autoload :SGHandler, 'dcmgr/node_modules/sg_handler'
     autoload :StaTgtInitializer, 'dcmgr/node_modules/sta_tgt_initializer'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
