@@ -19,7 +19,7 @@ restart_reactor_and_messaging_client
 
 Dcmgr.class_eval {
   def self.messaging
-    @messaging_client || raise("Connetion failed: #{conf.amqp_server_uri}")
+    @messaging_client || raise("Connection failed: #{conf.amqp_server_uri}")
   end
 
   def self.syncronized_message_ready
