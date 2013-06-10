@@ -399,33 +399,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       # This is to work around a bug where LB security groups would be deleted if the instance
       # is registered to a load balancer
       st = instance.service_type
-      security_group_uuids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
+      sg_ids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
+      sg_ids_trimmed= sg_ids.map {|sgid| M::SecurityGroup.trim_uuid(sgid) }
 
-      groups = security_group_uuids.map {|group_id| find_by_uuid(:SecurityGroup, group_id)}
-      # Remove old security groups
       instance.nic.each { |vnic|
-        vnic.security_groups_dataset.filter(:service_type => st).each { |group|
-          unless security_group_uuids.member?(group.canonical_uuid)
-            vnic.remove_security_group(group)
-            on_after_commit do
-              Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_left",:args=>[vnic.canonical_uuid])
-              Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/left_group",:args=>[group.canonical_uuid])
-            end
-          end
-        }
-      }
+        sg_ids_to_remove = vnic.security_groups_dataset.filter(
+          :service_type => st
+        ).exclude(:uuid => sg_ids_trimmed).map { |sg| sg.canonical_uuid }
 
-      # Add new security groups
-      current_group_ids = instance.nic.first.security_groups_dataset.map {|g| g.canonical_uuid}
-      groups.each { |group|
-        unless current_group_ids.member?(group.canonical_uuid)
-          instance.nic.each { |vnic|
-            vnic.add_security_group(group)
-            on_after_commit do
-              Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_joined",:args=>[vnic.canonical_uuid])
-              Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/joined_group",:args=>[group.canonical_uuid])
-            end
-          }
+        on_after_commit do
+          Dcmgr.messaging.submit("sg_handler","remove_sgs_from_vnic",vnic.canonical_uuid,sg_ids_to_remove)
+          Dcmgr.messaging.submit("sg_handler","add_sgs_to_vnic",vnic.canonical_uuid,sg_ids)
         end
       }
     end
