@@ -3,7 +3,7 @@
 
 module Dcmgr::SpecConvertor
 
-  SPEC_FILE_ROOT_DIR = File.expand_path("../../../config/convert_specs", __FILE__)
+  SPEC_FILE_DIRS = ["/etc/wakame-vdc/convert_specs", File.expand_path("../../../config/convert_specs", __FILE__)]
 
   class SpecConvertor
     attr_reader :hypervisor, :cpu_cores, :memory_size, :quota_weight
@@ -14,12 +14,10 @@ module Dcmgr::SpecConvertor
 
     private
     def load(file, key)
-      path = File.join(SPEC_FILE_ROOT_DIR, file)
-      begin
-        config = YAML.load_file(path)
-      rescue ::Exception => e
-        raise "#{file} not found."
-      end
+      dir = SPEC_FILE_DIRS.find {|d| File.exists?(File.join(d,file)) }
+      raise "#{file} not found." if dir.nil?
+      path = File.join(dir, file)
+      config = YAML.load_file(path)
 
       raise "#{key} key does not exist" if config[key].nil?
 
