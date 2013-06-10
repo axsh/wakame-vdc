@@ -4,6 +4,14 @@ require 'dcmgr/endpoints/12.03/responses/network_vif'
 require 'dcmgr/endpoints/12.03/responses/network_vif_monitor'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
+  def get_group_ids_from_string_or_array(string_or_array)
+    case string_or_array
+    when String
+      [string_or_array]
+    when Array
+      string_or_array
+    end
+  end
 
   get '/:vif_id' do
     # description "Retrieve details about a vif"
@@ -16,15 +24,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     vnic = find_by_uuid(:NetworkVif, params[:vif_id])
 
     # Both single and multiple SG allocation are supported
-    groups = case params[:security_group_id]
-    when String
-      group_ids = params[:security_group_id]
-      [find_by_uuid(:SecurityGroup, params[:security_group_id])]
-    when Array
-      group_ids = params[:security_group_id]
-      params[:security_group_id].map {|sg_id| find_by_uuid(:SecurityGroup, params[:security_group_id]) }
-    end
-
+    group_ids = get_group_ids_from_string_or_array(params[:security_group_id])
+    groups = group_ids.map {|gid| find_by_uuid(:SecurityGroup, gid) }
     groups.each { |group|
       # I am using UnknownUUIDResource and not UnknownSecurityGroup because I want to throw the same error that's thrown
       # by find_by_uuid if the group wasn't found in the database.
@@ -43,15 +44,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
   put '/:vif_id/remove_security_group' do
     vnic = find_by_uuid(:NetworkVif, params[:vif_id])
-    group = vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(params[:security_group_id]) ).first
+    group_ids = get_group_ids_from_string_or_array(params[:security_group_id])
 
-    raise E::UnknownSecurityGroup, "'#{params[:security_group_id]}' is not assigned to '#{params[:vif_id]}'" unless group
+    group_ids.each { |gid|
+      group_set = vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(gid))
+      raise E::UnknownSecurityGroup, "'#{params[:security_group_id]}' is not assigned to '#{params[:vif_id]}'" if group_set.empty?
+    }
 
-    vnic.remove_security_group(group)
-    on_after_commit do
-      Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_left",:args=>[vnic.canonical_uuid])
-      Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/left_group",:args=>[group.canonical_uuid])
-    end
+    Dcmgr.messaging.submit("sg_handler", "remove_sgs_from_vnic", params[:vif_id], group_ids)
 
     respond_with(R::NetworkVif.new(find_by_uuid(:NetworkVif, params[:vif_id])).generate)
   end
