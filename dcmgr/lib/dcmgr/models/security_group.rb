@@ -7,6 +7,8 @@ module Dcmgr::Models
     taggable 'sg'
     accept_service_type
 
+    plugin Plugins::ResourceLabel
+      
     many_to_many :network_vif, :join_table=>:network_vif_security_groups
     many_to_many :referencees, :class => self, :join_table => :security_group_references,:left_key => :referencer_id, :right_key => :referencee_id
     many_to_many :referencers, :class => self, :join_table => :security_group_references,:right_key => :referencer_id, :left_key => :referencee_id
@@ -36,7 +38,8 @@ module Dcmgr::Models
       }
       # Save all the vnics on other host nodes
       nd[:foreign_vnics] = {}
-      self.network_vif_dataset.exclude(:uuid => local_vnics_dataset.select(:uuid)).all.each { |vnic|
+      exclude_vnics_dataset = self.network_vif_dataset.filter(:instance => Instance.alives.filter(:host_node => HostNode.filter(:node_id => host_node_id)))
+      self.network_vif_dataset.exclude(:uuid => exclude_vnics_dataset.select(:uuid)).all.each { |vnic|
         nd[:foreign_vnics][vnic.canonical_uuid] = vnic.to_netfilter_document
       }
       # Save all vnics in security groups that are referenced by this group
@@ -58,11 +61,7 @@ module Dcmgr::Models
 
       nd
     end
-
-    def after_save
-      super
-    end
-
+    
     def rules_array
       rules = []
       rule.to_s.each_line { |line|

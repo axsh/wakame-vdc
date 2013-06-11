@@ -123,9 +123,13 @@ module Dcmgr
       param :bridge_novlan, :default=>0
       param :verbose_netfilter, :default=>false
       param :verbose_openflow, :default=>false
+      param :verbose_netfilter_cache, :default=>false
       param :packet_drop_log, :default => false
       param :debug_iptables, :default=>false
       param :use_ipset, :default=>false
+      param :use_logging_service, :default=>false
+      param :logging_service_ip, :default =>'169.254.169.253'
+      param :logging_service_port, :default => 8888
       param :enable_gre, :default=>false
       param :enable_subnet, :default=>false
 
@@ -160,6 +164,10 @@ module Dcmgr
       param :script_root_path, :default => proc {
         File.expand_path('script', DCMGR_ROOT)
       }
+
+      # Allow hva to change instance state seems to be incomplete
+      # transition.
+      param :enable_instance_state_recovery, :default=>true
 
       def validate(errors)
         if @config[:vm_data_dir].nil?

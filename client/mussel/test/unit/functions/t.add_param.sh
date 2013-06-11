@@ -50,6 +50,11 @@ function test_add_param_key_strfile() {
   assertEquals "$(add_param name strfile)" "name=${name}"
 }
 
+function test_add_param_key_strplain() {
+  local name=i-xxx
+  assertEquals "$(add_param name strplain)" "${name}"
+}
+
 ## shunit2
 
 . ${shunit2_file}

@@ -7,6 +7,9 @@ module Dcmgr::Models
   class SshKeyPair < AccountResource
     taggable 'ssh'
     accept_service_type
+
+    plugin Plugins::ResourceLabel
+    
     one_to_many :instances
 
     subset(:alives, {:deleted_at => nil})

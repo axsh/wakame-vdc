@@ -10,13 +10,15 @@ module Dcmgr
       # AMQP broker to be connected.
       param :amqp_server_uri
 
+      deprecated_warn_for :network, :network_id
+      
       DSL do
         def driver(driver_name, &blk)
           @config[:driver_class] = klass = ::Dcmgr::Drivers::NetworkMonitoring.driver_class(driver_name)
           @config[:driver] = klass::Configuration.new(@subject).parse_dsl(&blk)
         end
 
-        def network(nwuuid)
+        def network_id(nwuuid)
           @config[:networks] << nwuuid
         end
       end

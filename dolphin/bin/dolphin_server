@@ -1,0 +1,90 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+# TODO: better loading libraries
+setup_rb = File.expand_path('../../vendor/bundle/bundler/setup.rb', __FILE__)
+
+begin
+  require 'rubygems'
+  if File.exists?(setup_rb)
+    load setup_rb
+  else
+    require 'bundler/setup'
+  end
+rescue LoadError => e
+end
+
+require File.join(File.expand_path('../../', __FILE__), 'lib/dolphin')
+require 'optparse'
+
+options = {}
+opt = OptionParser.new do |opt|
+  opt.on('-c [dolphin.conf]', "Dolphin configuration file") {|v| options[:config_file] = v }
+  opt.on('-h', "--help") {|v| puts opt.help(); Kernel.exit(true) }
+  opt.on('-v', "--version") {|v| puts Dolphin::VERSION; Kernel.exit(true) }
+end
+
+begin
+  opt.parse!(ARGV)
+rescue => e
+  STDERR.puts e
+  exit!
+end
+
+require 'ltsv'
+require 'celluloid'
+
+module Dolphin
+
+  Celluloid.logger.datetime_format = "%Y-%m-%d %H:%M:%S"
+  Celluloid.logger.formatter = proc { |severity, datetime, progname, msg|
+    case settings['logger']['format']
+      when 'human_readable'
+        msg = "[#{msg[:thread_id]}] [#{msg[:classname]}] #{msg[:message]}" if msg.is_a?(Hash)
+        Logger::Formatter.new.call(severity, datetime, progname, msg)
+      when 'ltsv'
+        LTSV.dump({
+          :log_level => severity,
+          :time => datetime,
+          :thread_id => msg[:thread_id],
+          :classname => msg[:classname],
+          :message => msg[:message],
+        }) + "\n"
+    end
+  }
+
+  def self.run(options)
+
+    # init config_file
+    Dolphin.settings(options[:config_file])
+
+    if RUBY_VERSION.to_f >= 2
+      # Celluloid::TaskFiber by default
+    elsif RUBY_VERSION.to_f >= 1.9
+      Celluloid.task_class = Celluloid::TaskThread
+    else
+      raise "Doesn't support ruby version: #{RUBY_VERSION}"
+      exit!
+    end
+
+    manager = Manager.new
+    # manager.pool(Worker, :as => :workers, :size => 2)
+    # manager.pool(Sender::Mail, :as => :mail_senders, :size => 2)
+    # manager.pool(QueryProcessor, :as => :query_processors, :size => 2)
+
+    manager.add(Worker, :as => :workers)
+    manager.add(Sender::Mail, :as => :mail_senders)
+    manager.add(QueryProcessor, :as => :query_processors)
+
+    # TODO: RequestHandler link to Manager
+    # TODO: Chanage to rackup
+
+    server_settings = Dolphin.settings['server']
+    RequestHandler.new(server_settings['host'], server_settings['port'])
+
+    Manager.run
+  end
+end
+
+Dolphin.run(options)
+sleep

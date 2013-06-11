@@ -27,10 +27,16 @@ protocol=${protocol:-http}
 
 ### optional
 
+allow_list=${allow_list:-}
 instance_spec_id=${instance_spec_id:-}
 description=${description:-}
 private_key=${private_key:-}
 public_key=${public_key:-}
+httpchk_path=${httpchk_path:-}
+
+### cookie file
+
+cookie_path=$(generate_cache_file_path cookie)
 
 ## functions
 

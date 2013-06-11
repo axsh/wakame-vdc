@@ -11,7 +11,7 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
                 ])
 
-Dcmgr.run_initializers
+Dcmgr.run_initializers('logger', 'sequel')
 
 require 'irb'
 include Dcmgr

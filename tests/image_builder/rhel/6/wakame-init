@@ -7,8 +7,8 @@ LC_ALL=C
 #set -e
 
 LOGFILE=/var/log/$(basename $0).log
-USER=root
-SSHDIR=/${USER}/.ssh/
+USER=${USER:-root}
+SSHDIR=$(getent passwd ${USER} | awk -F: '{print $6}')/.ssh/
 KEYSPATH=${SSHDIR}/authorized_keys
 
 METADATA_LOCATION=drive
@@ -181,8 +181,8 @@ drive)
 DEVICE="${nic}"
 BOOTPROTO="static"
 HWADDR="${mac}"
-IPV6INIT="yes"
-IPV6_AUTOCONF="yes"
+IPV6INIT="${IPV6INIT:-yes}"
+IPV6_AUTOCONF="${IPV6_AUTOCONF:-yes}"
 NM_CONTROLLED="yes"
 ONBOOT="yes"
 TYPE="Ethernet"

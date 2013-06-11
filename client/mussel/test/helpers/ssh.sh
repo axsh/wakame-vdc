@@ -5,7 +5,7 @@
 #
 
 function ssh() {
-  $(which ssh) -o 'StrictHostKeyChecking no' $@
+  $(which ssh) -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile /dev/null' $@
 }
 
 function remove_ssh_known_host_entry() {
