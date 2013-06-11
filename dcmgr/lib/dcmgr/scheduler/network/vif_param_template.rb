@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require 'json'
+
 module Dcmgr
   module Scheduler
     module Network
       # Setup vnics by following params#vifs template.
-      class VifsRequestParam < NetworkScheduler
+      class VifParamTemplate < NetworkScheduler
         include Dcmgr::Logger
 
         configuration do
@@ -14,7 +16,7 @@ module Dcmgr
         def schedule(instance)
           index = 0
 
-          Dcmgr::Scheduler::Network.check_vifs_parameter_format(instance.request_params["vifs"])
+          return unless instance.request_params['vifs'].is_a?(Hash)
 
           instance.request_params['vifs'].each { |name, param|
             vnic_params = {
@@ -26,12 +28,9 @@ module Dcmgr
             index = [index, vnic_params[:index]].max + 1
             vnic = instance.add_nic(vnic_params)
 
-            next if param['network'].to_s.empty?
-
+            next if param['network'].nil? || param['network'].to_s == ""
             network = Models::Network[param['network'].to_s]
-            raise NetworkSchedulingError, "Network '#{param['network'].to_s}' doesn't exist." if network.nil?
-
-            vnic.nat_network = Models::Network[param['nat_network'].to_s] unless param['nat_network'].nil?
+            next if network.nil?
 
             vnic.attach_to_network(network)
           }

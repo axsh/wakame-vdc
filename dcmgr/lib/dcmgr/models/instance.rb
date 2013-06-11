@@ -266,6 +266,45 @@ module Dcmgr::Models
       h
     end
 
+    def add_nic(vif_template)
+      # Change all hash keys to symbols (This method expects symbols but the api passes strings so this one-liner makes our life much easier)
+      vif_template = Hash[vif_template.map{ |k, v| [k.to_sym, v] }]
+
+      # Choose vendor ID of mac address.
+      vendor_id = if vif_template[:vendor_id]
+                    vif_template[:vendor_id]
+                  else
+                    Dcmgr.conf.mac_address_vendor_id
+                  end
+      nic = NetworkVif.new({ :account_id => self.account_id })
+      nic.instance = self
+      nic.device_index = vif_template[:index]
+      sched = if vif_template[:mac_addr]
+        Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new
+      else
+        Dcmgr::Scheduler.service_type(self).mac_address
+      end
+
+      sched.schedule(nic)
+      nic.save
+
+      if !request_params.has_key?('security_groups') && !vif_template[:security_groups].empty?
+        groups = vif_template[:security_groups]
+      else
+        # TODO: this code will delete. it's remained for compatibility.
+        groups = self.request_params["security_groups"]
+      end
+
+      if !groups.nil?
+        groups = [groups] unless groups.is_a? Array
+        groups.each { |group_id|
+          nic.add_security_group(SecurityGroup[group_id])
+        }
+      end
+
+      nic
+    end
+
     def ips
       self.instance_nic.map { |nic| nic.ip }
     end

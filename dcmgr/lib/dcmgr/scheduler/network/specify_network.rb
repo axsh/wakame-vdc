@@ -3,14 +3,16 @@
 module Dcmgr
   module Scheduler
     module Network
-      # Setup vnics by following params#vifs template.
-      class VifsRequestParam < NetworkScheduler
+      # Setup vnics by following params#vifs template without leasing ip address yet.
+      class SpecifyNetwork < NetworkScheduler
         include Dcmgr::Logger
 
         configuration do
           param :template, :default=>{}
         end
 
+        # Placeholder code. Identical to vifsrequestparam with attach_to_network removed and mac_addr added
+        # We can remove this class when we get rid of the instance#add_nic method
         def schedule(instance)
           index = 0
 
@@ -21,6 +23,7 @@ module Dcmgr
               :index => param['index'] ? param['index'].to_i : index,
               :bandwidth => 100000,
               :security_groups => param['security_groups'],
+              :mac_addr => param['mac_addr']
             }
 
             index = [index, vnic_params[:index]].max + 1
@@ -33,9 +36,12 @@ module Dcmgr
 
             vnic.nat_network = Models::Network[param['nat_network'].to_s] unless param['nat_network'].nil?
 
-            vnic.attach_to_network(network)
+            vnic.network = network
+            vnic.save
+            # vnic.attach_to_network(network)
           }
         end
+
       end
     end
   end
