@@ -27,9 +27,18 @@ config.packet_drop_log = false
 
 # debug netfilter
 config.debug_iptables = false
+config.verbose_netfilter_cache = false
+
+# Dump iptables/ebtables to hva.log
+# config.netfilter_hook_script_path = File.join(File.expand_path('../../script', __FILE__), 'netfilter-dump.sh')
 
 # Use ipset for netfilter
 config.use_ipset       = false
+
+# logging service for inside instance.
+config.use_logging_service = false
+config.logging_service_ip = '169.254.169.253'
+config.logging_service_port = 8888
 
 # Path for brctl
 config.brctl_path = '/usr/sbin/brctl'

@@ -138,12 +138,17 @@ __END
 
     desc "features IMAGE_ID", "Set features attribute to the image"
     method_option :virtio, :type => :boolean, :desc => "Virtio ready image."
+    method_option :acpi, :type => :boolean, :desc => "ACPI support enabled."
     def features(uuid)
       img = M::Image[uuid] || UnknownUUIDError.raise(uuid)
 
       if options[:virtio]
         img.set_feature(:virtio, options[:virtio])
       end
+      if options[:acpi]
+        img.set_feature(:acpi, options[:acpi])
+      end
+      
       img.save_changes
     end
 

@@ -156,6 +156,7 @@ Requires: kmod-openvswitch
 Requires: openvswitch
 Requires: kpartx
 Requires: libcgroup
+Requires: tunctl
 # Trema/racket gem binary dependency
 Requires: sqlite libpcap
 Requires: pv
@@ -210,6 +211,19 @@ Requires: %{oname}-hva-openvz-vmapp-config = %{version}-%{release}
 %description hva-full-vmapp-config
 <insert long description, indented with spaces>
 
+# natbox-vmapp-config
+%package natbox-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for natbox VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+Requires: keepalived
+Requires: bridge-utils
+Requires: kmod-openvswitch
+Requires: openvswitch
+%description  natbox-vmapp-config
+<insert long description, indented with spaces>
+
 # vdcsh
 %package vdcsh
 BuildArch: noarch
@@ -254,14 +268,17 @@ CURDIR=${RPM_BUILD_ROOT} rpmbuild/rules binary-arch
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
+# TODO: Remove contrib dir excluding contrib/fluentd .
 components="
  dcmgr
  frontend
  rpmbuild
  client
+ dolphin
+ contrib
 "
 for component in ${components}; do
-  rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
+  rsync -aHA --exclude=".git/*" --exclude="*~" --exclude="*/vendor/cache/*.gem" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 done
 unset components
 
@@ -353,10 +370,13 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %post hva-openvz-vmapp-config
 %{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-openvz.conf
 
+%post natbox-vmapp-config
+%{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-natbox.conf
+
 %files
 %defattr(-,root,root)
 %{prefix}/%{oname}/
-%config /etc/logrotate.d/wakame-vdc
+%config(noreplace) /etc/logrotate.d/wakame-vdc
 %config /etc/init.d/vdc-net-event
 %config(noreplace) /etc/default/wakame-vdc
 %config /etc/prelink.conf.d/wakame-vdc.conf
@@ -364,6 +384,10 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %dir /var/log/%{oname}
 %dir /var/lib/%{oname}
 %exclude %{prefix}/%{oname}/tests/
+## TENTATIVE
+%config(noreplace) /etc/default/vdc-bksta
+%config /etc/init/vdc-bksta.conf
+## TENTATIVE
 
 %files vdcsh
 %defattr(-,root,root)
@@ -423,6 +447,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config(noreplace) /etc/default/vdc-proxy
 %config(noreplace) /etc/default/vdc-auth
 %config(noreplace) /etc/default/vdc-nwmongw
+%config(noreplace) /etc/default/vdc-dolphin
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
 %config /etc/init/vdc-metadata.conf
@@ -432,6 +457,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
 %config /etc/init/vdc-nwmongw.conf
+%config /etc/init/vdc-dolphin.conf
 %dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs
 %dir /var/log/%{oname}/dcmgr_gui
@@ -464,5 +490,11 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config /etc/sysctl.d/30-openvz.conf
 
 %files hva-full-vmapp-config
+
+%files natbox-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-natbox
+%config /etc/init/vdc-natbox.conf
+%config /etc/sysctl.d/30-natbox.conf
 
 %changelog

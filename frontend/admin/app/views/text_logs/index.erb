@@ -1,0 +1,44 @@
+<% content_for :javascript_link_tags do %>
+<%= javascript_include_tag ['/assets/moment.min.js',
+                            '/assets/admin/models/dcmgr.js',
+                            '/assets/admin/models/item.js',
+                            '/assets/admin/collections/text_log_collection.js',
+                            '/assets/admin/views/text_log_view.js',
+                            '/assets/admin/controllers/text_logs/search_controller.js',
+                            '/assets/admin/helpers.js',
+]
+%>
+<% end %>
+
+<% content_for :stylesheet_link_tags do %>
+<%= stylesheet_link_tag ['/assets/smoothness/jquery-ui-1.8.23.custom.css',
+                         '/assets/jquery-ui-timepicker-addon.css'
+] %>
+<% end %>
+  <div class="span10">
+    <div class="control-group">
+      <legend>ログ</legend>
+    </div>
+
+    <div>
+    <form class="well form-query">
+      <div class="control-group">
+        <div class="controls">
+
+        <select id="select_keys" name="application_id"></select>
+        <span class="input-prepend">
+            <input type="text" id="display_begin_at" name="start_time" value="" placeholder="">
+            <span class="add-on" id="icon_display_begin_at"><i class="icon-calendar"></i></span>
+        </span>
+        <div class="controls" style="text-align:right">
+        <button type="submit" class="btn">検索</button>
+        </div>
+        </div>
+    </div>
+    </form>
+    </div>
+    <div id="content"></div>
+    <script type="text/template" id="resultItemTemplate">
+    [{{ created_at }}]  {{ payload }}<br />
+    </script>
+</div>

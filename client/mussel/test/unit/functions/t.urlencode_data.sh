@@ -26,8 +26,8 @@ function test_urlencode_data_opts_single() {
 }
 
 function test_urlencode_data_opts_multi() {
-  assertNotEquals "$(urlencode_data key=val foo=bar)" "--data-urlencode key=val --data-urlencode foo=bar"
-  assertEquals    "$(urlencode_data key=val foo=bar)" "--data-urlencode foo=bar --data-urlencode key=val"
+  assertEquals    "$(urlencode_data key=val foo=bar)" "--data-urlencode key=val --data-urlencode foo=bar"
+  assertNotEquals "$(urlencode_data key=val foo=bar)" "--data-urlencode foo=bar --data-urlencode key=val"
 }
 
 ## shunit2

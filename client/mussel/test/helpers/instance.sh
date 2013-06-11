@@ -165,6 +165,8 @@ function render_secg_rule() {
 }
 
 function create_security_group() {
+  [[ -z "${security_group_uuid}" ]] || return 0
+
   render_secg_rule > ${rule_path}
   rule=${rule_path}
   local create_output="$(run_cmd security_group create)"

@@ -56,6 +56,7 @@ function test_load_balancer_create_no_opts() {
   local cookie_name=shunit2_cookie
   local display_name=shunit_disp
   local engine=haproxy
+  local httpchk_path="/index.html"
   local instance_port=80
   local max_connection=1000
   local port=80
@@ -70,11 +71,12 @@ function test_load_balancer_create_no_opts() {
     cookie_name=${cookie_name}
     display_name=${display_name}
     engine=${engine}
+    httpchk_path=${httpchk_path}
     instance_port=${instance_port}
     max_connection=${max_connection}
-    port=${port}
+    port[]=${port}
     private_key=${private_key}
-    protocol=${protocol}
+    protocol[]=${protocol}
     public_key=${public_key}
   "
 
@@ -89,6 +91,7 @@ function test_load_balancer_create_opts() {
   local cookie_name=shunit2_cookie
   local display_name=shunit_disp
   local engine=haproxy
+  local httpchk_path="/index.html"
   local instance_port=80
   local max_connection=1000
   local port=80
@@ -101,6 +104,7 @@ function test_load_balancer_create_opts() {
     --cookie-name=${cookie_name}
     --display-name=${display_name}
     --engine=${engine}
+    --httpchk-path=${httpchk_path}
     --instance-port=${instance_port}
     --max-connection=${max_connection}
     --port=${port}
@@ -114,11 +118,12 @@ function test_load_balancer_create_opts() {
     cookie_name=${cookie_name}
     display_name=${display_name}
     engine=${engine}
+    httpchk_path=${httpchk_path}
     instance_port=${instance_port}
     max_connection=${max_connection}
-    port=${port}
+    port[]=${port}
     private_key=${private_key}
-    protocol=${protocol}
+    protocol[]=${protocol}
     public_key=${public_key}
   "
 
@@ -136,6 +141,7 @@ function test_load_balancer_xcreate() {
   local cookie_name=
   local display_name=
   local engine=haproxy
+  local httpchk_path="/index.html"
   local instance_port=80
   local max_connection=1000
   local port=80
@@ -148,6 +154,7 @@ function test_load_balancer_xcreate() {
     cookie_name=${cookie_name}
     display_name=${display_name}
     engine=${engine}
+    httpchk_path=${httpchk_path}
     instance_port=${instance_port}
     max_connection=${max_connection}
     port=${port}
@@ -166,7 +173,7 @@ function test_load_balancer_poweron() {
   local cmd=poweron
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ### poweroff
@@ -175,7 +182,7 @@ function test_load_balancer_poweroff() {
   local cmd=poweroff
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ## shunit2

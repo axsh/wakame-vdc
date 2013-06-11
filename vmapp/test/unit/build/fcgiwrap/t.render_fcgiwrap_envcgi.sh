@@ -12,8 +12,8 @@
 
 ## public functions
 
-function test_render_nginx_repo() {
-  render_nginx_repo
+function test_render_fcgiwrap_envcgi() {
+  render_fcgiwrap_envcgi
   assertEquals $? 0
 }
 
