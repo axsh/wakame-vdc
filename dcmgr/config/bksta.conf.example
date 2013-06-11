@@ -1,0 +1,6 @@
+# AMQP broker to be connected.
+amqp_server_uri 'amqp://localhost/'
+
+export_uri 'scp://192.168.25.129/home/wakame-vdc/tmp/images'
+
+destination "demoA", "http://192.168.25.130:8889/"

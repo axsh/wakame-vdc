@@ -5,6 +5,7 @@
 
 MUSSEL_PROMPT='$'
 MUSSEL_ARGS=
+MUSSEL_FRONTEND=${MUSSEL_FRONTEND:-noninteractive} # [ interactive | noninteractive ]
 
 function extract_args() {
   MUSSEL_ARGS=
@@ -89,7 +90,7 @@ function urlencode_data() {
     while [[ "${1}" ]]; do
       echo --data-urlencode ${1}
       shift
-    done | sort
+    done
   )
 }
 
@@ -119,6 +120,7 @@ function add_param() {
     string) echo   "${param_key}=\${${param_key}}" ;;
      array) local i; for i in \${${param_key}}; do echo "${param_key}[]=\${i}"; done ;;
    strfile) strfile_type ${param_key}            ;;
+  strplain) echo "\${${param_key}}" ;;
    esac
   "
 }
@@ -175,7 +177,7 @@ function cmd_put() {
   [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
   [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
-  call_api -X PUT -d "''" $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
+  call_api -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
 }
 
 function cmd_help() {

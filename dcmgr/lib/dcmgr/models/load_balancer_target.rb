@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 module Dcmgr::Models
   class LoadBalancerTarget < AccountResource
     class RequestError < RuntimeError; end
@@ -21,6 +20,20 @@ module Dcmgr::Models
 
     def self.get_targets(network_vif_id)
       self.filter(:network_vif_id => network_vif_id).alives.group_by(:load_balancer_id).all
+    end
+
+    def self.get_security_group(load_balancer_id, network_vif_id)
+      unless get_targets(network_vif_id).empty?
+        security_groups = NetworkVif[network_vif_id].security_groups_dataset.where(:service_type => LoadBalancer::SERVICE_TYPE)
+        sg_uuids = security_groups.collect{|sg| sg.canonical_uuid }
+
+        sg = []
+        sg_uuids.each {|uuid|
+          sg = SecurityGroup[uuid]
+          break if sg.label(LoadBalancer[load_balancer_id].label)
+        }
+        sg
+      end
     end
 
     def self.get_load_balancers(network_vif_id)

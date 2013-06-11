@@ -39,7 +39,7 @@ module Dcmgr
         @image_id = request.args[2]
         @hva_ctx = HvaContext.new(self)
 
-        @hva_ctx.logger.info("Taking backup up of the image: #{@image_id}, #{@backupobject_id}")
+        @hva_ctx.logger.info("Taking backup of the image: #{@image_id}, #{@backupobject_id}")
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
         @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
@@ -80,6 +80,11 @@ module Dcmgr
               end
 
               def progress(percent)
+                if !(0.0 > percent.to_f)
+                  percent = 0
+                elsif 100.0 < percent.to_f
+                  percent = 100
+                end
                 self.call(:progress, percent)
               end
             }

@@ -26,6 +26,11 @@
   };
   app.utils = {};
 
+  /*
+    http://example.com/?foo=bar
+    app.utils.parsedSearch('foo')
+    => bar
+  */
   app.utils.parsedSearch = function(word) {
     var parsedSearch;
     parsedSearch = app.parsedSearch || (function() {
@@ -43,6 +48,10 @@
     } else{
       return "";
     }
+  };
+
+  app.utils.decodeSearhTime = function(time) {
+    return decodeURIComponent(time).replace('+',' ')
   };
 
   app.DatetimePicker = function(config) {

@@ -19,6 +19,9 @@ module Dcmgr
         }
 
         param :qemu_options, :default=>'-no-kvm-pit-reinjection'
+
+        param :serial_port_options, :default=>'telnet:127.0.0.1:%d,server,nowait'
+        param :vnc_options, :default=>'127.0.0.1:%d'
       end
 
       # 0x0-2 are reserved by KVM.
@@ -39,34 +42,43 @@ module Dcmgr
       end
 
       def run_instance(hc)
+        poweron_instance(hc)
+      end
+      
+      def poweron_instance(hc)
 
         # tcp listen ports for KVM monitor and VNC console
-        monitor_port = pick_tcp_listen_port
-        vnc_port = pick_tcp_listen_port
-        File.open(File.expand_path('monitor.port', hc.inst_data_dir), "w") { |f|
-          f.write(monitor_port)
-        }
-        File.open(File.expand_path('vnc.port', hc.inst_data_dir), "w") { |f|
-          f.write(vnc_port)
-        }
+        monitor_tcp_port = pick_tcp_listen_port
+        hc.dump_instance_parameter('monitor.port', monitor_tcp_port)
 
         # run vm
         inst = hc.inst
-        cmd = ["%s -m %d -smp %d -name vdc-%s -vnc :%d",
+        cmd = ["%s -m %d -smp %d -name vdc-%s",
                "-pidfile %s",
                "-daemonize",
                "-monitor telnet:127.0.0.1:%d,server,nowait",
-               "-no-shutdown",
                driver_configuration.qemu_options,
                ]
         args=[driver_configuration.qemu_path,
               inst[:memory_size],
               inst[:cpu_cores],
               inst[:uuid],
-              vnc_port - 5900, # KVM -vnc offsets 5900
               File.expand_path('kvm.pid', hc.inst_data_dir),
-              monitor_port
+              monitor_tcp_port,
              ]
+
+        if driver_configuration.vnc_options
+          vnc_tcp_port = pick_tcp_listen_port
+          hc.dump_instance_parameter('vnc.port', vnc_tcp_port)
+          # KVM -vnc port number offset is 5900
+          cmd << '-vnc ' + (driver_configuration.vnc_options.to_s % [vnc_tcp_port - 5900])
+        end
+
+        if driver_configuration.serial_port_options
+          serial_tcp_port = pick_tcp_listen_port
+          hc.dump_instance_parameter('serial.port', serial_tcp_port)
+          cmd << '-serial ' + (driver_configuration.serial_port_options.to_s % [serial_tcp_port])
+        end
 
         cmd << "-drive file=%s,media=disk,boot=on,index=0,cache=none,if=#{drive_model(hc)}"
         args << hc.os_devpath
@@ -83,35 +95,34 @@ module Dcmgr
           }
         end
         sh(cmd.join(' '), args)
+        run_sh = <<RUN_SH
+#!/bin/bash
+#{cmd.join(' ') % args}
+RUN_SH
 
         vifs.each { |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
             sh("/sbin/ip link set %s up", [vif[:uuid]])
             sh("#{Dcmgr.conf.brctl_path} addif %s %s", [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
+            run_sh += ("/sbin/ip link set %s up\n" % [vif[:uuid]])
+            run_sh += ("#{Dcmgr.conf.brctl_path} addif %s %s\n" % [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
           end
         }
+
+        # Dump as single shell script file to help failure recovery
+        # process of the user instance.
+        begin
+          hc.dump_instance_parameter('run.sh', run_sh)
+          File.chmod(0755, File.expand_path('run.sh', hc.inst_data_dir))
+        rescue => e
+          hc.logger.warn("Failed to export run.sh rescue script: #{e}")
+        end
 
         sleep 1
       end
 
       def terminate_instance(hc)
-        begin
-          connect_monitor(hc) { |t|
-            t.cmd("quit")
-          }
-        rescue Errno::ECONNRESET => e
-          # succssfully terminated the process
-        rescue => e
-          kvm_pid = File.read(File.expand_path('kvm.pid', hc.inst_data_dir))
-          if kvm_pid.nil? || kvm_pid == ''
-            kvm_pid=`pgrep -u root -f vdc-#{hc.inst_id}`
-          end
-          if kvm_pid.to_s =~ /^\d+$/
-            sh("/bin/kill -9 #{kvm_pid}") rescue logger.error($!)
-          else
-            logger.error("Can not find the KVM process. Skipping: #{hc.inst_id}")
-          end
-        end
+        poweroff_instance(hc)
       end
 
       def reboot_instance(hc)
@@ -206,16 +217,33 @@ module Dcmgr
       end
 
       def poweroff_instance(hc)
-        connect_monitor(hc) { |t|
-          t.cmd("system_powerdown")
-        }
+        begin
+          connect_monitor(hc) { |t|
+            t.cmd("quit")
+          }
+        rescue Errno::ECONNRESET => e
+          # succssfully terminated the process
+        rescue => e
+          kvm_pid = File.read(File.expand_path('kvm.pid', hc.inst_data_dir))
+          if kvm_pid.nil? || kvm_pid == ''
+            kvm_pid=`pgrep -u root -f vdc-#{hc.inst_id}`
+          end
+          if kvm_pid.to_s =~ /^\d+$/
+            sh("/bin/kill -9 #{kvm_pid}") rescue logger.error($!)
+          else
+            logger.error("Can not find the KVM process. Skipping: #{hc.inst_id}")
+          end
+        end
       end
 
-      def poweron_instance(hc)
-        connect_monitor(hc) { |t|
-          t.cmd("system_reset")
-          t.cmd("cont")
-        }
+      def soft_poweroff_instance(hc)
+        begin
+          connect_monitor(hc) { |t|
+            t.cmd("system_poweroff")
+          }
+        rescue Errno::ECONNRESET => e
+          # succssfully terminated the process
+        end
       end
 
       private
@@ -294,7 +322,9 @@ module Dcmgr
         hc.inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
       end
 
-      Task::Tasklet.register(self.new)
+      Task::Tasklet.register(self) {
+        self.new
+      }
     end
   end
 end

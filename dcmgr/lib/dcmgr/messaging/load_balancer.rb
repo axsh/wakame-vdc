@@ -1,6 +1,4 @@
-#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
-
 module Dcmgr::Messaging
   module LoadBalancer
     def self.update_ssl_proxy_config(values)
@@ -20,10 +18,37 @@ module Dcmgr::Messaging
     end
 
     def self.update_load_balancer_config(values)
-      proxy = Dcmgr::Drivers::Haproxy.new(Dcmgr::Drivers::Haproxy.mode(values[:protocol]))
+      balancer_mode = Dcmgr::Drivers::Haproxy.mode(values[:instance_protocol])
+      accept_ports = values[:ports] + [values[:secure_port]]
+
+      proxy = Dcmgr::Drivers::Haproxy.new(balancer_mode)
       proxy.set_balance_algorithm(values[:balance_algorithm])
-      proxy.set_cookie_name(values[:cookie_name]) if !values[:cookie_name].empty?
-      proxy.set_bind('*', values[:port])
+      accept_ports.each do |port|
+        proxy.set_bind('*', port) unless port.nil?
+      end
+
+      if proxy.is_http?
+
+        # for Sticky sessions
+        if !values[:cookie_name].blank?
+          proxy.set_cookie_name(values[:cookie_name])
+        end
+
+        # X-Forwaded-Proto
+        if !values[:secure_port].nil?
+          proxy.set_x_forwarded_proto('https', values[:secure_port])
+        end
+
+        if !values[:ports].empty?
+          ports = values[:ports]
+          proxy.set_x_forwarded_proto('http', ports)
+        end
+
+        # HTTP Helth check
+        if !values[:httpchk_path].blank?
+          proxy.set_httpchk_path(values[:httpchk_path])
+        end
+      end
 
       if !values[:servers].empty?
         values[:servers].each do |t|
@@ -34,6 +59,7 @@ module Dcmgr::Messaging
       end
 
       haproxy_config = proxy.bind_template(proxy.template_file_path)
+
       queue_params = {
         :name => values[:name],
         :topic_name => values[:topic_name],
@@ -46,6 +72,5 @@ module Dcmgr::Messaging
       end
       Dcmgr::Messaging.publish(haproxy_config, queue_params)
     end
-
   end
 end

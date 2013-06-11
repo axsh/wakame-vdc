@@ -82,7 +82,7 @@ module Dcmgr::VNet::OpenFlow
         :switch => switch,
         :network => self,
         :mac => service_map[:mac_addr],
-        :ip => IPAddr.new(service_map[:address]),
+        :ip => service_map[:address] ? IPAddr.new(service_map[:address]) : nil,
       }
 
       case service_map[:name]
@@ -98,6 +98,10 @@ module Dcmgr::VNet::OpenFlow
         logger.info "Adding GATEWAY service."
         name = :gateway
         service = ServiceGateway.new(args)
+      when 'external-ip'
+        logger.info "Adding EXTERNAL-IP service."
+        name = :external_ip
+        service = ServiceGateway.new(args.merge!({:route_type => :external_ip}))
       when 'metadata'
         logger.info "Adding METADATA service."
         name = :metadata

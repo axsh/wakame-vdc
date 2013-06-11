@@ -13,15 +13,19 @@
 ## public functions
 
 function setUp() {
-  mkdir -p ${chroot_dir}/etc/yum.repos.d
+  mkdir ${chroot_dir}
+
+  function chroot() { echo chroot $*; }
+  function install_epel()  { echo install_epel  $*; }
+  function install_nginx() { echo install_nginx $*; }
 }
 
 function tearDown() {
   rm -rf ${chroot_dir}
 }
 
-function test_install_nginx_repo() {
-  install_nginx_repo ${chroot_dir}
+function test_presetup_fcgiwrap() {
+  presetup_fcgiwrap ${chroot_dir}
   assertEquals $? 0
 }
 

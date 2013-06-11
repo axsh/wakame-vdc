@@ -48,12 +48,18 @@ module Dcmgr
       def check_instance(uuid)
       end
 
+      def soft_poweroff_instance(hc)
+        poweroff_instance(hc)
+      end
+
       def self.select_hypervisor(hypervisor)
         driver_class(hypervisor).new
       end
 
       def self.driver_class(hypervisor)
         case hypervisor.to_s
+        when "dummy"
+          Dcmgr::Drivers::DummyHypervisor
         when "kvm"
           Dcmgr::Drivers::Kvm
         when "lxc"

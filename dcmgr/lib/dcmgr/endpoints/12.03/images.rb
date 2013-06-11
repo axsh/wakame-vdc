@@ -7,6 +7,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
   IMAGE_STATE=['available', 'deleted'].freeze
   IMAGE_STATE_ALL=(IMAGE_STATE + IMAGE_META_STATE).freeze
 
+  register V1203::Helpers::ResourceLabel
+  enable_resource_label(M::Image)
+
   post do
     # description 'Register new machine image'
     raise NotImplementedError
@@ -20,8 +23,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
       scope[:account_id]=params[:account_id]
     end
 
-    if params[:is_public]
-      scope[:is_public]=1
+    unless params[:is_public].blank?
+      scope[:is_public]=  case params[:is_public]
+                          when 'true', 'false'
+                            params[:is_public].to_s == 'true' ? 1 : 0
+                          when '1', '0'
+                            params[:is_public].to_i
+                          else
+                            raise E::InvalidParameter, :is_public
+                          end
     end
     unless scope.empty?
       ds = ds.filter( scope.map {|k,v| "#{k} = ?" }.join(' OR '), *scope.values )
@@ -90,8 +100,46 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
     respond_with(R::Image.new(i).generate)
   end
 
+  put '/:id/copy_to' do
+    # description 'Update a machine image'
+    # param :id, string, :required
+    # param :display_name, string, :optional
+    # param :description, string, :optional
+    raise E::UndefinedImageID if params[:id].nil?
+    img = find_image_by_uuid(params[:id])
+    raise E::UnknownImage, params[:id] if img.nil?
+    if params[:destination] && params[:destination].to_s.size > 0
+    else
+      raise E::InvalidParameter, :destination
+    end
+
+    # TODO: This version only deals with the primary OS image file.
+    # It will need to take care for secondary image files.
+    bo = img.backup_object
+
+    submit_data = {
+      :image => img.to_hash,
+      :backup_object => bo.to_hash,
+      :destination => params[:destination]
+    }
+    [:display_name, :description].each { |k|
+      submit_data[k] = params[k] if params[k]
+    }
+
+    if bo.backup_storage.node_id.nil?
+      raise E::InvalidBackupStorage, "Not ready for copy task"
+    end
+
+    job = Dcmgr::Messaging.job_queue.submit("backup_storage.copy_to.#{bo.backup_storage.node_id}",
+                                            bo.canonical_uuid,
+                                            submit_data
+                                            )
+
+    respond_with(R::TaskCopyTo.new(job).generate)
+  end
+
   def find_image_by_uuid(uuid)
-    item = M::Image[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
+    item = find_by_uuid(:Image, uuid) || raise(E::UnknownUUIDResource, uuid.to_s)
 
     if item.is_public == true
       # return immediatly when the public flag is set.

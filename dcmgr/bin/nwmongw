@@ -66,11 +66,13 @@ Dcmgr.load_conf(Dcmgr::Configurations::Nwmongw,
                  File.expand_path('config/nwmongw.conf', Dcmgr::DCMGR_ROOT)
                 ])
 
-Dcmgr.run_initializers('sequel')
+Dcmgr.run_initializers('logger', 'sequel')
 
 manifest = DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'nwmongw'
+  node_instance_id `/bin/hostname`.chomp
+
   load_module Isono::NodeModules::NodeHeartbeat
   load_module MonitoringGateway
 end

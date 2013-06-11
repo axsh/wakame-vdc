@@ -23,19 +23,12 @@ module Dcmgr
   }
 
   module Constants
-    module BackupObject
-      CONTAINER_FORMAT={:tgz=>['tar.gz', 'tgz'], :tar=>['tar'], :gz=>['gz'], :none=>[]}.freeze
-      CONTAINER_FORMAT_NAMES=CONTAINER_FORMAT.keys.freeze
-      CONTAINER_EXTS=Hash[*CONTAINER_FORMAT.map{|k,v|
-                            v.map { |v2|
-                              [v2, k]
-                            }
-                          }.flatten].freeze
-    end
-
     autoload :Instance, 'dcmgr/constants/instance'
     autoload :Network, 'dcmgr/constants/network'
     autoload :Tag, 'dcmgr/constants/tag'
+    autoload :LoadBalancer, 'dcmgr/constants/load_balancer'
+    autoload :Image, 'dcmgr/constants/image'
+    autoload :BackupObject, 'dcmgr/constants/backup_object'
   end
   Const = Constants
 
@@ -44,7 +37,9 @@ module Dcmgr
     autoload :Hva, 'dcmgr/configurations/hva'
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
     autoload :Sta, 'dcmgr/configurations/sta'
+    autoload :Natbox, 'dcmgr/configurations/natbox'
     autoload :Nwmongw, 'dcmgr/configurations/nwmongw'
+    autoload :Bksta, 'dcmgr/configurations/bksta'
   end
 
   require 'dcmgr/models/errors'
@@ -63,31 +58,45 @@ module Dcmgr
     autoload :RequestLog, 'dcmgr/models/request_log'
     autoload :FrontendSystem, 'dcmgr/models/frontend_system'
     autoload :StorageNode, 'dcmgr/models/storage_node'
-    autoload :Volume, 'dcmgr/models/volume'
-    autoload :VolumeSnapshot, 'dcmgr/models/volume_snapshot'
-    autoload :SecurityGroup, 'dcmgr/models/security_group'
-    autoload :SecurityGroupReference, 'dcmgr/models/security_group_reference'
+    autoload :DcNetwork, 'dcmgr/models/dc_network'
+    autoload :DhcpRange, 'dcmgr/models/dhcp_range'
+    autoload :IpHandle, 'dcmgr/models/ip_handle'
+    autoload :IpLease, 'dcmgr/models/ip_lease'
+    autoload :IpPool, 'dcmgr/models/ip_pool'
+    autoload :IpPoolDcNetwork, 'dcmgr/models/ip_pool_dc_network'
+    autoload :Network, 'dcmgr/models/network'
+    autoload :NetworkRoute, 'dcmgr/models/network_route'
     autoload :NetworkService, 'dcmgr/models/network_service'
     autoload :NetworkVif, 'dcmgr/models/network_vif'
-    autoload :Network, 'dcmgr/models/network'
-    autoload :IpLease, 'dcmgr/models/ip_lease'
     autoload :NetworkVifIpLease, 'dcmgr/models/network_vif_ip_lease'
+    autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
     autoload :NetworkVifSecurityGroup, 'dcmgr/models/network_vif_security_group'
+    autoload :MacLease, 'dcmgr/models/mac_lease'
+    autoload :MacRange, 'dcmgr/models/mac_range'
+    autoload :SecurityGroup, 'dcmgr/models/security_group'
+    autoload :SecurityGroupReference, 'dcmgr/models/security_group_reference'
     autoload :SshKeyPair, 'dcmgr/models/ssh_key_pair'
+    autoload :Volume, 'dcmgr/models/volume'
+    autoload :VolumeSnapshot, 'dcmgr/models/volume_snapshot'
     autoload :History, 'dcmgr/models/history'
     autoload :HostnameLease, 'dcmgr/models/hostname_lease'
-    autoload :MacLease, 'dcmgr/models/mac_lease'
     autoload :VlanLease, 'dcmgr/models/vlan_lease'
-    autoload :DhcpRange, 'dcmgr/models/dhcp_range'
-    autoload :DcNetwork, 'dcmgr/models/dc_network'
     autoload :AccountingLog, 'dcmgr/models/accounting_log'
     autoload :LoadBalancer, 'dcmgr/models/load_balancer'
     autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'
+    autoload :LoadBalancerInbound, 'dcmgr/models/load_balancer_inbound'
     autoload :BackupStorage, 'dcmgr/models/backup_storage'
     autoload :BackupObject, 'dcmgr/models/backup_object'
-    autoload :MacRange, 'dcmgr/models/mac_range'
-    autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
+    autoload :QueuedJob, 'dcmgr/models/queued_job'
+
+    require 'dcmgr/models/log_storage/base'
+    module LogStorage
+      autoload :Base, 'dcmgr/models/log_storage/base'
+      autoload :Cassandra, 'dcmgr/models/log_storage/cassandra'
+    end
+
+    autoload :ResourceLabel, 'dcmgr/models/resource_label'
   end
 
   module Endpoints
@@ -107,6 +116,9 @@ module Dcmgr
       autoload :CoreAPI, 'dcmgr/endpoints/12.03/core_api'
       module Responses
       end
+      module Helpers
+        autoload :ResourceLabel, 'dcmgr/endpoints/12.03/helpers/resource_label'
+      end
     end
   end
 
@@ -114,13 +126,18 @@ module Dcmgr
     autoload :StaCollector, 'dcmgr/node_modules/sta_collector'
     autoload :StaTgtInitializer, 'dcmgr/node_modules/sta_tgt_initializer'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
+    autoload :NatboxCollector, 'dcmgr/node_modules/natbox_collector'
     autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
     autoload :DebugOpenFlow, 'dcmgr/node_modules/debug_openflow'
+    autoload :ServiceNatbox, 'dcmgr/node_modules/service_natbox'
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
     autoload :ServiceOpenFlow, 'dcmgr/node_modules/service_openflow'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
     autoload :Scheduler, 'dcmgr/node_modules/scheduler'
+    autoload :Maintenance, 'dcmgr/node_modules/maintenance'
     autoload :EventHook, 'dcmgr/node_modules/event_hook'
+    autoload :JobQueueProxy, 'dcmgr/node_modules/job_queue_proxy'
+    autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
   end
 
   module Helpers
@@ -130,6 +147,7 @@ module Dcmgr
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
     autoload :ByteUnit, 'dcmgr/helpers/byte_unit'
     autoload :Cgroup, 'dcmgr/helpers/cgroup'
+    autoload :BlockDeviceHelper, 'dcmgr/helpers/block_device_helper'
   end
 
   autoload :Tags, 'dcmgr/tags'
@@ -164,6 +182,7 @@ module Dcmgr
 
   module Rpc
     autoload :HvaHandler, 'dcmgr/rpc/hva_handler'
+    autoload :NatboxHandler, 'dcmgr/rpc/natbox_handler'
     autoload :StaHandler, 'dcmgr/rpc/sta_handler'
     autoload :HvaContext, 'dcmgr/rpc/hva_context'
     autoload :LocalStoreHandler, 'dcmgr/rpc/local_store_handler'
@@ -183,6 +202,7 @@ module Dcmgr
     autoload :S3Storage, 'dcmgr/drivers/s3_storage'
     autoload :IIJGIOStorage, 'dcmgr/drivers/iijgio_storage'
     autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
+    autoload :DummyHypervisor, 'dcmgr/drivers/dummy_hypervisor'
     autoload :LinuxHypervisor, 'dcmgr/drivers/linux_hypervisor'
     autoload :Kvm , 'dcmgr/drivers/kvm'
     autoload :Lxc , 'dcmgr/drivers/lxc'
@@ -196,6 +216,7 @@ module Dcmgr
     autoload :LinuxIscsi,   'dcmgr/drivers/linux_iscsi'
     autoload :Comstar,      'dcmgr/drivers/comstar'
     autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
+    autoload :DummyLocalStore, 'dcmgr/drivers/dummy_local_store.rb'
     autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
     autoload :ESXiLocalStore, 'dcmgr/drivers/esxi_local_store.rb'
     autoload :OpenvzLocalStore, 'dcmgr/drivers/openvz_local_store.rb'
@@ -209,6 +230,7 @@ module Dcmgr
     autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
     autoload :Zabbix, 'dcmgr/drivers/zabbix'
     autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
+    autoload :Natbox, 'dcmgr/drivers/natbox'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'
@@ -234,10 +256,15 @@ module Dcmgr
     end
 
     module Network
+      autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'
+      autoload :NatOneToOne, 'dcmgr/scheduler/network/nat_one_to_one'
+      autoload :VifTemplate, 'dcmgr/scheduler/network/vif_template'
+      autoload :VifParamTemplate, 'dcmgr/scheduler/network/vif_param_template'
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
       autoload :VifsRequestParam, 'dcmgr/scheduler/network/vifs_request_param'
       autoload :RequestParamToGroup, 'dcmgr/scheduler/network/request_param_to_group'
       autoload :NetworkGroup, 'dcmgr/scheduler/network/network_group'
+      autoload :SpecifyNetwork, 'dcmgr/scheduler/network/specify_network'
     end
 
     module MacAddress
@@ -273,6 +300,7 @@ module Dcmgr
       autoload :IptablesRule, 'dcmgr/vnet/netfilter/iptables_rule'
       autoload :NetfilterTaskManager, 'dcmgr/vnet/netfilter/task_manager'
       autoload :VNicProtocolTaskManager, 'dcmgr/vnet/netfilter/task_manager'
+      autoload :CacheDumper, 'dcmgr/vnet/netfilter/cache_dumper'
     end
 
     module OpenFlow
@@ -301,7 +329,6 @@ module Dcmgr
 
     module Tasks
       autoload :AcceptAllDNS, 'dcmgr/vnet/tasks/accept_all_dns'
-      autoload :AcceptArpBroadcast, 'dcmgr/vnet/tasks/accept_arp_broadcast'
       autoload :AcceptARPFromFriends, 'dcmgr/vnet/tasks/accept_arp_from_friends'
       autoload :AcceptARPFromGateway, 'dcmgr/vnet/tasks/accept_arp_from_gateway'
       autoload :AcceptARPFromDNS, 'dcmgr/vnet/tasks/accept_arp_from_dns'
@@ -326,6 +353,9 @@ module Dcmgr
       autoload :StaticNat, 'dcmgr/vnet/tasks/static_nat'
       autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
       autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
+      autoload :TranslateLoggingAddress, 'dcmgr/vnet/tasks/translate_logging_address'
+      autoload :AcceptGARPFromGateway, 'dcmgr/vnet/tasks/accept_garp_from_gateway'
+      autoload :AcceptARPReply, 'dcmgr/vnet/tasks/accept_arp_reply'
     end
 
   end
@@ -333,7 +363,10 @@ module Dcmgr
   require 'dcmgr/messaging'
   module Messaging
     autoload :LoadBalancer, 'dcmgr/messaging/load_balancer'
+    autoload :JobQueue, 'dcmgr/messaging/job_queue'
   end
+
+  autoload :TextLog, 'dcmgr/text_log'
 
 end
 

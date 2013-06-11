@@ -72,9 +72,36 @@ module Dcmgr
       @registry = {}
 
       class << self
-        def register(tasklet)
-          raise ArgumentError unless tasklet.is_a?(Tasklet)
-          @registry[tasklet.class] = tasklet
+        def register(tasklet, &blk)
+          if tasklet.is_a?(Tasklet)
+            @registry[tasklet.class] = tasklet
+          elsif tasklet.is_a?(Class) && tasklet < Tasklet
+            @registry[tasklet] = blk
+          else
+            raise ArgumentError
+          end
+        end
+
+        def new_task_class(taskclass)
+          c = @registry[taskclass]
+          case c
+          when Class
+            c.new
+          when Tasklet
+            # taskclass is cached in @registry.
+            c
+          when Proc
+            # create task object lazily and save to @registry.
+            new_task = c.call
+            unless new_task.is_a?(taskclass)
+              raise "New object has unexpected type: #{taskclass} -> #{new_task.class}"
+            end
+            @registry[taskclass] = new_task
+          when nil
+            taskclass.new
+          else
+            raise "Unknown registry object: #{c}"
+          end
         end
 
         def registry
@@ -204,7 +231,7 @@ module Dcmgr
 
       def invoke(taskclass, method, args)
         raise ArgumentError unless taskclass.is_a?(Class) && taskclass < Tasklet
-        tasklet = Tasklet.registry[taskclass] || taskclass.new
+        tasklet = Tasklet.new_task_class(taskclass)
 
         unless @tasklets.has_key?(tasklet)
           @tasklets[tasklet]=1

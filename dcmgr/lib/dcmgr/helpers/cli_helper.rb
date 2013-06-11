@@ -26,7 +26,7 @@ module POSIX
       if args.size == 1 && args[0] =~ /[ |><]/
         # single string with these characters means run it
         # through the shell
-        [['/bin/bash', '/bin/bash'], '-c', args[0]]
+        [['/bin/bash', '/bin/bash'], '-o', 'pipefail', '-c', args[0]]
       elsif !args[0].respond_to?(:to_ary)
         # [argv0, argv1, ...]
         [[args[0], args[0]], *args[1..-1]]

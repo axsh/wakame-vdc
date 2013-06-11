@@ -68,38 +68,3 @@ Feature: Network group scheduler
     When an instance inst3 is scheduled with no vifs parameter
     Then instance inst3 should have 1 vnic in total
     And instance inst3 should have 1 vnic in a network from group default_group
-
-  Scenario: Empty security groups string
-    Given the following Network exist in the database
-    | test_name      | ipv4_network | prefix | account_id | display_name  | network_mode   |
-    | test-network1  | 192.168.2.0  | 24     | a-shpoolxx | test_network1 | securitygroup  |
-    | test-network2  | 10.100.0.0   | 24     | a-shpoolxx | test_network2 | securitygroup  |
-    | test-network3  | 10.101.0.0   | 24     | a-shpoolxx | test_network3 | securitygroup  |
-
-    And Network test-network1 has the following dhcp range
-    | range_begin | range_end     |
-    | 192.168.2.1 | 192.168.2.254 |
-
-    And a NetworkGroup default_group exists with the following mapped resources
-    | mapped_resources |
-    | test-network1    |
-
-    And the following MacRange exists in the database
-    | test_name | vendor_id | range_begin | range_end |
-    | demomacs  | 5395456   | 1           | 16777215  |
-
-    And the following configuration is placed in dcmgr.conf
-    """
-    service_type("std", "StdServiceType") {
-        network_scheduler :NetworkGroup do
-          network_group_id '<default_group.canonical_uuid>'
-        end
-    }
-    """
-
-    When an instance inst1 is scheduled with the following vifs parameter
-    """
-    { "eth0" => {"index" => 0, "security_groups"=>""} }
-    """
-
-    Then instance inst1 should have 1 vnics in total
