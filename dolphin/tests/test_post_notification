@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+require 'net/http'
+require 'uri'
+require 'json'
+
+host = ENV['DOLPHIN_HOST'] || '127.0.0.1'
+port = ENV['DOLPHIN_PORT'] || 9004
+mail_to = ENV['MAIL_TO']
+mail_cc = ENV['MAIL_CC']
+mail_bcc = ENV['MAIL_BCC']
+
+mail_to ||= 'foo@example.com,bar@example.com'
+mail_cc ||= 'foo@example.com,bar@example.com'
+mail_bcc ||= 'foofoo@example.com,barbar@example.com'
+
+path = "http://#{host}:#{port}/notifications"
+uri = URI.parse(path)
+
+headers = {
+  'Content-Type' =>'application/json',
+  'X-Notification-Id' => 'system',
+}
+
+methods = {
+  'email' => {
+    'to' => mail_to,
+  }
+}
+
+methods['email']['cc'] = mail_cc unless mail_cc.empty?
+methods['email']['bcc'] = mail_bcc unless mail_bcc.empty?
+
+request = Net::HTTP::Post.new(uri.request_uri, headers)
+request.body = methods.to_json
+
+http = Net::HTTP.new(uri.host, uri.port)
+http.set_debug_output $stderr
+http.start do |h|
+  response = h.request(request)
+  puts JSON.parse(response.body)
+end

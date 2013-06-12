@@ -1,0 +1,26 @@
+[server]
+host = 127.0.0.1
+port = 9004
+
+[agent]
+request_handler = 1
+query_processor = 1
+worker = 1
+sender = 1
+
+[database]
+adapter = cassandra
+hosts = 127.0.0.1
+port = 9160
+max_retry_count = 3
+retry_interval = 3
+
+[mail]
+from = demo@example.com
+# host = localhost
+# port = 25
+type = file
+
+[logger]
+format = human_readable
+# format = ltsv

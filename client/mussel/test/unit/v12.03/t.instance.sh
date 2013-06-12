@@ -17,6 +17,7 @@ declare namespace=instance
 function setUp() {
   xquery=
   state=
+  force=
 }
 
 ### help
@@ -99,7 +100,6 @@ function test_instance_start_uuid() {
 }
 
 ### poweroff
-
 function test_instance_poweroff_no_uuid() {
   extract_args ${namespace} poweroff
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
@@ -110,6 +110,11 @@ function test_instance_poweroff_uuid() {
   extract_args ${namespace} poweroff i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
+}
+
+function test_instance_poweroff_force() {
+  extract_args ${namespace} poweroff i-xxx --force=true
+  assertEquals "${force}" "true"
 }
 
 ### poweron

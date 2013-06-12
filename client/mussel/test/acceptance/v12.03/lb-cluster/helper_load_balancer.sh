@@ -13,9 +13,14 @@ declare load_balancer_ipaddr=
 declare instance_uuids_path=$(generate_cache_file_path instance_uuids)
 declare instance_vifs_path=$(generate_cache_file_path instance_vifs)
 
+declare common_name=example.com
+
 ## functions
 
 function oneTimeSetUp() {
+  # ssl-cert
+  setup_self_signed_key ${common_name}
+
   # create
   for i in $(eval echo "{1..${target_instance_num:-1}}"); do
     instance_uuid= security_group_uuid= ssh_key_pair_uuid=
@@ -25,7 +30,8 @@ function oneTimeSetUp() {
     echo ${instance_uuid} >> ${instance_uuids_path}
     echo ${instance_vifs} >> ${instance_vifs_path}
   done
-  create_load_balancer
+
+  private_key=${load_balancer_private_key} public_key=${load_balancer_public_key} create_load_balancer
 
   # wait
   for instance_uuid in $(cat ${instance_uuids_path}); do
@@ -48,4 +54,7 @@ function oneTimeTearDown() {
 
   rm -f ${instance_uuids_path}
   rm -f ${instance_vifs_path}
+
+  # ssl-cert
+  teardown_self_signed_key ${common_name}
 }

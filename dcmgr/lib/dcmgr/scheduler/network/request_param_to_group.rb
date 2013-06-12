@@ -26,7 +26,6 @@ module Dcmgr
         configuration do
           param :key
           param :default
-          param :algorithm
 
           DSL do
             def pair(key,value)
@@ -34,16 +33,6 @@ module Dcmgr
               @config[:pairs][key] = value
             end
           end
-
-          on_initialize_hook do
-            def validate(errors)
-               @config[:algorithm] = :least_allocation if @config[:algorithm].nil?
-               unless NetworkGroup::ALGORITHMS.member? @config[:algorithm]
-                 errors << "Unknown algorithm: #{@config[:algorithm]}"
-               end
-            end
-          end
-
         end
 
         def schedule(instance)
@@ -61,18 +50,22 @@ module Dcmgr
             logger.info "Chose network group: '#{tag_id}'."
 
             # Create the vnic
-            vnic = Dcmgr::Models::NetworkVif.new({"account_id" => instance.account_id, "device_index" => vif_template["index"]})
+            vnic = instance.add_nic(vif_template)
 
-            # Choose a network from the network group
-            selected_network = NetworkGroup::Algorithm.__send__(options.algorithm, network_group.mapped_resources)
+            # Attach to the first network that has available ip leases left
+            networks = network_group.sorted_mapped_uuids.map {|mapped| Dcmgr::Models::Network[mapped.uuid]}
+            begin
+              network = networks.shift
+              raise Dcmgr::Scheduler::NetworkSchedulingError, "No available ip addresses left in network group '#{tag_id}'." if network.nil?
+              logger.info "Trying to attach vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
 
-            vnic.save
-            instance.add_network_vif(vnic)
-            vnic.network = selected_network
-            logger.info "Successfully attached vnic '#{vnic.canonical_uuid}' to network '#{selected_network.canonical_uuid}'."
+              vnic.attach_to_network(network)
+            rescue Dcmgr::Models::OutOfIpRange => e
+              logger.debug "No more dynamic ip addresses available in network '#{network.canonical_uuid}'"
+              retry
+            end
 
-            # Set security groups
-            vnic.add_security_groups_by_id(vif_template["security_groups"] || []) unless vif_template["security_groups"].to_s.empty?
+            logger.info "Successfully attached vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
           }
         end
       end

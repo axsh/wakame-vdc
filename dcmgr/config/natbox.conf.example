@@ -1,0 +1,25 @@
+#------------------------
+# Configuration file for natbox.
+#------------------------
+
+# path for ovs-ofctl
+#config.ovs_ofctl_path = '/usr/bin/ovs-ofctl'
+
+# display ovs commands
+#config.verbose_openflow  = false
+
+# ovs flow table
+#config.ovs_flow_table = 0
+
+# ovs flow priority
+#config.ovs_flow_priority = 100
+
+outside_dc_network(:external) {
+  interface 'eth0'
+  bridge 'br0'
+}
+
+inside_dc_network(:public) {
+  interface 'eth0'
+  bridge 'br0'
+}

@@ -30,6 +30,10 @@ recent_terminated_instance_period 900
 # mac address vendor_id
 mac_address_vendor_id '525400'
 
+# Cassandra connection string for LogService
+cassandra_keyspace 'wakame_vdc_log_store'
+cassandra_uri '127.0.0.1:9160'
+cassandra_cf 'events'
 
 service_type("std", "StdServiceType") {
   backup_storage_id 'bkst-demo2'
@@ -87,6 +91,9 @@ service_type("std", "StdServiceType") {
 
   # Available network schedulers:
   #
+  # * :FlatSingle
+  # * :NatOneToOne
+  # * :VifTemplate
   # * :PerInstance
   # * :RequestParamToGroup {
   #     key 'instance_spec_name'
@@ -107,16 +114,59 @@ service_type("std", "StdServiceType") {
     # assign IP address from first found network to single interface.
     default :VifsRequestParam
 
-    add(:nwg, :NetworkGroup) {
-      network_group_id "nwg-shnet"
+    # one internal address + NAT external address to single interface.
+    add(:nat, :NatOneToOne) {
+      # internal address
+      network_id 'nw-demo1'
+      # external address
+      nat_network_id 'nw-demo2'
     }
 
+    # multiple vnic: type1
+    add(:vif3type1, :VifTemplate) {
+      template({
+        'eth0' => 'nw-demo1',
+        'eth1' => 'nw-demo2',
+        'eth2' => 'nw-demo3',
+      })
+    }
+
+    # multiple vnic: type2
+    add(:vif3type2, :VifTemplate) {
+      template({
+        'eth0' => 'nw-demo1',
+        'eth1' => 'nw-demo4',
+        'eth2' => 'nw-demo5',
+      })
+    }
+
+    # vnet: physical and nw-demo6
+    add(:vnet_1_6, :VifTemplate) {
+      template({
+        'eth0' => 'nw-demo1',
+        'eth1' => 'nw-demo6',
+      })
+    }
+
+    # vnet: physical and nw-demo7
+    add(:vnet_1_7, :VifTemplate) {
+      template({
+        'eth0' => 'nw-demo1',
+        'eth1' => 'nw-demo7',
+      })
+    }
+
+    # vnet: nw-demo7
+    add(:vnet_7, :VifTemplate) {
+       template( {
+         'eth0' => 'nw-demo7',
+       })
+    }
   end
 }
 
 service_type("lb", "LbServiceType") {
   image_id 'wmi-demolb'
-  ssh_key_id 'ssh-demo'
   instances_network 'nw-demo1'
   management_network 'nw-demo8'
   host_node_scheduler :LeastUsage

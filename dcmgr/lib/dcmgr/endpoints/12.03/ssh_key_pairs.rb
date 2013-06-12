@@ -3,6 +3,9 @@
 require 'dcmgr/endpoints/12.03/responses/ssh_key_pair'
 require 'sshkey'
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
+  register V1203::Helpers::ResourceLabel
+  enable_resource_label(M::SshKeyPair)
+
   get do
     ds = M::SshKeyPair.dataset
     if params[:account_id]
@@ -81,6 +84,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       ssh.save
     rescue => e
       raise E::DatabaseError, e.message
+    end
+
+    unless params['labels'].blank?
+      labels_param_each_pair(params['labels']) do |name, value|
+        ssh.set_label(name, value)
+      end
     end
 
     respond_with(R::SshKeyPair.new(ssh, private_key).generate)

@@ -172,7 +172,7 @@ module Dcmgr
       class LbServiceType < ServiceType
         param :image_id
         param :instance_spec_id
-        param :ssh_key_id
+        param :ssh_key_id, :default=>nil # optional
         param :amqp_server_uri, :default=>proc {
           parent.config[:amqp_server_uri]
         }
@@ -182,7 +182,6 @@ module Dcmgr
         def validate(errors)
           super
           [:image_id,
-           :ssh_key_id,
            :instances_network,
            :management_network,
            :host_node_scheduler,
@@ -227,6 +226,12 @@ module Dcmgr
       # Database connection string
       deprecated_warn_param :database_url
       param :database_uri
+
+      # Cassandra connection string for LogService
+      param :cassandra_keyspace
+      param :cassandra_uri, :default => '127.0.0.1:9160'
+      param :cassandra_cf
+
       # AMQP broker to be connected.
       param :amqp_server_uri
 
@@ -258,6 +263,9 @@ module Dcmgr
       # Skip quota check even if frontend sends X-VDC-Account-Quota
       # header.
       param :skip_quota_evaluation, :default=>false
+
+      # default instance poweroff behavior
+      param :default_force_poweroff_instance, :default => true
 
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]

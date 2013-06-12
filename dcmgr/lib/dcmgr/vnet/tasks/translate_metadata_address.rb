@@ -25,7 +25,8 @@ module Dcmgr
           # Accept tcp traffic to the metadata server
           self.rules << IptablesRule.new(:filter,:forward,:tcp,:outgoing,"-p tcp -d #{self.metadata_ip} --dport #{self.metadata_port} -j ACCEPT")
           # TODO: segment check
-          self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-ip-src=#{self.metadata_ip} -j ACCEPT")
+          # TODO: add --arp-ip-dst=#{ip}
+          self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-opcode Request --arp-ip-src=#{self.metadata_ip} -j ACCEPT")
         end
       end
 

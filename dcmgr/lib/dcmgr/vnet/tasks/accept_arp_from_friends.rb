@@ -22,8 +22,8 @@ module Dcmgr
 
           friend_ips.each { |friend_ip|
             # Log traffic
-            self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-ip-src #{friend_ip} --arp-ip-dst #{self.inst_ip} --log-ip --log-arp --log-prefix '#{self.log_prefix}'       -j CONTINUE") if self.enable_logging
-            self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-ip-src #{friend_ip} --arp-ip-dst #{self.inst_ip} -j ACCEPT")
+            self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-opcode Request --arp-ip-src #{friend_ip} --arp-ip-dst #{self.inst_ip} --log-ip --log-arp --log-prefix '#{self.log_prefix}'       -j CONTINUE") if self.enable_logging
+            self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-opcode Request --arp-ip-src #{friend_ip} --arp-ip-dst #{self.inst_ip} -j ACCEPT")
           }
         end
       end

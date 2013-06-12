@@ -25,16 +25,16 @@ function setUp() {
 function test_network_create() {
   local cmd=create
 
+  local description=shunit2
   local gw=192.0.2.1
   local network=192.0.2.0
   local prefix=24
-  local description=shunit2
 
   local params="
+    description=${description}
     gw=${gw}
     network=${network}
     prefix=${prefix}
-    description=${description}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
@@ -49,7 +49,7 @@ function test_network_reserve() {
   local ipaddr=192.0.2.10
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${ipaddr})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?ipaddr=${ipaddr}"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?ipaddr=${ipaddr}"
 }
 
 ### release
@@ -60,7 +60,7 @@ function test_network_release() {
   local ipaddr=192.0.2.10
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${ipaddr})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?ipaddr=${ipaddr}"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?ipaddr=${ipaddr}"
 }
 
 ### add_pool
@@ -71,7 +71,7 @@ function test_network_add_pool() {
   local name=np-shunit2
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${name})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?name=${name}"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?name=${name}"
 }
 
 ### del_pool
@@ -82,7 +82,7 @@ function test_network_del_pool() {
   local name=np-shunit2
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${name})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?name=${name}"
+               "curl -X PUT $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?name=${name}"
 }
 
 ### get_pool

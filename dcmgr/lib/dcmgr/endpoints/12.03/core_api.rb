@@ -24,6 +24,8 @@ module Dcmgr::Endpoints::V1203
     E = Dcmgr::Endpoints::Errors
     R = Dcmgr::Endpoints::V1203::Responses
 
+    SYSTEM_ACCOUNT_ID = 'a-00000000'.freeze
+
     include Dcmgr::Endpoints::Helpers
 
     before do
@@ -92,7 +94,22 @@ module Dcmgr::Endpoints::V1203
       #  - start
       #  - limit
       #  - sort_by
+      def dataset_filter(ds, filter)
+        filter_list = filter.class == Array ? filter : [filter]
+        filter_list.each { |filter|
+          m = /^(\w+)(\.nil|\.not_nil)?$/.match(filter) || raise(E::InvalidParameter, :filter)
+
+          case m[2]
+          when '.nil' then ds = ds.where(m[1].to_sym => nil)
+          when '.not_nil' then ds = ds.exclude(m[1].to_sym => nil)
+          end
+        }
+
+        ds
+      end
+
       def paging_params_filter(ds)
+        ds = dataset_filter(ds, params[:filter]) if params[:filter]
 
         total = ds.count
 
@@ -107,7 +124,7 @@ module Dcmgr::Endpoints::V1203
                 end
         limit = if params[:limit]
                   if params[:limit] =~ /^\d+$/
-                  params[:limit].to_i
+                    params[:limit].to_i
                   else
                     raise E::InvalidParameter, :limit
                   end
@@ -115,10 +132,13 @@ module Dcmgr::Endpoints::V1203
                   0
                 end
         limit = limit < 1 ? 250 : limit
-
         ds = if params[:sort_by]
-               params[:sort_by] =~ /^(\w+)(\.desc|\.asc)?$/
-               ds.order(params[:sort_by])
+               m = /^(\w+)(\.desc|\.asc)?$/.match(params[:sort_by]) || raise(E::InvalidParameter, :sort_by)
+
+               case m[2]
+               when '.asc' then ds.order(Sequel.asc(m[1].to_sym))
+               when '.desc' then ds.order(Sequel.desc(m[1].to_sym))
+               end
              else
                ds.order(:id.desc)
              end
@@ -179,6 +199,8 @@ module Dcmgr::Endpoints::V1203
 
     load_namespace('instances')
     load_namespace('images')
+    load_namespace('ip_handles')
+    load_namespace('ip_pools')
     load_namespace('host_nodes')
     load_namespace('volumes')
     load_namespace('volume_snapshots')
@@ -196,5 +218,7 @@ module Dcmgr::Endpoints::V1203
     load_namespace('storage_node_groups')
     load_namespace('network_groups')
     load_namespace('accounts')
+    load_namespace('text_logs')
+    load_namespace('jobs')
   end
 end

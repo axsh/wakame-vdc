@@ -9,7 +9,8 @@
 function retry_until() {
   local blk="$@"
 
-  local wait_sec=120
+  local wait_sec=${RETRY_WAIT_SEC:-120}
+  local sleep_sec=${RETRY_SLEEP_SEC:-3}
   local tries=0
   local start_at=$(date +%s)
 
@@ -17,7 +18,7 @@ function retry_until() {
     eval "${blk}" && {
       break
     } || {
-      sleep 3
+      sleep ${sleep_sec}
     }
 
     tries=$((${tries} + 1))
@@ -96,21 +97,4 @@ function wait_for_sshd_not_to_be_ready() {
 function wait_for_httpd_not_to_be_ready() {
   local ipaddr=$1
   wait_for_port_not_to_be_ready ${ipaddr} tcp 80
-}
-
-##
-
-function hash_value() {
-  local key=$1 line
-
-  #
-  # NF=2) ":id: i-xxx"
-  # NF=3) "- :vif_id: vif-qqjr0ial"
-  #
-  egrep -w ":${key}:" </dev/stdin | awk '{ if (NF == 2) {print $2} else if (NF == 3) {print $3} }'
-}
-
-function document_pair?() {
-  local namespace=$1 uuid=$2 key=$3 val=$4
-  [[ "$(run_cmd ${namespace} show ${uuid} | hash_value ${key})" == "${val}" ]]
 }

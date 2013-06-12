@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 
+require 'ipaddress'
+
 module Dcmgr
   module VNet
     module Tasks
 
       class SecurityGroup < Task
         include Dcmgr::VNet::Netfilter
-        def initialize(group_map)
+        def initialize(vnic, group_map)
           super()
 
+          @vnic = vnic
+          
           # Parse the rules in case they are referencing other security groups
           parsed_rules = group_map[:rules].map { |rule|
             ref_group_id = rule[:ip_source].scan(/sg-\w+/).first
@@ -30,6 +34,19 @@ module Dcmgr
           }.flatten.uniq.compact
 
           parsed_rules.each { |rule|
+            begin
+              ipv4_rule_src = IPAddress::IPv4.new(rule[:ip_source])
+              if ipv4_rule_src.to_u32 == 0
+                # Do not set 0.0.0.0 to --arp-ip-*. it seems not to
+                # understand as any match.
+                self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-opcode Request --arp-ip-dst #{@vnic[:address]} -j ACCEPT")
+              else
+                self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-opcode Request --arp-ip-src #{rule[:ip_source]} --arp-ip-dst #{@vnic[:address]} -j ACCEPT")
+              end
+            rescue ArgumentError => e
+              STDERR.puts e
+            end
+            
             case rule[:ip_protocol]
             when 'tcp', 'udp'
               if rule[:ip_fport] == rule[:ip_tport]

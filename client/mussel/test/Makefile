@@ -10,5 +10,7 @@ integration:
 	(cd $@ && make)
 acceptance:
 	(cd $@ && make)
+experiment:
+	(cd $@ && make)
 
-.PHONY: unit component integration acceptance
+.PHONY: unit component integration acceptance experiment

@@ -1,26 +1,24 @@
 # -*- coding: utf-8 -*-
-require 'logger'
 
 module Dcmgr
   module Logger
 
-    # for passenger, messages in STDOUT are not appeared in
-    # error.log. $> is changed in initializers/logger.rb as per the
-    # server environment. so that here also refers $> instead of STDOUT or
-    # STDERR constant.
-    @logdev = ::Logger::LogDevice.new($>)
-
-    def self.default_logdev
-      @logdev
+    # logger object is set at config/initializers/logger.rb
+    def self.logger=(logger)
+      @logger = logger
     end
 
     def self.logger
-      @logger ||= begin
-                    ::Logger.new(default_logdev)
-                  end
+      @logger || raise("Logger is not initialized yet.")
+    end
+
+    def self.log_io
+      logger.instance_variable_get(:@logdev).dev
     end
 
     class CustomLogger
+      attr_reader :logger
+      
       def initialize(progname)
         @progname = progname
       end
@@ -38,9 +36,9 @@ module Dcmgr
       end
       alias :warning :warn
 
-      # Factory method for ::Logger
       def logger
-        l = ::Logger.new(Dcmgr::Logger.default_logdev)
+        require 'logger'
+        l = ::Logger.new(Dcmgr::Logger.log_io)
         l.progname = @progname
         l
       end

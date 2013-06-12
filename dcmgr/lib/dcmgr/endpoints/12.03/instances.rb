@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/instance'
+require 'multi_json'
 
 # To validate ip address syntax in the vifs parameter
 require 'ipaddress'
@@ -9,6 +10,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_META_STATE=['alive', 'alive_with_terminated', 'without_terminated'].freeze
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
+
+  register V1203::Helpers::ResourceLabel
+  enable_resource_label(M::Instance)
 
   def check_network_ip_combo(network_id,ip_addr)
     nw = M::Network[network_id]
@@ -25,6 +29,80 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
     end
+  end
+
+  # monitoring.items nested parameters are accepted only at POST
+  # /instances call. It is unable from PUT /instances.
+  # Further modifications can be done from "/instances/i-xxxxx/monitoring"
+  # API namespace.
+  def insert_monitoring_items(instance)
+    # monitoring parameter is optional.
+    if params['monitoring'].nil?
+      return false
+    elsif !params['monitoring'].is_a?(Hash)
+      raise E::InvalidParameter, 'monitoring'
+    end
+
+    monitoring_params = params['monitoring']
+
+    if monitoring_params.has_key?('items')
+      items_param = monitoring_params['items']
+      case items_param
+      when Array
+        items_param.each { |i|
+          instance.add_monitor_item(i['title'], i['enabled'], i['params'])
+        }
+      when Hash
+        items_param.each_pair { |k, i|
+          instance.add_monitor_item(i['title'], i['enabled'], i['params'])
+        }
+      else
+        raise E::InvalidParameter, "monitoring.items"
+      end
+
+      return true
+    end
+    return false
+  end
+  
+  def set_monitoring_parameters(instance)
+    dirty = [false]
+    # monitoring parameter is optional.
+    if params['monitoring'].nil?
+      return false
+    elsif !params['monitoring'].is_a?(Hash)
+      raise E::InvalidParameter, 'monitoring'
+    end
+
+    monitoring_params = params['monitoring']
+
+    # Old instance_monitor_attrs table update
+    instance.instance_monitor_attr.enabled = (monitoring_params['enabled'] == 'true')
+    if monitoring_params.has_key?('mail_address')
+      mail_addrs = monitoring_params['mail_address']
+      case mail_addrs
+      when "", nil
+        # Indicates to clear the recipients.
+        instance.instance_monitor_attr.recipients = []
+      when Array
+        instance.instance_monitor_attr.tap { |o|
+          o.recipients = mail_addrs.map {|v| {:mail_address=>v}}
+        }
+      when Hash
+        instance.instance_monitor_attr.tap { |o|
+          o.recipients = mail_addrs.map {|k, v| {:mail_address=>v}}
+        }
+      else
+        raise E::InvalidParameter, "monitoring.mail_address"
+      end
+      instance.instance_monitor_attr.changed_columns << :recipients
+    end
+    if instance.instance_monitor_attr.modified?
+      dirty[0] = true
+      instance.instance_monitor_attr.save_changes
+    end
+
+    return dirty.any?
   end
 
   # Show list of instances
@@ -183,9 +261,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         is_manual_ip_set = true
       end
 
-      # Deprecated code. Will be removed when we update the GUI to handle security groups
-      # on the vifs leven instead of the instances level.
-      temp["security_groups"] = params["security_groups"] || [] unless temp["security_groups"]
+      [temp["security_groups"]].flatten.select{|s| !s.blank?}.each do |security_group_uuid|
+        raise E::UnknownSecurityGroup unless find_by_uuid(M::SecurityGroup, security_group_uuid)
+      end
     }
 
     # params is a Mash object. so coverts to raw Hash object.
@@ -233,6 +311,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance.save
 
     #
+    unless params['labels'].blank?
+      labels_param_each_pair(params['labels']) do |name, value|
+        instance.set_label(name, value)
+      end
+    end
+
+    #
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
     #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
@@ -253,37 +338,20 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     if is_manual_ip_set
       ## Assign the custom vifs
-      Dcmgr::Scheduler::Network::VifsRequestParam.new.schedule(instance)
+      Dcmgr::Scheduler::Network::SpecifyNetwork.new.schedule(instance)
       instance.network_vif.each { |vif|
-        Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
+        # Calling this scheduler from instance#add_nic method instead
+        # as a workaround for that dirty method that needs to be removed
+        # Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
+
         Dcmgr::Scheduler::IPAddress::SpecifyIP.new.schedule(vif)
       }
     end
 
     # instance_monitor_attr row is created at after_save hook in Instance model.
     # Note that the keys should use string for sub hash.
-    if params['monitoring'].is_a?(Hash)
-      instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
-      if params['monitoring'].has_key?('mail_address')
-        case params['monitoring']['mail_address']
-        when "", nil
-          # Indicates to clear the recipients.
-          instance.instance_monitor_attr.recipients = []
-        when Array
-          params['monitoring']['mail_address'].each { |v|
-            instance.instance_monitor_attr.recipients << {:mail_address=>v}
-          }
-        when Hash
-          params['monitoring']['mail_address'].each { |k, v|
-            instance.instance_monitor_attr.recipients << {:mail_address=>v}
-          }
-        else
-          raise "Invalid mail address"
-        end
-        instance.instance_monitor_attr.changed_columns << :recipients
-      end
-      instance.instance_monitor_attr.save_changes
-    end
+    insert_monitoring_items(instance)
+    set_monitoring_parameters(instance)
 
     instance.state = :scheduling
     instance.save_changes
@@ -424,34 +492,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
     end
 
-    if params['monitoring'].is_a?(Hash)
-      if params['monitoring']['enabled']
-        instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
-      end
-      # Do not add mail_address key when you don't want to change
-      # existing recipient list.
-      if params['monitoring'].has_key?('mail_address')
-        case params['monitoring']['mail_address']
-        when "", nil
-          # Indicates to clear the recipients.
-          instance.instance_monitor_attr.recipients.clear
-        when Array
-          instance.instance_monitor_attr.tap { |o|
-            o.recipients = params['monitoring']['mail_address'].map {|v| {:mail_address=>v}}
-          }
-        when Hash
-          instance.instance_monitor_attr.tap { |o|
-            o.recipients = params['monitoring']['mail_address'].map {|k,v| {:mail_address=>v}}
-          }
-        else
-          raise "Invalid monitoring recipient: #{params['monitoring']['mail_address']}"
+    if set_monitoring_parameters(instance)
+      on_after_commit do
+        # instance.monitoring.refreshed is published only when the instance
+        # has been running already.
+        if instance.state.to_s != 'init'
+          Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                        :args=>[{:instance_id=>instance.canonical_uuid}])
         end
-        instance.instance_monitor_attr.changed_columns << :recipients
       end
-
-      instance.instance_monitor_attr.save_changes
     end
-
+    
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 
@@ -472,8 +523,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['halted'].member?(instance.state)
 
+    # backup storage can be chosen in the order of:
+    #   1. query string
+    #   2. service type section in dcmgr.conf
+    #   3. same location as original backup object.
     bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[instance.service_type].backup_storage_id
-    bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
+    bkst = if bkst_uuid
+             bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
+           else
+             # 3rd case.
+             nil
+           end
 
     bo = instance.image.backup_object.entry_clone do |i|
       [:display_name, :description].each { |k|
@@ -484,6 +544,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       i.state = :pending
       i.account_id = @account.canonical_uuid
+      if bkst
+        i.backup_storage = bkst
+      end
     end
     image = instance.image.entry_clone do |i|
       [:display_name, :description, :is_public, :is_cacheable].each { |k|
@@ -510,13 +573,24 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   # Halt the running instance.
   put '/:id/poweroff' do
     instance = find_by_uuid(:Instance, params[:id])
-    raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
+    raise E::InvalidInstanceState, instance.state unless ['running', 'halting'].member?(instance.state)
 
+    force =
+      case params[:force].to_s
+      when 'true'
+        true
+      when 'false'
+        false
+      else
+        Dcmgr.conf.default_force_poweroff_instance
+      end
+    job_name = force ? 'poweroff' : 'soft_poweroff'
+    
     instance.state = :halting
     instance.save
 
     on_after_commit do
-      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'poweroff',
+      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", job_name,
                              instance.canonical_uuid)
     end
     respond_with({:instance_id=>instance.canonical_uuid,
@@ -537,5 +611,75 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     respond_with({:instance_id=>instance.canonical_uuid,
                  })
+  end
+
+  namespace '/:instance_id/monitoring' do
+    def single_insert
+      @instance.add_monitor_item(params[:title], params[:enabled]=='true', params[:params])
+    end
+
+    before do
+      @instance = find_by_uuid(:Instance, params[:instance_id])
+    end
+
+    # List monitoring items.
+    get do
+      respond_with(R::InstanceMonitorItemCollection.new(@instance).generate)
+    end
+
+    # Create new monitoring item.
+    post do
+      res = if params[:title] && params[:enabled]
+              single_insert
+            else
+              raise E::InvalidParameter, "Invalid parameter combination"
+            end
+
+      on_after_commit do
+        Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                      :args=>[{:instance_id=>@instance.canonical_uuid}])
+      end
+
+      respond_with(res)
+    end
+
+    # Show single monitoring item.
+    get '/:monitor_id' do
+      monitor = @instance.monitor_item(params[:monitor_id]) || raise(E::UnknownUUIDResource, params[:monitor_id])
+      respond_with(R::InstanceMonitorItem.new(@instance, params[:monitor_id]).generate)
+    end
+
+    # Delete single monitoring item.
+    delete '/:monitor_id' do
+      @instance.delete_monitor_item(params[:monitor_id]) || raise(E::UnknownUUIDResource, params[:monitor_id])
+
+      on_after_commit do
+        Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                      :args=>[{:instance_id=>@instance.canonical_uuid, :monitor_id=>params[:monitor_id]}])
+      end
+      
+      respond_with([params[:monitor_id]])
+    end
+
+    # Update a monitor parameters.
+    put '/:monitor_id' do
+      @instance.monitor_item(params[:monitor_id]) || raise(E::UnknownUUIDResource, params[:monitor_id])
+
+      monitor = {}
+      unless params[:enabled].blank?
+        monitor[:enabled] = (params[:enabled] == 'true')
+      end
+
+      monitor[:title] = params[:title] unless params[:title].blank?
+      monitor[:params] = params[:params] unless params[:params].blank?
+      @instance.update_monitor_item(params[:monitor_id], monitor)
+
+      on_after_commit do
+        Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                      :args=>[{:instance_id=>@instance.canonical_uuid, :monitor_id=>params[:monitor_id]}])
+      end
+
+      respond_with(R::InstanceMonitorItem.new(@instance, params[:monitor_id]).generate)
+    end
   end
 end

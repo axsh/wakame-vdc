@@ -5,47 +5,32 @@ module Dcmgr
     class LinuxContainer < LinuxHypervisor
       include Dcmgr::Logger
       include Dcmgr::Helpers::Cgroup::CgroupContextProvider
+      include Dcmgr::Helpers::BlockDeviceHelper
 
+      module SkipCheckHelper
+        def self.stamp_path(instance_uuid)
+          File.expand_path("#{instance_uuid}/skip_check.stamp", Dcmgr.conf.vm_data_dir)
+        end
+
+        def self.skip_check?(instance_uuid)
+          if File.exists?(stamp_path(instance_uuid))
+            s = File.stat(stamp_path(instance_uuid))
+            return (Time.now - s.mtime) < 60.to_f
+          end
+          false
+        end
+
+        def self.skip_check(instance_uuid, &blk)
+          File.open(stamp_path(instance_uuid), 'w')
+          blk.call
+        ensure
+          File.unlink(stamp_path(instance_uuid)) rescue nil
+        end
+      end
+      
       protected
       def check_cgroup_mount
         File.readlines('/proc/mounts').any? {|l| l.split(/\s+/)[2] == 'cgroup' }
-      end
-
-      def mount_metadata_drive(ctx, mount_path)
-        raise "Mount point for metadata image does not exist: #{mount_path}" unless File.directory?(mount_path)
-        raise "Metadata image file does not exist #{ctx.metadata_img_path}" unless File.exists?(ctx.metadata_img_path)
-        # mount metadata drive
-        ve_metadata_path = mount_path
-        res = sh("kpartx -av %s", [ctx.metadata_img_path])
-        begin
-          if res[:stdout] =~ /^add map (\w+) /
-            lodev="/dev/mapper/#{$1}"
-          else
-            raise "Unexpected result from kpartx: #{res[:stdout]}"
-          end
-          sh("udevadm settle")
-
-          # save the loop device name for the metadata drive.
-          File.open(File.expand_path('metadata.lodev', ctx.inst_data_dir), 'w') {|f| f.puts(lodev) }
-          check_fs(lodev)
-        rescue => e
-          detach_loop(ctx.metadata_img_path)
-          raise
-        end
-        sh("mount -o ro %s %s", [lodev, ve_metadata_path])
-      end
-
-      def umount_metadata_drive(ctx, mount_path)
-        # umount metadata drive
-        #
-        # *** Don't use "-l" option. ***
-        # If "-l" option is added, umount command will get following messages.
-        # > device-mapper: remove ioctl failed: Device or resource busy
-        # > ioctl: LOOP_CLR_FD: Device or resource busy
-        #
-        sh("umount %s", [mount_path])
-        detach_loop(ctx.metadata_img_path)
-        ctx.logger.info("Umounted metadata directory #{mount_path}")
       end
 
       def umount_root_image(ctx, mount_path)
