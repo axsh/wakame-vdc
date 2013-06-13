@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://wakame.jp/}
   s.require_paths = [%q{lib}]
   s.required_ruby_version = Gem::Requirement.new(">= 1.9.3")
-  s.rubygems_version = %q{1.8.6}
+  s.rubygems_version = %q{1.8.23}
   s.summary = %q{Wakame-VDC: Server modules}
 
   if s.respond_to? :specification_version then
