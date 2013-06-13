@@ -42,7 +42,7 @@ Required Components
 
 * RabbitMQ (>= 2.7.1)
 * MySQL (>= 5.1.41)
-* nginx (>= 0.7.65)
+* nginx (>= 1.0.15)
 * Ruby (>= 1.9.3)
 * RubyGems (>= 1.8.23)
 
