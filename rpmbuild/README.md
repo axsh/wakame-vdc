@@ -203,8 +203,8 @@ Developing Wakame-VDC RPMs
 
     $ [ -d ~/rpmbuild/BUILD/ ] || mkdir -p ~/rpmbuild/BUILD/
     $ cd ~/rpmbuild/BUILD/
-    $ git clone git://github.com/axsh/wakame-vdc.git wakame-vdc-12.03
-    $ cd wakame-vdc-12.03
+    $ git clone git://github.com/axsh/wakame-vdc.git wakame-vdc-13.06
+    $ cd wakame-vdc-13.06
 
 ### Modifying files.
 
