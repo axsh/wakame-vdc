@@ -62,7 +62,7 @@ task :gem do
     s.summary = "Wakame-VDC: Server modules"
     s.description = 'Datacenter Hypervisor'
     s.require_path = 'lib'
-    s.required_ruby_version = '>= 1.8.7'
+    s.required_ruby_version = '>= 1.9.3'
 
     s.files = Dir['config/**/*.rb', 'lib/**/*.rb', 'web/api/public/**/*.*',
                   'web/metadata/public/**/*.*'] +
@@ -104,7 +104,7 @@ task :gem do
     s.summary = "Wakame-VDC: Agent modules"
     s.description = 'Datacenter Hypervisor'
     s.require_path = 'lib'
-    s.required_ruby_version = '>= 1.8.7'
+    s.required_ruby_version = '>= 1.9.3'
 
     s.files = Dir['config/**/*.rb', 'lib/**/*.rb'] +
       %w(Rakefile LICENSE NOTICE
