@@ -4,7 +4,7 @@ Preliminary Operations and Installation
 Installation Requirements
 -------------------------
 
-### System Requiremenets
+### System Requirements
 
 + RHEL 6.x
 
