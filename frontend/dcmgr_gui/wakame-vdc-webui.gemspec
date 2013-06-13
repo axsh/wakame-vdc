@@ -19,29 +19,29 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<rails>, ["= 3.0.11"])
-      s.add_runtime_dependency(%q<mysql>, ["= 2.8.1"])
-      s.add_runtime_dependency(%q<sequel>, ["= 3.27.0"])
-      s.add_runtime_dependency(%q<json>, ["= 1.6.3"])
+      s.add_runtime_dependency(%q<rails>, ["= 3.0.19"])
+      s.add_runtime_dependency(%q<mysql2>, ["= 0.3.11"])
+      s.add_runtime_dependency(%q<sequel>, ["= 3.43.0"])
+      s.add_runtime_dependency(%q<json>, ["= 1.8.0"])
       s.add_runtime_dependency(%q<oauth>, ["= 0.4.1"])
-      s.add_runtime_dependency(%q<nokogiri>, ["= 1.4.4"])
+      s.add_runtime_dependency(%q<nokogiri>, ["= 1.5.6"])
       s.add_runtime_dependency(%q<thor>, ["= 0.14.6"])
     else
-      s.add_dependency(%q<rails>, ["= 3.0.11"])
-      s.add_dependency(%q<mysql>, ["= 2.8.1"])
-      s.add_dependency(%q<sequel>, ["= 3.27.0"])
-      s.add_dependency(%q<json>, ["= 1.6.3"])
+      s.add_dependency(%q<rails>, ["= 3.0.19"])
+      s.add_dependency(%q<mysql2>, ["= 0.3.11"])
+      s.add_dependency(%q<sequel>, ["= 3.43.0"])
+      s.add_dependency(%q<json>, ["= 1.8.0"])
       s.add_dependency(%q<oauth>, ["= 0.4.1"])
-      s.add_dependency(%q<nokogiri>, ["= 1.4.4"])
+      s.add_dependency(%q<nokogiri>, ["= 1.5.6"])
       s.add_dependency(%q<thor>, ["= 0.14.6"])
     end
   else
-    s.add_dependency(%q<rails>, ["= 3.0.11"])
-    s.add_dependency(%q<mysql>, ["= 2.8.1"])
-    s.add_dependency(%q<sequel>, ["= 3.27.0"])
-    s.add_dependency(%q<json>, ["= 1.6.3"])
+    s.add_dependency(%q<rails>, ["= 3.0.19"])
+    s.add_dependency(%q<mysql2>, ["= 0.3.11"])
+    s.add_dependency(%q<sequel>, ["= 3.43.0"])
+    s.add_dependency(%q<json>, ["= 1.8.0"])
     s.add_dependency(%q<oauth>, ["= 0.4.1"])
-    s.add_dependency(%q<nokogiri>, ["= 1.4.4"])
+    s.add_dependency(%q<nokogiri>, ["= 1.5.6"])
     s.add_dependency(%q<thor>, ["= 0.14.6"])
   end
 end
