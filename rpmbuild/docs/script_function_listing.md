@@ -1,5 +1,4 @@
 This is just a simple listing of known functions in the various bash scripts.
-<br />
 
 Generated with:
 
