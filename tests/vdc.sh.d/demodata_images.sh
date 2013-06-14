@@ -46,15 +46,15 @@ EOF
       [[ -f "$localname" ]] || {
         # TODO: use HEAD and compare local cached file size
         echo "Downloading image file $localname ..."
-        f=$(basename "$uri")
-        [[ -f "$f" ]] || {
-          time ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$f"
+        dnldname=$(basename "$uri")
+        [[ -f "$dnldname" ]] || {
+          time ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$dnldname"
         }
 
        # Generate raw image file from .gz compressed (for download purposes) raw image file.
         [[ "${localname##*.}" != "gz" ]] && [[ "$container_format" = "none" ]] && {
-          echo "gunzip $f with keeping sparse area ..."
-          time gunzip -c "$f" | cp --sparse=always /dev/stdin "${localname}"
+          echo "gunzip $dnldname with keeping sparse area ..."
+          time gunzip -c "$dnldname" | cp --sparse=always /dev/stdin "${localname}"
         }
         # do not remove .gz as they are used for gzipped file test cases.
         : # this line ensure the subshell exit with status code 0
