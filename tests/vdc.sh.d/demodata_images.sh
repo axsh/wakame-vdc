@@ -51,8 +51,8 @@ EOF
           time ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$f"
         }
 
-       # Generate raw image file from .gz compressed image file.
-        [[ "${f##*.}" != "gz" ]] && [[ "$container_format" = "none" ]] && {
+       # Generate raw image file from .gz compressed (for download purposes) raw image file.
+        [[ "${localname##*.}" != "gz" ]] && [[ "$container_format" = "none" ]] && {
           echo "gunzip $f with keeping sparse area ..."
           time gunzip -c "$f" | cp --sparse=always /dev/stdin "${localname}"
         }
@@ -71,7 +71,7 @@ for meta in $metalst; do
     }
 
     localpath="${vdc_data}/images/${localname}"
-    if [[ "$localpath" -nt "${localpath}.md5" ]]; then
+    if [[ ! -f "${localpath}.md5" ]] || [[ "$localpath" -nt "${localpath}.md5" ]]; then
       echo "calculating checksum of $localpath ..."
       chksum=$(time md5sum "$localpath" | cut -d ' ' -f1 | tee "${localpath}.md5")
     else
