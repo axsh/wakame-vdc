@@ -125,20 +125,15 @@ module Dcmgr
 
       def create_instance_vnics(inst)
         inst[:vif].each { |vnic|
-          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
-
-          vnic[:security_groups].each { |secg|
-            event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
-          }
+          # self.job.submit("#{@inst[:host_node][:node_id]}-secg","init_vnic",vnic[:uuid])
+          event.publish("#{@inst[:host_node][:node_id]}-init_vnic", :args=>[vnic[:uuid]])
         }
       end
 
       def destroy_instance_vnics(inst)
         inst[:vif].each { |vnic|
-          event.publish("#{@inst[:host_node][:node_id]}/vnic_destroyed", :args=>[vnic[:uuid]])
-          vnic[:security_groups].each { |secg|
-            event.publish("#{secg}/vnic_left", :args=>[vnic[:uuid]])
-          }
+          # self.job.submit("#{@inst[:host_node][:node_id]}-secg","destroy_vnic",vnic[:uuid])
+          event.publish("#{@inst[:host_node][:node_id]}-destroy_vnic", :args=>[vnic[:uuid]])
         }
       end
 
@@ -283,12 +278,7 @@ module Dcmgr
         update_instance_state({:state=>:running}, ['hva/instance_started'])
 
         # Security group vnic joined events for vnet netfilter
-        @inst[:vif].each { |vnic|
-          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
-          vnic[:security_groups].each { |secg|
-            event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
-          }
-        }
+        create_instance_vnics(@inst)
       }, proc {
         ignore_error { terminate_instance(false) }
         ignore_error {
