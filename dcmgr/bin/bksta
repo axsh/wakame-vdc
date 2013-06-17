@@ -12,6 +12,7 @@ require 'sinatra/base'
 require 'em-http'
 require 'multi_json'
 require 'tmpdir'
+require 'fuguta'
 
 include Isono::Runner::RpcServer
 
@@ -24,7 +25,7 @@ begin
   }
 rescue NoMethodError => e
   abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
-rescue Dcmgr::Configuration::ValidationError => e
+rescue Fuguta::Configuration::ValidationError => e
   abort("Validation Error: #{path}\n  " +
         e.errors.join("\n  ")
         )
