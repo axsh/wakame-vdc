@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require 'fuguta'
+
 module Dcmgr
   
   module Configurations
 
-    class Natbox < Configuration
+    class Natbox < Fuguta::Configuration
 
       class DcNetwork < Configuration
         param :interface
