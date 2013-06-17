@@ -71,11 +71,11 @@ for meta in $metalst; do
     }
 
     localpath="${vdc_data}/images/${localname}"
-    if [[ ! -f "${localpath}.md5" ]] || [[ "$localpath" -nt "${localpath}.md5" ]]; then
-      echo "calculating checksum of $localpath ..."
-      chksum=$(time md5sum "$localpath" | cut -d ' ' -f1 | tee "${localpath}.md5")
+    if [[ -f "${localpath}.md5" ]] && [[ "$localpath" -nt "${localpath}.md5" ]]; then
+        chksum=$(cat "${localpath}.md5")
     else
-      chksum=$(cat "${localpath}.md5")
+        echo "calculating checksum of $localpath ..."
+        chksum=$(time md5sum "$localpath" | cut -d ' ' -f1 | tee "${localpath}.md5")
     fi
     alloc_size=$(ls -l "$localpath" | awk '{print $5}')
 
