@@ -1,5 +1,5 @@
 [wakame-vdc-rhel6]
 name=Wakame-VDC
-baseurl=http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/rhel/6/current/
+baseurl=http://dlc.wakame.axsh.jp/packages/rhel/6/master/current/
 enabled=1
 gpgcheck=0

@@ -5,5 +5,5 @@
 #RUN=yes
 
 ## nginx
-#DAEMON=/usr/bin/nginx
+#DAEMON=/usr/sbin/nginx
 #CONFIG=/etc/wakame-vdc/proxy.conf

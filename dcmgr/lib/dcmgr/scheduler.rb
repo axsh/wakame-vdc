@@ -161,7 +161,7 @@ module Dcmgr
       # helper method to create scheduler specific configuration class.
       #
       # Each scheduler can have configuration section in
-      # dcmgr.conf. Each section is a Dcmgr::Configuration class and
+      # dcmgr.conf. Each section is a Fuguta::Configuration class and
       # the class has to be defined as "Configuration" constant.
       #
       # Example below shows a network scheduler class with the local conf class:

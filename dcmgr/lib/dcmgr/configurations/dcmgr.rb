@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+require "fuguta"
+
 module Dcmgr
   module Configurations
     # Configuration loader for dcmgr.conf.
-    class Dcmgr < Configuration
+    class Dcmgr < Fuguta::Configuration
 
-      class Scheduler < Configuration
+      class Scheduler < Fuguta::Configuration
         alias_param  :scheduler, :scheduler_class
         param :scheduler_class
         param :option
@@ -18,7 +20,7 @@ module Dcmgr
 
         DSL do
           def self.load_section(class_name, conf_base_class, sched_namespace, &blk)
-            raise ArgumentError, "conf_base_class must be a Configuration (sub)class" unless conf_base_class < ::Dcmgr::Configuration
+            raise ArgumentError, "conf_base_class must be a Fuguta::Configuration (sub)class" unless conf_base_class < Fuguta::Configuration
             raise ArgumentError, "Unknown namespace: #{sched_namespace}" unless ::Dcmgr::Scheduler::NAMESPACES.member?(sched_namespace)
 
             c = ::Dcmgr::Scheduler.scheduler_class(class_name, sched_namespace)
@@ -52,14 +54,14 @@ module Dcmgr
       #     p options.xxxx
       #   end
       # end
-      class HostNodeScheduler < Configuration
+      class HostNodeScheduler < Fuguta::Configuration
       end
 
-      class HostNodeSchedulerRule < Configuration
+      class HostNodeSchedulerRule < Fuguta::Configuration
 
         DSL do
           def self.load_section(class_name, conf_base_class, &blk)
-            raise ArgumentError unless conf_base_class < ::Dcmgr::Configuration
+            raise ArgumentError, "conf_base_class must be a 'Fuguta::Configuration'. Got 'conf_base_class.class'" unless conf_base_class < Fuguta::Configuration
             #p ::Dcmgr::Scheduler.constants
             #raise ArgumentError unless ::Dcmgr::Scheduler::NAMESPACES.member?(rule_namespace)
             #rule_namespace = ::Dcmgr::Scheduler::HostNode::Rules
@@ -85,19 +87,19 @@ module Dcmgr
 
       end
 
-      class StorageNodeScheduler < Configuration
+      class StorageNodeScheduler < Fuguta::Configuration
       end
 
-      class NetworkScheduler < Configuration
+      class NetworkScheduler < Fuguta::Configuration
       end
 
-      class MacAddressScheduler < Configuration
+      class MacAddressScheduler < Fuguta::Configuration
       end
 
-      class IPAddressScheduler < Configuration
+      class IPAddressScheduler < Fuguta::Configuration
       end
 
-      class ServiceType < Configuration
+      class ServiceType < Fuguta::Configuration
 
         # default backup storage to upload backup object from the
         # service type nodes.
