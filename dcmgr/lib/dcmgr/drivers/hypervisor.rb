@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+require "fuguta"
+
 module Dcmgr
   module Drivers
     class Hypervisor < Task::Tasklet
-      extend Configuration::ConfigurationMethods::ClassMethods
+      extend Fuguta::Configuration::ConfigurationMethods::ClassMethods
 
       def_configuration
 

@@ -4,7 +4,7 @@ Preliminary Operations and Installation
 Installation Requirements
 -------------------------
 
-### System Requiremenets
+### System Requirements
 
 + RHEL 6.x
 
@@ -19,7 +19,7 @@ Download wakame-vdc.repo file and put it to your /etc/yum.repos.d/ repository.
 
     # curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
 
-If you need OpenVZ container, add another repository.
+For OpenVZ container support, add another repository.
 
     # curl -o /etc/yum.repos.d/openvz.repo     -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo
 
@@ -139,7 +139,9 @@ check if the following lines are described.
     #AMQP_ADDR=127.0.0.1
     #AMQP_PORT=5672
 
+Especially, vdc-hva has a name of node itself. If NODE_ID value is not specified, dcmgr does not recognize the hva as online.
 
+    NODE_ID=demo1
 
 Creating Database
 -----------------
@@ -201,8 +203,8 @@ Developing Wakame-VDC RPMs
 
     $ [ -d ~/rpmbuild/BUILD/ ] || mkdir -p ~/rpmbuild/BUILD/
     $ cd ~/rpmbuild/BUILD/
-    $ git clone git://github.com/axsh/wakame-vdc.git wakame-vdc-12.03
-    $ cd wakame-vdc-12.03
+    $ git clone git://github.com/axsh/wakame-vdc.git wakame-vdc-13.06
+    $ cd wakame-vdc-13.06
 
 ### Modifying files.
 

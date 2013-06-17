@@ -2,6 +2,33 @@
 
 set -e
 
+# Some helper functions to convert between int and ip
+# We're using these because rhel ipcalc can't calculate the
+# first and last leasable addresses
+function int_to_ip() {
+    local IFS=. num quad ip e
+    num=$1
+    for e in 3 2 1
+    do
+        (( quad = 256 ** e))
+        (( ip[3-e] = num / quad ))
+        (( num = num % quad ))
+    done
+    ip[3]=$num
+    echo "${ip[*]}"
+}
+
+function ip_to_int() {
+    local IFS=. ip num e
+    ip=($1)
+    for e in 3 2 1
+    do
+        (( num += ip[3-e] * 256 ** e ))
+    done
+    (( num += ip[3] ))
+    echo $num
+}
+
 vdc_data=${vdc_data:?"vdc_data needs to be set"}
 account_id=${account_id:?"account_id needs to be set"}
 
@@ -34,10 +61,12 @@ cd ${VDC_ROOT}/dcmgr/
 
 [ -f /etc/redhat-release ] && {
   # rhel
+  local nw_addr=`ip_to_int $(ipcalc -n ${ipaddr}/${prefix_len} | sed 's,.*=,,')`
+  local nw_brdc=`ip_to_int $(ipcalc -b ${ipaddr}/${prefix_len} | sed 's,.*=,,')`
   [ -n "${gw_dev}" ]      || gw_dev=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $5}')
   [ -n "${ipaddr}" ]      || ipaddr=$(/sbin/ip addr show ${gw_dev} | grep -w inet | awk '{print $2}')
-  [ -n "${range_begin}" ] || range_begin=`ipcalc -n ${ipaddr}/${prefix_len} | sed 's,.*=,,'`
-  [ -n "${range_end}"   ] || range_end=`ipcalc -b ${ipaddr}/${prefix_len} | sed 's,.*=,,'`
+  [ -n "${range_begin}" ] || range_begin=`int_to_ip $(expr $nw_addr + 1)`
+  [ -n "${range_end}"   ] || range_end=`int_to_ip $(expr $nw_brdc - 1)`
 } || {
   # ubuntu
   [ -n "${range_begin}" ] || range_begin=`ipcalc ${ipv4_gw}/${prefix_len} | awk '$1 == "HostMin:" { print $2 }'`

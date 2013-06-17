@@ -40,11 +40,11 @@ Install
 Required Components
 --------------------
 
-* RabbitMQ (>= 1.7.2)
-* MySQL (>= 5.1.41)
-* nginx (>= 0.7.65)
-* Ruby (>= 1.8.7)
-* RubyGems (>= 1.3.7)
+* RabbitMQ (>= 2.7.1)
+* MySQL (>= 5.1.66)
+* nginx (>= 1.0.15)
+* Ruby (>= 1.9.3)
+* RubyGems (>= 1.8.23)
 
 
 Building a Development Environment
@@ -69,6 +69,15 @@ RHEL6/CentOS6
     # ./tests/vdc.sh install::rhel
     # ./tests/vdc.sh run
 
+Users
+-----
+
+* Kyushu Electric Power Co., Ltd. ( http://www.kyuden.co.jp/en_index.html )
+* National Institute of Informatics ( http://www.nii.ac.jp/en/ )
+* NTT PC Communications ( http://www.nttpc.co.jp/english/ )
+* Kyocera Communication Systems Co., Ltd. ( http://www.kccs.co.jp/english/ )
+
+If you already use this software, please let me know. Thank you.
 
 License
 ---------

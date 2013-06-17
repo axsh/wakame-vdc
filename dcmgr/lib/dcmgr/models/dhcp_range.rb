@@ -18,19 +18,11 @@ module Dcmgr::Models
     def validate
       super
 
-      if !self.network.ipv4_ipaddress.include?(self.range_begin)
-        errors.add(:range_begin, "Out of subnet range: #{self.range_begin}")
-      end
+      validate_address(:range_begin, self.range_begin)
+      validate_address(:range_end, self.range_end)
 
-      if !self.network.ipv4_ipaddress.include?(self.range_end)
-        errors.add(:range_end, "Out of subnet range: #{self.range_end}")
-      end
-
-      if !(self.range_begin <= self.range_end)
-        # swap values.
-        t = self[:range_end]
-        self[:range_end] = self[:range_begin]
-        self[:range_begin] = t
+      if self.range_begin > self.range_end
+        errors.add(:range_begin, "Range begin (#{self.range_begin}) must be smaller than range end (#{self.range_end})")
       end
     end
 
@@ -112,5 +104,21 @@ module Dcmgr::Models
 
       ary
     end
+
+    private
+    def validate_address(column_name,ipv4_address)
+      if !self.network.ipv4_ipaddress.include?(ipv4_address)
+        errors.add(column_name, "Out of subnet range: #{ipv4_address}")
+      end
+
+      if self.network.ipv4_ipaddress.network == ipv4_address
+        errors.add(column_name, "Network address can't be added to dhcp range: #{ipv4_address}")
+      end
+
+      if self.network.ipv4_ipaddress.broadcast == ipv4_address
+        errors.add(column_name, "Broadcast address can't be added to dhcp range: #{ipv4_address}")
+      end
+    end
+
   end
 end

@@ -206,7 +206,8 @@ manifest.instance_eval do
     c.enable_dnsmasq = true
   end
 
-  load_config File.expand_path('config/nsa.conf', app_root)
+  path = ['/etc/wakame-vdc/nsa.conf', File.expand_path('config/nsa.conf', Dcmgr::DCMGR_ROOT)].find { |i| File.exists?(i) }
+  load_config File.expand_path(path, app_root)
 end
 
 Isono.at_disconnected do

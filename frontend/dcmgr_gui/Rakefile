@@ -24,7 +24,7 @@ task :gem do
     s.name = 'wakame-vdc-webui'
     s.summary = "Wakame-VDC: UI frontend"
     s.description = 'Datacenter Hypervisor'
-    s.required_ruby_version = '>= 1.8.7'
+    s.required_ruby_version = '>= 1.9.3'
 
     s.files = Dir['app/**/*.{rb,erb}','lib/**/*.rb',
                   'config/**/*.{rb,yml}', 'db/**/*.rb',
