@@ -14,21 +14,25 @@ gem "rack", "1.4.3"
 gem "sinatra", "1.3.2"
 gem "sinatra-contrib", "1.3.1"
 gem "json", ">= 1.2.0"
-gem "net-dhcp", ">= 1.1.1"
-gem "bit-struct", ">= 0.13.7"
-gem "racket", ">= 1.0.11"
 gem 'ripl'
 gem "rack-test", "0.6.2"
 gem 'posix-spawn'
 gem 'fuguta'
 
-gem 'isono', '0.2.18'
+gem 'eventmachine', :github=>'axsh/eventmachine', :ref=>'dc84f883b00'
+gem 'isono', '0.2.19'
 
-# Trema gem requires "rant" command during build.
-ENV['PATH']="#{Bundler.bundle_path}/bin:#{ENV['PATH']}"
+group :openflow do
+  # Trema gem requires "rant" command during build.
+  ENV['PATH']="#{Bundler.bundle_path}/bin:#{ENV['PATH']}"
 
-gem 'rant', '0.5.9'
-gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame'
+  gem 'rant', '0.5.9'
+  gem "bit-struct", :github=>'axsh/bit-struct'
+  gem "racket", :github=>'axsh/racket'
+  gem "net-dhcp", ">= 1.1.1"
+  gem 'trema', :github=>'axsh/trema', :branch=>'wakame'
+end
+
 gem 'rack-cors', :require => 'rack/cors'
 
 gem 'multi_json'
