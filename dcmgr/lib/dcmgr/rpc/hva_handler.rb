@@ -110,6 +110,7 @@ module Dcmgr
 
       def update_instance_state_to_terminated(opts)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
+        destroy_instance_vnics(@inst)
 
         # syncronized
         rpc.request('hva-collector', 'update_instance', @inst_id, opts)
@@ -118,9 +119,6 @@ module Dcmgr
         ev.each { |e|
           event.publish(e, :args=>[@inst_id])
         }
-
-        # Security group vnic left events for vnet netfilter
-        destroy_instance_vnics(@inst)
       end
 
       def create_instance_vnics(inst)
@@ -132,7 +130,7 @@ module Dcmgr
 
       def destroy_instance_vnics(inst)
         inst[:vif].each { |vnic|
-          self.job.submit("sg_handler","destroy_vnic",vnic[:uuid])
+          self.job.run("sg_handler","destroy_vnic",vnic[:uuid])
           # event.publish("#{@inst[:host_node][:node_id]}-destroy_vnic", :args=>[vnic[:uuid]])
         }
       end
