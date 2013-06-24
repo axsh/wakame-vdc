@@ -1,36 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# include "fabrication"
-
-# Fabricator(:vif, class_name Vnmgr::Models::NetworkVif) do
-# end
-require 'rubygems'
-require 'dcmgr'
-# require 'fabrication'
-require 'database_cleaner'
-require 'isono'
-
-RSpec.configure do |config|
-  Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
-                  [File.expand_path('../../config/dcmgr.conf', __FILE__)])
-  Dcmgr.run_initializers("logger","sequel")
-
-  config.color_enabled = true
-  config.formatter = :documentation
-
-  config.before(:suite) do
-    DatabaseCleaner.strategy = :truncation
-    DatabaseCleaner.clean_with(:truncation)
-  end
-
-  config.before(:each) do
-    DatabaseCleaner.start
-  end
-
-  config.after(:each) do
-    DatabaseCleaner.clean
-  end
-end
+require 'spec_helper'
 
 class SGHandlerTest
   include Dcmgr::Logger
@@ -71,72 +41,10 @@ class NetfilterAgentTest
   end
 end
 
-# Fabricator(:host, class_name: NetfilterAgentTest)
-
 TEST_ACCOUNT="a-shpoolxx"
-
-# Fabricator(:mac_range, class_name: Dcmgr::Models::MacRange) do
-#   test_name = "demomacs"
-#   vendor_id = 5395456
-#   range_begin = 1
-#   range_end = 16777215
-# end
-
-# Fabricator(:dhcp_range, class_name: Dcmgr::Models::DhcpRange) do
-#   range_begin = "192.168.3.1"
-#   range_end = "192.168.3.254"
-# end
-
-# Fabricator(:network, class_name: Dcmgr::Models::Network) do
-#   display_name = "test_network1"
-#   ipv4_network = "192.168.3.0"
-#   prefix = 24
-#   account_id = TEST_ACCOUNT
-#   network_mode = "securitygroup"
-#   add_dhcp_range(Fabricate(:dhcp_range))
-# end
-
-# Fabricator(:mac_lease, class_name: Dcmgr::Models::MacLease) do
-#   mac_addr
-# end
-
-# Fabricator(:ip_lease, class_name: Dcmgr::Models::IpLease)
-
-# Fabricator(:host, class_name: Dcmgr::Models::HostNode) do
-#   node_id = "hva.test"
-#   arch = "x86_64"
-#   hypervisor = "openvz"
-#   display_name = "test hva"
-# end
-
-# Fabricator(:instance, class_name: Dcmgr::Models::Instance) do
-#   account_id = TEST_ACCOUNT
-#   host_node = Fabricate(:host)
-#   hypervisor = "openvz"
-# end
-
-# Fabricator(:vnic, class_name: Dcmgr::Models::NetworkVif) do
-#   display_name = "test_vnic"
-#   device_index = 0
-#   mac_addr = "525400033c48"
-#   account_id = TEST_ACCOUNT
-#   instance
-# end
 
 describe "SGHandler and NetfilterAgent" do
   context "with 1 vnic, 1 host node, 1 security group" do
-    # let(:host) {
-    #   h = Fabricate(:host)
-    #   h.stub("nf_agent") {NetfilterAgentTest.new}
-    # }
-    # let(:instance) {Fabricate(:instance) {|i| i.host_node host }}
-    # let(:vnic) do
-    #   Fabricate(:mac_lease, mac_addr: 0x525400033c48)
-    #   Fabricate(:vnic, mac_addr: "525400033c48") do |v|
-    #     v.instance instance
-    #   #   v.instance (Fabricate(:instance) {|i| i.host_node Fabricate(:host) })
-    #   end
-    # end
     let(:nf_agent) {NetfilterAgentTest.new}
     let(:host) { h = Dcmgr::Models::HostNode.create({:node_id => "hva.test",:hypervisor => "openvz",
       :display_name=>"test hva", :offering_cpu_cores => 100, :offering_memory_size => 400000,
