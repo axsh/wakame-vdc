@@ -41,7 +41,6 @@ end
 Fabricator(:instance, class_name: Dcmgr::Models::Instance) do
   account_id TEST_ACCOUNT
   hypervisor "openvz"
-  host_node { Fabricate(:host_node) }
 end
 
 Fabricator(:vnic, class_name: Dcmgr::Models::NetworkVif) do
