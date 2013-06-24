@@ -285,6 +285,7 @@ module Dcmgr
   require 'dcmgr/vnet'
   module VNet
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
+    autoload :SGHandler, 'dcmgr/vnet/sg_handler.rb'
 
     module NetworkModes
       autoload :SecurityGroup, 'dcmgr/vnet/network_modes/security_group'
@@ -293,6 +294,7 @@ module Dcmgr
     end
 
     module Netfilter
+      autoload :NetfilterAgent, 'dcmgr/vnet/netfilter/netfilter_agent'
       autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'
       autoload :Chain, 'dcmgr/vnet/netfilter/chain'
       autoload :IptablesChain, 'dcmgr/vnet/netfilter/chain'
