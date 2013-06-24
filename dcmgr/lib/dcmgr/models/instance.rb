@@ -20,7 +20,7 @@ module Dcmgr::Models
     plugin ArchiveChangedColumn, :histories
     plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size]
     plugin Plugins::ResourceLabel
-      
+
     subset(:lives, {:terminated_at => nil})
     subset(:alives, {:terminated_at => nil})
     subset(:runnings, {:state => 'running'})
