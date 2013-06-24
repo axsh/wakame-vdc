@@ -12,7 +12,7 @@ module Dcmgr::VNet::SGHandler
     logger.info "Telling host '#{host_node.canonical_uuid}' to initialize vnic '#{vnic_id}'."
     call_packetfilter_service(host_node,"init_vnic",vnic_id,tasks)
 
-    # add_sgs_to_vnic(vnic_id,vnic.security_groups.map {|sg| sg.canonical_uuid})
+    add_sgs_to_vnic(vnic_id,vnic.security_groups.map {|sg| sg.canonical_uuid})
 
     nil # Returning nil to simulate a void method
   end
