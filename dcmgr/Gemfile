@@ -42,6 +42,6 @@ gem 'em-http-request'
 
 group :test do
   gem "rspec"
-  # gem "fabrication"
+  gem "fabrication"
   gem 'database_cleaner', :git => "https://github.com/bmabey/database_cleaner.git", :ref => "e5cb8cea"
 end

@@ -43,35 +43,20 @@ class NetfilterAgentTest
   end
 end
 
-TEST_ACCOUNT="a-shpoolxx"
-
 describe "SGHandler and NetfilterAgent" do
   context "with 1 vnic, 1 host node, 1 security group" do
-    let(:nf_agent) {NetfilterAgentTest.new}
-    let(:host) { h = Dcmgr::Models::HostNode.create({:node_id => "hva.test",:hypervisor => "openvz",
-      :display_name=>"test hva", :offering_cpu_cores => 100, :offering_memory_size => 400000,
-      :arch => "x86_64"})
-      h
-    }
-    let(:instance) {Dcmgr::Models::Instance.create(
-      {:account_id => TEST_ACCOUNT,:hypervisor => "openvz",:host_node => host}
-    )}
-    let(:secg) {Dcmgr::Models::SecurityGroup.create(:account_id => TEST_ACCOUNT)}
-    let(:vnic) {
-      Dcmgr::Models::MacLease.create({:mac_addr => 0x525400033c48})
+    let(:secg) { Fabricate(:secg) }
 
-      nic = Dcmgr::Models::NetworkVif.create({:device_index => 0, :mac_addr => "525400033c48",
-        :account_id => TEST_ACCOUNT, :instance => instance
-      })
-      nic.add_security_group(secg)
-      nic
-    }
-
-    let(:handler) do
-      SGHandlerTest.new
+    let(:vnic) do
+      Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
+        n.add_security_group(secg)
+      end
     end
 
+    let(:handler) {SGHandlerTest.new}
+
     it "should create and delete chains" do
+      host = vnic.instance.host_node
       handler.add_host(host)
       handler.init_vnic(vnic.canonical_uuid)
 
@@ -82,7 +67,7 @@ describe "SGHandler and NetfilterAgent" do
         "vdc_#{vnic.canonical_uuid}_d_referencers",
         "vdc_#{secg.canonical_uuid}_isolation",
       ]
-      handler.get_netfilter_agent(host).chains[:l3].should eq([
+      handler.get_netfilter_agent(host).chains[:l3].should == [
         "vdc_#{vnic.canonical_uuid}_d",
         "vdc_#{vnic.canonical_uuid}_d_standard",
         "vdc_#{vnic.canonical_uuid}_d_isolation",
@@ -90,7 +75,7 @@ describe "SGHandler and NetfilterAgent" do
         "vdc_#{vnic.canonical_uuid}_d_security",
         "vdc_#{secg.canonical_uuid}_security",
         "vdc_#{secg.canonical_uuid}_isolation",
-      ])
+      ]
 
       handler.destroy_vnic(vnic.canonical_uuid)
       handler.get_netfilter_agent(host).chains[:l2].should be_empty
