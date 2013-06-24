@@ -6,7 +6,7 @@ module Dcmgr::VNet::SGHandler
   def init_vnic(vnic_id)
     #TODO: Nilchecks for instance and host node
     vnic = M::NetworkVif[vnic_id]
-    host_node = M::NetworkVif[vnic_id].instance.host_node
+    host_node = vnic.instance.host_node
     tasks = []
 
     logger.info "Telling host '#{host_node.canonical_uuid}' to initialize vnic '#{vnic_id}'."
