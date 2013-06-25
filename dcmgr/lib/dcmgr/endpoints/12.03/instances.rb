@@ -64,7 +64,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     return false
   end
-  
+
   def set_monitoring_parameters(instance)
     dirty = [false]
     # monitoring parameter is optional.
@@ -502,7 +502,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
       end
     end
-    
+
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 
@@ -585,7 +585,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         Dcmgr.conf.default_force_poweroff_instance
       end
     job_name = force ? 'poweroff' : 'soft_poweroff'
-    
+
     instance.state = :halting
     instance.save
 
@@ -657,7 +657,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
                                       :args=>[{:instance_id=>@instance.canonical_uuid, :monitor_id=>params[:monitor_id]}])
       end
-      
+
       respond_with([params[:monitor_id]])
     end
 
