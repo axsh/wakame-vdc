@@ -4,26 +4,19 @@ module Dcmgr::VNet::SGHandler
   M = Dcmgr::Models
 
   def init_vnic(vnic_id)
-    #TODO: Nilchecks for instance and host node
     vnic = M::NetworkVif[vnic_id]
+    raise "Vnic '#{vnic.canonical_uuid}' not attached to an instance." if vnic.instance.nil?
+    raise "Vnic '#{vnic.canonical_uuid}' is not on a host node." if vnic.instance.host_node.nil?
     host_node = vnic.instance.host_node
     tasks = []
 
     logger.info "Telling host '#{host_node.canonical_uuid}' to initialize vnic '#{vnic_id}'."
     call_packetfilter_service(host_node,"init_vnic",vnic_id,tasks)
 
-    add_sgs_to_vnic(vnic_id,vnic.security_groups.map {|sg| sg.canonical_uuid})
-
-    nil # Returning nil to simulate a void method
-  end
-
-  def add_sgs_to_vnic(vnic_id,sg_uuids)
-    logger.info "Adding vnic: '#{vnic_id}' to security groups '#{sg_uuids.join(",")}'"
-    vnic = M::NetworkVif[vnic_id]
-    groups = sg_uuids.map {|sgid| M::SecurityGroup[sgid]}
-
-    groups.each {|group|
+    group_ids = []
+    vnic.security_groups.each {|group|
       group_id = group.canonical_uuid
+      group_ids << group_id
       group.host_nodes.each {|host_node|
         # Check if the host node had this vnic's security groups yet
         query = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance)
@@ -42,6 +35,30 @@ module Dcmgr::VNet::SGHandler
         end
       }
     }
+    logger.debug "Set security groups '#{group_ids}'' for vnic '#{vnic_id}'."
+    call_packetfilter_service(host_node,"set_vnic_security_groups",vnic_id,group_ids)
+
+    nil # Returning nil to simulate a void method
+  end
+
+  def add_sgs_to_vnic(vnic_id,sg_uuids)
+    logger.info "Adding vnic: '#{vnic_id}' to security groups '#{sg_uuids.join(",")}'"
+    vnic = M::NetworkVif[vnic_id]
+
+    sg_uuids.each { |group_id|
+      group = M::SecurityGroup[group_id]
+      vnic.add_security_group(group)
+
+      group.host_nodes.each {|host_node|
+        tasks = []
+        #TODO: Check if this host node had this group yet
+        call_packetfilter_service(host_node,"update_isolation_group",group_id,tasks)
+
+        #TODO: Handle referencers and referencees
+      }
+    }
+    call_packetfilter_service(host_node,"set_vnic_security_groups",vnic_id,sg_uuids)
+
     nil # Returning nil to simulate a void method
   end
 
@@ -51,11 +68,13 @@ module Dcmgr::VNet::SGHandler
   end
 
   def destroy_vnic(vnic_id)
-    host_node = M::NetworkVif[vnic_id].instance.host_node
+    vnic = M::NetworkVif[vnic_id]
+    raise "Vnic '#{vnic.canonical_uuid}' not attached to an instance." if vnic.instance.nil?
+    raise "Vnic '#{vnic.canonical_uuid}' is not on a host node." if vnic.instance.host_node.nil?
+    host_node = vnic.instance.host_node
     logger.info "Telling host '#{host_node.canonical_uuid}' to destroy vnic '#{vnic_id}'."
     call_packetfilter_service(host_node,"destroy_vnic",vnic_id)
 
-    vnic = M::NetworkVif[vnic_id]
     vnic.security_groups.each { |group|
       group_id = group.canonical_uuid
       group.host_nodes.each {|host_node|
