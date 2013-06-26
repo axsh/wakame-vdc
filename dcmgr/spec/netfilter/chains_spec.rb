@@ -26,22 +26,11 @@ class NFCmdParser
   attr_reader :chains
 
   def initialize
-    @chains = {
-      "iptables" => {
-        # "chain_name" => {
-          # "jumps" => [],
-          # "tasks" => []
-        # }
-      },
-      "ebtables" => {
-        # "chain_name" => {
-        #   "jumps" => [],
-        #   "tasks" => []
-        # }
-      }
-    }
+    @chains = {"iptables" => {}, "ebtables" => {}}
   end
 
+  #TODO: Clean up this dirty hard to maintain format
+  # I'm making the same mistake that I did with netfilter cache here
   def parse(cmds)
     # puts cmds.join("\n")
     cmds.each {|cmd|
@@ -85,20 +74,20 @@ class NetfilterAgentTest
     @parser = NFCmdParser.new
   end
 
-  def l2_chains
-    @parser.chains["ebtables"]
+  def l2chains
+    @parser.chains["ebtables"].keys
   end
 
-  def l3_chains
-    @parser.chains["iptables"]
+  def l3chains
+    @parser.chains["iptables"].keys
   end
 
-  def l2_chain(name)
-    @parser.chains["ebtables"][name]
+  def l2chain_jumps(chain_name)
+    @parser.chains["ebtables"][chain_name]["jumps"]
   end
 
-  def l3_chain(name)
-    @parser.chains["iptables"][name]
+  def l3chain_jumps(chain_name)
+    @parser.chains["iptables"][chain_name]["jumps"]
   end
 
   private
@@ -139,8 +128,13 @@ def l3_chains_for_secg(secg_id)
 end
 
 describe "SGHandler and NetfilterAgent" do
+  # some syntax sugar
+  def nfa(host)
+    handler.nfa(host)
+  end
+
   context "with 1 vnic, 1 host node, 1 security group" do
-    let(:secg) { Fabricate(:secg) }
+    let(:secg) { Fabricate(:secg) }; let(:secg_id) {secg.canonical_uuid}
     let(:host) { Fabricate(:host_node) }
     let(:vnic) do
       Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
@@ -149,37 +143,29 @@ describe "SGHandler and NetfilterAgent" do
         n.instance.save
       end
     end
+    let(:vnic_id) { vnic.canonical_uuid }
 
     let(:handler) {SGHandlerTest.new.tap{|sgh| sgh.add_host(host)}}
 
+
     it "should create and delete chains" do
-      handler.init_vnic(vnic.canonical_uuid)
+      handler.init_vnic(vnic_id)
 
-      handler.nfa(host).l2_chains.keys.should =~ (
-        l2_chains_for_vnic(vnic.canonical_uuid) + l2_chains_for_secg(secg.canonical_uuid)
-      )
-      handler.nfa(host).l3_chains.keys.should =~ (
-        l3_chains_for_vnic(vnic.canonical_uuid) + l3_chains_for_secg(secg.canonical_uuid)
-      )
-      handler.nfa(host).l2_chain("vdc_#{vnic.canonical_uuid}_d_isolation")["jumps"].should =~ (
-        l2_chains_for_secg(secg.canonical_uuid)
-      )
-      handler.nfa(host).l3_chain("vdc_#{vnic.canonical_uuid}_d_isolation")["jumps"].should =~ (
-        ["vdc_#{secg.canonical_uuid}_isolation"]
-      )
-      handler.nfa(host).l3_chain("vdc_#{vnic.canonical_uuid}_d_security")["jumps"].should =~ (
-        ["vdc_#{secg.canonical_uuid}_rules"]
-      )
+      nfa(host).l2chains.should =~ (l2_chains_for_vnic(vnic_id) + l2_chains_for_secg(secg_id))
+      nfa(host).l3chains.should =~ (l3_chains_for_vnic(vnic_id) + l3_chains_for_secg(secg_id))
+      nfa(host).l2chain_jumps("vdc_#{vnic_id}_d_isolation").should =~ l2_chains_for_secg(secg_id)
+      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d_isolation").should =~ ["vdc_#{secg_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d_security").should =~ ["vdc_#{secg_id}_rules"]
 
-      handler.destroy_vnic(vnic.canonical_uuid)
+      handler.destroy_vnic(vnic_id)
       vnic.destroy
-      handler.nfa(host).l2_chains.should == {}
-      handler.nfa(host).l3_chains.should == {}
+      handler.nfa(host).l2chains.should == []
+      handler.nfa(host).l3chains.should == []
     end
   end
 
   context "with 2 vnics, 1 host node, 1 security group" do
-    let(:secg) { Fabricate(:secg) }
+    let(:secg) { Fabricate(:secg) }; let(:secg_id) {secg.canonical_uuid}
     let(:host) { Fabricate(:host_node) }
     let(:vnicA) do
       Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
@@ -188,6 +174,7 @@ describe "SGHandler and NetfilterAgent" do
         n.instance.save
       end
     end
+    let(:vnicA_id) {vnicA.canonical_uuid}
 
     let(:vnicB) do
       Fabricate(:vnic, mac_addr: "525400033c49").tap do |n|
@@ -196,57 +183,43 @@ describe "SGHandler and NetfilterAgent" do
         n.instance.save
       end
     end
+    let(:vnicB_id) {vnicB.canonical_uuid}
 
     let(:handler) {SGHandlerTest.new.tap{|sgh| sgh.add_host(host)}}
 
     it "should create and delete chains" do
       # Create vnic A
-      handler.init_vnic(vnicA.canonical_uuid)
+      handler.init_vnic(vnicA_id)
 
-      handler.nfa(host).l2_chains.keys.should =~ (
-        l2_chains_for_vnic(vnicA.canonical_uuid) + l2_chains_for_secg(secg.canonical_uuid)
-      )
-      handler.nfa(host).l3_chains.keys.should =~ (
-        l3_chains_for_vnic(vnicA.canonical_uuid) + l3_chains_for_secg(secg.canonical_uuid)
+      nfa(host).l2chains.should =~ (l2_chains_for_vnic(vnicA_id) + l2_chains_for_secg(secg_id))
+      nfa(host).l3chains.should =~ (
+        l3_chains_for_vnic(vnicA_id) + l3_chains_for_secg(secg_id)
       )
 
       # Create vnic B
-      handler.init_vnic(vnicB.canonical_uuid)
-      handler.nfa(host).l2_chains.keys.should =~ (
-        l2_chains_for_vnic(vnicA.canonical_uuid) +
-        l2_chains_for_vnic(vnicB.canonical_uuid) +
-        l2_chains_for_secg(secg.canonical_uuid)
-      )
-      handler.nfa(host).l3_chains.keys.should =~ (
-        l3_chains_for_vnic(vnicA.canonical_uuid) +
-        l3_chains_for_vnic(vnicB.canonical_uuid) +
-        l3_chains_for_secg(secg.canonical_uuid)
-      )
+      handler.init_vnic(vnicB_id)
+      nfa(host).l2chains.should =~ (l2_chains_for_vnic(vnicA_id) + l2_chains_for_vnic(vnicB_id) + l2_chains_for_secg(secg_id))
+      nfa(host).l3chains.should =~ (l3_chains_for_vnic(vnicA_id) + l3_chains_for_vnic(vnicB_id) + l3_chains_for_secg(secg_id))
 
       # Destroy vnic A
-      handler.destroy_vnic(vnicA.canonical_uuid)
+      handler.destroy_vnic(vnicA_id)
       vnicA.destroy
-      handler.nfa(host).l2_chains.keys.should =~ (
-        l2_chains_for_vnic(vnicB.canonical_uuid) +
-        l2_chains_for_secg(secg.canonical_uuid)
-      )
-      handler.nfa(host).l3_chains.keys.should =~ (
-        l3_chains_for_vnic(vnicB.canonical_uuid) +
-        l3_chains_for_secg(secg.canonical_uuid)
-      )
+
+      nfa(host).l2chains.should =~ (l2_chains_for_vnic(vnicB_id) + l2_chains_for_secg(secg_id))
+      nfa(host).l3chains.should =~ (l3_chains_for_vnic(vnicB_id) + l3_chains_for_secg(secg_id))
 
       # Destroy vnic B
-      handler.destroy_vnic(vnicB.canonical_uuid)
+      handler.destroy_vnic(vnicB_id)
       vnicB.destroy
-      handler.nfa(host).l2_chains.should == {}
-      handler.nfa(host).l3_chains.should == {}
+      nfa(host).l2chains.should == []
+      nfa(host).l3chains.should == []
     end
   end
 
   context "with 2 vnics, 1 host node, 2 security groups" do
     let(:host) { Fabricate(:host_node) }
-    let(:groupA) { Fabricate(:secg) }
-    let(:groupB) { Fabricate(:secg) }
+    let(:groupA) { Fabricate(:secg) }; let(:groupA_id) {groupA.canonical_uuid}
+    let(:groupB) { Fabricate(:secg) }; let(:groupB_id) {groupB.canonical_uuid}
 
     let(:vnicA) do
       Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
@@ -262,41 +235,34 @@ describe "SGHandler and NetfilterAgent" do
         n.instance.save
       end
     end
+    let(:vnicA_id) {vnicA.canonical_uuid}
+    let(:vnicB_id) {vnicB.canonical_uuid}
 
     let(:handler) {SGHandlerTest.new.tap{|sgh| sgh.add_host(host)}}
 
     it "should create and delete chains" do
-      handler.init_vnic(vnicA.canonical_uuid)
-      handler.init_vnic(vnicB.canonical_uuid)
+      handler.init_vnic(vnicA_id)
+      handler.init_vnic(vnicB_id)
 
-      handler.nfa(host).l2_chains.keys.should =~ (
-        l2_chains_for_vnic(vnicA.canonical_uuid) +
-        l2_chains_for_vnic(vnicB.canonical_uuid) +
-        l2_chains_for_secg(groupA.canonical_uuid) +
-        l2_chains_for_secg(groupB.canonical_uuid)
+      nfa(host).l2chains.should =~ (
+        l2_chains_for_vnic(vnicA_id) + l2_chains_for_vnic(vnicB_id) +
+        l2_chains_for_secg(groupA_id) + l2_chains_for_secg(groupB_id)
       )
-      handler.nfa(host).l3_chains.keys.should =~ (
-        l3_chains_for_vnic(vnicA.canonical_uuid) +
-        l3_chains_for_vnic(vnicB.canonical_uuid) +
-        l3_chains_for_secg(groupA.canonical_uuid) +
-        l3_chains_for_secg(groupB.canonical_uuid)
+      nfa(host).l3chains.should =~ (
+        l3_chains_for_vnic(vnicA_id) + l3_chains_for_vnic(vnicB_id) +
+        l3_chains_for_secg(groupA_id) + l3_chains_for_secg(groupB_id)
       )
 
-      handler.destroy_vnic(vnicB.canonical_uuid)
+      handler.destroy_vnic(vnicB_id)
       vnicB.destroy
-      handler.nfa(host).l2_chains.keys.should =~ (
-        l2_chains_for_vnic(vnicA.canonical_uuid) +
-        l2_chains_for_secg(groupA.canonical_uuid)
-      )
-      handler.nfa(host).l3_chains.keys.should =~ (
-        l3_chains_for_vnic(vnicA.canonical_uuid) +
-        l3_chains_for_secg(groupA.canonical_uuid)
-      )
 
-      handler.destroy_vnic(vnicA.canonical_uuid)
+      nfa(host).l2chains.should =~ (l2_chains_for_vnic(vnicA_id) + l2_chains_for_secg(groupA_id))
+      nfa(host).l3chains.should =~ (l3_chains_for_vnic(vnicA_id) + l3_chains_for_secg(groupA_id))
+
+      handler.destroy_vnic(vnicA_id)
       vnicA.destroy
-      handler.nfa(host).l2_chains.should == {}
-      handler.nfa(host).l3_chains.should == {}
+      nfa(host).l2chains.should == []
+      nfa(host).l3chains.should == []
     end
   end
 end
