@@ -49,9 +49,9 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     ]
 
     exec secg_ids.map { |secg_id|
-      vnic_l2_iso_chain(vnic_id).add_jump(secg_l2_iso_chain(secg_id))
-      vnic_l3_iso_chain(vnic_id).add_jump(secg_l3_iso_chain(secg_id))
-      vnic_l3_secg_chain(vnic_id).add_jump(secg_l3_rules_chain(secg_id))
+      [vnic_l2_iso_chain(vnic_id).add_jump(secg_l2_iso_chain(secg_id)),
+      vnic_l3_iso_chain(vnic_id).add_jump(secg_l3_iso_chain(secg_id)),
+      vnic_l3_secg_chain(vnic_id).add_jump(secg_l3_rules_chain(secg_id))]
     }.flatten
   end
 
