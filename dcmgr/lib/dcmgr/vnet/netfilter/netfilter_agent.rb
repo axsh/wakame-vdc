@@ -29,7 +29,7 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
   end
 
   def init_isolation_group(isog_id, tasks)
-    logger.info "adding isolation chains for group '#{isog_id}'."
+    logger.info "Adding isolation chains for group '#{isog_id}'."
     exec isog_chains(isog_id).map {|chain| chain.create}
     #TODO: Add isolation rules for all vnics in the isog (secg in reality) to this chain
   end

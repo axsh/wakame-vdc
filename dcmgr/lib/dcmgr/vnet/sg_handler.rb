@@ -44,26 +44,62 @@ module Dcmgr::VNet::SGHandler
   def add_sgs_to_vnic(vnic_id,sg_uuids)
     logger.info "Adding vnic: '#{vnic_id}' to security groups '#{sg_uuids.join(",")}'"
     vnic = M::NetworkVif[vnic_id]
+    vnic_host = vnic.instance.host_node
 
+    host_had_secg_already = false
     sg_uuids.each { |group_id|
+      # no need to do anything if we're already in this group
+      #TODO: Display warning for this
+      next unless vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(group_id)).empty?
       group = M::SecurityGroup[group_id]
-      vnic.add_security_group(group)
 
       group.host_nodes.each {|host_node|
         tasks = []
-        #TODO: Check if this host node had this group yet
         call_packetfilter_service(host_node,"update_isolation_group",group_id,tasks)
 
         #TODO: Handle referencers and referencees
+        host_had_secg_already = true if host_node == vnic_host
       }
+
+      unless host_had_secg_already
+        sec_tasks = []
+        call_packetfilter_service(vnic_host,"init_security_group",group_id,sec_tasks)
+        iso_tasks = []
+        call_packetfilter_service(vnic_host,"init_isolation_group",group_id,iso_tasks)
+      end
+      vnic.add_security_group(group)
     }
-    call_packetfilter_service(host_node,"set_vnic_security_groups",vnic_id,sg_uuids)
+    call_packetfilter_service(vnic_host,"set_vnic_security_groups",vnic_id,sg_uuids)
 
     nil # Returning nil to simulate a void method
   end
 
   def remove_sgs_from_vnic(vnic_id,sg_uuids)
     logger.info "Removing vnic: '#{vnic_id}' from security groups '#{sg_uuids.join(",")}'"
+    vnic = M::NetworkVif[vnic_id]
+    vnic_host = vnic.instance.host_node
+
+    still_had_group = false
+    sg_uuids.each { |group_id|
+      next if vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(group_id)).empty?
+      group = M::SecurityGroup[group_id]
+      vnic.remove_security_group(group)
+
+      still_has_group = false
+      group.host_nodes.each {|host_node|
+        tasks = []
+        call_packetfilter_service(host_node,"update_isolation_group",group_id,tasks)
+
+        #TODO: Handle referencers and referencees
+        still_has_group = true if host_node == vnic_host
+      }
+
+      unless host_had_secg_already
+        call_packetfilter_service(vnic_host,"destroy_security_group",group_id)
+        call_packetfilter_service(vnic_host,"destroy_isolation_group",group_id)
+      end
+    }
+    call_packetfilter_service(vnic_host,"set_vnic_security_groups",vnic_id,sg_uuids)
     nil # Returning nil to simulate a void method
   end
 
