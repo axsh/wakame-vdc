@@ -65,20 +65,11 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
   def remove_all_chains
     prefix = Dcmgr::VNet::Netfilter::Chains::CHAIN_PREFIX
     logger.info "Removing all chains prefixed by '#{prefix}'."
-    #TODO: USE the remove_chains method for this
     system("for i in $(ebtables -L | grep 'Bridge chain: #{prefix}' | cut -d ' ' -f3 | cut -d ',' -f1); do ebtables -X $i; done")
     system("for i in $(iptables -L | grep 'Chain #{prefix}' | cut -d ' ' -f2); do iptables -F $i; iptables -X $i; done")
   end
 
   private
-  def add_jumps(layer,chain,target)
-    exec "#{layer} -A #{chain} -j #{target}"
-  end
-
-  def flush_chains(layer,chain)
-    exec "#{layer} -F #{chain}"
-  end
-
   def exec(cmds)
     #TODO: Make vebose commands options
     cmds = [cmds] unless cmds.is_a?(Array)
