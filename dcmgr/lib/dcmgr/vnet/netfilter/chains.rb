@@ -24,6 +24,10 @@ module Dcmgr::VNet::Netfilter::Chains
     def add_jump(target)
       "#{self.class.binary} -A #{@name} -j #{target.name}"
     end
+
+    def ==(chain)
+      (chain.class == self.class) && (chain.name == self.name)
+    end
   end
 
   class L2Chain < Chain
@@ -31,7 +35,6 @@ module Dcmgr::VNet::Netfilter::Chains
     def create
       "#{self.class.binary} -N #{@name}; ebtables -P #{@name} RETURN"
     end
-
   end
 
   class L3Chain < Chain
