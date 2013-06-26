@@ -43,11 +43,9 @@ class NFCmdParser
   end
 
   def parse(cmds)
+    # puts cmds.join("\n")
     cmds.each {|cmd|
       cmd.split(";").each { |semicolon_cmd|
-        # p @chains["iptables"].keys
-        # p @chains["ebtables"].keys
-        # p semicolon_cmd
         split_cmd = semicolon_cmd.split(" ")
         bin = split_cmd.shift # Returns either "iptables" or "ebtables"
         case split_cmd.shift
@@ -93,6 +91,14 @@ class NetfilterAgentTest
 
   def l3_chains
     @parser.chains["iptables"]
+  end
+
+  def l2_chain(name)
+    @parser.chains["ebtables"][name]
+  end
+
+  def l3_chain(name)
+    @parser.chains["iptables"][name]
   end
 
   private
@@ -154,6 +160,15 @@ describe "SGHandler and NetfilterAgent" do
       )
       handler.nfa(host).l3_chains.keys.should =~ (
         l3_chains_for_vnic(vnic.canonical_uuid) + l3_chains_for_secg(secg.canonical_uuid)
+      )
+      handler.nfa(host).l2_chain("vdc_#{vnic.canonical_uuid}_d_isolation")["jumps"].should =~ (
+        l2_chains_for_secg(secg.canonical_uuid)
+      )
+      handler.nfa(host).l3_chain("vdc_#{vnic.canonical_uuid}_d_isolation")["jumps"].should =~ (
+        ["vdc_#{secg.canonical_uuid}_isolation"]
+      )
+      handler.nfa(host).l3_chain("vdc_#{vnic.canonical_uuid}_d_security")["jumps"].should =~ (
+        ["vdc_#{secg.canonical_uuid}_rules"]
       )
 
       handler.destroy_vnic(vnic.canonical_uuid)
