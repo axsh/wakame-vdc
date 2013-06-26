@@ -195,11 +195,17 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).l3chains.should =~ (
         l3_chains_for_vnic(vnicA_id) + l3_chains_for_secg(secg_id)
       )
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ l2_chains_for_secg(secg_id)
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{secg_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{secg_id}_rules"]
 
       # Create vnic B
       handler.init_vnic(vnicB_id)
       nfa(host).l2chains.should =~ (l2_chains_for_vnic(vnicA_id) + l2_chains_for_vnic(vnicB_id) + l2_chains_for_secg(secg_id))
       nfa(host).l3chains.should =~ (l3_chains_for_vnic(vnicA_id) + l3_chains_for_vnic(vnicB_id) + l3_chains_for_secg(secg_id))
+      nfa(host).l2chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ l2_chains_for_secg(secg_id)
+      nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ ["vdc_#{secg_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_security").should =~ ["vdc_#{secg_id}_rules"]
 
       # Destroy vnic A
       handler.destroy_vnic(vnicA_id)
@@ -252,6 +258,13 @@ describe "SGHandler and NetfilterAgent" do
         l3_chains_for_vnic(vnicA_id) + l3_chains_for_vnic(vnicB_id) +
         l3_chains_for_secg(groupA_id) + l3_chains_for_secg(groupB_id)
       )
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ l2_chains_for_secg(groupA_id)
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules"]
+
+      nfa(host).l2chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ l2_chains_for_secg(groupB_id)
+      nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ ["vdc_#{groupB_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_security").should =~ ["vdc_#{groupB_id}_rules"]
 
       handler.destroy_vnic(vnicB_id)
       vnicB.destroy
