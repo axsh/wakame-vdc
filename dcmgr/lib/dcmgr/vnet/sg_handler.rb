@@ -47,10 +47,11 @@ module Dcmgr::VNet::SGHandler
     vnic_host = vnic.instance.host_node
 
     host_had_secg_already = false
+    current_sgids = vnic.security_groups.map {|g| g.canonical_uuid }
     sg_uuids.each { |group_id|
       # no need to do anything if we're already in this group
       #TODO: Display warning for this
-      next unless vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(group_id)).empty?
+      next if current_sgids.member?(group_id)
       group = M::SecurityGroup[group_id]
 
       group.host_nodes.each {|host_node|
@@ -69,7 +70,7 @@ module Dcmgr::VNet::SGHandler
       end
       vnic.add_security_group(group)
     }
-    call_packetfilter_service(vnic_host,"set_vnic_security_groups",vnic_id,sg_uuids)
+    call_packetfilter_service(vnic_host,"set_vnic_security_groups",vnic_id,(sg_uuids + current_sgids).uniq)
 
     nil # Returning nil to simulate a void method
   end
@@ -79,19 +80,20 @@ module Dcmgr::VNet::SGHandler
     vnic = M::NetworkVif[vnic_id]
     vnic_host = vnic.instance.host_node
 
-    still_had_group = false
+    host_had_secg_already = false
+    current_sgids = vnic.security_groups.map {|g| g.canonical_uuid }
     sg_uuids.each { |group_id|
       next if vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(group_id)).empty?
       group = M::SecurityGroup[group_id]
       vnic.remove_security_group(group)
 
-      still_has_group = false
+      host_had_secg_already = false
       group.host_nodes.each {|host_node|
         tasks = []
         call_packetfilter_service(host_node,"update_isolation_group",group_id,tasks)
 
         #TODO: Handle referencers and referencees
-        still_has_group = true if host_node == vnic_host
+        host_had_secg_already = true if host_node == vnic_host
       }
 
       unless host_had_secg_already
@@ -99,7 +101,7 @@ module Dcmgr::VNet::SGHandler
         call_packetfilter_service(vnic_host,"destroy_isolation_group",group_id)
       end
     }
-    call_packetfilter_service(vnic_host,"set_vnic_security_groups",vnic_id,sg_uuids)
+    call_packetfilter_service(vnic_host,"set_vnic_security_groups",vnic_id,(current_sgids - sg_uuids))
     nil # Returning nil to simulate a void method
   end
 
