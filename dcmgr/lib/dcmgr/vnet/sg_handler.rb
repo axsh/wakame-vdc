@@ -49,9 +49,10 @@ module Dcmgr::VNet::SGHandler
     host_had_secg_already = false
     current_sgids = vnic.security_groups.map {|g| g.canonical_uuid }
     sg_uuids.each { |group_id|
-      # no need to do anything if we're already in this group
-      #TODO: Display warning for this
-      next if current_sgids.member?(group_id)
+      if current_sgids.member?(group_id)
+        logger.warn "Vnic '#{vnic_id}' is already in security group '#{group_id}'."
+        next
+      end
       group = M::SecurityGroup[group_id]
 
       group.host_nodes.each {|host_node|
@@ -83,7 +84,10 @@ module Dcmgr::VNet::SGHandler
     host_had_secg_already = false
     current_sgids = vnic.security_groups.map {|g| g.canonical_uuid }
     sg_uuids.each { |group_id|
-      next if vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(group_id)).empty?
+      if vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(group_id)).empty?
+        logger.warn "Vnic '#{vnic_id}' isn't in security group '#{group_id}'."
+        next
+      end
       group = M::SecurityGroup[group_id]
       vnic.remove_security_group(group)
 
@@ -135,7 +139,7 @@ module Dcmgr::VNet::SGHandler
   end
 
   def call_packetfilter_service(host_node,method,*args)
-    raise NotImplementedError
+    raise NotImplementedError, "Classes that include the sg handler module must define a 'call_packetfilter_service(host_node,method,*args)' method"
   end
 
 end
