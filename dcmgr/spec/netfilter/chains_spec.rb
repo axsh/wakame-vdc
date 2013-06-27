@@ -277,5 +277,46 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).l2chains.should == []
       nfa(host).l3chains.should == []
     end
+
+    it "does live security group switching" do
+      handler.init_vnic(vnicA_id)
+
+      handler.add_sgs_to_vnic(vnicA_id,[groupB_id])
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ (l2_chains_for_secg(groupA_id) + l2_chains_for_secg(groupB_id) )
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules","vdc_#{groupB_id}_rules"]
+
+      handler.remove_sgs_from_vnic(vnicA_id,[groupB_id])
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ l2_chains_for_secg(groupA_id)
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules"]
+
+      # Nothing should change, nor should there be an error if we try to remove a group we're not in
+      handler.remove_sgs_from_vnic(vnicA_id,[groupB_id])
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ l2_chains_for_secg(groupA_id)
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules"]
+
+      # vnicA is already in groupA but that shouldn't be a problem. groupA should just be ignored. That's what we're testing here.
+      handler.add_sgs_to_vnic(vnicA_id,[groupA_id,groupB_id])
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ (l2_chains_for_secg(groupA_id) + l2_chains_for_secg(groupB_id) )
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules","vdc_#{groupB_id}_rules"]
+
+      handler.remove_sgs_from_vnic(vnicA_id,[groupA_id,groupB_id])
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should == []
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should == []
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should == []
+
+      handler.add_sgs_to_vnic(vnicA_id,[groupA_id,groupB_id])
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ (l2_chains_for_secg(groupA_id) + l2_chains_for_secg(groupB_id) )
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules","vdc_#{groupB_id}_rules"]
+
+      handler.destroy_vnic(vnicA_id)
+      vnicA.destroy
+      nfa(host).l2chains.should == []
+      nfa(host).l3chains.should == []
+    end
   end
 end
