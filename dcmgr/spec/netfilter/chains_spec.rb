@@ -85,10 +85,12 @@ class NetfilterAgentTest
   end
 
   def l2chain_jumps(chain_name)
+    raise "Ebtables chain doesn't exit: '#{chain_name}'" if @parser.chains["ebtables"][chain_name].nil?
     @parser.chains["ebtables"][chain_name]["jumps"]
   end
 
   def l3chain_jumps(chain_name)
+    raise "Iptables chain doesn't exit: '#{chain_name}'" if @parser.chains["iptables"][chain_name].nil?
     @parser.chains["iptables"][chain_name]["jumps"]
   end
 
@@ -203,16 +205,20 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).l3chains.should =~ (
         l3_chains_for_vnic(vnicA_id) + l3_chains_for_secg(secg_id)
       )
-      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ l2_chains_for_secg(secg_id)
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{secg_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_reffers").should =~ ["vdc_#{secg_id}_reffers"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{secg_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_reffees").should =~ ["vdc_#{secg_id}_reffees"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{secg_id}_rules"]
 
       # Create vnic B
       handler.init_vnic(vnicB_id)
       nfa(host).l2chains.should =~ (l2_chains_for_vnic(vnicA_id) + l2_chains_for_vnic(vnicB_id) + l2_chains_for_secg(secg_id))
       nfa(host).l3chains.should =~ (l3_chains_for_vnic(vnicA_id) + l3_chains_for_vnic(vnicB_id) + l3_chains_for_secg(secg_id))
-      nfa(host).l2chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ l2_chains_for_secg(secg_id)
+      nfa(host).l2chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ ["vdc_#{secg_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicB_id}_d_reffers").should =~ ["vdc_#{secg_id}_reffers"]
       nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ ["vdc_#{secg_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_reffees").should =~ ["vdc_#{secg_id}_reffees"]
       nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_security").should =~ ["vdc_#{secg_id}_rules"]
 
       # Destroy vnic A
@@ -266,12 +272,16 @@ describe "SGHandler and NetfilterAgent" do
         l3_chains_for_vnic(vnicA_id) + l3_chains_for_vnic(vnicB_id) +
         l3_chains_for_secg(groupA_id) + l3_chains_for_secg(groupB_id)
       )
-      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ l2_chains_for_secg(groupA_id)
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_reffers").should =~ ["vdc_#{groupA_id}_reffers"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_reffees").should =~ ["vdc_#{groupA_id}_reffees"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules"]
 
-      nfa(host).l2chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ l2_chains_for_secg(groupB_id)
+      nfa(host).l2chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ ["vdc_#{groupB_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicB_id}_d_reffers").should =~ ["vdc_#{groupB_id}_reffers"]
       nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ ["vdc_#{groupB_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_reffees").should =~ ["vdc_#{groupB_id}_reffees"]
       nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_security").should =~ ["vdc_#{groupB_id}_rules"]
 
       handler.destroy_vnic(vnicB_id)
@@ -290,25 +300,33 @@ describe "SGHandler and NetfilterAgent" do
       handler.init_vnic(vnicA_id)
 
       handler.add_sgs_to_vnic(vnicA_id,[groupB_id])
-      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ (l2_chains_for_secg(groupA_id) + l2_chains_for_secg(groupB_id) )
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_reffers").should =~ ["vdc_#{groupA_id}_reffers","vdc_#{groupB_id}_reffers"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_reffees").should =~ ["vdc_#{groupA_id}_reffees","vdc_#{groupB_id}_reffees"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules","vdc_#{groupB_id}_rules"]
 
       handler.remove_sgs_from_vnic(vnicA_id,[groupB_id])
-      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ l2_chains_for_secg(groupA_id)
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_reffers").should =~ ["vdc_#{groupA_id}_reffers"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_reffees").should =~ ["vdc_#{groupA_id}_reffees"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules"]
 
       # Nothing should change, nor should there be an error if we try to remove a group we're not in
       handler.remove_sgs_from_vnic(vnicA_id,[groupB_id])
-      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ l2_chains_for_secg(groupA_id)
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_reffers").should =~ ["vdc_#{groupA_id}_reffers"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_reffees").should =~ ["vdc_#{groupA_id}_reffees"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules"]
 
       # vnicA is already in groupA but that shouldn't be a problem. groupA should just be ignored. That's what we're testing here.
       handler.add_sgs_to_vnic(vnicA_id,[groupA_id,groupB_id])
-      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ (l2_chains_for_secg(groupA_id) + l2_chains_for_secg(groupB_id) )
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_reffers").should =~ ["vdc_#{groupA_id}_reffers","vdc_#{groupB_id}_reffers"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_reffees").should =~ ["vdc_#{groupA_id}_reffees","vdc_#{groupB_id}_reffees"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules","vdc_#{groupB_id}_rules"]
 
       handler.remove_sgs_from_vnic(vnicA_id,[groupA_id,groupB_id])
@@ -317,8 +335,10 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should == []
 
       handler.add_sgs_to_vnic(vnicA_id,[groupA_id,groupB_id])
-      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ (l2_chains_for_secg(groupA_id) + l2_chains_for_secg(groupB_id) )
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_reffers").should =~ ["vdc_#{groupA_id}_reffers","vdc_#{groupB_id}_reffers"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_reffees").should =~ ["vdc_#{groupA_id}_reffees","vdc_#{groupB_id}_reffees"]
       nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules","vdc_#{groupB_id}_rules"]
 
       handler.destroy_vnic(vnicA_id)
