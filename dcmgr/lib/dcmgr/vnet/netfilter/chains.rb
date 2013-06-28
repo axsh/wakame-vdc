@@ -52,8 +52,16 @@ module Dcmgr::VNet::Netfilter::Chains
     L2Chain.new("#{CHAIN_PREFIX}_#{sg_id}_isolation")
   end
 
+  def secg_l2_ref_chain(sg_id)
+    L2Chain.new("#{CHAIN_PREFIX}_#{sg_id}_reffers")
+  end
+
   def secg_l3_iso_chain(sg_id)
     L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_isolation")
+  end
+
+  def secg_l3_ref_chain(sg_id)
+    L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_reffees")
   end
 
   def vnic_l2_main_chain(vnic_id)

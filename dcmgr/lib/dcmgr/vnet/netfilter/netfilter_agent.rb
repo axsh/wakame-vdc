@@ -44,13 +44,17 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     logger.info "Setting security groups of vnic '#{vnic_id}' to [#{secg_ids.join(",")}]."
     exec [
       vnic_l2_iso_chain(vnic_id).flush,
+      vnic_l2_ref_chain(vnic_id).flush,
       vnic_l3_iso_chain(vnic_id).flush,
+      vnic_l3_ref_chain(vnic_id).flush,
       vnic_l3_secg_chain(vnic_id).flush
     ]
 
     exec secg_ids.map { |secg_id|
       [vnic_l2_iso_chain(vnic_id).add_jump(secg_l2_iso_chain(secg_id)),
+      vnic_l2_ref_chain(vnic_id).add_jump(secg_l2_ref_chain(secg_id)),
       vnic_l3_iso_chain(vnic_id).add_jump(secg_l3_iso_chain(secg_id)),
+      vnic_l3_ref_chain(vnic_id).add_jump(secg_l3_ref_chain(secg_id)),
       vnic_l3_secg_chain(vnic_id).add_jump(secg_l3_rules_chain(secg_id))]
     }.flatten
   end
