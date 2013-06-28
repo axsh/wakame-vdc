@@ -101,11 +101,30 @@ module Dcmgr::VNet::Netfilter::Chains
   end
 
   def secg_chains(sg_id)
-    [secg_l3_rules_chain(sg_id)]
+    [secg_l2_ref_chain(sg_id),secg_l3_ref_chain(sg_id),secg_l3_rules_chain(sg_id)]
   end
 
   def isog_chains(ig_id)
     [secg_l2_iso_chain(ig_id),secg_l3_iso_chain(ig_id)]
+  end
+
+  def vnic_l2_chains(vnic_id)
+    [
+      vnic_l2_main_chain(vnic_id),
+      vnic_l2_stnd_chain(vnic_id),
+      vnic_l2_iso_chain(vnic_id),
+      vnic_l2_ref_chain(vnic_id),
+    ]
+  end
+
+  def vnic_l3_chains(vnic_id)
+    [
+      vnic_l3_main_chain(vnic_id),
+      vnic_l3_stnd_chain(vnic_id),
+      vnic_l3_iso_chain(vnic_id),
+      vnic_l3_ref_chain(vnic_id),
+      vnic_l3_secg_chain(vnic_id)
+    ]
   end
 
   def vnic_chains(vnic_id)
@@ -117,17 +136,6 @@ module Dcmgr::VNet::Netfilter::Chains
     # Basically secg A is referencing secg B so vnics in secg A are referencers and vnics
     # in secg B are referencees. a referencee needs to know about its referencer and a
     # referencer needs to know about its referencee.
-    [
-      vnic_l2_main_chain(vnic_id),
-      vnic_l2_stnd_chain(vnic_id),
-      vnic_l2_iso_chain(vnic_id),
-      vnic_l2_ref_chain(vnic_id),
-
-      vnic_l3_main_chain(vnic_id),
-      vnic_l3_stnd_chain(vnic_id),
-      vnic_l3_iso_chain(vnic_id),
-      vnic_l3_ref_chain(vnic_id),
-      vnic_l3_secg_chain(vnic_id)
-    ]
+    vnic_l2_chains(vnic_id) + vnic_l3_chains(vnic_id)
   end
 end

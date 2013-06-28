@@ -109,7 +109,7 @@ def l2_chains_for_vnic(vnic_id)
 end
 
 def l2_chains_for_secg(secg_id)
-  ["vdc_#{secg_id}_isolation"]
+  ["vdc_#{secg_id}_reffers","vdc_#{secg_id}_isolation"]
 end
 
 def l3_chains_for_vnic(vnic_id)
@@ -125,6 +125,7 @@ end
 def l3_chains_for_secg(secg_id)
   [
     "vdc_#{secg_id}_rules",
+    "vdc_#{secg_id}_reffees",
     "vdc_#{secg_id}_isolation"
   ]
 end
@@ -154,10 +155,15 @@ describe "SGHandler and NetfilterAgent" do
       handler.init_vnic(vnic_id)
 
       nfa(host).l2chains.should =~ (l2_chains_for_vnic(vnic_id) + l2_chains_for_secg(secg_id))
+      nfa(host).l2chain_jumps("vdc_#{vnic_id}_d").should =~ (l2_chains_for_vnic(vnic_id) - ["vdc_#{vnic_id}_d"])
+      nfa(host).l2chain_jumps("vdc_#{vnic_id}_d_isolation").should =~ ["vdc_#{secg_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnic_id}_d_reffers").should == ["vdc_#{secg_id}_reffers"]
+
       nfa(host).l3chains.should =~ (l3_chains_for_vnic(vnic_id) + l3_chains_for_secg(secg_id))
-      nfa(host).l2chain_jumps("vdc_#{vnic_id}_d_isolation").should =~ l2_chains_for_secg(secg_id)
-      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d_isolation").should =~ ["vdc_#{secg_id}_isolation"]
-      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d_security").should =~ ["vdc_#{secg_id}_rules"]
+      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d").should =~ (l3_chains_for_vnic(vnic_id) - ["vdc_#{vnic_id}_d"])
+      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d_isolation").should == ["vdc_#{secg_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d_security").should == ["vdc_#{secg_id}_rules"]
+      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d_reffees").should == ["vdc_#{secg_id}_reffees"]
 
       handler.destroy_vnic(vnic_id)
       vnic.destroy

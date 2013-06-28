@@ -10,6 +10,20 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
   def init_vnic(vnic_id, tasks)
     logger.info "Adding chains for vnic '#{vnic_id}'."
     exec vnic_chains(vnic_id).map {|chain| chain.create}
+
+    # Add main l2 jumps
+    l2_main = vnic_l2_main_chain(vnic_id)
+    exec vnic_l2_chains(vnic_id).map {|chain|
+      next if chain == l2_main
+      l2_main.add_jump(chain)
+    }.compact
+
+    # Add main l3 jumps
+    l3_main = vnic_l3_main_chain(vnic_id)
+    exec vnic_l3_chains(vnic_id).map {|chain|
+      next if chain == l3_main
+      l3_main.add_jump(chain)
+    }.compact
   end
 
   def destroy_vnic(vnic_id)
