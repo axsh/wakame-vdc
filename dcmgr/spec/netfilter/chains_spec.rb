@@ -31,6 +31,8 @@ class NFCmdParser
 
   #TODO: Clean up this dirty hard to maintain format
   # I'm making the same mistake that I did with netfilter cache here
+
+  #TODO: Raise error when trying to delete a chain that still has jumps to it
   def parse(cmds)
     # puts cmds.join("\n")
     cmds.each {|cmd|
@@ -47,7 +49,7 @@ class NFCmdParser
           raise "Chain doesn't exist: #{bin} #{chain}" if @chains[bin][chain].nil?
           if split_cmd.shift == "-j"
             target = split_cmd.shift
-            raise "Jump target doesn't exit: #{bin} #{chain}" if @chains[bin][chain].nil?
+            raise "Jump target doesn't exit: #{bin} #{target}" if @chains[bin][target].nil?
             @chains[bin][chain]["jumps"] << target
           end
         when "-X"
