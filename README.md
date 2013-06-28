@@ -1,5 +1,7 @@
 Wakame-VDC
-============
+==========
+
+[![Code Climate](https://codeclimate.com/github/axsh/wakame-vdc.png)](https://codeclimate.com/github/axsh/wakame-vdc)
 
 Wakame-VDC is the Data Center Level Hypervisor.
 
