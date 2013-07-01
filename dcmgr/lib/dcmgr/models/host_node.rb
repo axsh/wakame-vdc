@@ -88,6 +88,24 @@ module Dcmgr::Models
         (self.offering_memory_size >= using_memory_size + instance.memory_size)
     end
 
+    def alive_vnics_dataset
+      NetworkVif.filter(:instance => Instance.alives.filter(:host_node => self))
+    end
+
+    # Returns all vnics on this host
+    def alive_vnics
+      alive_vnics_dataset.all
+    end
+
+    def security_groups_dataset
+      SecurityGroup.filter(:network_vif => alive_vnics_dataset)
+    end
+
+    # Returns all security groups that have vnics on this host
+    def security_groups
+      security_groups_dataset.all
+    end
+
     def to_api_document
       h = super()
       h.merge!(:status=>self.status)

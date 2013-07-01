@@ -2,6 +2,33 @@
 
 module Dcmgr::VNet::SGHandler
   M = Dcmgr::Models
+  # All methods in this module return nil. That's to prevent them from returning
+  # Sequel models to classes that might not have access to the database, which
+  # would make them crash.
+
+  # Initialized an entire host.
+  # This is called when a hva host is restarted. Service netfilter itself
+  # will ask sg_handler to initialize all of its vnics.
+  def init_host(node_id)
+    host = M::HostNode.find(:node_id => node_id) || raise("Couldn't find a host node with id: '#{node_id}'.")
+    host_id = host.canonical_uuid
+    logger.info "Telling host '#{host_id}' to initialize all its vnics and their security groups."
+    host.security_groups.each { |sg|
+      group_id = sg.canonical_uuid
+      logger.debug "Initializing security group #{group_id}"
+      call_packetfilter_service(host,"init_security_group",group_id,[])
+      call_packetfilter_service(host,"init_isolation_group",group_id,[])
+    }
+
+    host.alive_vnics.each { |vnic|
+      vnic_id = vnic.canonical_uuid
+      group_ids = vnic.security_groups.map {|sg| sg.canonical_uuid}
+      call_packetfilter_service(host,"init_vnic",vnic_id,[])
+      call_packetfilter_service(host,"set_vnic_security_groups",vnic_id,group_ids)
+    }
+
+    nil # Returning nil to simulate a void method
+  end
 
   def init_vnic(vnic_id)
     vnic = M::NetworkVif[vnic_id]
@@ -35,7 +62,7 @@ module Dcmgr::VNet::SGHandler
         end
       }
     }
-    logger.debug "Set security groups '#{group_ids}'' for vnic '#{vnic_id}'."
+    logger.debug "Set security groups '#{group_ids}' for vnic '#{vnic_id}'."
     call_packetfilter_service(host_node,"set_vnic_security_groups",vnic_id,group_ids)
 
     nil # Returning nil to simulate a void method
@@ -59,7 +86,6 @@ module Dcmgr::VNet::SGHandler
         tasks = []
         call_packetfilter_service(host_node,"update_isolation_group",group_id,tasks)
 
-        #TODO: Handle referencers and referencees
         host_had_secg_already = true if host_node == vnic_host
       }
 
@@ -96,7 +122,6 @@ module Dcmgr::VNet::SGHandler
         tasks = []
         call_packetfilter_service(host_node,"update_isolation_group",group_id,tasks)
 
-        #TODO: Handle referencers and referencees
         host_had_secg_already = true if host_node == vnic_host
       }
 
