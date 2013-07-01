@@ -1,5 +1,7 @@
 Wakame-VDC
-============
+==========
+
+[![Code Climate](https://codeclimate.com/github/axsh/wakame-vdc.png)](https://codeclimate.com/github/axsh/wakame-vdc)
 
 Wakame-VDC is the Data Center Level Hypervisor.
 
@@ -78,6 +80,14 @@ Users
 * Kyocera Communication Systems Co., Ltd. ( http://www.kccs.co.jp/english/ )
 
 If you already use this software, please let me know. Thank you.
+
+Contributors
+------------
+
+Special thanks to all contributors for submitting patches. A full list
+of contributors including their patches can be found at:
+
+https://github.com/axsh/wakame-vdc/contributors
 
 License
 ---------

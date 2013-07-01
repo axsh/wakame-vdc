@@ -46,15 +46,15 @@ EOF
       [[ -f "$localname" ]] || {
         # TODO: use HEAD and compare local cached file size
         echo "Downloading image file $localname ..."
-        f=$(basename "$uri")
-        [[ -f "$f" ]] || {
-          time ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$f"
+        dnldname=$(basename "$uri")
+        [[ -f "$dnldname" ]] || {
+          time ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$dnldname"
         }
 
-       # Generate raw image file from .gz compressed image file.
-        [[ "${f##*.}" != "gz" ]] && [[ "$container_format" = "none" ]] && {
-          echo "gunzip $f with keeping sparse area ..."
-          time gunzip -c "$f" | cp --sparse=always /dev/stdin "${localname}"
+       # Generate raw image file from .gz compressed (for download purposes) raw image file.
+        [[ "${localname##*.}" != "gz" ]] && [[ "$container_format" = "none" ]] && {
+          echo "gunzip $dnldname with keeping sparse area ..."
+          time gunzip -c "$dnldname" | cp --sparse=always /dev/stdin "${localname}"
         }
         # do not remove .gz as they are used for gzipped file test cases.
         : # this line ensure the subshell exit with status code 0
@@ -71,11 +71,11 @@ for meta in $metalst; do
     }
 
     localpath="${vdc_data}/images/${localname}"
-    if [[ "$localpath" -nt "${localpath}.md5" ]]; then
+    if [[ -f "${localpath}.md5" ]] && [[ "$localpath" -nt "${localpath}.md5" ]]; then
+      chksum=$(cat "${localpath}.md5")
+    else
       echo "calculating checksum of $localpath ..."
       chksum=$(time md5sum "$localpath" | cut -d ' ' -f1 | tee "${localpath}.md5")
-    else
-      chksum=$(cat "${localpath}.md5")
     fi
     alloc_size=$(ls -l "$localpath" | awk '{print $5}')
 
