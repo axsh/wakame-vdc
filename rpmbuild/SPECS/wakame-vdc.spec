@@ -233,6 +233,15 @@ Requires: %{oname} = %{version}-%{release}
 %description  bksta-vmapp-config
 <insert long description, indented with spaces>
 
+# nsa-vmapp-config
+%package nsa-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for nsa VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description  nsa-vmapp-config
+<insert long description, indented with spaces>
+
 # vdcsh
 %package vdcsh
 BuildArch: noarch
@@ -446,7 +455,6 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config(noreplace) /etc/default/vdc-dcmgr
 %config(noreplace) /etc/default/vdc-collector
 %config(noreplace) /etc/default/vdc-metadata
-%config(noreplace) /etc/default/vdc-nsa
 %config(noreplace) /etc/default/vdc-sta
 %config(noreplace) /etc/default/vdc-webui
 %config(noreplace) /etc/default/vdc-proxy
@@ -456,7 +464,6 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
 %config /etc/init/vdc-metadata.conf
-%config /etc/init/vdc-nsa.conf
 %config /etc/init/vdc-sta.conf
 %config /etc/init/vdc-webui.conf
 %config /etc/init/vdc-proxy.conf
@@ -506,5 +513,10 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-bksta
 %config /etc/init/vdc-bksta.conf
+
+%files nsa-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-nsa
+%config /etc/init/vdc-nsa.conf
 
 %changelog
