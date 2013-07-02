@@ -126,7 +126,6 @@ Requires: %{oname}-rack-config = %{version}-%{release}
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
-Requires: nginx
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
@@ -148,6 +147,16 @@ Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
 Requires: %{oname}-rack-config = %{version}-%{release}
 %description auth-vmapp-config
+<insert long description, indented with spaces>
+
+# proxy-vmapp-config
+%package proxy-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for proxy VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+Requires: nginx
+%description proxy-vmapp-config
 <insert long description, indented with spaces>
 
 # admin-vmapp-config
@@ -492,12 +501,10 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-dcmgr
 %config(noreplace) /etc/default/vdc-collector
-%config(noreplace) /etc/default/vdc-proxy
 %config(noreplace) /etc/default/vdc-nwmongw
 %config(noreplace) /etc/default/vdc-dolphin
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
-%config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-nwmongw.conf
 %config /etc/init/vdc-dolphin.conf
 %dir /etc/%{oname}/dcmgr_gui
@@ -513,6 +520,11 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-auth
 %config /etc/init/vdc-auth.conf
+
+%files proxy-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-proxy
+%config /etc/init/vdc-proxy.conf
 
 %files admin-vmapp-config
 %defattr(-,root,root)
