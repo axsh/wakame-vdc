@@ -83,7 +83,7 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
   def remove_all_chains
     prefix = Dcmgr::VNet::Netfilter::Chains::CHAIN_PREFIX
     logger.info "Removing all chains prefixed by '#{prefix}'."
-    system("for i in $(ebtables -L | grep 'Bridge chain: #{prefix}' | cut -d ' ' -f3 | cut -d ',' -f1); do ebtables -X $i; done")
+    system("for i in $(ebtables -L | grep 'Bridge chain: #{prefix}' | cut -d ' ' -f3 | cut -d ',' -f1); do ebtables -F; ebtables -X $i; done")
     system("for i in $(iptables -L | grep 'Chain #{prefix}' | cut -d ' ' -f2); do iptables -F $i; iptables -X $i; done")
   end
 
