@@ -507,14 +507,14 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config /etc/init/vdc-collector.conf
 %config /etc/init/vdc-nwmongw.conf
 %config /etc/init/vdc-dolphin.conf
-%dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs
-%dir /var/log/%{oname}/dcmgr_gui
 
 %files webui-vmapp-config
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-webui
 %config /etc/init/vdc-webui.conf
+%dir /etc/%{oname}/dcmgr_gui
+%dir /var/log/%{oname}/dcmgr_gui
 
 %files auth-vmapp-config
 %defattr(-,root,root)

@@ -218,13 +218,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %files dcmgr-vmapp-config
 %config /etc/%{oname}/dcmgr.conf
 %config /etc/%{oname}/proxy.conf
+%config /etc/%{oname}/convert_specs/load_balancer.yml
+
+%files webui-vmapp-config
 %config /etc/%{oname}/dcmgr_gui/database.yml
 %config /etc/%{oname}/dcmgr_gui/instance_spec.yml
 %config /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
 %config /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml
-%config /etc/%{oname}/convert_specs/load_balancer.yml
-
-%files webui-vmapp-config
 
 %files admin-vmapp-config
 %config /etc/%{oname}/admin/admin.yml
