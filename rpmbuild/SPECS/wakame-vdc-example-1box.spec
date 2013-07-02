@@ -53,6 +53,15 @@ Requires: %{name}-common-vmapp-config
 %description webui-vmapp-config
 <insert long description, indented with spaces>
 
+# example:proxy
+%package proxy-vmapp-config
+Summary: Configuration set for proxy %{osubname}
+Group: Development/Languages
+Requires: %{oname}-proxy-vmapp-config
+Requires: %{name}-common-vmapp-config
+%description proxy-vmapp-config
+<insert long description, indented with spaces>
+
 # example:admin
 %package admin-vmapp-config
 Summary: Configuration set for admin %{osubname}
@@ -94,6 +103,7 @@ Requires: %{name}-common-vmapp-config
 Summary: Configuration set for full %{osubname}
 Group: Development/Languages
 Requires: %{name}-dcmgr-vmapp-config
+Requires: %{name}-proxy-vmapp-config
 Requires: %{name}-webui-vmapp-config
 Requires: %{name}-nsa-vmapp-config
 Requires: %{name}-sta-vmapp-config
@@ -217,8 +227,10 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files dcmgr-vmapp-config
 %config /etc/%{oname}/dcmgr.conf
-%config /etc/%{oname}/proxy.conf
 %config /etc/%{oname}/convert_specs/load_balancer.yml
+
+%files proxy-vmapp-config
+%config /etc/%{oname}/proxy.conf
 
 %files webui-vmapp-config
 %config /etc/%{oname}/dcmgr_gui/database.yml
