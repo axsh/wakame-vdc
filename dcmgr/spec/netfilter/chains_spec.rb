@@ -347,4 +347,72 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).l3chains.should == []
     end
   end
+
+  context "with 3 vnics, 1 host node, 3 security groups" do
+    let!(:host) { Fabricate(:host_node) }
+    let!(:groupA) { Fabricate(:secg) }; let(:groupA_id) {groupA.canonical_uuid}
+    let!(:groupB) { Fabricate(:secg) }; let(:groupB_id) {groupB.canonical_uuid}
+    let!(:groupC) { Fabricate(:secg) }; let(:groupC_id) {groupC.canonical_uuid}
+
+    let!(:vnicA) do
+      Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
+        n.add_security_group(groupA)
+        n.add_security_group(groupB)
+        n.instance.host_node = host
+        n.instance.save
+      end
+    end
+    let!(:vnicB) do
+      Fabricate(:vnic, mac_addr: "525400033c49").tap do |n|
+        n.add_security_group(groupC)
+        n.instance.host_node = host
+        n.instance.save
+      end
+    end
+    let!(:vnicC) do
+      Fabricate(:vnic, mac_addr: "525400033c4a").tap do |n|
+        n.add_security_group(groupB)
+        n.add_security_group(groupC)
+        n.instance.host_node = host
+        n.instance.save
+      end
+    end
+    let(:vnicA_id) {vnicA.canonical_uuid}
+    let(:vnicB_id) {vnicB.canonical_uuid}
+    let(:vnicC_id) {vnicC.canonical_uuid}
+
+    let(:handler) {SGHandlerTest.new.tap{|sgh| sgh.add_host(host)}}
+
+    it "builds all chains and jumps when calling init_host" do
+      handler.init_host(host.node_id)
+
+      nfa(host).l2chains.should =~ (
+        l2_chains_for_vnic(vnicA_id) + l2_chains_for_vnic(vnicB_id) + l2_chains_for_vnic(vnicC_id) +
+        l2_chains_for_secg(groupA_id) + l2_chains_for_secg(groupB_id) + l2_chains_for_secg(groupC_id)
+      )
+
+      nfa(host).l3chains.should =~ (
+        l3_chains_for_vnic(vnicA_id) + l3_chains_for_vnic(vnicB_id) + l3_chains_for_vnic(vnicC_id) +
+        l3_chains_for_secg(groupA_id) + l3_chains_for_secg(groupB_id) + l3_chains_for_secg(groupC_id)
+      )
+
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicA_id}_d_reffers").should =~ ["vdc_#{groupA_id}_reffers","vdc_#{groupB_id}_reffers"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_isolation").should =~ ["vdc_#{groupA_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_reffees").should =~ ["vdc_#{groupA_id}_reffees","vdc_#{groupB_id}_reffees"]
+      nfa(host).l3chain_jumps("vdc_#{vnicA_id}_d_security").should =~ ["vdc_#{groupA_id}_rules","vdc_#{groupB_id}_rules"]
+
+      nfa(host).l2chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ ["vdc_#{groupC_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicB_id}_d_reffers").should =~ ["vdc_#{groupC_id}_reffers"]
+      nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_isolation").should =~ ["vdc_#{groupC_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_reffees").should =~ ["vdc_#{groupC_id}_reffees"]
+      nfa(host).l3chain_jumps("vdc_#{vnicB_id}_d_security").should =~ ["vdc_#{groupC_id}_rules"]
+
+      nfa(host).l2chain_jumps("vdc_#{vnicC_id}_d_isolation").should =~ ["vdc_#{groupC_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l2chain_jumps("vdc_#{vnicC_id}_d_reffers").should =~ ["vdc_#{groupC_id}_reffers","vdc_#{groupB_id}_reffers"]
+      nfa(host).l3chain_jumps("vdc_#{vnicC_id}_d_isolation").should =~ ["vdc_#{groupC_id}_isolation","vdc_#{groupB_id}_isolation"]
+      nfa(host).l3chain_jumps("vdc_#{vnicC_id}_d_reffees").should =~ ["vdc_#{groupC_id}_reffees","vdc_#{groupB_id}_reffees"]
+      nfa(host).l3chain_jumps("vdc_#{vnicC_id}_d_security").should =~ ["vdc_#{groupC_id}_rules","vdc_#{groupB_id}_rules"]
+    end
+  end
 end
