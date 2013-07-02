@@ -289,6 +289,15 @@ Requires: %{oname} = %{version}-%{release}
 %description  metadata-server-vmapp-config
 <insert long description, indented with spaces>
 
+# nwmongw
+%package nwmongw-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for nwmongw VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description  nwmongw-vmapp-config
+<insert long description, indented with spaces>
+
 # vdcsh
 %package vdcsh
 BuildArch: noarch
@@ -501,11 +510,9 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-dcmgr
 %config(noreplace) /etc/default/vdc-collector
-%config(noreplace) /etc/default/vdc-nwmongw
 %config(noreplace) /etc/default/vdc-dolphin
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
-%config /etc/init/vdc-nwmongw.conf
 %config /etc/init/vdc-dolphin.conf
 %dir /etc/%{oname}/convert_specs
 
@@ -580,5 +587,10 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-metadata
 %config /etc/init/vdc-metadata.conf
+
+%files nwmongw-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-nwmongw
+%config /etc/init/vdc-nwmongw.conf
 
 %changelog
