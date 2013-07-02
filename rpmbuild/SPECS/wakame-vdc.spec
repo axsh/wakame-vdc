@@ -224,6 +224,15 @@ Requires: openvswitch
 %description  natbox-vmapp-config
 <insert long description, indented with spaces>
 
+# bksta-vmapp-config
+%package bksta-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for bksta VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description  bksta-vmapp-config
+<insert long description, indented with spaces>
+
 # vdcsh
 %package vdcsh
 BuildArch: noarch
@@ -384,10 +393,6 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %dir /var/log/%{oname}
 %dir /var/lib/%{oname}
 %exclude %{prefix}/%{oname}/tests/
-## TENTATIVE
-%config(noreplace) /etc/default/vdc-bksta
-%config /etc/init/vdc-bksta.conf
-## TENTATIVE
 
 %files vdcsh
 %defattr(-,root,root)
@@ -496,5 +501,10 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config(noreplace) /etc/default/vdc-natbox
 %config /etc/init/vdc-natbox.conf
 %config /etc/sysctl.d/30-natbox.conf
+
+%files bksta-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-bksta
+%config /etc/init/vdc-bksta.conf
 
 %changelog
