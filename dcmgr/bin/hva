@@ -28,6 +28,7 @@ end
 Dcmgr.run_initializers('logger')
 
 manifest = DEFAULT_MANIFEST.dup
+load_netfilter_handler = false
 manifest.instance_eval do
   node_name 'hva'
   node_instance_id "#{Socket.gethostname}"
@@ -35,7 +36,6 @@ manifest.instance_eval do
   load_module Isono::NodeModules::NodeHeartbeat
   load_module Dcmgr::NodeModules::InstanceMonitor
 
-  load_netfilter_handler = false
   case Dcmgr.conf.edge_networking
   when 'openflow'
     load_module Dcmgr::NodeModules::DebugOpenFlow
