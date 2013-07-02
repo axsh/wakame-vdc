@@ -129,7 +129,7 @@ module Dcmgr
 
       def destroy_instance_vnics(inst)
         inst[:vif].each { |vnic|
-          self.job.run("sg_handler","destroy_vnic",vnic[:uuid])
+          self.job.submit("sg_handler","destroy_vnic",vnic[:uuid])
         }
       end
 
