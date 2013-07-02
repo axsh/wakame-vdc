@@ -62,11 +62,31 @@ Requires: %{name}-common-vmapp-config
 %description hva-vmapp-config
 <insert long description, indented with spaces>
 
+# example:nsa
+%package nsa-vmapp-config
+Summary: Configuration set for nsa %{osubname}
+Group: Development/Languages
+Requires: %{oname}-nsa-vmapp-config
+Requires: %{name}-common-vmapp-config
+%description nsa-vmapp-config
+<insert long description, indented with spaces>
+
+# example:sta
+%package sta-vmapp-config
+Summary: Configuration set for sta %{osubname}
+Group: Development/Languages
+Requires: %{oname}-sta-vmapp-config
+Requires: %{name}-common-vmapp-config
+%description sta-vmapp-config
+<insert long description, indented with spaces>
+
 # example:full
 %package full-vmapp-config
 Summary: Configuration set for full %{osubname}
 Group: Development/Languages
 Requires: %{name}-dcmgr-vmapp-config
+Requires: %{name}-nsa-vmapp-config
+Requires: %{name}-sta-vmapp-config
 Requires: %{name}-hva-vmapp-config
 Requires: %{name}-admin-vmapp-config
 %description full-vmapp-config
@@ -187,8 +207,6 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files dcmgr-vmapp-config
 %config /etc/%{oname}/dcmgr.conf
-%config /etc/%{oname}/nsa.conf
-%config /etc/%{oname}/sta.conf
 %config /etc/%{oname}/proxy.conf
 %config /etc/%{oname}/dcmgr_gui/database.yml
 %config /etc/%{oname}/dcmgr_gui/instance_spec.yml
@@ -201,6 +219,12 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files hva-vmapp-config
 %config /etc/%{oname}/hva.conf
+
+%files nsa-vmapp-config
+%config /etc/%{oname}/nsa.conf
+
+%files sta-vmapp-config
+%config /etc/%{oname}/sta.conf
 
 %files full-vmapp-config
 
