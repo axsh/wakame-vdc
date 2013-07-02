@@ -44,6 +44,15 @@ Requires: %{name}-common-vmapp-config
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
+# example:webui
+%package webui-vmapp-config
+Summary: Configuration set for webui %{osubname}
+Group: Development/Languages
+Requires: %{oname}-webui-vmapp-config
+Requires: %{name}-common-vmapp-config
+%description webui-vmapp-config
+<insert long description, indented with spaces>
+
 # example:admin
 %package admin-vmapp-config
 Summary: Configuration set for admin %{osubname}
@@ -85,6 +94,7 @@ Requires: %{name}-common-vmapp-config
 Summary: Configuration set for full %{osubname}
 Group: Development/Languages
 Requires: %{name}-dcmgr-vmapp-config
+Requires: %{name}-webui-vmapp-config
 Requires: %{name}-nsa-vmapp-config
 Requires: %{name}-sta-vmapp-config
 Requires: %{name}-hva-vmapp-config
@@ -213,6 +223,8 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
 %config /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml
 %config /etc/%{oname}/convert_specs/load_balancer.yml
+
+%files webui-vmapp-config
 
 %files admin-vmapp-config
 %config /etc/%{oname}/admin/admin.yml

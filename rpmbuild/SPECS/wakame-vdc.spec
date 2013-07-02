@@ -131,6 +131,15 @@ Requires: dnsmasq
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
+# webui-vmapp-config
+%package webui-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for webui VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description webui-vmapp-config
+<insert long description, indented with spaces>
+
 # admin-vmapp-config
 %package admin-vmapp-config
 BuildArch: noarch
@@ -472,14 +481,12 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-dcmgr
 %config(noreplace) /etc/default/vdc-collector
-%config(noreplace) /etc/default/vdc-webui
 %config(noreplace) /etc/default/vdc-proxy
 %config(noreplace) /etc/default/vdc-auth
 %config(noreplace) /etc/default/vdc-nwmongw
 %config(noreplace) /etc/default/vdc-dolphin
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
-%config /etc/init/vdc-webui.conf
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
 %config /etc/init/vdc-nwmongw.conf
@@ -487,6 +494,11 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs
 %dir /var/log/%{oname}/dcmgr_gui
+
+%files webui-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-webui
+%config /etc/init/vdc-webui.conf
 
 %files admin-vmapp-config
 %defattr(-,root,root)
