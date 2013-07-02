@@ -480,9 +480,6 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs
 %dir /var/log/%{oname}/dcmgr_gui
-%dir /var/lib/%{oname}/images
-%dir /var/lib/%{oname}/volumes
-%dir /var/lib/%{oname}/snap
 
 %files admin-vmapp-config
 %defattr(-,root,root)
@@ -530,5 +527,8 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-sta
 %config /etc/init/vdc-sta.conf
+%dir /var/lib/%{oname}/images
+%dir /var/lib/%{oname}/volumes
+%dir /var/lib/%{oname}/snap
 
 %changelog
