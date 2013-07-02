@@ -1,5 +1,7 @@
 Wakame-VDC
-============
+==========
+
+[![Code Climate](https://codeclimate.com/github/axsh/wakame-vdc.png)](https://codeclimate.com/github/axsh/wakame-vdc)
 
 Wakame-VDC is the Data Center Level Hypervisor.
 
@@ -40,11 +42,11 @@ Install
 Required Components
 --------------------
 
-* RabbitMQ (>= 1.7.2)
-* MySQL (>= 5.1.41)
-* nginx (>= 0.7.65)
-* Ruby (>= 1.8.7)
-* RubyGems (>= 1.3.7)
+* RabbitMQ (>= 2.7.1)
+* MySQL (>= 5.1.66)
+* nginx (>= 1.0.15)
+* Ruby (>= 1.9.3)
+* RubyGems (>= 1.8.23)
 
 
 Building a Development Environment
@@ -78,6 +80,14 @@ Users
 * Kyocera Communication Systems Co., Ltd. ( http://www.kccs.co.jp/english/ )
 
 If you already use this software, please let me know. Thank you.
+
+Contributors
+------------
+
+Special thanks to all contributors for submitting patches. A full list
+of contributors including their patches can be found at:
+
+https://github.com/axsh/wakame-vdc/contributors
 
 License
 ---------

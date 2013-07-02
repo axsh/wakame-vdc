@@ -14,7 +14,7 @@
 network_id="nw-minimum"
 test_case_instance_uuid=
 
-RETRY_WAIT_SEC=1
+RETRY_WAIT_SEC=5
 RETRY_SLEEP_SEC=1
 
 ## functions

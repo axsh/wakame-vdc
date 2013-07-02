@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 require 'uri'
+require 'fuguta'
 
 module Dcmgr
   module Configurations
-    class Bksta < Configuration
+    class Bksta < Fuguta::Configuration
       # AMQP broker to be connected.
       param :amqp_server_uri
 
