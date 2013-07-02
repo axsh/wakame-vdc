@@ -127,7 +127,6 @@ Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
 Requires: nginx
-Requires: dnsmasq
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
@@ -248,6 +247,7 @@ BuildArch: noarch
 Summary: Configuration set for nsa VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
+Requires: dnsmasq
 %description  nsa-vmapp-config
 <insert long description, indented with spaces>
 
