@@ -7,7 +7,6 @@ module Dcmgr::Rpc
     include Dcmgr::Logger
     include Dcmgr::VNet::Netfilter::NetfilterAgent
 
-    # job "do_something".to_sym, proc { puts "something" }
     def initialize(*args)
       super(*args)
 
