@@ -42,10 +42,10 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     exec secg_chains(secg_id).map {|chain| chain.destroy }
   end
 
-  def init_isolation_group(isog_id, tasks)
+  def init_isolation_group(isog_id, friend_ips)
     logger.info "Adding isolation chains for group '#{isog_id}'."
     exec isog_chains(isog_id).map {|chain| chain.create}
-    #TODO: Add isolation rules for all vnics in the isog (secg in reality) to this chain
+    update_isolation_group(isog_id, friend_ips)
   end
 
   def destroy_isolation_group(isog_id)
@@ -76,8 +76,18 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
   def update_sg_rules(secg_id,tasks)
   end
 
-  def update_isolation_group(group_id,tasks)
+  def update_isolation_group(group_id,friend_ips)
     logger.info "Updating vnics in isolation group '#{group_id}'."
+    l2c = secg_l2_iso_chain(group_id)
+    l3c = secg_l3_iso_chain(group_id)
+    exec [
+      l2c.flush,
+      l3c.flush,
+      friend_ips.map { |f_ip|
+        [l2c.add_rule("--protocol arp --arp-opcode Request --arp-ip-src #{f_ip} -j ACCEPT"),
+        l3c.add_rule("-s #{f_ip} -j ACCEPT")]
+      }
+    ].flatten
   end
 
   def remove_all_chains
@@ -102,5 +112,4 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     puts cmds.join("\n")
     system cmds.join("\n")
   end
-
 end

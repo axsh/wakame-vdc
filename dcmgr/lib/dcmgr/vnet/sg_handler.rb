@@ -17,7 +17,8 @@ module Dcmgr::VNet::SGHandler
       group_id = sg.canonical_uuid
       logger.debug "Initializing security group #{group_id}"
       call_packetfilter_service(host,"init_security_group",group_id,[])
-      call_packetfilter_service(host,"init_isolation_group",group_id,[])
+      friend_ips = sg.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
+      call_packetfilter_service(host_node,"init_isolation_group",group_id,friend_ips)
     }
 
     host.alive_vnics.each { |vnic|
@@ -43,7 +44,9 @@ module Dcmgr::VNet::SGHandler
     group_ids = []
     vnic.security_groups.each {|group|
       group_id = group.canonical_uuid
+      friend_ips = group.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
       group_ids << group_id
+
       group.host_nodes.each {|host_node|
         # Check if the host node had this vnic's security groups yet
         query = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance)
@@ -52,13 +55,10 @@ module Dcmgr::VNet::SGHandler
 
           sec_tasks = [] # These will be the rules in this security group
           call_packetfilter_service(host_node,"init_security_group",group_id,sec_tasks)
-
-          iso_tasks = [] # These will be isolation rules for all vnics in the group
-          call_packetfilter_service(host_node,"init_isolation_group",group_id,iso_tasks)
+          call_packetfilter_service(host_node,"init_isolation_group",group_id,friend_ips)
         else
           logger.debug "Host '#{host_node.canonical_uuid}' already has security group '#{group.canonical_uuid}'. Update its isolation."
-          tasks = [] # Create the isolation tasks for all vnics in this group
-          call_packetfilter_service(host_node,"update_isolation_group",group_id,tasks)
+          call_packetfilter_service(host_node,"update_isolation_group",group_id,friend_ips)
         end
       }
     }
@@ -81,10 +81,11 @@ module Dcmgr::VNet::SGHandler
         next
       end
       group = M::SecurityGroup[group_id]
+      friend_ips = group.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
 
       group.host_nodes.each {|host_node|
-        tasks = []
-        call_packetfilter_service(host_node,"update_isolation_group",group_id,tasks)
+        friend_ips = group.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
+        call_packetfilter_service(host_node,"update_isolation_group",group_id,friend_ips)
 
         host_had_secg_already = true if host_node == vnic_host
       }
@@ -92,8 +93,7 @@ module Dcmgr::VNet::SGHandler
       unless host_had_secg_already
         sec_tasks = []
         call_packetfilter_service(vnic_host,"init_security_group",group_id,sec_tasks)
-        iso_tasks = []
-        call_packetfilter_service(vnic_host,"init_isolation_group",group_id,iso_tasks)
+        call_packetfilter_service(vnic_host,"init_isolation_group",group_id,friend_ips)
       end
       vnic.add_security_group(group)
     }
@@ -118,9 +118,9 @@ module Dcmgr::VNet::SGHandler
       vnic.remove_security_group(group)
 
       host_had_secg_already = false
+      friend_ips = group.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
       group.host_nodes.each {|host_node|
-        tasks = []
-        call_packetfilter_service(host_node,"update_isolation_group",group_id,tasks)
+        call_packetfilter_service(host_node,"update_isolation_group",group_id,friend_ips)
 
         host_had_secg_already = true if host_node == vnic_host
       }
@@ -144,6 +144,7 @@ module Dcmgr::VNet::SGHandler
 
     vnic.security_groups.each { |group|
       group_id = group.canonical_uuid
+      friend_ips = group.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
       group.host_nodes.each {|host_node|
         # Check if the host node had this vnic's security groups yet
         query = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance)
@@ -154,8 +155,7 @@ module Dcmgr::VNet::SGHandler
           call_packetfilter_service(host_node,"destroy_isolation_group",group_id)
         else
           logger.debug "Host '#{host_node.canonical_uuid}' still has security group '#{group.canonical_uuid}'. Update its isolation."
-          tasks = [] # Create the isolation tasks for all vnics in this group
-          call_packetfilter_service(host_node,"update_isolation_group",group_id,tasks)
+          call_packetfilter_service(host_node,"update_isolation_group",group_id,friend_ips)
         end
       }
     }
@@ -166,5 +166,4 @@ module Dcmgr::VNet::SGHandler
   def call_packetfilter_service(host_node,method,*args)
     raise NotImplementedError, "Classes that include the sg handler module must define a 'call_packetfilter_service(host_node,method,*args)' method"
   end
-
 end

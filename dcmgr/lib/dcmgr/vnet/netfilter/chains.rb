@@ -25,6 +25,10 @@ module Dcmgr::VNet::Netfilter::Chains
       "#{self.class.binary} -A #{@name} -j #{target.name}"
     end
 
+    def add_rule(rule)
+      "#{self.class.binary} -A #{@name} #{rule}"
+    end
+
     def ==(chain)
       (chain.class == self.class) && (chain.name == self.name)
     end
