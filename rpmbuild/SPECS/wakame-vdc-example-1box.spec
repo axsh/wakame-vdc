@@ -226,29 +226,29 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 
 %files dcmgr-vmapp-config
-%config /etc/%{oname}/dcmgr.conf
-%config /etc/%{oname}/convert_specs/load_balancer.yml
+%config(noreplace) /etc/%{oname}/dcmgr.conf
+%config(noreplace) /etc/%{oname}/convert_specs/load_balancer.yml
 
 %files proxy-vmapp-config
-%config /etc/%{oname}/proxy.conf
+%config(noreplace) /etc/%{oname}/proxy.conf
 
 %files webui-vmapp-config
-%config /etc/%{oname}/dcmgr_gui/database.yml
-%config /etc/%{oname}/dcmgr_gui/instance_spec.yml
-%config /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
-%config /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml
+%config(noreplace) /etc/%{oname}/dcmgr_gui/database.yml
+%config(noreplace) /etc/%{oname}/dcmgr_gui/instance_spec.yml
+%config(noreplace) /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
+%config(noreplace) /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml
 
 %files admin-vmapp-config
-%config /etc/%{oname}/admin/admin.yml
+%config(noreplace) /etc/%{oname}/admin/admin.yml
 
 %files hva-vmapp-config
-%config /etc/%{oname}/hva.conf
+%config(noreplace) /etc/%{oname}/hva.conf
 
 %files nsa-vmapp-config
-%config /etc/%{oname}/nsa.conf
+%config(noreplace) /etc/%{oname}/nsa.conf
 
 %files sta-vmapp-config
-%config /etc/%{oname}/sta.conf
+%config(noreplace) /etc/%{oname}/sta.conf
 
 %files full-vmapp-config
 
