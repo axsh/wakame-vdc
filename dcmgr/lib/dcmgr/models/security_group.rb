@@ -66,6 +66,13 @@ module Dcmgr::Models
       self.network_vif.map {|vif| vif.instance && vif.instance.host_node}.uniq
     end
 
+    def vnic_ips
+      network_vif.map {|vif|
+        lease = vif.direct_ip_lease.first
+        lease && ip.ipv4
+      }.compact
+    end
+
     def rules_array
       rules = []
       rule.to_s.each_line { |line|

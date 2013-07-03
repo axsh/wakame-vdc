@@ -17,8 +17,8 @@ module Dcmgr::VNet::SGHandler
       group_id = sg.canonical_uuid
       logger.debug "Initializing security group #{group_id}"
       call_packetfilter_service(host,"init_security_group",group_id,[])
-      friend_ips = sg.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
-      call_packetfilter_service(host_node,"init_isolation_group",group_id,friend_ips)
+      friend_ips = sg.vnic_ips
+      call_packetfilter_service(host,"init_isolation_group",group_id,friend_ips)
     }
 
     host.alive_vnics.each { |vnic|
@@ -44,7 +44,7 @@ module Dcmgr::VNet::SGHandler
     group_ids = []
     vnic.security_groups.each {|group|
       group_id = group.canonical_uuid
-      friend_ips = group.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
+      friend_ips = group.vnic_ips
       group_ids << group_id
 
       group.host_nodes.each {|host_node|
@@ -81,10 +81,10 @@ module Dcmgr::VNet::SGHandler
         next
       end
       group = M::SecurityGroup[group_id]
-      friend_ips = group.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
+      friend_ips = group.vnic_ips
 
       group.host_nodes.each {|host_node|
-        friend_ips = group.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
+        friend_ips = group.vnic_ips
         call_packetfilter_service(host_node,"update_isolation_group",group_id,friend_ips)
 
         host_had_secg_already = true if host_node == vnic_host
@@ -118,7 +118,7 @@ module Dcmgr::VNet::SGHandler
       vnic.remove_security_group(group)
 
       host_had_secg_already = false
-      friend_ips = group.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
+      friend_ips = group.vnic_ips
       group.host_nodes.each {|host_node|
         call_packetfilter_service(host_node,"update_isolation_group",group_id,friend_ips)
 
@@ -144,7 +144,7 @@ module Dcmgr::VNet::SGHandler
 
     vnic.security_groups.each { |group|
       group_id = group.canonical_uuid
-      friend_ips = group.network_vif.map {|vif| vif.direct_ip_lease.first.ipv4 }
+      friend_ips = group.vnic_ips
       group.host_nodes.each {|host_node|
         # Check if the host node had this vnic's security groups yet
         query = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance)
