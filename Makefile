@@ -1,4 +1,4 @@
-ruby_ver ?= 1.9.3-p448
+ruby_ver ?= 2.0.0-p247
 
 # should be in wakame-vdc
 CURDIR ?= $(PWD)
