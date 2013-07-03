@@ -33,13 +33,15 @@ build: build-ruby-stamp
 build-ruby-stamp: ruby-build ruby bundle-install
 	touch $@
 
-ruby-build: ruby-build-stamp
-ruby-build-stamp:
-	(cd $(CURDIR); git clone $(RUBY_BUILD_REPO_URI))
+ruby-build:
+	(if [ -d ruby-build ]; then \
+	  cd ruby-build; git pull; \
+        else \
+	  git clone $(RUBY_BUILD_REPO_URI); \
+	fi)
 	(cd $(CURDIR)/ruby-build; sed -i s,http://ftp.ruby-lang.org/pub/ruby/,$(RUBY_MIRROR_SITE), share/ruby-build/*)
 	(cd $(CURDIR)/ruby-build; sed -i s,http://pyyaml.org/download/libyaml/,$(LIBYAML_MIRROR_SITE), share/ruby-build/*)
 	(cd $(CURDIR)/ruby-build; sed -i s,http://production.cf.rubygems.org/rubygems/,$(RUBYGEMS_MIRROR_SITE), share/ruby-build/*)
-	touch $@
 
 ruby: ruby-stamp
 ruby-stamp:
