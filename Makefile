@@ -46,7 +46,7 @@ ruby-build:
 ruby: ruby-stamp
 ruby-stamp:
 	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(RUBYDIR))
-	gem install bundler rake --no-rdoc --no-ri
+	gem install bundler --no-rdoc --no-ri
 	touch $@
 
 bundle-install: bundle-install-stamp
