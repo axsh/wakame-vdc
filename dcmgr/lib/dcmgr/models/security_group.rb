@@ -69,7 +69,7 @@ module Dcmgr::Models
     def vnic_ips
       network_vif.map {|vif|
         lease = vif.direct_ip_lease.first
-        lease && ip.ipv4
+        lease && lease.ipv4
       }.compact
     end
 

@@ -5,6 +5,7 @@ require 'fabrication'
 require 'database_cleaner'
 require 'isono' # Isono is needed for adding host nodes to the database
 
+
 RSpec.configure do |config|
   Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                   [File.expand_path('../config/dcmgr.conf', __FILE__)])
@@ -47,7 +48,16 @@ Fabricator(:vnic, class_name: Dcmgr::Models::NetworkVif) do
   device_index 0
   account_id TEST_ACCOUNT
   instance { Fabricate(:instance) }
-  before_save {|vnic, trancients| Dcmgr::Models::MacLease.create({:mac_addr => vnic.mac_addr.hex}) }
+  before_save {|vnic, trancients| Dcmgr::Models::MacLease.create({:mac_addr => vnic.mac_addr.hex})}
+end
+
+Fabricator(:network, class_name: Dcmgr::Models::Network) do
+  account_id TEST_ACCOUNT
+  ipv4_network "10.0.0.0"
+  prefix 24
+  network_mode "securitygroup" # Ignored in this new version of netfilter
+  service_type "std"
+  display_name "test network"
 end
 
 Fabricator(:secg, class_name: Dcmgr::Models::SecurityGroup) do

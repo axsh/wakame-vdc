@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'spec_helper'
+require "ipaddr"
 
 class SGHandlerTest
   include Dcmgr::Logger
@@ -47,10 +48,12 @@ class NFCmdParser
         when "-A"
           chain = split_cmd.shift
           raise "Chain doesn't exist: #{bin} #{chain}" if @chains[bin][chain].nil?
-          if split_cmd.shift == "-j"
-            target = split_cmd.shift
+          if split_cmd[0] == "-j"
+            target = split_cmd[1]
             raise "Jump target doesn't exit: #{bin} #{target}" if @chains[bin][target].nil?
             @chains[bin][chain]["jumps"] << target
+          else
+            @chains[bin][chain]["tasks"] << split_cmd.join(" ")
           end
         when "-X"
           chain = split_cmd.shift
@@ -93,6 +96,17 @@ class NetfilterAgentTest
     raise "Iptables chain doesn't exit: '#{chain_name}'" if @parser.chains["iptables"][chain_name].nil?
     @parser.chains["iptables"][chain_name]["jumps"]
   end
+
+  def l2chain_tasks(chain_name)
+    raise "Ebtables chain doesn't exit: '#{chain_name}'" if @parser.chains["ebtables"][chain_name].nil?
+    @parser.chains["ebtables"][chain_name]["tasks"]
+  end
+
+  def l3chain_tasks(chain_name)
+    raise "Iptables chain doesn't exit: '#{chain_name}'" if @parser.chains["iptables"][chain_name].nil?
+    @parser.chains["iptables"][chain_name]["tasks"]
+  end
+
 
   private
   def exec(cmds)
@@ -163,20 +177,26 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
 end
 
 RSpec::Matchers.define :have_applied_secg do |secg|
-  # chain :with_vnics do |vnic_array|
-  #   @vnics = vnic_array
-  # end
+  chain :with_vnics do |vnic_array|
+    @vnics = vnic_array
+  end
 
   match do |nfa|
     secg_id = secg.canonical_uuid
     @has_l2 = (nfa.l2chains & l2_chains_for_secg(secg_id)).sort == l2_chains_for_secg(secg_id).sort
     @has_l3 = (nfa.l3chains & l3_chains_for_secg(secg_id)).sort == l3_chains_for_secg(secg_id).sort
 
-    # if @vnics
-    #   vnic_l2_iso = 
-    # else
+    if @vnics
+      @vnics.each {|v| raise "VNic '#{v.canonical_uuid}' doesn't have a direct ip lease." if v.direct_ip_lease.first.nil?}
+      l2_iso_tasks = @vnics.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src #{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
+      l3_iso_tasks = @vnics.map {|v| "-s #{v.direct_ip_lease.first.ipv4} -j ACCEPT"}
+
+      (nfa.l2chain_tasks("vdc_#{secg_id}_isolation") & l2_iso_tasks ).sort == l2_iso_tasks.sort &&
+      (nfa.l3chain_tasks("vdc_#{secg_id}_isolation") & l3_iso_tasks ).sort == l3_iso_tasks.sort &&
       @has_l2 && @has_l3
-    # end
+    else
+      @has_l2 && @has_l3
+    end
   end
 end
 
@@ -196,10 +216,20 @@ describe "SGHandler and NetfilterAgent" do
   context "with 1 vnic, 1 host node, 1 security group" do
     let(:secg) { Fabricate(:secg) }
     let(:host) { Fabricate(:host_node) }
+    let(:network) { Fabricate(:network) }
     let(:vnic) do
       Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
         n.add_security_group(secg)
         n.instance.host_node = host
+        n.network = network
+        n.save
+
+        Dcmgr::Models::NetworkVifIpLease.create({
+          :ipv4 => IPAddr.new("10.0.0.1").to_i,
+          :network_id => network.id,
+          :network_vif_id => n.id
+        })
+
         n.instance.save
       end
     end
@@ -212,7 +242,7 @@ describe "SGHandler and NetfilterAgent" do
       handler.init_vnic(vnic_id)
 
       nfa(host).should have_applied_vnic(vnic).with_secgs([secg])
-      nfa(host).should have_applied_secg(secg)#.with_vnics([vnic])
+      nfa(host).should have_applied_secg(secg).with_vnics([vnic])
 
       handler.destroy_vnic(vnic_id)
       vnic.destroy
@@ -226,9 +256,19 @@ describe "SGHandler and NetfilterAgent" do
   context "with 2 vnics, 1 host node, 1 security group" do
     let(:secg) { Fabricate(:secg) }
     let(:host) { Fabricate(:host_node) }
+    let(:network) { Fabricate(:network) }
     let(:vnicA) do
       Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
         n.add_security_group(secg)
+        n.network = network
+        n.save
+
+        Dcmgr::Models::NetworkVifIpLease.create({
+          :ipv4 => IPAddr.new("10.0.0.1").to_i,
+          :network_id => network.id,
+          :network_vif_id => n.id
+        })
+
         n.instance.host_node = host
         n.instance.save
       end
@@ -238,6 +278,15 @@ describe "SGHandler and NetfilterAgent" do
     let(:vnicB) do
       Fabricate(:vnic, mac_addr: "525400033c49").tap do |n|
         n.add_security_group(secg)
+        n.network = network
+        n.save
+
+        Dcmgr::Models::NetworkVifIpLease.create({
+          :ipv4 => IPAddr.new("10.0.0.2").to_i,
+          :network_id => network.id,
+          :network_vif_id => n.id
+        })
+
         n.instance.host_node = host
         n.instance.save
       end
@@ -249,22 +298,21 @@ describe "SGHandler and NetfilterAgent" do
     it "should create and delete chains" do
       # Create vnic A
       handler.init_vnic(vnicA_id)
-
       nfa(host).should have_applied_vnic(vnicA).with_secgs([secg])
-      nfa(host).should have_applied_secg(secg)#.with_vnics([vnicA])
+      nfa(host).should have_applied_secg(secg).with_vnics([vnicA])
 
       # Create vnic B
       handler.init_vnic(vnicB_id)
       nfa(host).should have_applied_vnic(vnicA).with_secgs([secg])
       nfa(host).should have_applied_vnic(vnicB).with_secgs([secg])
-      nfa(host).should have_applied_secg(secg)#.with_vnics([vnicA,vnicB])
+      nfa(host).should have_applied_secg(secg).with_vnics([vnicA,vnicB])
 
       # Destroy vnic A
       handler.destroy_vnic(vnicA_id)
       vnicA.destroy
       nfa(host).should_not have_applied_vnic(vnicA)
       nfa(host).should have_applied_vnic(vnicB).with_secgs([secg])
-      nfa(host).should have_applied_secg(secg)#.with_vnics([vnicB])
+      nfa(host).should have_applied_secg(secg).with_vnics([vnicB])
 
       # Destroy vnic B
       handler.destroy_vnic(vnicB_id)
@@ -275,12 +323,22 @@ describe "SGHandler and NetfilterAgent" do
 
   context "with 2 vnics, 1 host node, 2 security groups" do
     let(:host) { Fabricate(:host_node) }
+    let(:network) { Fabricate(:network) }
     let(:groupA) { Fabricate(:secg) }; let(:groupA_id) {groupA.canonical_uuid}
     let(:groupB) { Fabricate(:secg) }; let(:groupB_id) {groupB.canonical_uuid}
 
     let(:vnicA) do
       Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
         n.add_security_group(groupA)
+        n.network = network
+        n.save
+
+        Dcmgr::Models::NetworkVifIpLease.create({
+          :ipv4 => IPAddr.new("10.0.0.1").to_i,
+          :network_id => network.id,
+          :network_vif_id => n.id
+        })
+
         n.instance.host_node = host
         n.instance.save
       end
@@ -288,6 +346,15 @@ describe "SGHandler and NetfilterAgent" do
     let(:vnicB) do
       Fabricate(:vnic, mac_addr: "525400033c49").tap do |n|
         n.add_security_group(groupB)
+        n.network = network
+        n.save
+
+        Dcmgr::Models::NetworkVifIpLease.create({
+          :ipv4 => IPAddr.new("10.0.0.2").to_i,
+          :network_id => network.id,
+          :network_vif_id => n.id
+        })
+
         n.instance.host_node = host
         n.instance.save
       end
@@ -302,9 +369,9 @@ describe "SGHandler and NetfilterAgent" do
       handler.init_vnic(vnicB_id)
 
       nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
-      nfa(host).should have_applied_secg(groupA)#.with_vnics([vnicA])
+      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA])
       nfa(host).should have_applied_vnic(vnicB).with_secgs([groupB])
-      nfa(host).should have_applied_secg(groupB)#.with_vnics([vnicB])
+      nfa(host).should have_applied_secg(groupB).with_vnics([vnicB])
 
       handler.destroy_vnic(vnicB_id)
       vnicB.destroy
@@ -312,7 +379,7 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).should_not have_applied_vnic(vnicB)
       nfa(host).should_not have_applied_secg(groupB)
       nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
-      nfa(host).should have_applied_secg(groupA)#.with_vnics([vnicA])
+      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA])
 
       handler.destroy_vnic(vnicA_id)
       vnicA.destroy
@@ -351,6 +418,7 @@ describe "SGHandler and NetfilterAgent" do
 
   context "with 3 vnics, 1 host node, 3 security groups" do
     let!(:host) { Fabricate(:host_node) }
+    let(:network) { Fabricate(:network) }
     let!(:groupA) { Fabricate(:secg) }
     let!(:groupB) { Fabricate(:secg) }
     let!(:groupC) { Fabricate(:secg) }
@@ -359,6 +427,15 @@ describe "SGHandler and NetfilterAgent" do
       Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
         n.add_security_group(groupA)
         n.add_security_group(groupB)
+        n.network = network
+        n.save
+
+        Dcmgr::Models::NetworkVifIpLease.create({
+          :ipv4 => IPAddr.new("10.0.0.1").to_i,
+          :network_id => network.id,
+          :network_vif_id => n.id
+        })
+
         n.instance.host_node = host
         n.instance.save
       end
@@ -366,6 +443,15 @@ describe "SGHandler and NetfilterAgent" do
     let!(:vnicB) do
       Fabricate(:vnic, mac_addr: "525400033c49").tap do |n|
         n.add_security_group(groupC)
+        n.network = network
+        n.save
+
+        Dcmgr::Models::NetworkVifIpLease.create({
+          :ipv4 => IPAddr.new("10.0.0.2").to_i,
+          :network_id => network.id,
+          :network_vif_id => n.id
+        })
+
         n.instance.host_node = host
         n.instance.save
       end
@@ -374,6 +460,15 @@ describe "SGHandler and NetfilterAgent" do
       Fabricate(:vnic, mac_addr: "525400033c4a").tap do |n|
         n.add_security_group(groupB)
         n.add_security_group(groupC)
+        n.network = network
+        n.save
+
+        Dcmgr::Models::NetworkVifIpLease.create({
+          :ipv4 => IPAddr.new("10.0.0.3").to_i,
+          :network_id => network.id,
+          :network_vif_id => n.id
+        })
+
         n.instance.host_node = host
         n.instance.save
       end
@@ -391,9 +486,9 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).should have_applied_vnic(vnicB).with_secgs([groupC])
       nfa(host).should have_applied_vnic(vnicC).with_secgs([groupB,groupC])
 
-      nfa(host).should have_applied_secg(groupA)#.with_vnics([vnicA])
-      nfa(host).should have_applied_secg(groupB)#.with_vnics([vnicA,vnicC])
-      nfa(host).should have_applied_secg(groupC)#.with_vnics([vnicB,vnicC])
+      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA])
+      nfa(host).should have_applied_secg(groupB).with_vnics([vnicA,vnicC])
+      nfa(host).should have_applied_secg(groupC).with_vnics([vnicB,vnicC])
     end
   end
 end
