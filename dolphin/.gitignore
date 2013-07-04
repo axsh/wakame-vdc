@@ -1,9 +1,8 @@
-*.gem
-.bundle
+#*#
+*~
+
+# Bundler ignorance rules
+# vendor/cache is ignored but may contain version controled gems.
+vendor/
+.bundle/
 Gemfile.lock
-doc/
-lib/bundler/man
-pkg
-rdoc
-spec/reports
-tmp
