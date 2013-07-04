@@ -195,8 +195,8 @@ RSpec::Matchers.define :have_applied_secg do |secg|
       l2_iso_tasks = @vnics.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src #{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
       l3_iso_tasks = @vnics.map {|v| "-s #{v.direct_ip_lease.first.ipv4} -j ACCEPT"}
 
-      (nfa.l2chain_tasks("vdc_#{secg_id}_isolation") & l2_iso_tasks ).sort == l2_iso_tasks.sort &&
-      (nfa.l3chain_tasks("vdc_#{secg_id}_isolation") & l3_iso_tasks ).sort == l3_iso_tasks.sort &&
+      nfa.l2chain_tasks("vdc_#{secg_id}_isolation").sort == l2_iso_tasks.sort &&
+      nfa.l3chain_tasks("vdc_#{secg_id}_isolation").sort == l3_iso_tasks.sort &&
       @has_l2 && @has_l3
     else
       @has_l2 && @has_l3
