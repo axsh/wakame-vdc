@@ -323,6 +323,18 @@ describe "SGHandler and NetfilterAgent" do
       vnicB.destroy
       nfa(host).should have_nothing_applied
     end
+
+    it "deletes isolation rules when destroying vnics" do
+      handler.init_vnic(vnicA_id)
+      handler.init_vnic(vnicB_id)
+
+      nfa(host).should have_applied_secg(secg).with_vnics([vnicA,vnicB])
+
+      handler.destroy_vnic(vnicB_id)
+      vnicB.destroy
+
+      nfa(host).should have_applied_secg(secg).with_vnics([vnicA])
+    end
   end
 
   context "with 2 vnics, 1 host node, 2 security groups" do

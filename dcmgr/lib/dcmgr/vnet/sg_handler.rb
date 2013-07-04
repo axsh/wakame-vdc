@@ -144,7 +144,15 @@ module Dcmgr::VNet::SGHandler
 
     vnic.security_groups.each { |group|
       group_id = group.canonical_uuid
+
       friend_ips = group.vnic_ips
+      # The vnic isn't destroyed in the database until after this method is called.
+      # Therefore we delete it from the ips we pass to the isolation group.
+      # TODO: Investigate if we can't just destroy the vnic in this method.
+      # Would make it a lot easier.
+      self_ip = vnic.direct_ip_lease.first
+      self_ip && friend_ips.delete(self_ip.ipv4)
+
       group.host_nodes.each {|host_node|
         # Check if the host node had this vnic's security groups yet
         query = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance)
