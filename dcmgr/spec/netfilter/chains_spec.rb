@@ -58,6 +58,10 @@ class NFCmdParser
         when "-X"
           chain = split_cmd.shift
           raise "Chain doesn't exist: #{bin} #{chain}" if @chains[bin][chain].nil?
+          @chains[bin].each {|k,v|
+            j = v["jumps"].member?(chain)
+            raise "Tried to delete #{bin} chain '#{chain}' but chain '#{k}' still has a jump to it." if j
+          }
           @chains[bin].delete(chain)
         when "-F"
           chain = split_cmd.shift

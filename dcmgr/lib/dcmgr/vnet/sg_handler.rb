@@ -109,6 +109,7 @@ module Dcmgr::VNet::SGHandler
 
     host_had_secg_already = false
     current_sgids = vnic.security_groups.map {|g| g.canonical_uuid }
+    call_packetfilter_service(vnic_host,"set_vnic_security_groups",vnic_id,(current_sgids - sg_uuids))
     sg_uuids.each { |group_id|
       if vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(group_id)).empty?
         logger.warn "Vnic '#{vnic_id}' isn't in security group '#{group_id}'."
@@ -130,7 +131,6 @@ module Dcmgr::VNet::SGHandler
         call_packetfilter_service(vnic_host,"destroy_isolation_group",group_id)
       end
     }
-    call_packetfilter_service(vnic_host,"set_vnic_security_groups",vnic_id,(current_sgids - sg_uuids))
     nil # Returning nil to simulate a void method
   end
 
