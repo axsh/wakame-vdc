@@ -132,6 +132,61 @@ def l3_chains_for_secg(secg_id)
   ]
 end
 
+RSpec::Matchers.define :have_applied_vnic do |vnic|
+  chain :with_secgs do |secg_array|
+    @groups = secg_array
+  end
+
+  match do |nfa|
+    vnic_id = vnic.canonical_uuid
+    @has_l2 = (nfa.l2chains & l2_chains_for_vnic(vnic_id)) == l2_chains_for_vnic(vnic_id)
+    @has_l3 = (nfa.l3chains & l3_chains_for_vnic(vnic_id)) == l3_chains_for_vnic(vnic_id)
+
+    #TODO: Failure message that shows which chains were missing
+    if @groups
+      l2iso_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_isolation"}
+      l2ref_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_reffers"}
+      l3iso_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_isolation"}
+      l3ref_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_reffees"}
+      l3sec_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_rules"}
+
+      nfa.l2chain_jumps("vdc_#{vnic_id}_d_isolation") == l2iso_chain_jumps &&
+      nfa.l2chain_jumps("vdc_#{vnic_id}_d_reffers") == l2ref_chain_jumps &&
+      nfa.l3chain_jumps("vdc_#{vnic_id}_d_isolation") == l3iso_chain_jumps &&
+      nfa.l3chain_jumps("vdc_#{vnic_id}_d_security") == l3sec_chain_jumps &&
+      nfa.l3chain_jumps("vdc_#{vnic_id}_d_reffees") == l3ref_chain_jumps &&
+      @has_l2 && @has_l3
+    else
+      @has_l2 && @has_l3
+    end
+  end
+end
+
+RSpec::Matchers.define :have_applied_secg do |secg|
+  # chain :with_vnics do |vnic_array|
+  #   @vnics = vnic_array
+  # end
+
+  match do |nfa|
+    secg_id = secg.canonical_uuid
+    @has_l2 = (nfa.l2chains & l2_chains_for_secg(secg_id)).sort == l2_chains_for_secg(secg_id).sort
+    @has_l3 = (nfa.l3chains & l3_chains_for_secg(secg_id)).sort == l3_chains_for_secg(secg_id).sort
+
+    # if @vnics
+    #   vnic_l2_iso = 
+    # else
+      @has_l2 && @has_l3
+    # end
+  end
+end
+
+RSpec::Matchers.define :have_nothing_applied do
+  match do |nfa|
+    nfa.l2chains == [] &&
+    nfa.l3chains == []
+  end
+end
+
 describe "SGHandler and NetfilterAgent" do
   # some syntax sugar
   def nfa(host)
@@ -156,21 +211,15 @@ describe "SGHandler and NetfilterAgent" do
     it "should create and delete chains" do
       handler.init_vnic(vnic_id)
 
-      nfa(host).l2chains.should =~ (l2_chains_for_vnic(vnic_id) + l2_chains_for_secg(secg_id))
-      nfa(host).l2chain_jumps("vdc_#{vnic_id}_d").should =~ (l2_chains_for_vnic(vnic_id) - ["vdc_#{vnic_id}_d"])
-      nfa(host).l2chain_jumps("vdc_#{vnic_id}_d_isolation").should =~ ["vdc_#{secg_id}_isolation"]
-      nfa(host).l2chain_jumps("vdc_#{vnic_id}_d_reffers").should == ["vdc_#{secg_id}_reffers"]
-
-      nfa(host).l3chains.should =~ (l3_chains_for_vnic(vnic_id) + l3_chains_for_secg(secg_id))
-      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d").should =~ (l3_chains_for_vnic(vnic_id) - ["vdc_#{vnic_id}_d"])
-      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d_isolation").should == ["vdc_#{secg_id}_isolation"]
-      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d_security").should == ["vdc_#{secg_id}_rules"]
-      nfa(host).l3chain_jumps("vdc_#{vnic_id}_d_reffees").should == ["vdc_#{secg_id}_reffees"]
+      nfa(host).should have_applied_vnic(vnic).with_secgs([secg])
+      nfa(host).should have_applied_secg(secg)#.with_vnics([vnic])
 
       handler.destroy_vnic(vnic_id)
       vnic.destroy
-      handler.nfa(host).l2chains.should == []
-      handler.nfa(host).l3chains.should == []
+
+      nfa(host).should_not have_applied_vnic(vnic)
+      nfa(host).should_not have_applied_secg(secg)
+      nfa(host).should have_nothing_applied
     end
   end
 
