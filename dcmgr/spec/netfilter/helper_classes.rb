@@ -21,52 +21,117 @@ class SGHandlerTest
   end
 end
 
-class NFCmdParser
-  attr_reader :chains
+class TestChain
+  attr_accessor :name
+  attr_accessor :jumps
+  attr_accessor :rules
 
-  def initialize
-    @chains = {"iptables" => {}, "ebtables" => {}}
+  def initialize(name = "")
+    @name = name
+    @jumps = []
+    @rules = []
   end
 
-  #TODO: Clean up this dirty hard to maintain format
-  # I'm making the same mistake that I did with netfilter cache here
+  def add_jump(chain)
+    raise "Chain '#{@name}' is already jumping to chain '#{chain.name}'" if has_jump?(chain)
+    @jumps << chain
+  end
+
+  def has_jump?(chain)
+    @jumps.member?(chain)
+  end
+
+  def add_rule(rule_string)
+    @rules << rule_string
+  end
+
+  def flush
+    @jumps = []
+    @rules = []
+  end
+end
+
+class NFCmdParser
+  # attr_reader :chains
+  attr_reader :l2chains
+  attr_reader :l3chains
+
+  def initialize
+    # @chains = {"iptables" => {}, "ebtables" => {}}
+
+    # Maps will have the format {"chain_name" => chain}
+    # Using maps instead of arrays so I don't have to iterate when getting a specific chain
+    @l2chains = {"FORWARD" => TestChain.new("FORWARD")}
+    @l3chains = {"FORWARD" => TestChain.new("FORWARD")}
+  end
+
+  def is_empty?(bin)
+    @l2chains.keys == ["FORWARD"] &&
+    @l3chains.keys == ["FORWARD"]
+  end
+
+  def new_chain(bin,name)
+    raise "Chain already exists: #{bin} #{name}." if chain_exists?(bin,name)
+    chain_mapping(bin)[name] = TestChain.new(name)
+  end
+
+  def get_chain(bin,name)
+    chain_mapping(bin)[name] || raise("Chain doesn't exist: #{bin} #{name}.")
+  end
+
+  def del_chain(bin,name)
+    to_delete = get_chain(bin,name)
+    all_chains(bin).values.each {|chain|
+      raise "Tried to delete #{bin} chain '#{to_delete.name}' but chain '#{chain.name}' still has a jump to it." if chain.jumps.member?(to_delete)
+    }
+    all_chains(bin).delete to_delete.name
+  end
+
+  def chain_exists?(bin,name)
+    !chain_mapping(bin)[name].nil?
+  end
+
+  def all_chains(bin)
+    chain_mapping(bin)
+  end
+
+  def all_chain_names(bin)
+    chain_mapping(bin).keys.sort
+  end
+
   def parse(cmds)
     # puts cmds.join("\n")
     cmds.each {|cmd|
       cmd.split(";").each { |semicolon_cmd|
         split_cmd = semicolon_cmd.split(" ")
         bin = split_cmd.shift # Returns either "iptables" or "ebtables"
+
         case split_cmd.shift
         when "-N"
-          chain = split_cmd.shift
-          raise "Chain already exists: #{bin} #{chain}" unless @chains[bin][chain].nil?
-          @chains[bin][chain] = {"jumps" => [], "tasks" => []}
+          new_chain(bin,split_cmd.shift)
         when "-A"
-          chain = split_cmd.shift
-          raise "Chain doesn't exist: #{bin} #{chain}" if @chains[bin][chain].nil?
+          c = get_chain(bin,split_cmd.shift)
           if split_cmd[0] == "-j"
-            target = split_cmd[1]
-            raise "Jump target doesn't exit: #{bin} #{target}" if @chains[bin][target].nil?
-            @chains[bin][chain]["jumps"] << target
+            c.add_jump(split_cmd[1])
           else
-            @chains[bin][chain]["tasks"] << split_cmd.join(" ")
+            c.add_rule(split_cmd.join(" "))
           end
         when "-X"
-          chain = split_cmd.shift
-          raise "Chain doesn't exist: #{bin} #{chain}" if @chains[bin][chain].nil?
-          @chains[bin].each {|k,v|
-            j = v["jumps"].member?(chain)
-            raise "Tried to delete #{bin} chain '#{chain}' but chain '#{k}' still has a jump to it." if j
-          }
-          @chains[bin].delete(chain)
+          del_chain(bin,split_cmd.shift)
         when "-F"
-          chain = split_cmd.shift
-          raise "Chain doesn't exist: #{bin} #{chain}" if @chains[bin][chain].nil?
-          @chains[bin][chain] = {"jumps" => [], "tasks" => []}
+          get_chain(bin,split_cmd.shift).flush
+        when "-P"
+          # We're setting policies. Do freakin' nuthin'
         else
+          raise NotImplementedError, semicolon_cmd
         end
       }
     }
+  end
+
+  private
+  def chain_mapping(bin)
+    {"iptables" => @l2chains, "ebtables" => @l3chains}[bin]
   end
 end
 
@@ -79,71 +144,15 @@ class NetfilterAgentTest
     @parser = NFCmdParser.new
   end
 
-  def l2chains
-    @parser.chains["ebtables"].keys
+  def method_missing(method,*args)
+    @parser.send(method,*args)
   end
-
-  def l3chains
-    @parser.chains["iptables"].keys
-  end
-
-  def l2chain_jumps(chain_name)
-    raise "Ebtables chain doesn't exit: '#{chain_name}'" if @parser.chains["ebtables"][chain_name].nil?
-    @parser.chains["ebtables"][chain_name]["jumps"]
-  end
-
-  def l3chain_jumps(chain_name)
-    raise "Iptables chain doesn't exit: '#{chain_name}'" if @parser.chains["iptables"][chain_name].nil?
-    @parser.chains["iptables"][chain_name]["jumps"]
-  end
-
-  def l2chain_tasks(chain_name)
-    raise "Ebtables chain doesn't exit: '#{chain_name}'" if @parser.chains["ebtables"][chain_name].nil?
-    @parser.chains["ebtables"][chain_name]["tasks"]
-  end
-
-  def l3chain_tasks(chain_name)
-    raise "Iptables chain doesn't exit: '#{chain_name}'" if @parser.chains["iptables"][chain_name].nil?
-    @parser.chains["iptables"][chain_name]["tasks"]
-  end
-
 
   private
   def exec(cmds)
     cmds = [cmds] unless cmds.is_a?(Array)
     @parser.parse(cmds)
   end
-end
-
-def l2_chains_for_vnic(vnic_id)
-  [
-    "vdc_#{vnic_id}_d",
-    "vdc_#{vnic_id}_d_standard",
-    "vdc_#{vnic_id}_d_isolation",
-    "vdc_#{vnic_id}_d_reffers"
-  ]
-end
-
-def l2_chains_for_secg(secg_id)
-  ["vdc_#{secg_id}_reffers","vdc_#{secg_id}_isolation"]
-end
-
-def l3_chains_for_vnic(vnic_id)
-  [
-    "vdc_#{vnic_id}_d",
-    "vdc_#{vnic_id}_d_standard",
-    "vdc_#{vnic_id}_d_isolation",
-    "vdc_#{vnic_id}_d_reffees",
-    "vdc_#{vnic_id}_d_security",
-  ]
-end
-
-def l3_chains_for_secg(secg_id)
-  [
-    "vdc_#{secg_id}_rules",
-    "vdc_#{secg_id}_reffees",
-    "vdc_#{secg_id}_isolation"
-  ]
 end
 
 # some syntax sugar
