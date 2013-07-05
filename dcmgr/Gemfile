@@ -18,7 +18,7 @@ gem "racket", ">= 1.0.11"
 gem 'ripl'
 gem "rack-test", "0.6.2"
 gem 'posix-spawn'
-gem 'fuguta'
+gem 'fuguta', ">= 1.0.1"
 
 gem 'eventmachine', :github=>'axsh/eventmachine', :ref=>'dc84f883b00f'
 gem 'isono', '0.2.19'
