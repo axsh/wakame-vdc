@@ -148,7 +148,7 @@ end
 
 RSpec::Matchers.define :have_nothing_applied do
   match do |nfa|
-    nfa.is_empty?("iptables")
+    nfa.is_empty?("iptables") &&
     nfa.is_empty?("ebtables")
   end
 end
