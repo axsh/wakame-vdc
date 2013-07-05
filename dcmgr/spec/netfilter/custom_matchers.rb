@@ -1,7 +1,56 @@
 # -*- coding: utf-8 -*-
 
+module ChainMethods
+  def expect_chains(bin, chains)
+    actual_chains = @nfa.all_chain_names(bin)
+    if (actual_chains & chains).sort == chains.sort
+      @fail_should_not = "There were chains applied that we expected not to.\n
+      chains: [#{actual_chains.join(", ")}]"
+      true
+    else
+      @fail_should = "The chains we expected weren't applied.\n
+      expected: [#{chains.join(", ")}]\n
+      got: [#{actual_chains.join(", ")}]"
+      false
+    end
+  end
+
+  def expect_rules(bin, chain, rules)
+    actual = @nfa.get_chain(bin, chain).rules.sort
+    expected = rules.sort
+
+    if actual == expected
+      @fail_should_not = "Chain '#{chain}' had the rules we expected it not to have.\n
+      jumps: [#{actual.join(", ")}]"
+      true
+    else
+      @fail_should = "Chain '#{chain}' didn't have the rules we expected.\n
+      expected: [#{expected.join(", ")}]\n
+      got: [#{actual.join(", ")}]"
+      false
+    end
+  end
+
+  def expect_jumps(bin, chain, targets)
+    actual = @nfa.get_chain(bin, chain).jumps.sort
+    expected = targets.sort
+
+    if actual == expected
+      @fail_should_not = "Chain '#{chain}' had the jumps we expected it not to have.\n
+      jumps: [#{actual.join(", ")}]"
+      true
+    else
+      @fail_should = "Chain '#{chain}' didn't have the jumps we expected.\n
+      expected: [#{expected.join(", ")}]\n
+      got: [#{actual.join(", ")}]"
+      false
+    end
+  end
+end
 
 RSpec::Matchers.define :have_applied_vnic do |vnic|
+  include ChainMethods
+
   def l2_chains_for_vnic(vnic_id)
     [
       "vdc_#{vnic_id}_d",
@@ -23,36 +72,6 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
 
   def group_chains(suffix)
     @groups.map {|g| "vdc_#{g.canonical_uuid}_#{suffix}" }
-  end
-
-  def expect_chains(bin, chains)
-    actual_chains = @nfa.all_chain_names(bin)
-    if (actual_chains & chains).sort == chains.sort
-      @fail_should_not = "There were chains applied that we expected not to.\n
-      chains: [#{actual_chains.join(", ")}]"
-      true
-    else
-      @fail_should = "The chains we expected weren't applied.\n
-      expected: [#{chains.join(", ")}]\n
-      got: [#{actual_chains.join(", ")}]"
-      false
-    end
-  end
-
-  def expect_jumps(bin, chain, targets)
-    actual = @nfa.get_chain(bin, chain).jumps.sort
-    expected = targets.sort
-
-    if actual == expected
-      @fail_should_not = "Chain '#{chain}' had the jumps we expected it not ot have.\n
-      jumps: [#{actual.join(", ")}]"
-      true
-    else
-      @fail_should = "Chain '#{chain}' didn't have the jumps we expected.\n
-      expected: [#{expected.join(", ")}]\n
-      got: [#{actual.join(", ")}]"
-      false
-    end
   end
 
   chain :with_secgs do |secg_array|
@@ -82,9 +101,7 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
 end
 
 RSpec::Matchers.define :have_applied_secg do |secg|
-  chain :with_vnics do |vnic_array|
-    @vnics = vnic_array
-  end
+  include ChainMethods
 
   def l2_chains_for_secg(secg_id)
     ["vdc_#{secg_id}_reffers", "vdc_#{secg_id}_isolation"]
@@ -98,23 +115,35 @@ RSpec::Matchers.define :have_applied_secg do |secg|
     ]
   end
 
-  match do |nfa|
-    secg_id = secg.canonical_uuid
-    @has_l2 = (nfa.all_chain_names("ebtables") & l2_chains_for_secg(secg_id)).sort == l2_chains_for_secg(secg_id).sort
-    @has_l3 = (nfa.all_chain_names("iptables") & l3_chains_for_secg(secg_id)).sort == l3_chains_for_secg(secg_id).sort
+  def l2_iso_rules
+    @vnics.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src #{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
+  end
 
+  def l3_iso_rules
+    @vnics.map {|v| "-s #{v.direct_ip_lease.first.ipv4} -j ACCEPT"}
+  end
+
+  chain :with_vnics do |vnic_array|
+    @vnics = vnic_array
+  end
+
+  match do |nfa|
+    @nfa = nfa
+    secg_id = secg.canonical_uuid
     if @vnics
       @vnics.each {|v| raise "VNic '#{v.canonical_uuid}' doesn't have a direct ip lease." if v.direct_ip_lease.first.nil?}
-      l2_iso_tasks = @vnics.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src #{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
-      l3_iso_tasks = @vnics.map {|v| "-s #{v.direct_ip_lease.first.ipv4} -j ACCEPT"}
-
-      nfa.get_chain("ebtables", "vdc_#{secg_id}_isolation").rules.sort == l2_iso_tasks.sort &&
-      nfa.get_chain("iptables", "vdc_#{secg_id}_isolation").rules.sort == l3_iso_tasks.sort &&
-      @has_l2 && @has_l3
+      expect_rules("ebtables", "vdc_#{secg_id}_isolation", l2_iso_rules) &&
+      expect_rules("iptables", "vdc_#{secg_id}_isolation", l3_iso_rules) &&
+      expect_chains("ebtables", l2_chains_for_secg(secg_id)) &&
+      expect_chains("iptables", l3_chains_for_secg(secg_id))
     else
-      @has_l2 && @has_l3
+      expect_chains("ebtables", l2_chains_for_secg(secg_id)) &&
+      expect_chains("iptables", l3_chains_for_secg(secg_id))
     end
   end
+
+  failure_message_for_should {|nfa| @fail_should}
+  failure_message_for_should_not {|nfa| @fail_should_not}
 end
 
 RSpec::Matchers.define :have_nothing_applied do
