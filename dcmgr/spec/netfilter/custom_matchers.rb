@@ -2,52 +2,27 @@
 
 
 RSpec::Matchers.define :have_applied_vnic do |vnic|
-  chain :with_secgs do |secg_array|
-    @groups = secg_array
-  end
-
   def l2_chains_for_vnic(vnic_id)
     [
       "vdc_#{vnic_id}_d",
-      "vdc_#{vnic_id}_d_standard",
       "vdc_#{vnic_id}_d_isolation",
-      "vdc_#{vnic_id}_d_reffers"
-    ].sort
+      "vdc_#{vnic_id}_d_reffers",
+      "vdc_#{vnic_id}_d_standard"
+    ]
   end
 
   def l3_chains_for_vnic(vnic_id)
     [
       "vdc_#{vnic_id}_d",
-      "vdc_#{vnic_id}_d_standard",
       "vdc_#{vnic_id}_d_isolation",
       "vdc_#{vnic_id}_d_reffees",
       "vdc_#{vnic_id}_d_security",
-    ].sort
+      "vdc_#{vnic_id}_d_standard"
+    ]
   end
 
-  match do |nfa|
-    @nfa = nfa
-    vnic_id = vnic.canonical_uuid
-
-    #TODO: Failure message that shows which chains were missing
-    if @groups
-      l2iso_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_isolation"}
-      l2ref_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_reffers"}
-      l3iso_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_isolation"}
-      l3ref_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_reffees"}
-      l3sec_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_rules"}
-
-      expect_chains("ebtables", l2_chains_for_vnic(vnic_id)) &&
-      expect_chains("iptables", l3_chains_for_vnic(vnic_id)) &&
-      expect_jumps("ebtables", "vdc_#{vnic_id}_d_isolation", l2iso_chain_jumps) &&
-      expect_jumps("ebtables", "vdc_#{vnic_id}_d_reffers", l2ref_chain_jumps) &&
-      expect_jumps("iptables", "vdc_#{vnic_id}_d_isolation", l3iso_chain_jumps) &&
-      expect_jumps("iptables", "vdc_#{vnic_id}_d_security", l3sec_chain_jumps) &&
-      expect_jumps("iptables", "vdc_#{vnic_id}_d_reffees", l3ref_chain_jumps)
-    else
-      expect_chains("ebtables", l2_chains_for_vnic(vnic_id)) &&
-      expect_chains("iptables", l3_chains_for_vnic(vnic_id))
-    end
+  def group_chains(suffix)
+    @groups.map {|g| "vdc_#{g.canonical_uuid}_#{suffix}" }
   end
 
   def expect_chains(bin, chains)
@@ -77,6 +52,28 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
       expected: [#{expected.join(", ")}]\n
       got: [#{actual.join(", ")}]"
       false
+    end
+  end
+
+  chain :with_secgs do |secg_array|
+    @groups = secg_array
+  end
+
+  match do |nfa|
+    @nfa = nfa
+    vnic_id = vnic.canonical_uuid
+
+    if @groups
+      expect_chains("ebtables", l2_chains_for_vnic(vnic_id)) &&
+      expect_chains("iptables", l3_chains_for_vnic(vnic_id)) &&
+      expect_jumps("ebtables", "vdc_#{vnic_id}_d_isolation", group_chains("isolation")) &&
+      expect_jumps("ebtables", "vdc_#{vnic_id}_d_reffers", group_chains("reffers")) &&
+      expect_jumps("iptables", "vdc_#{vnic_id}_d_isolation", group_chains("isolation")) &&
+      expect_jumps("iptables", "vdc_#{vnic_id}_d_security", group_chains("rules")) &&
+      expect_jumps("iptables", "vdc_#{vnic_id}_d_reffees", group_chains("reffees"))
+    else
+      expect_chains("ebtables", l2_chains_for_vnic(vnic_id)) &&
+      expect_chains("iptables", l3_chains_for_vnic(vnic_id))
     end
   end
 
