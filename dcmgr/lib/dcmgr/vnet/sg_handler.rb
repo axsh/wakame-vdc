@@ -81,9 +81,11 @@ module Dcmgr::VNet::SGHandler
         next
       end
       group = M::SecurityGroup[group_id]
+      hosts_before_change = group.host_nodes
+      vnic.add_security_group(group)
       friend_ips = group.vnic_ips
 
-      group.host_nodes.each {|host_node|
+      hosts_before_change.each {|host_node|
         friend_ips = group.vnic_ips
         call_packetfilter_service(host_node,"update_isolation_group",group_id,friend_ips)
 
@@ -95,7 +97,6 @@ module Dcmgr::VNet::SGHandler
         call_packetfilter_service(vnic_host,"init_security_group",group_id,sec_tasks)
         call_packetfilter_service(vnic_host,"init_isolation_group",group_id,friend_ips)
       end
-      vnic.add_security_group(group)
     }
     call_packetfilter_service(vnic_host,"set_vnic_security_groups",vnic_id,(sg_uuids + current_sgids).uniq)
 

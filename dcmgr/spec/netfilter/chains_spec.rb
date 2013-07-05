@@ -430,6 +430,27 @@ describe "SGHandler and NetfilterAgent" do
       vnicA.destroy
       nfa(host).should have_nothing_applied
     end
+
+    it "starts 2 vnics in the same secg, then moves one out" do
+      handler.init_vnic(vnicA_id)
+
+      # Put vnicB in the same group as vnicA before we make netfilter aware of it
+      vnicB.remove_security_group(groupB)
+      vnicB.add_security_group(groupA)
+      handler.init_vnic(vnicB_id)
+
+      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
+      nfa(host).should have_applied_vnic(vnicB).with_secgs([groupA])
+      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA,vnicB])
+
+      handler.remove_sgs_from_vnic(vnicB_id,[groupA_id])
+      handler.add_sgs_to_vnic(vnicB_id,[groupB_id])
+
+      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
+      nfa(host).should have_applied_vnic(vnicB).with_secgs([groupB])
+      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA])
+      nfa(host).should have_applied_secg(groupB).with_vnics([vnicB])
+    end
   end
 
   context "with 3 vnics, 1 host node, 3 security groups" do
