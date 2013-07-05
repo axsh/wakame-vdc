@@ -49,14 +49,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     ssh = M::SshKeyPair.entry_new(@account) do |s|
 
       unless params[:public_key].empty?
-        public_key = URI.decode(params[:public_key])
-        error = 0
-        error += 1 unless SSHKey.valid_ssh_public_key?(public_key)
-        result = `/usr/bin/ssh-keygen -lf /dev/stdin <<< '#{public_key}'`
-        error += 1 unless $? == 0
-        raise InvalidSshPublicKey, params[:public_key] if  error > 0
+        unless SSHKey.valid_ssh_public_key?(params[:public_key])
+          raise InvalidSshPublicKey, params[:public_key]
+        end
+        s.public_key = params[:public_key]
 
-        s.public_key = public_key
+        # Calculate ssh key fingerprint
+        result = `/usr/bin/ssh-keygen -lf /dev/stdin <<< '#{public_key}'`
+        unless $? == 0
+          raise InvalidSshPublicKey, params[:public_key]
+        end
+        
         s.finger_print = result.split(' ')[1]
       else
         keydata = nil
