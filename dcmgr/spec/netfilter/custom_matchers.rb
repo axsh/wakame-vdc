@@ -26,6 +26,7 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
   end
 
   match do |nfa|
+    @nfa = nfa
     vnic_id = vnic.canonical_uuid
     @has_l2 = (nfa.all_chain_names("ebtables") & l2_chains_for_vnic(vnic_id)).sort == l2_chains_for_vnic(vnic_id).sort
     @has_l3 = (nfa.all_chain_names("iptables") & l3_chains_for_vnic(vnic_id)).sort == l3_chains_for_vnic(vnic_id).sort
@@ -38,16 +39,29 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
       l3ref_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_reffees"}
       l3sec_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_rules"}
 
-      nfa.get_chain("ebtables", "vdc_#{vnic_id}_d_isolation").jumps.sort == l2iso_chain_jumps.sort &&
-      nfa.get_chain("ebtables", "vdc_#{vnic_id}_d_reffers").jumps.sort == l2ref_chain_jumps.sort &&
-      nfa.get_chain("iptables", "vdc_#{vnic_id}_d_isolation").jumps.sort == l3iso_chain_jumps.sort &&
-      nfa.get_chain("iptables", "vdc_#{vnic_id}_d_security").jumps.sort == l3sec_chain_jumps.sort &&
-      nfa.get_chain("iptables", "vdc_#{vnic_id}_d_reffees").jumps.sort == l3ref_chain_jumps.sort &&
+      expect_jumps("ebtables", "vdc_#{vnic_id}_d_isolation", l2iso_chain_jumps) &&
+      expect_jumps("ebtables", "vdc_#{vnic_id}_d_reffers", l2ref_chain_jumps) &&
+      expect_jumps("iptables", "vdc_#{vnic_id}_d_isolation", l3iso_chain_jumps) &&
+      expect_jumps("iptables", "vdc_#{vnic_id}_d_security", l3sec_chain_jumps) &&
+      expect_jumps("iptables", "vdc_#{vnic_id}_d_reffees", l3ref_chain_jumps) &&
       @has_l2 && @has_l3
     else
       @has_l2 && @has_l3
     end
   end
+
+  def expect_jumps(bin, chain, targets)
+    actual = @nfa.get_chain(bin, chain).jumps.sort
+    expected = targets.sort
+    (actual == expected).tap {|n|
+      @fail_should = "Chain '#{chain}' didn't have the jumps we expected.\n
+      expected: [#{expected.join(", ")}]\n
+      got: [#{actual.join(", ")}]" unless n
+    }
+  end
+
+  failure_message_for_should {|nfa| @fail_should}
+  failure_message_for_should_not {|nfa| @fail_should_not}
 end
 
 RSpec::Matchers.define :have_applied_secg do |secg|
