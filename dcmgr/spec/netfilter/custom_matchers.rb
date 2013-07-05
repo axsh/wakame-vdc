@@ -28,8 +28,6 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
   match do |nfa|
     @nfa = nfa
     vnic_id = vnic.canonical_uuid
-    @has_l2 = (nfa.all_chain_names("ebtables") & l2_chains_for_vnic(vnic_id)).sort == l2_chains_for_vnic(vnic_id).sort
-    @has_l3 = (nfa.all_chain_names("iptables") & l3_chains_for_vnic(vnic_id)).sort == l3_chains_for_vnic(vnic_id).sort
 
     #TODO: Failure message that shows which chains were missing
     if @groups
@@ -39,25 +37,47 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
       l3ref_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_reffees"}
       l3sec_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_rules"}
 
+      expect_chains("ebtables", l2_chains_for_vnic(vnic_id)) &&
+      expect_chains("iptables", l3_chains_for_vnic(vnic_id)) &&
       expect_jumps("ebtables", "vdc_#{vnic_id}_d_isolation", l2iso_chain_jumps) &&
       expect_jumps("ebtables", "vdc_#{vnic_id}_d_reffers", l2ref_chain_jumps) &&
       expect_jumps("iptables", "vdc_#{vnic_id}_d_isolation", l3iso_chain_jumps) &&
       expect_jumps("iptables", "vdc_#{vnic_id}_d_security", l3sec_chain_jumps) &&
-      expect_jumps("iptables", "vdc_#{vnic_id}_d_reffees", l3ref_chain_jumps) &&
-      @has_l2 && @has_l3
+      expect_jumps("iptables", "vdc_#{vnic_id}_d_reffees", l3ref_chain_jumps)
     else
-      @has_l2 && @has_l3
+      expect_chains("ebtables", l2_chains_for_vnic(vnic_id)) &&
+      expect_chains("iptables", l3_chains_for_vnic(vnic_id))
+    end
+  end
+
+  def expect_chains(bin, chains)
+    actual_chains = @nfa.all_chain_names(bin)
+    if (actual_chains & chains).sort == chains.sort
+      @fail_should_not = "There were chains applied that we expected not to.\n
+      chains: [#{actual_chains.join(", ")}]"
+      true
+    else
+      @fail_should = "The chains we expected weren't applied.\n
+      expected: [#{chains.join(", ")}]\n
+      got: [#{actual_chains.join(", ")}]"
+      false
     end
   end
 
   def expect_jumps(bin, chain, targets)
     actual = @nfa.get_chain(bin, chain).jumps.sort
     expected = targets.sort
-    (actual == expected).tap {|n|
+
+    if actual == expected
+      @fail_should_not = "Chain '#{chain}' had the jumps we expected it not ot have.\n
+      jumps: [#{actual.join(", ")}]"
+      true
+    else
       @fail_should = "Chain '#{chain}' didn't have the jumps we expected.\n
       expected: [#{expected.join(", ")}]\n
-      got: [#{actual.join(", ")}]" unless n
-    }
+      got: [#{actual.join(", ")}]"
+      false
+    end
   end
 
   failure_message_for_should {|nfa| @fail_should}
