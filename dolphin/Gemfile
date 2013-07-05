@@ -1,3 +1,15 @@
 source 'https://rubygems.org'
 
 gem 'wakame-dolphin'
+
+# 1. vdc-dolphin requires gem packages
+# 2. *should be* same version of wakame-dolphin/Gemfile
+
+group :mysql do
+  gem 'sequel', '3.48.0'
+  gem 'mysql2', '0.3.11'
+end
+
+group :cassandra do
+  gem 'cassandra', '0.17.0'
+end
