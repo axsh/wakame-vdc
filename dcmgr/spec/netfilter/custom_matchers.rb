@@ -38,11 +38,11 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
       l3ref_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_reffees"}
       l3sec_chain_jumps = @groups.map {|g| "vdc_#{g.canonical_uuid}_rules"}
 
-      nfa.get_chain("ebtables","vdc_#{vnic_id}_d_isolation").jumps.sort == l2iso_chain_jumps.sort &&
-      nfa.get_chain("ebtables","vdc_#{vnic_id}_d_reffers").jumps.sort == l2ref_chain_jumps.sort &&
-      nfa.get_chain("iptables","vdc_#{vnic_id}_d_isolation").jumps.sort == l3iso_chain_jumps.sort &&
-      nfa.get_chain("iptables","vdc_#{vnic_id}_d_security").jumps.sort == l3sec_chain_jumps.sort &&
-      nfa.get_chain("iptables","vdc_#{vnic_id}_d_reffees").jumps.sort == l3ref_chain_jumps.sort &&
+      nfa.get_chain("ebtables", "vdc_#{vnic_id}_d_isolation").jumps.sort == l2iso_chain_jumps.sort &&
+      nfa.get_chain("ebtables", "vdc_#{vnic_id}_d_reffers").jumps.sort == l2ref_chain_jumps.sort &&
+      nfa.get_chain("iptables", "vdc_#{vnic_id}_d_isolation").jumps.sort == l3iso_chain_jumps.sort &&
+      nfa.get_chain("iptables", "vdc_#{vnic_id}_d_security").jumps.sort == l3sec_chain_jumps.sort &&
+      nfa.get_chain("iptables", "vdc_#{vnic_id}_d_reffees").jumps.sort == l3ref_chain_jumps.sort &&
       @has_l2 && @has_l3
     else
       @has_l2 && @has_l3
@@ -56,7 +56,7 @@ RSpec::Matchers.define :have_applied_secg do |secg|
   end
 
   def l2_chains_for_secg(secg_id)
-    ["vdc_#{secg_id}_reffers","vdc_#{secg_id}_isolation"]
+    ["vdc_#{secg_id}_reffers", "vdc_#{secg_id}_isolation"]
   end
 
   def l3_chains_for_secg(secg_id)
@@ -77,8 +77,8 @@ RSpec::Matchers.define :have_applied_secg do |secg|
       l2_iso_tasks = @vnics.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src #{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
       l3_iso_tasks = @vnics.map {|v| "-s #{v.direct_ip_lease.first.ipv4} -j ACCEPT"}
 
-      nfa.get_chain("ebtables","vdc_#{secg_id}_isolation").rules.sort == l2_iso_tasks.sort &&
-      nfa.get_chain("iptables","vdc_#{secg_id}_isolation").rules.sort == l3_iso_tasks.sort &&
+      nfa.get_chain("ebtables", "vdc_#{secg_id}_isolation").rules.sort == l2_iso_tasks.sort &&
+      nfa.get_chain("iptables", "vdc_#{secg_id}_isolation").rules.sort == l3_iso_tasks.sort &&
       @has_l2 && @has_l3
     else
       @has_l2 && @has_l3

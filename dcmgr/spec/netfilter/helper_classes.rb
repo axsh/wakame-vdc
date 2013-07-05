@@ -16,8 +16,8 @@ class SGHandlerTest
   end
   alias :nfa :get_netfilter_agent
 
-  def call_packetfilter_service(hn,method,*args)
-    @hosts[hn.canonical_uuid].send(method,*args)
+  def call_packetfilter_service(hn, method, *args)
+    @hosts[hn.canonical_uuid].send(method, *args)
   end
 end
 
@@ -70,24 +70,24 @@ class NFCmdParser
     @l3chains.keys == ["FORWARD"]
   end
 
-  def new_chain(bin,name)
-    raise "Chain already exists: #{bin} #{name}." if chain_exists?(bin,name)
+  def new_chain(bin, name)
+    raise "Chain already exists: #{bin} #{name}." if chain_exists?(bin, name)
     chain_mapping(bin)[name] = TestChain.new(name)
   end
 
-  def get_chain(bin,name)
+  def get_chain(bin, name)
     chain_mapping(bin)[name] || raise("Chain doesn't exist: #{bin} #{name}.")
   end
 
-  def del_chain(bin,name)
-    to_delete = get_chain(bin,name)
+  def del_chain(bin, name)
+    to_delete = get_chain(bin, name)
     all_chains(bin).values.each {|chain|
       raise "Tried to delete #{bin} chain '#{to_delete.name}' but chain '#{chain.name}' still has a jump to it." if chain.jumps.member?(to_delete)
     }
     all_chains(bin).delete to_delete.name
   end
 
-  def chain_exists?(bin,name)
+  def chain_exists?(bin, name)
     !chain_mapping(bin)[name].nil?
   end
 
@@ -108,18 +108,18 @@ class NFCmdParser
 
         case split_cmd.shift
         when "-N"
-          new_chain(bin,split_cmd.shift)
+          new_chain(bin, split_cmd.shift)
         when "-A"
-          c = get_chain(bin,split_cmd.shift)
+          c = get_chain(bin, split_cmd.shift)
           if split_cmd[0] == "-j"
             c.add_jump(split_cmd[1])
           else
             c.add_rule(split_cmd.join(" "))
           end
         when "-X"
-          del_chain(bin,split_cmd.shift)
+          del_chain(bin, split_cmd.shift)
         when "-F"
-          get_chain(bin,split_cmd.shift).flush
+          get_chain(bin, split_cmd.shift).flush
         when "-P"
           # We're setting policies. Do freakin' nuthin'
         else
@@ -144,8 +144,8 @@ class NetfilterAgentTest
     @parser = NFCmdParser.new
   end
 
-  def method_missing(method,*args)
-    @parser.send(method,*args)
+  def method_missing(method, *args)
+    @parser.send(method, *args)
   end
 
   private

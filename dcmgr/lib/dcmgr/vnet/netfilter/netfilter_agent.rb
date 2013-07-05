@@ -54,8 +54,8 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
   end
 
   # Split this in security group and isolation group?
-  def set_vnic_security_groups(vnic_id,secg_ids)
-    logger.info "Setting security groups of vnic '#{vnic_id}' to [#{secg_ids.join(",")}]."
+  def set_vnic_security_groups(vnic_id, secg_ids)
+    logger.info "Setting security groups of vnic '#{vnic_id}' to [#{secg_ids.join(", ")}]."
     exec [
       vnic_l2_iso_chain(vnic_id).flush,
       vnic_l2_ref_chain(vnic_id).flush,
@@ -73,10 +73,10 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     }.flatten
   end
 
-  def update_sg_rules(secg_id,tasks)
+  def update_sg_rules(secg_id, tasks)
   end
 
-  def update_isolation_group(group_id,friend_ips)
+  def update_isolation_group(group_id, friend_ips)
     logger.info "Updating vnics in isolation group '#{group_id}'."
     l2c = secg_l2_iso_chain(group_id)
     l3c = secg_l3_iso_chain(group_id)

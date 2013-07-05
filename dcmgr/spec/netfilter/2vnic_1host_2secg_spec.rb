@@ -75,25 +75,25 @@ describe "SGHandler and NetfilterAgent" do
       handler.init_vnic(vnicA_id)
       nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
 
-      handler.add_sgs_to_vnic(vnicA_id,[groupB_id])
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA,groupB])
+      handler.add_sgs_to_vnic(vnicA_id, [groupB_id])
+      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA, groupB])
 
-      handler.remove_sgs_from_vnic(vnicA_id,[groupB_id])
+      handler.remove_sgs_from_vnic(vnicA_id, [groupB_id])
       nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
 
       # Nothing should change, nor should there be an error if we try to remove a group we're not in
-      handler.remove_sgs_from_vnic(vnicA_id,[groupB_id])
+      handler.remove_sgs_from_vnic(vnicA_id, [groupB_id])
       nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
 
       # vnicA is already in groupA but that shouldn't be a problem. groupA should just be ignored. That's what we're testing here.
-      handler.add_sgs_to_vnic(vnicA_id,[groupA_id,groupB_id])
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA,groupB])
+      handler.add_sgs_to_vnic(vnicA_id, [groupA_id, groupB_id])
+      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA, groupB])
 
-      handler.remove_sgs_from_vnic(vnicA_id,[groupA_id,groupB_id])
+      handler.remove_sgs_from_vnic(vnicA_id, [groupA_id, groupB_id])
       nfa(host).should have_applied_vnic(vnicA).with_secgs([])
 
-      handler.add_sgs_to_vnic(vnicA_id,[groupA_id,groupB_id])
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA,groupB])
+      handler.add_sgs_to_vnic(vnicA_id, [groupA_id, groupB_id])
+      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA, groupB])
 
       handler.destroy_vnic(vnicA_id)
       vnicA.destroy
@@ -110,10 +110,10 @@ describe "SGHandler and NetfilterAgent" do
 
       nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
       nfa(host).should have_applied_vnic(vnicB).with_secgs([groupA])
-      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA,vnicB])
+      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA, vnicB])
 
-      handler.remove_sgs_from_vnic(vnicB_id,[groupA_id])
-      handler.add_sgs_to_vnic(vnicB_id,[groupB_id])
+      handler.remove_sgs_from_vnic(vnicB_id, [groupA_id])
+      handler.add_sgs_to_vnic(vnicB_id, [groupB_id])
 
       nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
       nfa(host).should have_applied_vnic(vnicB).with_secgs([groupB])

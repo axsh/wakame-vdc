@@ -58,7 +58,7 @@ describe "SGHandler and NetfilterAgent" do
       handler.init_vnic(vnicB_id)
       nfa(host).should have_applied_vnic(vnicA).with_secgs([secg])
       nfa(host).should have_applied_vnic(vnicB).with_secgs([secg])
-      nfa(host).should have_applied_secg(secg).with_vnics([vnicA,vnicB])
+      nfa(host).should have_applied_secg(secg).with_vnics([vnicA, vnicB])
 
       # Destroy vnic A
       handler.destroy_vnic(vnicA_id)
@@ -77,7 +77,7 @@ describe "SGHandler and NetfilterAgent" do
       handler.init_vnic(vnicA_id)
       handler.init_vnic(vnicB_id)
 
-      nfa(host).should have_applied_secg(secg).with_vnics([vnicA,vnicB])
+      nfa(host).should have_applied_secg(secg).with_vnics([vnicA, vnicB])
 
       handler.destroy_vnic(vnicB_id)
       vnicB.destroy
