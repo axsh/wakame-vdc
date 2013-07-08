@@ -17,7 +17,3 @@ before_install:
 
 script:
   - true
-
-branches:
-  only:
-    - feature-travis
