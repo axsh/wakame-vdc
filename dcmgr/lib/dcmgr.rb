@@ -29,6 +29,8 @@ module Dcmgr
     autoload :LoadBalancer, 'dcmgr/constants/load_balancer'
     autoload :Image, 'dcmgr/constants/image'
     autoload :BackupObject, 'dcmgr/constants/backup_object'
+    autoload :Volume, 'dcmgr/constants/volume'
+    autoload :HostNode, 'dcmgr/constants/host_node'
   end
   Const = Constants
 

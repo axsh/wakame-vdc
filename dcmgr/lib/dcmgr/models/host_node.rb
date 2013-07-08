@@ -6,19 +6,7 @@ module Dcmgr::Models
   class HostNode < BaseNew
     taggable 'hn'
 
-    HYPERVISOR_XEN_34='xen-3.4'
-    HYPERVISOR_XEN_40='xen-4.0'
-    HYPERVISOR_DUMMY='dummy'
-    HYPERVISOR_KVM='kvm'
-    HYPERVISOR_LXC='lxc'
-    HYPERVISOR_ESXI='esxi'
-    HYPERVISOR_OPENVZ='openvz'
-
-    ARCH_X86=:x86.to_s
-    ARCH_X86_64=:x86_64.to_s
-
-    SUPPORTED_ARCH=[ARCH_X86, ARCH_X86_64]
-    SUPPORTED_HYPERVISOR=[HYPERVISOR_DUMMY, HYPERVISOR_KVM, HYPERVISOR_LXC, HYPERVISOR_ESXI, HYPERVISOR_OPENVZ]
+    include Dcmgr::Constants::HostNode
 
     one_to_many :instances
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
@@ -73,7 +61,7 @@ module Dcmgr::Models
     end
 
     def status
-      node.nil? ? :offline : node.state
+      node.nil? ? STATUS_OFFLINE : node.state
     end
 
     # Returns true/false if the host node has enough capacity to run

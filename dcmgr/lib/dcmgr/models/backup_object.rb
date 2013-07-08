@@ -5,6 +5,8 @@ module Dcmgr::Models
     taggable 'bo'
     accept_service_type
 
+    include Dcmgr::Constants::BackupObject
+    
     many_to_one :backup_storage
     plugin ArchiveChangedColumn, :histories
     # TODO put logs to accounting log.
@@ -36,7 +38,7 @@ module Dcmgr::Models
       bo.backup_storage = (bkst.is_a?(BackupStorage) ? bkst : BackupStorage[bkst.to_s])
       bo.account_id = (account.is_a?(Account) ? account.canonical_uuid : account.to_s)
       bo.size = size.to_i
-      bo.state = :creating
+      bo.state = STATE_CREATING
       blk.call(bo)
       bo.save
     end
@@ -61,7 +63,7 @@ module Dcmgr::Models
     private
     
     def before_save
-      if self.state == :available
+      if self.state == STATE_AVAILABLE
         self.progress = 100.0
       end
 
@@ -69,7 +71,7 @@ module Dcmgr::Models
     end
 
     def _destroy_delete
-      self.state = :deleted if self.state != :deleted
+      self.state = STATE_DELETED if self.state != STATE_DELETED
       self.deleted_at ||= Time.now
       self.save_changes
     end

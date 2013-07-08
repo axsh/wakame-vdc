@@ -30,27 +30,10 @@ module Dcmgr::Models
       end
     end
 
-    def before_destroy
-      if !Instance.lives.filter(:image_id=>self.canonical_uuid).empty?
-        raise "There are one or more running instances refers this record."
-      end
-
-      super
-    end
-
-    def before_validation
-      # symbolize feature's key
-      self.features.keys.each { |k|
-        if k.is_a?(String) && FEATURES.member?(k.to_s)
-          self.features[k.to_sym] = self.features.delete(k)
-        end
-      }
-    end
-
     def validate
       super
 
-      unless [BOOT_DEV_SAN, BOOT_DEV_LOCAL].member?(self.boot_dev_type)
+      unless BOOT_DEV_FLAGS.member?(self.boot_dev_type)
         errors.add(:boot_dev_type, "Invalid boot dev type: #{self.boot_dev_type}")
       end
 
@@ -96,14 +79,6 @@ module Dcmgr::Models
       self.features[key]
     end
 
-    # override Sequel::Model#delete not to delete rows but to set
-    # delete flags.
-    def delete
-      self.state = :deleted if self.state != :deleted
-      self.deleted_at ||= Time.now
-      self.save
-    end
-
     def self.entry_new(account, arch, boot_dev_type, file_format, &blk)
       img = self.new
       img.account_id = account.canonical_uuid
@@ -127,5 +102,28 @@ module Dcmgr::Models
       end
     end
 
+    private
+    def before_destroy
+      if !Instance.alives.filter(:image_id=>self.canonical_uuid).empty?
+        raise "There are one or more running instances refers this record."
+      end
+
+      super
+    end
+
+    def before_validation
+      # symbolize feature's key
+      self.features.keys.each { |k|
+        if k.is_a?(String) && FEATURES.member?(k.to_s)
+          self.features[k.to_sym] = self.features.delete(k)
+        end
+      }
+    end
+
+    def _destroy_delete
+      self.deleted_at ||= Time.now
+      self.state = STATE_DELETED if self.state != STATE_DELETED
+      self.save_changes
+    end
   end
 end

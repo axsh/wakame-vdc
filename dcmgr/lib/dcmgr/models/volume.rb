@@ -4,22 +4,7 @@ module Dcmgr::Models
   class Volume < AccountResource
     taggable 'vol'
     accept_service_type
-
-    STATUS_TYPE_REGISTERING = "registering"
-    STATUS_TYPE_ONLINE = "online"
-    STATUS_TYPE_OFFLINE = "offline"
-    STATUS_TYPE_FAILED = "failed"
-
-    STATE_TYPE_REGISTERING = "registering"
-    STATE_TYPE_CREATING = "creating"
-    STATE_TYPE_AVAILABLE = "available"
-    STATE_TYPE_ATTATING = "attating"
-    STATE_TYPE_ATTACHED = "attached"
-    STATE_TYPE_DETACHING = "detaching"
-    STATE_TYPE_FAILED = "failed"
-    STATE_TYPE_DEREGISTERING = "deregistering"
-    STATE_TYPE_DELETING = "deleting"
-    STATE_TYPE_DELETED = "deleted"
+    include Dcmgr::Constants::Volume
 
     many_to_one :storage_node, :after_set=>:validate_storage_node_assigned
     many_to_one :instance
@@ -90,10 +75,10 @@ module Dcmgr::Models
     end
 
     def entry_delete()
-      if self.state.to_sym != :available
+      if self.state.to_s != STATE_AVAILABLE
         raise RequestError, "invalid delete request"
       end
-      self.state = :deleting
+      self.state = STATE_DELETING
       self.save_changes
       self
     end
@@ -118,15 +103,12 @@ module Dcmgr::Models
       }
     end
 
-    SNAPSHOT_READY_STATES = [:attached, :available].freeze
-    ONDISK_STATES = [:available, :attaching, :attached, :detaching].freeze
-
     def ready_to_take_snapshot?
-      SNAPSHOT_READY_STATES.member?(self.state.to_sym)
+      SNAPSHOT_READY_STATES.member?(self.state.to_s)
     end
 
     def ondisk_state?
-      ONDISK_STATES.member?(self.state.to_sym)
+      ONDISK_STATES.member?(self.state.to_s)
     end
 
     def entry_new_backup_object(bkst, account_id=nil, &blk)
@@ -134,15 +116,6 @@ module Dcmgr::Models
                              (account_id || self.account_id),
                              self.size * 1024 * 1024,
                              &blk)
-    end
-
-    # override Sequel::Model#delete not to delete rows but to set
-    # delete flags.
-    def delete
-      self.deleted_at ||= Time.now
-      self.state = :deleted if self.state != :deleted
-      self.status = :offline if self.status != :offline
-      self.save
     end
 
     def self.entry_new(account, size, params, &blk)
@@ -165,5 +138,12 @@ module Dcmgr::Models
       convert_byte(self[:size], byte_unit)
     end
 
+    private
+    def _destroy_delete
+      self.deleted_at ||= Time.now
+      self.state = STATE_DELETED if self.state != STATE_DELETED
+      self.status = STATUS_OFFILINE if self.status != STATUS_OFFLINE
+      self.save_changes
+    end
   end
 end
