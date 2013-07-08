@@ -55,12 +55,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
         s.public_key = params[:public_key]
 
         # Calculate ssh key fingerprint
-        result = `/usr/bin/ssh-keygen -lf /dev/stdin <<< '#{public_key}'`
-        unless $? == 0
-          raise InvalidSshPublicKey, params[:public_key]
-        end
-        
-        s.finger_print = result.split(' ')[1]
+        s.finger_print = SSHKey.fingerprint(params[:public_key])
       else
         keydata = nil
         keydata = M::SshKeyPair.generate_key_pair(s.uuid)
