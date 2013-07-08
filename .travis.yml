@@ -9,3 +9,7 @@ gemfile:
   - dolphin/Gemfile
   - frontend/admin/Gemfile
   - frontend/dcmgr_gui/Gemfile
+
+branches:
+  only:
+    - feature-travis
