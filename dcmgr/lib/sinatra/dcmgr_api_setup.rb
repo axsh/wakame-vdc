@@ -11,33 +11,31 @@ require 'sinatra/json'
 # common setup for Dcmgr API Sinatra App.
 module Sinatra
 
-  if Sinatra::Contrib::VERSION < '1.4.0'
-    module Namespace
-      module InstanceMethods
-        def error_block!(key, *block_params)
-          if block = @namespace.errors[key]
-            instance_exec(*block_params, &block)
-          else
-            # The issue is that the error blocks defined in the base
-            # Sinatra are ignored with Sinatra::Namespace.
-            # settings() returns the Module class represents the current
-            # namespace. the blocks from errors() also need to be
-            # checked in settings.base which has the reference to the
-            # base Sinatra object of the namespace.
-            base = settings.base
-            while base.respond_to?(:errors)
-              next base = base.superclass unless args = base.errors[key]
-              args += [block_params]
-              return process_route(*args)
-            end
-            return false unless key.respond_to? :superclass and key.superclass < Exception
-            error_block!(key.superclass, *block_params)
+  module Namespace
+    module InstanceMethods
+      def error_block!(key, *block_params)
+        if block = @namespace.errors[key]
+          instance_exec(*block_params, &block)
+        else
+          # The issue is that the error blocks defined in the base
+          # Sinatra are ignored with Sinatra::Namespace.
+          # settings() returns the Module class represents the current
+          # namespace. the blocks from errors() also need to be
+          # checked in settings.base which has the reference to the
+          # base Sinatra object of the namespace.
+          base = settings.base
+          while base.respond_to?(:errors)
+            next base = base.superclass unless args = base.errors[key]
+            args += [block_params]
+            return process_route(*args)
           end
+          return false unless key.respond_to? :superclass and key.superclass < Exception
+          error_block!(key.superclass, *block_params)
         end
       end
     end
   end
-  
+
   module DcmgrAPISetup
     # Returns deserialized hash from HTTP body. Serialization fromat
     # is guessed from content type header. The query string params
