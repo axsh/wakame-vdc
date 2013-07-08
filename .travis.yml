@@ -1,0 +1,11 @@
+language: ruby
+
+rvm:
+  - 2.0.0
+
+gemfile:
+  - client/ruby-hijiki/Gemfile
+  - dcmgr/Gemfile
+  - dolphin/Gemfile
+  - frontend/admin/Gemfile
+  - frontend/dcmgr_gui/Gemfile
