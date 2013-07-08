@@ -6,11 +6,7 @@ module Dcmgr::Models
   class StorageNode < BaseNew
     taggable 'sn'
 
-    BACKINGSTORE_ZFS = 'zfs'
-    BACKINGSTORE_RAW = 'raw'
-    BACKINGSTORE_IFS = 'ifs'
-
-    SUPPORTED_BACKINGSTORE = [BACKINGSTORE_ZFS, BACKINGSTORE_RAW, BACKINGSTORE_IFS]
+    include Dcmgr::Constants::StorageNode
 
     one_to_many :volumes
     one_to_many :volume_snapshots
@@ -47,7 +43,7 @@ module Dcmgr::Models
 
     # Show status of the agent.
     def status
-      node.nil? ? :offline : node.state
+      node.nil? ? STATUS_OFFLINE : node.state
     end
 
     def to_hash

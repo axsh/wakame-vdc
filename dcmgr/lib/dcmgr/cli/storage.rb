@@ -7,6 +7,7 @@ module Dcmgr::Cli
 class Storage < Base
   namespace :storage
   include Dcmgr::Models
+  include Dcmgr::Constants::StorageNode
 
   desc "add NODE_ID [options]", "Register a new storage node"
   method_option :uuid, :type => :string, :desc => "The uuid for the new storage node"

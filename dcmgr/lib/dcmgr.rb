@@ -31,6 +31,7 @@ module Dcmgr
     autoload :BackupObject, 'dcmgr/constants/backup_object'
     autoload :Volume, 'dcmgr/constants/volume'
     autoload :HostNode, 'dcmgr/constants/host_node'
+    autoload :StorageNode, 'dcmgr/constants/storage_node'
   end
   Const = Constants
 
