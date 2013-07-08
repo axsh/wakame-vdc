@@ -82,18 +82,15 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
     @nfa = nfa
     vnic_id = vnic.canonical_uuid
 
-    if @groups
-      expect_chains("ebtables", l2_chains_for_vnic(vnic_id)) &&
-      expect_chains("iptables", l3_chains_for_vnic(vnic_id)) &&
+    expect_chains("ebtables", l2_chains_for_vnic(vnic_id)) &&
+    expect_chains("iptables", l3_chains_for_vnic(vnic_id)) &&
+    ( @groups.nil? || (
       expect_jumps("ebtables", "vdc_#{vnic_id}_d_isolation", group_chains("isolation")) &&
       expect_jumps("ebtables", "vdc_#{vnic_id}_d_reffers", group_chains("reffers")) &&
       expect_jumps("iptables", "vdc_#{vnic_id}_d_isolation", group_chains("isolation")) &&
       expect_jumps("iptables", "vdc_#{vnic_id}_d_security", group_chains("rules")) &&
       expect_jumps("iptables", "vdc_#{vnic_id}_d_reffees", group_chains("reffees"))
-    else
-      expect_chains("ebtables", l2_chains_for_vnic(vnic_id)) &&
-      expect_chains("iptables", l3_chains_for_vnic(vnic_id))
-    end
+    ))
   end
 
   failure_message_for_should {|nfa| @fail_should}
@@ -130,16 +127,14 @@ RSpec::Matchers.define :have_applied_secg do |secg|
   match do |nfa|
     @nfa = nfa
     secg_id = secg.canonical_uuid
-    if @vnics
+
+    expect_chains("ebtables", l2_chains_for_secg(secg_id)) &&
+    expect_chains("iptables", l3_chains_for_secg(secg_id)) &&
+    ( @vnics.nil? || (
       @vnics.each {|v| raise "VNic '#{v.canonical_uuid}' doesn't have a direct ip lease." if v.direct_ip_lease.first.nil?}
       expect_rules("ebtables", "vdc_#{secg_id}_isolation", l2_iso_rules) &&
-      expect_rules("iptables", "vdc_#{secg_id}_isolation", l3_iso_rules) &&
-      expect_chains("ebtables", l2_chains_for_secg(secg_id)) &&
-      expect_chains("iptables", l3_chains_for_secg(secg_id))
-    else
-      expect_chains("ebtables", l2_chains_for_secg(secg_id)) &&
-      expect_chains("iptables", l3_chains_for_secg(secg_id))
-    end
+      expect_rules("iptables", "vdc_#{secg_id}_isolation", l3_iso_rules)
+    ))
   end
 
   failure_message_for_should {|nfa| @fail_should}
