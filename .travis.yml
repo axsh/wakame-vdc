@@ -10,6 +10,11 @@ gemfile:
   - frontend/admin/Gemfile
   - frontend/dcmgr_gui/Gemfile
 
+before_install:
+ - sudo apt-get update -qq
+ # for trema
+ - sudo apt-get install libpcap-dev -qq
+
 script:
   - true
 
