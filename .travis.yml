@@ -10,6 +10,9 @@ gemfile:
   - frontend/admin/Gemfile
   - frontend/dcmgr_gui/Gemfile
 
+script:
+  - true
+
 branches:
   only:
     - feature-travis
