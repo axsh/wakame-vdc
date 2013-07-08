@@ -1,17 +1,25 @@
 # -*- coding: utf-8 -*-
 
 module ChainMethods
+  def succeed_with(msg)
+    @fail_should_not = msg
+    true
+  end
+
+  def fail_with(msg)
+    @fail_should = msg
+    false
+  end
+
   def expect_chains(bin, chains)
     actual_chains = @nfa.all_chain_names(bin)
     if (actual_chains & chains).sort == chains.sort
-      @fail_should_not = "There were chains applied that we expected not to.\n
+      succeed_with "There were chains applied that we expected not to.\n
       chains: [#{actual_chains.join(", ")}]"
-      true
     else
-      @fail_should = "The chains we expected weren't applied.\n
+      fail_with "The chains we expected weren't applied.\n
       expected: [#{chains.join(", ")}]\n
       got: [#{actual_chains.join(", ")}]"
-      false
     end
   end
 
@@ -20,14 +28,12 @@ module ChainMethods
     expected = rules.sort
 
     if actual == expected
-      @fail_should_not = "Chain '#{chain}' had the rules we expected it not to have.\n
+      succeed_with "Chain '#{chain}' had the rules we expected it not to have.\n
       jumps: [#{actual.join(", ")}]"
-      true
     else
-      @fail_should = "Chain '#{chain}' didn't have the rules we expected.\n
+      fail_with "Chain '#{chain}' didn't have the rules we expected.\n
       expected: [#{expected.join(", ")}]\n
       got: [#{actual.join(", ")}]"
-      false
     end
   end
 
@@ -36,14 +42,12 @@ module ChainMethods
     expected = targets.sort
 
     if actual == expected
-      @fail_should_not = "Chain '#{chain}' had the jumps we expected it not to have.\n
+      succeed_with "Chain '#{chain}' had jumps we expected it not to have.\n
       jumps: [#{actual.join(", ")}]"
-      true
     else
-      @fail_should = "Chain '#{chain}' didn't have the jumps we expected.\n
+      fail_with "Chain '#{chain}' didn't have the jumps we expected.\n
       expected: [#{expected.join(", ")}]\n
       got: [#{actual.join(", ")}]"
-      false
     end
   end
 end
