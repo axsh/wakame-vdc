@@ -10,6 +10,7 @@ module Dcmgr::Models
     plugin Plugins::ResourceLabel
 
     many_to_many :network_vif, :join_table=>:network_vif_security_groups
+    alias :vnics :network_vif
     many_to_many :referencees, :class => self, :join_table => :security_group_references,:left_key => :referencer_id, :right_key => :referencee_id
     many_to_many :referencers, :class => self, :join_table => :security_group_references,:right_key => :referencer_id, :left_key => :referencee_id
 

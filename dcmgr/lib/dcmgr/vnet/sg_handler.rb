@@ -24,7 +24,7 @@ module Dcmgr::VNet::SGHandler
     host.alive_vnics.each { |vnic|
       vnic_id = vnic.canonical_uuid
       group_ids = vnic.security_groups.map {|sg| sg.canonical_uuid}
-      call_packetfilter_service(host, "init_vnic", vnic_id, [])
+      call_packetfilter_service(host, "init_vnic", vnic_id, vnic.to_hash)
       call_packetfilter_service(host, "set_vnic_security_groups", vnic_id, group_ids)
     }
 
@@ -36,10 +36,9 @@ module Dcmgr::VNet::SGHandler
     raise "Vnic '#{vnic.canonical_uuid}' not attached to an instance." if vnic.instance.nil?
     raise "Vnic '#{vnic.canonical_uuid}' is not on a host node." if vnic.instance.host_node.nil?
     host_node = vnic.instance.host_node
-    tasks = []
 
     logger.info "Telling host '#{host_node.canonical_uuid}' to initialize vnic '#{vnic_id}'."
-    call_packetfilter_service(host_node, "init_vnic", vnic_id, tasks)
+    call_packetfilter_service(host_node, "init_vnic", vnic_id, vnic.to_hash)
 
     group_ids = []
     vnic.security_groups.each {|group|
