@@ -43,5 +43,30 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).should_not have_applied_secg(secg)
       nfa(host).should have_nothing_applied
     end
+
+    #TODO: Add metadata server test
+    context "with gateway, dns and dhcp set" do
+      let(:network) { Fabricate(:network, ipv4_gw: "10.0.0.1", dns_server: "8.8.8.8", dhcp_server: "10.0.0.2") }
+      let(:vnic) do
+        Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
+          n.instance.host_node = host
+          n.network = network
+          n.save
+
+          Dcmgr::Models::NetworkVifIpLease.create({
+            :ipv4 => IPAddr.new("10.0.0.10").to_i,
+            :network_id => network.id,
+            :network_vif_id => n.id
+          })
+
+          n.instance.save
+        end
+      end
+
+      it "applies standard rules for gateway, dhcp and dns" do
+        handler.init_vnic(vnic_id)
+        nfa(host).should have_applied_vnic(vnic)
+      end
+    end
   end
 end
