@@ -9,6 +9,7 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       include Dcmgr::VNet::Netfilter::NetfilterTasks
     end
   end
+  I = Dcmgr::VNet::Netfilter::Chains::Inbound
 
   def init_vnic(vnic_id, vnic_map)
     logger.info "Creating chains for vnic '#{vnic_id}'."
@@ -36,8 +37,8 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
 
   def destroy_vnic(vnic_id)
     logger.info "Removing chains for vnic '#{vnic_id}'."
-    exec vnic_chains(vnic_id).map {|chain| chain.destroy}
     exec forward_chain_jumps(vnic_id,"del")
+    exec vnic_chains(vnic_id).map {|chain| chain.destroy}
   end
 
   def init_security_group(secg_id, tasks)
@@ -66,19 +67,19 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
   def set_vnic_security_groups(vnic_id, secg_ids)
     logger.info "Setting security groups of vnic '#{vnic_id}' to [#{secg_ids.join(", ")}]."
     exec [
-      vnic_l2_iso_chain(vnic_id).flush,
-      vnic_l2_ref_chain(vnic_id).flush,
-      vnic_l3_iso_chain(vnic_id).flush,
-      vnic_l3_ref_chain(vnic_id).flush,
-      vnic_l3_secg_chain(vnic_id).flush
+      I.vnic_l2_iso_chain(vnic_id).flush,
+      I.vnic_l2_ref_chain(vnic_id).flush,
+      I.vnic_l3_iso_chain(vnic_id).flush,
+      I.vnic_l3_ref_chain(vnic_id).flush,
+      I.vnic_l3_secg_chain(vnic_id).flush
     ]
 
     exec secg_ids.map { |secg_id|
-      [vnic_l2_iso_chain(vnic_id).add_jump(secg_l2_iso_chain(secg_id)),
-      vnic_l2_ref_chain(vnic_id).add_jump(secg_l2_ref_chain(secg_id)),
-      vnic_l3_iso_chain(vnic_id).add_jump(secg_l3_iso_chain(secg_id)),
-      vnic_l3_ref_chain(vnic_id).add_jump(secg_l3_ref_chain(secg_id)),
-      vnic_l3_secg_chain(vnic_id).add_jump(secg_l3_rules_chain(secg_id))]
+      [I.vnic_l2_iso_chain(vnic_id).add_jump(I.secg_l2_iso_chain(secg_id)),
+      I.vnic_l2_ref_chain(vnic_id).add_jump(I.secg_l2_ref_chain(secg_id)),
+      I.vnic_l3_iso_chain(vnic_id).add_jump(I.secg_l3_iso_chain(secg_id)),
+      I.vnic_l3_ref_chain(vnic_id).add_jump(I.secg_l3_ref_chain(secg_id)),
+      I.vnic_l3_secg_chain(vnic_id).add_jump(I.secg_l3_rules_chain(secg_id))]
     }.flatten
   end
 
@@ -87,8 +88,8 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
 
   def update_isolation_group(group_id, friend_ips)
     logger.info "Updating vnics in isolation group '#{group_id}'."
-    l2c = secg_l2_iso_chain(group_id)
-    l3c = secg_l3_iso_chain(group_id)
+    l2c = I.secg_l2_iso_chain(group_id)
+    l3c = I.secg_l3_iso_chain(group_id)
     exec [
       l2c.flush,
       l3c.flush,

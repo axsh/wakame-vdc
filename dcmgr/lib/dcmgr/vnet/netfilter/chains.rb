@@ -56,94 +56,103 @@ module Dcmgr::VNet::Netfilter::Chains
     end
   end
 
-  def l3_forward_chain
-    L3Chain.new("FORWARD")
-  end
-
-  def secg_l3_rules_chain(sg_id)
-    L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_rules")
-  end
-
-  def secg_l2_iso_chain(sg_id)
-    L2Chain.new("#{CHAIN_PREFIX}_#{sg_id}_isolation")
-  end
-
-  def secg_l2_ref_chain(sg_id)
-    L2Chain.new("#{CHAIN_PREFIX}_#{sg_id}_reffers")
-  end
-
-  def secg_l3_iso_chain(sg_id)
-    L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_isolation")
-  end
-
-  def secg_l3_ref_chain(sg_id)
-    L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_reffees")
-  end
-
   def l2_forward_chain
     L2Chain.new("FORWARD")
   end
 
-  def vnic_l2_main_chain(vnic_id)
-    L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d")
+  def l3_forward_chain
+    L3Chain.new("FORWARD")
   end
 
-  def vnic_l2_iso_chain(vnic_id)
-    L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d_isolation")
-  end
+  module Inbound
+    class << self
+      def secg_l3_rules_chain(sg_id)
+        L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_rules")
+      end
 
-  def vnic_l2_stnd_chain(vnic_id)
-    L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d_standard")
-  end
+      def secg_l2_iso_chain(sg_id)
+        L2Chain.new("#{CHAIN_PREFIX}_#{sg_id}_isolation")
+      end
 
-  def vnic_l2_ref_chain(vnic_id)
-    L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d_reffers")
-  end
+      def secg_l2_ref_chain(sg_id)
+        L2Chain.new("#{CHAIN_PREFIX}_#{sg_id}_reffers")
+      end
 
-  def vnic_l3_main_chain(vnic_id)
-    L3Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d")
-  end
+      def secg_l3_iso_chain(sg_id)
+        L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_isolation")
+      end
 
-  def vnic_l3_stnd_chain(vnic_id)
-    L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_standard"
-  end
+      def secg_l3_ref_chain(sg_id)
+        L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_reffees")
+      end
 
-  def vnic_l3_iso_chain(vnic_id)
-    L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_isolation"
-  end
+      def vnic_l2_main_chain(vnic_id)
+        L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d")
+      end
 
-  def vnic_l3_ref_chain(vnic_id)
-    L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_reffees" # Referencees was too long of a name for iptables (must be under 29 chars)
-  end
+      def vnic_l2_iso_chain(vnic_id)
+        L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d_isolation")
+      end
 
-  def vnic_l3_secg_chain(vnic_id)
-    L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_security" # Only L3 needs the secg chain. We don't have user defined L2 rules atm.
+      def vnic_l2_stnd_chain(vnic_id)
+        L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d_standard")
+      end
+
+      def vnic_l2_ref_chain(vnic_id)
+        L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d_reffers")
+      end
+
+      def vnic_l3_main_chain(vnic_id)
+        L3Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d")
+      end
+
+      def vnic_l3_stnd_chain(vnic_id)
+        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_standard"
+      end
+
+      def vnic_l3_iso_chain(vnic_id)
+        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_isolation"
+      end
+
+      def vnic_l3_ref_chain(vnic_id)
+        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_reffees" # Referencees was too long of a name for iptables (must be under 29 chars)
+      end
+
+      def vnic_l3_secg_chain(vnic_id)
+        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_security" # Only L3 needs the secg chain. We don't have user defined L2 rules atm.
+      end
+    end
   end
+  I = Inbound
 
   def secg_chains(sg_id)
-    [secg_l2_ref_chain(sg_id),secg_l3_ref_chain(sg_id),secg_l3_rules_chain(sg_id)]
+    [
+      I.secg_l2_ref_chain(sg_id),
+      I.secg_l3_ref_chain(sg_id),
+      I.secg_l3_rules_chain(sg_id)
+    ]
   end
 
   def isog_chains(ig_id)
-    [secg_l2_iso_chain(ig_id),secg_l3_iso_chain(ig_id)]
+    [I.secg_l2_iso_chain(ig_id), I.secg_l3_iso_chain(ig_id)]
   end
 
   def vnic_l2_chains(vnic_id)
     [
-      vnic_l2_main_chain(vnic_id),
-      vnic_l2_stnd_chain(vnic_id),
-      vnic_l2_iso_chain(vnic_id),
-      vnic_l2_ref_chain(vnic_id),
+      I.vnic_l2_main_chain(vnic_id),
+      I.vnic_l2_stnd_chain(vnic_id),
+      I.vnic_l2_iso_chain(vnic_id),
+      I.vnic_l2_ref_chain(vnic_id),
     ]
   end
 
   def vnic_l3_chains(vnic_id)
     [
-      vnic_l3_main_chain(vnic_id),
-      vnic_l3_stnd_chain(vnic_id),
-      vnic_l3_iso_chain(vnic_id),
-      vnic_l3_ref_chain(vnic_id),
-      vnic_l3_secg_chain(vnic_id)
+      I.vnic_l3_main_chain(vnic_id),
+      I.vnic_l3_stnd_chain(vnic_id),
+      I.vnic_l3_iso_chain(vnic_id),
+      I.vnic_l3_ref_chain(vnic_id),
+      I.vnic_l3_secg_chain(vnic_id)
     ]
   end
 
