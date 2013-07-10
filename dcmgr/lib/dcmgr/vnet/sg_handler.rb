@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::VNet::SGHandler
+  def self.included klass
+    klass.class_eval do
+      include Dcmgr::Logger
+    end
+  end
   M = Dcmgr::Models
   # All methods in this module return nil. That's to prevent them from returning
   # Sequel models to classes that might not have access to the database, which

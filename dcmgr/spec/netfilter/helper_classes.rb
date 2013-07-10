@@ -2,7 +2,6 @@
 
 
 class SGHandlerTest
-  include Dcmgr::Logger
   include Dcmgr::VNet::SGHandler
 
   def add_host(hn)
@@ -151,7 +150,6 @@ class NFCmdParser
 end
 
 class NetfilterAgentTest
-  include Dcmgr::Logger
   include Dcmgr::VNet::Netfilter::NetfilterAgent
 
   def initialize(*args)

@@ -3,6 +3,7 @@
 module Dcmgr::VNet::Netfilter::NetfilterAgent
   def self.included klass
     klass.class_eval do
+      include Dcmgr::Logger
       include Dcmgr::VNet::Netfilter::Chains
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::VNet::Netfilter::NetfilterTasks
