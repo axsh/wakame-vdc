@@ -15,11 +15,27 @@ module ChainMethods
     actual_chains = @nfa.all_chain_names(bin)
     if (actual_chains & chains).sort == chains.sort
       succeed_with "There were chains applied that we expected not to.\n
-      chains: [#{actual_chains.join(", ")}]"
+      expected: [#{chains.join(", ")}]\n
+      got: [#{actual_chains.join(", ")}]"
     else
       fail_with "The chains we expected weren't applied.\n
       expected: [#{chains.join(", ")}]\n
       got: [#{actual_chains.join(", ")}]"
+    end
+  end
+
+  def expect_rules_to_contain(bin, chain, rules)
+    actual = @nfa.get_chain(bin, chain).rules
+    expected = rules.sort
+
+    if (actual & expected).sort == expected
+      succeed_with "There were rules applied that we expected not to.\n
+      expected: [#{expected.join(", ")}]\n
+      got: [#{actual.join(", ")}]"
+    else
+      fail_with "The rules we expected weren't applied.\n
+      expected: [#{expected.join(", ")}]\n
+      got: [#{actual.join(", ")}]"
     end
   end
 
@@ -28,8 +44,8 @@ module ChainMethods
     expected = rules.sort
 
     if actual == expected
-      succeed_with "Chain '#{chain}' had the rules we expected it not to have.\n
-      jumps: [#{actual.join(", ")}]"
+      succeed_with "Chain '#{chain}' had rules we expected it not to have.\n
+      rules: [#{actual.join(", ")}]"
     else
       fail_with "Chain '#{chain}' didn't have the rules we expected.\n
       expected: [#{expected.join(", ")}]\n
@@ -117,6 +133,8 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
 
     expect_chains("ebtables", l2_chains_for_vnic) &&
     expect_chains("iptables", l3_chains_for_vnic) &&
+    expect_rules_to_contain("ebtables", "FORWARD", ["-o #{@vnic_id} -j vdc_#{@vnic_id}_d"]) &&
+    expect_rules_to_contain("iptables", "FORWARD", ["-m physdev --physdev-is-bridged --physdev-out #{@vnic_id} -j vdc_#{@vnic_id}_d"]) &&
     expect_rules("ebtables", "vdc_#{@vnic_id}_d_standard", l2_stnd_rules_for_vnic) &&
     expect_rules("iptables", "vdc_#{@vnic_id}_d_standard", l3_stnd_rules_for_vnic) &&
     ( @groups.nil? || (
@@ -178,7 +196,11 @@ end
 
 RSpec::Matchers.define :have_nothing_applied do
   match do |nfa|
-    nfa.is_empty?("iptables") &&
-    nfa.is_empty?("ebtables")
+    !nfa.has_custom_chains?("iptables") &&
+    !nfa.has_custom_chains?("ebtables") &&
+    nfa.get_chain("iptables","FORWARD").jumps == [] &&
+    nfa.get_chain("iptables","FORWARD").rules == [] &&
+    nfa.get_chain("ebtables","FORWARD").jumps == [] &&
+    nfa.get_chain("ebtables","FORWARD").rules == []
   end
 end

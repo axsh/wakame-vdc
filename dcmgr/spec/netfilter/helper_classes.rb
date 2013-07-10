@@ -37,12 +37,21 @@ class TestChain
     @jumps << chain
   end
 
+  def del_jump(chain)
+    raise "Chain '#{@name}' is not jumping to chain '#{chain.name}'" unless has_jump?(chain)
+    @jumps.delete chain
+  end
+
   def has_jump?(chain)
     @jumps.member?(chain)
   end
 
   def add_rule(rule_string)
     @rules << rule_string
+  end
+
+  def del_rule(rule_string)
+    @rules.delete(rule_string) || raise("Rule doesn't exist in chain '#{@name}': '#{rule_string}'")
   end
 
   def flush
@@ -65,9 +74,8 @@ class NFCmdParser
     @l3chains = {"FORWARD" => TestChain.new("FORWARD")}
   end
 
-  def is_empty?(bin)
-    @l2chains.keys == ["FORWARD"] &&
-    @l3chains.keys == ["FORWARD"]
+  def has_custom_chains?(bin)
+    chain_mapping(bin).keys != ["FORWARD"]
   end
 
   def new_chain(bin, name)
@@ -115,6 +123,13 @@ class NFCmdParser
             c.add_jump(split_cmd[1])
           else
             c.add_rule(split_cmd.join(" "))
+          end
+        when "-D"
+          c = get_chain(bin, split_cmd.shift)
+          if split_cmd[0] == "-j"
+            c.del_jump(split_cmd[1])
+          else
+            c.del_rule(split_cmd.join(" "))
           end
         when "-X"
           del_chain(bin, split_cmd.shift)

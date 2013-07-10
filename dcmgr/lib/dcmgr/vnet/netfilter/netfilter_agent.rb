@@ -63,9 +63,6 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     exec [
       # accept related and established connections for all protocols
       #TODO: Read up on what netfilter means by related/established for connectionless protocols like icmp and umd. Then comment about that here.
-      # l3std.add_rule("-m state --state RELATED,ESTABLISHED -p tcp -j ACCEPT"),
-      # l3std.add_rule("-m state --state RELATED,ESTABLISHED -p udp -j ACCEPT"),
-      # l3std.add_rule("-m state --state RELATED,ESTABLISHED -p icmp -j ACCEPT"),
       l3std.add_rule("-m state --state RELATED,ESTABLISHED -j ACCEPT"),
 
       # accept only wakame's dns (users can use their custom ones by opening a port in their security groups)
@@ -81,6 +78,8 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
   def destroy_vnic(vnic_id)
     logger.info "Removing chains for vnic '#{vnic_id}'."
     exec vnic_chains(vnic_id).map {|chain| chain.destroy}
+    exec "ebtables -D FORWARD -o #{vnic_id} -j #{vnic_l2_main_chain(vnic_id).name}"
+    exec "iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vnic_id} -j #{vnic_l3_main_chain(vnic_id).name}"
   end
 
   def init_security_group(secg_id, tasks)
