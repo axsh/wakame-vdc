@@ -55,22 +55,22 @@ end
 RSpec::Matchers.define :have_applied_vnic do |vnic|
   include ChainMethods
 
-  def l2_chains_for_vnic(vnic_id)
+  def l2_chains_for_vnic
     [
-      "vdc_#{vnic_id}_d",
-      "vdc_#{vnic_id}_d_isolation",
-      "vdc_#{vnic_id}_d_reffers",
-      "vdc_#{vnic_id}_d_standard"
+      "vdc_#{@vnic_id}_d",
+      "vdc_#{@vnic_id}_d_isolation",
+      "vdc_#{@vnic_id}_d_reffers",
+      "vdc_#{@vnic_id}_d_standard"
     ]
   end
 
-  def l3_chains_for_vnic(vnic_id)
+  def l3_chains_for_vnic
     [
-      "vdc_#{vnic_id}_d",
-      "vdc_#{vnic_id}_d_isolation",
-      "vdc_#{vnic_id}_d_reffees",
-      "vdc_#{vnic_id}_d_security",
-      "vdc_#{vnic_id}_d_standard"
+      "vdc_#{@vnic_id}_d",
+      "vdc_#{@vnic_id}_d_isolation",
+      "vdc_#{@vnic_id}_d_reffees",
+      "vdc_#{@vnic_id}_d_security",
+      "vdc_#{@vnic_id}_d_standard"
     ]
   end
 
@@ -84,16 +84,16 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
 
   match do |nfa|
     @nfa = nfa
-    vnic_id = vnic.canonical_uuid
+    @vnic_id = vnic.canonical_uuid
 
-    expect_chains("ebtables", l2_chains_for_vnic(vnic_id)) &&
-    expect_chains("iptables", l3_chains_for_vnic(vnic_id)) &&
+    expect_chains("ebtables", l2_chains_for_vnic) &&
+    expect_chains("iptables", l3_chains_for_vnic) &&
     ( @groups.nil? || (
-      expect_jumps("ebtables", "vdc_#{vnic_id}_d_isolation", group_chains("isolation")) &&
-      expect_jumps("ebtables", "vdc_#{vnic_id}_d_reffers", group_chains("reffers")) &&
-      expect_jumps("iptables", "vdc_#{vnic_id}_d_isolation", group_chains("isolation")) &&
-      expect_jumps("iptables", "vdc_#{vnic_id}_d_security", group_chains("rules")) &&
-      expect_jumps("iptables", "vdc_#{vnic_id}_d_reffees", group_chains("reffees"))
+      expect_jumps("ebtables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&
+      expect_jumps("ebtables", "vdc_#{@vnic_id}_d_reffers", group_chains("reffers")) &&
+      expect_jumps("iptables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&
+      expect_jumps("iptables", "vdc_#{@vnic_id}_d_security", group_chains("rules")) &&
+      expect_jumps("iptables", "vdc_#{@vnic_id}_d_reffees", group_chains("reffees"))
     ))
   end
 
