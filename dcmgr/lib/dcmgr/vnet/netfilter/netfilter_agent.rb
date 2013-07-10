@@ -35,9 +35,9 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     l2std = vnic_l2_stnd_chain(vnic_id)
     exec [
       # accept arp from gateway
-      vnic_map[:network][:ipv4_gw] && l2std.add_rule("--protocol arp --arp-opcode Request --arp-ip-src=#{vnic_map[:network][:ipv4_gw]} --arp-ip-dst=#{vnic_map[:address]} -j ACCEPT"),
+      vnic_map[:network] && vnic_map[:network][:ipv4_gw] && l2std.add_rule("--protocol arp --arp-opcode Request --arp-ip-src=#{vnic_map[:network][:ipv4_gw]} --arp-ip-dst=#{vnic_map[:address]} -j ACCEPT"),
       # accept arp from dns
-      vnic_map[:network][:dns_server] && l2std.add_rule("--protocol arp --arp-opcode Request --arp-ip-src=#{vnic_map[:network][:dns_server]} --arp-ip-dst=#{vnic_map[:address]} -j ACCEPT"),
+      vnic_map[:network] && vnic_map[:network][:dns_server] && l2std.add_rule("--protocol arp --arp-opcode Request --arp-ip-src=#{vnic_map[:network][:dns_server]} --arp-ip-dst=#{vnic_map[:address]} -j ACCEPT"),
       # drop ip spoofing
       #TODO: Drop spoofing outging # l2std.add_rule("--protocol arp --arp-ip-src ! #{vnic_map[:address]} -j DROP"),
       #TODO: drop ip spoofing to the host EbtablesRule.new(:filter,:input,:arp,:outgoing,"--protocol arp --arp-ip-src ! #{self.ip} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
@@ -49,7 +49,7 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       #TODO: drop mac spoofing from the host EbtablesRule.new(:filter,:output,:arp,:incoming,"--protocol arp --arp-mac-dst ! #{self.mac} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
 
       # accept garp from gateway
-      vnic_map[:network][:ipv4_gw] && l2std.add_rule("--protocol arp --arp-gratuitous --arp-ip-src=#{vnic_map[:network][:ipv4_gw]} -j ACCEPT"),
+      vnic_map[:network] && vnic_map[:network][:ipv4_gw] && l2std.add_rule("--protocol arp --arp-gratuitous --arp-ip-src=#{vnic_map[:network][:ipv4_gw]} -j ACCEPT"),
 
       # accept arp replies with the correct mac-ip combo
       l2std.add_rule("--protocol arp --arp-opcode Reply --arp-ip-dst=#{vnic_map[:address]} --arp-mac-dst=#{clean_mac(vnic_map[:mac_addr])} -j ACCEPT"),
@@ -58,21 +58,23 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       # ip filtering is done on the network layer (l3)
       l2std.add_rule("--protocol IPv4 -j ACCEPT")
     ].compact
+    #TODO: Metadata server DNAT
     l3std = vnic_l3_stnd_chain(vnic_id)
     exec [
       # accept related and established connections for all protocols
       #TODO: Read up on what netfilter means by related/established for connectionless protocols like icmp and umd. Then comment about that here.
-      l3std.add_rule("-m state --state RELATED,ESTABLISHED -p tcp -j ACCEPT"),
-      l3std.add_rule("-m state --state RELATED,ESTABLISHED -p udp -j ACCEPT"),
-      l3std.add_rule("-m state --state RELATED,ESTABLISHED -p icmp -j ACCEPT"),
+      # l3std.add_rule("-m state --state RELATED,ESTABLISHED -p tcp -j ACCEPT"),
+      # l3std.add_rule("-m state --state RELATED,ESTABLISHED -p udp -j ACCEPT"),
+      # l3std.add_rule("-m state --state RELATED,ESTABLISHED -p icmp -j ACCEPT"),
+      l3std.add_rule("-m state --state RELATED,ESTABLISHED -j ACCEPT"),
 
       # accept only wakame's dns (users can use their custom ones by opening a port in their security groups)
       #TODO: Add outgoing rule for this as well IptablesRule.new(:filter,:forward,:udp,:incoming,"-p udp -d #{self.dns_server_ip} --dport #{self.dns_server_port} -j ACCEPT")
-      vnic_map[:network][:dns_server] && l3std.add_rule("-p udp -d #{vnic_map[:network][:dns_server]} --dport 53 -j ACCEPT"),
+      vnic_map[:network] && vnic_map[:network][:dns_server] && l3std.add_rule("-p udp -d #{vnic_map[:network][:dns_server]} --dport 53 -j ACCEPT"),
 
       # accept only wakame's dhcp.
-      vnic_map[:network][:dhcp_server] && l3std.add_rule("-p udp ! -s #{vnic_map[:network][:dhcp_server]} --sport 67:68 -j DROP"),
-      vnic_map[:network][:dhcp_server] && l3std.add_rule("-p udp -s #{vnic_map[:network][:dhcp_server]} --sport 67:68 -j ACCEPT")
+      vnic_map[:network] && vnic_map[:network][:dhcp_server] && l3std.add_rule("-p udp ! -s #{vnic_map[:network][:dhcp_server]} --sport 67:68 -j DROP"),
+      vnic_map[:network] && vnic_map[:network][:dhcp_server] && l3std.add_rule("-p udp -s #{vnic_map[:network][:dhcp_server]} --sport 67:68 -j ACCEPT")
     ].compact
   end
 
