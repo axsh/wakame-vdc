@@ -25,8 +25,16 @@ module Dcmgr::VNet::Netfilter::Chains
       "#{self.class.binary} -A #{@name} -j #{target.name}"
     end
 
+    def del_jump(target)
+      "#{self.class.binary} -D #{@name} -j #{target.name}"
+    end
+
     def add_rule(rule)
       "#{self.class.binary} -A #{@name} #{rule}"
+    end
+
+    def del_rule(rule)
+      "#{self.class.binary} -D #{@name} #{rule}"
     end
 
     def ==(chain)
@@ -48,6 +56,10 @@ module Dcmgr::VNet::Netfilter::Chains
     end
   end
 
+  def l3_forward_chain
+    L3Chain.new("FORWARD")
+  end
+
   def secg_l3_rules_chain(sg_id)
     L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_rules")
   end
@@ -66,6 +78,10 @@ module Dcmgr::VNet::Netfilter::Chains
 
   def secg_l3_ref_chain(sg_id)
     L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_reffees")
+  end
+
+  def l2_forward_chain
+    L2Chain.new("FORWARD")
   end
 
   def vnic_l2_main_chain(vnic_id)
