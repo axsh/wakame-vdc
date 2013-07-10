@@ -296,6 +296,7 @@ module Dcmgr
 
     module Netfilter
       autoload :NetfilterAgent, 'dcmgr/vnet/netfilter/netfilter_agent'
+      autoload :NetfilterTasks, 'dcmgr/vnet/netfilter/netfilter_tasks'
       autoload :Chains, 'dcmgr/vnet/netfilter/chains'
       #legacy stuff
       autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'
