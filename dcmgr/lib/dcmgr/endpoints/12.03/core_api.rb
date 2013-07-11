@@ -220,5 +220,6 @@ module Dcmgr::Endpoints::V1203
     load_namespace('accounts')
     load_namespace('text_logs')
     load_namespace('jobs')
+    load_namespace('alarms')
   end
 end
