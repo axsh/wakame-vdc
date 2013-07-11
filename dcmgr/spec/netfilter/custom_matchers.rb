@@ -12,7 +12,7 @@ module ChainMethods
   end
 
   def expect_chains(bin, chains)
-    actual_chains = @nfa.all_chain_names(bin)
+    actual_chains = @nfa.send(bin).all_chain_names
     if (actual_chains & chains).sort == chains.sort
       succeed_with "There were chains applied that we expected not to.\n
       expected: [#{chains.join(", ")}]\n
@@ -25,7 +25,7 @@ module ChainMethods
   end
 
   def expect_rules_to_contain(bin, chain, rules)
-    actual = @nfa.get_chain(bin, chain).rules
+    actual = @nfa.send(bin).get_chain(chain).rules
     expected = rules.sort
 
     if (actual & expected).sort == expected
@@ -40,7 +40,7 @@ module ChainMethods
   end
 
   def expect_rules(bin, chain, rules)
-    actual = @nfa.get_chain(bin, chain).rules.sort
+    actual = @nfa.send(bin).get_chain(chain).rules.sort
     expected = rules.sort
 
     if actual == expected
@@ -54,7 +54,7 @@ module ChainMethods
   end
 
   def expect_jumps(bin, chain, targets)
-    actual = @nfa.get_chain(bin, chain).jumps.sort
+    actual = @nfa.send(bin).get_chain(chain).jumps.sort
     expected = targets.sort
 
     if actual == expected
@@ -258,11 +258,11 @@ end
 
 RSpec::Matchers.define :have_nothing_applied do
   match do |nfa|
-    !nfa.has_custom_chains?("iptables") &&
-    !nfa.has_custom_chains?("ebtables") &&
-    nfa.get_chain("iptables","FORWARD").jumps == [] &&
-    nfa.get_chain("iptables","FORWARD").rules == [] &&
-    nfa.get_chain("ebtables","FORWARD").jumps == [] &&
-    nfa.get_chain("ebtables","FORWARD").rules == []
+    !nfa.iptables.has_custom_chains? &&
+    !nfa.ebtables.has_custom_chains? &&
+    nfa.iptables.get_chain("FORWARD").jumps == [] &&
+    nfa.iptables.get_chain("FORWARD").rules == [] &&
+    nfa.ebtables.get_chain("FORWARD").jumps == [] &&
+    nfa.ebtables.get_chain("FORWARD").rules == []
   end
 end

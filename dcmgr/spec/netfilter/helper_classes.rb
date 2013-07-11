@@ -59,81 +59,123 @@ class TestChain
   end
 end
 
-class NFCmdParser
-  # attr_reader :chains
-  attr_reader :l2chains
-  attr_reader :l3chains
+class Table
 
   def initialize
-    # @chains = {"iptables" => {}, "ebtables" => {}}
-
-    # Maps will have the format {"chain_name" => chain}
-    # Using maps instead of arrays so I don't have to iterate when getting a specific chain
-    @l2chains = {"FORWARD" => TestChain.new("FORWARD")}
-    @l3chains = {"FORWARD" => TestChain.new("FORWARD")}
+    @chains = @built_in_chains
   end
 
-  def has_custom_chains?(bin)
-    chain_mapping(bin).keys != ["FORWARD"]
+  def has_custom_chains?
+    @chains.keys != @built_in_chains.keys
   end
 
-  def new_chain(bin, name)
-    raise "Chain already exists: #{bin} #{name}." if chain_exists?(bin, name)
-    chain_mapping(bin)[name] = TestChain.new(name)
+  def new_chain(name)
+    raise "Chain already exists: #{name}." if chain_exists?(name)
+    @chains[name] = TestChain.new(name)
   end
 
-  def get_chain(bin, name)
-    chain_mapping(bin)[name] || raise("Chain doesn't exist: #{bin} #{name}.")
+  def get_chain(name)
+    @chains[name] || raise("Chain doesn't exist: #{name}.")
   end
 
-  def del_chain(bin, name)
-    to_delete = get_chain(bin, name)
-    all_chains(bin).values.each {|chain|
-      raise "Tried to delete #{bin} chain '#{to_delete.name}' but chain '#{chain.name}' still has a jump to it." if chain.jumps.member?(to_delete)
+  def del_chain(name)
+    to_delete = get_chain(name)
+    raise "Tried to delete built in chain: '#{to_delete.name}'." if @built_in_chains.member?(to_delete)
+    @chains.values.each {|chain|
+      raise "Tried to delete chain '#{to_delete.name}' but chain '#{chain.name}' still has a jump to it." if chain.jumps.member?(to_delete)
     }
-    all_chains(bin).delete to_delete.name
+    @chains.delete to_delete.name
   end
 
-  def chain_exists?(bin, name)
-    !chain_mapping(bin)[name].nil?
+  def chain_exists?(name)
+    !@chains[name].nil?
   end
 
-  def all_chains(bin)
-    chain_mapping(bin)
+  def all_chain_names
+    @chains.keys
   end
 
-  def all_chain_names(bin)
-    chain_mapping(bin).keys.sort
+  # def self.built_in_chains(bic = nil)
+  #   if bic
+  #     @built_in_chains = bic.map {|name| TestChain.new(name) }
+  #   else
+  #     @built_in_chains
+  #   end
+  # end
+end
+
+class Filter < Table
+  # built_in_chains ["INPUT", "FORWARD", "OUTPUT"]
+  def initialize
+    @built_in_chains = {
+      "INPUT" => TestChain.new("INPUT"),
+      "FORWARD" => TestChain.new("FORWARD"),
+      "OUTPUT" => TestChain.new("OUTPUT")
+    }
+    super
+  end
+end
+
+class Nat < Table
+  # built_in_chains ["PREROUTING", "POSTROUTING"]
+  def initialize
+    @built_in_chains = {
+      "PREROUTING" => TestChain.new("PREROUTING"),
+      "POSTROUTING" => TestChain.new("POSTROUTING"),
+    }
+    super
+  end
+end
+
+class NFCmdParser
+
+  def initialize
+    @ebtables = {"filter" => Filter.new}
+    @iptables = {"filter" => Filter.new, "nat" => Nat.new}
+  end
+
+  def ebtables(table = "filter")
+    @ebtables[table]
+  end
+
+  def iptables(table = "filter")
+    @iptables[table]
   end
 
   def parse(cmds)
-    # puts cmds.join("\n")
     cmds.each {|cmd|
       cmd.split(";").each { |semicolon_cmd|
         split_cmd = semicolon_cmd.split(" ")
         bin = split_cmd.shift # Returns either "iptables" or "ebtables"
 
+        table = if split_cmd[0] == "-t"
+          split_cmd.shift
+          split_cmd.shift
+        else
+          table = "filter"
+        end
+
         case split_cmd.shift
         when "-N"
-          new_chain(bin, split_cmd.shift)
+          send(bin, table).new_chain(split_cmd.shift)
         when "-A"
-          c = get_chain(bin, split_cmd.shift)
+          c = send(bin, table).get_chain(split_cmd.shift)
           if split_cmd[0] == "-j"
             c.add_jump(split_cmd[1])
           else
             c.add_rule(split_cmd.join(" "))
           end
         when "-D"
-          c = get_chain(bin, split_cmd.shift)
+          c = send(bin, table).get_chain(split_cmd.shift)
           if split_cmd[0] == "-j"
             c.del_jump(split_cmd[1])
           else
             c.del_rule(split_cmd.join(" "))
           end
         when "-X"
-          del_chain(bin, split_cmd.shift)
+          send(bin, table).del_chain(split_cmd.shift)
         when "-F"
-          get_chain(bin, split_cmd.shift).flush
+          send(bin, table).get_chain(split_cmd.shift).flush
         when "-P"
           # We're setting policies. Do freakin' nuthin'
         else
@@ -144,8 +186,13 @@ class NFCmdParser
   end
 
   private
-  def chain_mapping(bin)
-    {"iptables" => @l2chains, "ebtables" => @l3chains}[bin]
+  def chain_mapping(bin, table = "filter")
+    #TODO: Write this code properly
+    if table == "filter"
+      {"iptables" => @l2chains, "ebtables" => @l3chains}[bin]
+    elsif table == "nat"
+      @l3_nat_chains
+    end
   end
 end
 
