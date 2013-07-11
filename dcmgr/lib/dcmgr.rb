@@ -90,6 +90,7 @@ module Dcmgr
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
     autoload :QueuedJob, 'dcmgr/models/queued_job'
+    autoload :Alarm, 'dcmgr/models/alarm'
 
     require 'dcmgr/models/log_storage/base'
     module LogStorage
