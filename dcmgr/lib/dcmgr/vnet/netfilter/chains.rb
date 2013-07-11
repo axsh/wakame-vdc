@@ -123,6 +123,24 @@ module Dcmgr::VNet::Netfilter::Chains
       end
     end
   end
+
+  module Outbound
+    class << self
+      def vnic_l2_main_chain(vnic_id)
+        L2Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s"
+      end
+
+      def vnic_l2_stnd_chain(vnic_id)
+        L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_s_standard")
+      end
+
+      def vnic_l3_main_chain(vnic_id)
+        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s"
+      end
+    end
+  end
+
+  O = Outbound
   I = Inbound
 
   def secg_chains(sg_id)
@@ -137,7 +155,7 @@ module Dcmgr::VNet::Netfilter::Chains
     [I.secg_l2_iso_chain(ig_id), I.secg_l3_iso_chain(ig_id)]
   end
 
-  def vnic_l2_chains(vnic_id)
+  def vnic_l2_inbound_chains(vnic_id)
     [
       I.vnic_l2_main_chain(vnic_id),
       I.vnic_l2_stnd_chain(vnic_id),
@@ -146,14 +164,36 @@ module Dcmgr::VNet::Netfilter::Chains
     ]
   end
 
-  def vnic_l3_chains(vnic_id)
+  def vnic_l2_outbound_chains(vnic_id)
+    [
+      O.vnic_l2_main_chain(vnic_id),
+      O.vnic_l2_stnd_chain(vnic_id)
+    ]
+  end
+
+  def vnic_l2_chains(vnic_id)
+    vnic_l2_inbound_chains(vnic_id) + vnic_l2_outbound_chains(vnic_id)
+  end
+
+  def vnic_l3_inbound_chains(vnic_id)
     [
       I.vnic_l3_main_chain(vnic_id),
       I.vnic_l3_stnd_chain(vnic_id),
       I.vnic_l3_iso_chain(vnic_id),
       I.vnic_l3_ref_chain(vnic_id),
-      I.vnic_l3_secg_chain(vnic_id)
+      I.vnic_l3_secg_chain(vnic_id),
     ]
+  end
+
+  def vnic_l3_outbound_chains(vnic_id)
+    [
+      O.vnic_l3_main_chain(vnic_id)
+      #TODO: Add the security group chain for future outbound rules
+    ]
+  end
+
+  def vnic_l3_chains(vnic_id)
+    vnic_l3_inbound_chains(vnic_id) + vnic_l3_outbound_chains(vnic_id)
   end
 
   def vnic_chains(vnic_id)

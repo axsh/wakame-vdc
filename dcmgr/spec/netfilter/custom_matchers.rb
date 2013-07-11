@@ -29,11 +29,11 @@ module ChainMethods
     expected = rules.sort
 
     if (actual & expected).sort == expected
-      succeed_with "There were rules applied that we expected not to.\n
+      succeed_with "#{bin} chain #{chain} had rules applied that we expected not to be.\n
       expected: [#{expected.join(", ")}]\n
       got: [#{actual.join(", ")}]"
     else
-      fail_with "The rules we expected weren't applied.\n
+      fail_with "#{bin} chain #{chain} didn't apply the rules we expected.\n
       expected: [#{expected.join(", ")}]\n
       got: [#{actual.join(", ")}]"
     end
@@ -44,10 +44,10 @@ module ChainMethods
     expected = rules.sort
 
     if actual == expected
-      succeed_with "Chain '#{chain}' had rules we expected it not to have.\n
+      succeed_with "#{bin} chain '#{chain}' had rules we expected it not to have.\n
       rules: [#{actual.join(", ")}]"
     else
-      fail_with "Chain '#{chain}' didn't have the rules we expected.\n
+      fail_with "#{bin} chain '#{chain}' didn't have the rules we expected.\n
       expected: [#{expected.join(", ")}]\n
       got: [#{actual.join(", ")}]"
     end
@@ -58,10 +58,10 @@ module ChainMethods
     expected = targets.sort
 
     if actual == expected
-      succeed_with "Chain '#{chain}' had jumps we expected it not to have.\n
+      succeed_with "#{bin} chain '#{chain}' had jumps we expected it not to have.\n
       jumps: [#{actual.join(", ")}]"
     else
-      fail_with "Chain '#{chain}' didn't have the jumps we expected.\n
+      fail_with "#{bin} chain '#{chain}' didn't have the jumps we expected.\n
       expected: [#{expected.join(", ")}]\n
       got: [#{actual.join(", ")}]"
     end
@@ -71,7 +71,7 @@ end
 RSpec::Matchers.define :have_applied_vnic do |vnic|
   include ChainMethods
 
-  def l2_chains_for_vnic
+  def l2_inbound_chains_for_vnic
     [
       "vdc_#{@vnic_id}_d",
       "vdc_#{@vnic_id}_d_isolation",
@@ -80,7 +80,7 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
     ]
   end
 
-  def l3_chains_for_vnic
+  def l3_inbound_chains_for_vnic
     [
       "vdc_#{@vnic_id}_d",
       "vdc_#{@vnic_id}_d_isolation",
@@ -90,11 +90,33 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
     ]
   end
 
+  def l2_outbound_chains_for_vnic
+    [
+      "vdc_#{@vnic_id}_s",
+      "vdc_#{@vnic_id}_s_standard"
+    ]
+  end
+
+  def l3_outbound_chains_for_vnic
+    [
+      "vdc_#{@vnic_id}_s",
+      # "vdc_#{@vnic_id}_s_security"
+    ]
+  end
+
+  def l2_chains_for_vnic
+    l2_inbound_chains_for_vnic + l2_outbound_chains_for_vnic
+  end
+
+  def l3_chains_for_vnic
+    l3_inbound_chains_for_vnic + l3_outbound_chains_for_vnic
+  end
+
   def group_chains(suffix)
     @groups.map {|g| "vdc_#{g.canonical_uuid}_#{suffix}" }
   end
 
-  def l2_stnd_rules_for_vnic
+  def l2_inbound_stnd_rules_for_vnic
     vnic_ip = @vnic.direct_ip_lease.first.ipv4
     gw_ip = @vnic.network && @vnic.network.ipv4_gw
     dns_server = @vnic.network && @vnic.network.dns_server
@@ -109,7 +131,7 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
     rules
   end
 
-  def l3_stnd_rules_for_vnic
+  def l3_inbound_stnd_rules_for_vnic
     dns_server = @vnic.network && @vnic.network.dns_server
     dhcp_server = @vnic.network && @vnic.network.dhcp_server
     rules = []
@@ -133,10 +155,33 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
 
     expect_chains("ebtables", l2_chains_for_vnic) &&
     expect_chains("iptables", l3_chains_for_vnic) &&
-    expect_rules_to_contain("ebtables", "FORWARD", ["-o #{@vnic_id} -j vdc_#{@vnic_id}_d"]) &&
-    expect_rules_to_contain("iptables", "FORWARD", ["-m physdev --physdev-is-bridged --physdev-out #{@vnic_id} -j vdc_#{@vnic_id}_d"]) &&
-    expect_rules("ebtables", "vdc_#{@vnic_id}_d_standard", l2_stnd_rules_for_vnic) &&
-    expect_rules("iptables", "vdc_#{@vnic_id}_d_standard", l3_stnd_rules_for_vnic) &&
+    # expect_chains("iptables", ["vdc_#{@vnic_id}_s_standard"]) &&
+    expect_rules_to_contain("ebtables", "FORWARD", ["-o #{@vnic_id} -j vdc_#{@vnic_id}_d", "-i #{@vnic_id} -j vdc_#{@vnic_id}_s"]) &&
+    expect_rules_to_contain("iptables", "FORWARD", [
+      "-m physdev --physdev-is-bridged --physdev-out #{@vnic_id} -j vdc_#{@vnic_id}_d",
+      "-m physdev --physdev-is-bridged --physdev-in #{@vnic_id} -j vdc_#{@vnic_id}_s"
+    ]) &&
+    expect_jumps("ebtables","vdc_#{@vnic_id}_d",[
+      "vdc_#{@vnic_id}_d_isolation",
+      "vdc_#{@vnic_id}_d_reffers",
+      "vdc_#{@vnic_id}_d_standard",
+      "DROP"
+    ]) &&
+    expect_jumps("iptables","vdc_#{@vnic_id}_d",[
+      "vdc_#{@vnic_id}_d_isolation",
+      "vdc_#{@vnic_id}_d_reffees",
+      "vdc_#{@vnic_id}_d_security",
+      "vdc_#{@vnic_id}_d_standard",
+      "DROP"
+    ]) &&
+    expect_jumps("ebtables", "vdc_#{@vnic_id}_s", [
+      "vdc_#{@vnic_id}_s_standard"
+    ]) &&
+    # expect_jumps("iptables", "vdc_#{@vnic_id}_s", [
+    #   "vdc_#{@vnic_id}_s_security"
+    # ]) &&
+    expect_rules("ebtables", "vdc_#{@vnic_id}_d_standard", l2_inbound_stnd_rules_for_vnic) &&
+    expect_rules("iptables", "vdc_#{@vnic_id}_d_standard", l3_inbound_stnd_rules_for_vnic) &&
     ( @groups.nil? || (
       expect_jumps("ebtables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&
       expect_jumps("ebtables", "vdc_#{@vnic_id}_d_reffers", group_chains("reffers")) &&

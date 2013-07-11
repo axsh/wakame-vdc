@@ -7,6 +7,7 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
     end
   end
   I = Dcmgr::VNet::Netfilter::Chains::Inbound
+  O = Dcmgr::VNet::Netfilter::Chains::Outbound
 
   private
   def accept_arp_from_gateway(vnic_map)
@@ -27,14 +28,14 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
 
   def drop_ip_spoofing(vnic_map)
     # drop ip spoofing
-    #TODO: Drop spoofing outging # l2std.add_rule("--protocol arp --arp-ip-src ! #{vnic_map[:address]} -j DROP"),
+    O.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-ip-src ! #{vnic_map[:address]} -j DROP")
     #TODO: drop ip spoofing to the host EbtablesRule.new(:filter,:input,:arp,:outgoing,"--protocol arp --arp-ip-src ! #{self.ip} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
     #TODO: drop ip spoofing from the host EbtablesRule.new(:filter,:output,:arp,:incoming,"--protocol arp --arp-ip-dst ! #{self.ip} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
   end
 
   def drop_mac_spoofing(vnic_map)
     # drop mac spoofing
-    #TODO: Drop spoofing outgoing l2std.add_rule("--protocol arp --arp-mac-src ! #{clean_mac(vnic_map[:mac_addr])} -j DROP"),
+    O.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-mac-src ! #{clean_mac(vnic_map[:mac_addr])} -j DROP")
     #TODO: drop mac spoofing to the host EbtablesRule.new(:filter,:input,:arp,:outgoing,"--protocol arp --arp-mac-src ! #{self.mac} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
     #TODO: drop mac spoofing from the host EbtablesRule.new(:filter,:output,:arp,:incoming,"--protocol arp --arp-mac-dst ! #{self.mac} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
   end
@@ -52,8 +53,7 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
 
   # accept only wakame's dns (users can use their custom ones by opening a port in their security groups)
   def accept_wakame_dns(vnic_map)
-    #TODO: Add outgoing rule for this as well IptablesRule.new(:filter,:forward,:udp,:incoming,"-p udp -d #{self.dns_server_ip} --dport #{self.dns_server_port} -j ACCEPT")
-    vnic_map[:network] && vnic_map[:network][:dns_server] && I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule("-p udp -d #{vnic_map[:network][:dns_server]} --dport 53 -j ACCEPT")
+    I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule("-p udp -d #{vnic_map[:network][:dns_server]} --dport 53 -j ACCEPT") if vnic_map[:network] && vnic_map[:network][:dns_server]
   end
 
   # Explicitely block out dhcp that isn't wakame's.
@@ -66,25 +66,30 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
   def forward_chain_jumps(vnic_id, action = "add")
     [
       l2_forward_chain.send("#{action}_rule", "-o #{vnic_id} -j #{I.vnic_l2_main_chain(vnic_id).name}"),
-      l3_forward_chain.send("#{action}_rule", "-m physdev --physdev-is-bridged --physdev-out #{vnic_id} -j #{I.vnic_l3_main_chain(vnic_id).name}")
+      l2_forward_chain.send("#{action}_rule", "-i #{vnic_id} -j #{O.vnic_l2_main_chain(vnic_id).name}"),
+      l3_forward_chain.send("#{action}_rule", "-m physdev --physdev-is-bridged --physdev-out #{vnic_id} -j #{I.vnic_l3_main_chain(vnic_id).name}"),
+      l3_forward_chain.send("#{action}_rule", "-m physdev --physdev-is-bridged --physdev-in #{vnic_id} -j #{O.vnic_l3_main_chain(vnic_id).name}")
     ]
   end
 
   def vnic_main_chain_jumps(vnic_map)
     # Add main l2 jumps
-    l2_main = I.vnic_l2_main_chain(vnic_map[:uuid])
-    l3_main = I.vnic_l3_main_chain(vnic_map[:uuid])
+    vnic_id = vnic_map[:uuid]
+    l2_main = I.vnic_l2_main_chain(vnic_id)
+    l3_main = I.vnic_l3_main_chain(vnic_id)
 
-    [vnic_l2_chains(vnic_map[:uuid]).map {|chain|
+    [vnic_l2_inbound_chains(vnic_id).map {|chain|
       next if chain == l2_main
       l2_main.add_jump(chain)
     }.compact,
 
     # Add main l3 jumps
-    vnic_l3_chains(vnic_map[:uuid]).map {|chain|
+    vnic_l3_inbound_chains(vnic_id).map {|chain|
       next if chain == l3_main
       l3_main.add_jump(chain)
-    }.compact]
+    }.compact,
+
+    O.vnic_l2_main_chain(vnic_id).add_jump(O.vnic_l2_stnd_chain(vnic_id))]
   end
 
   def vnic_main_drop_rules(vnic_map)
