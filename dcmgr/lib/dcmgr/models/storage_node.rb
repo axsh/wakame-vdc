@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-require 'isono/models/node_state'
+require 'isono'
 
 module Dcmgr::Models
   class StorageNode < BaseNew
