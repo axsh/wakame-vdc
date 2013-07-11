@@ -112,6 +112,37 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
     l3_inbound_chains_for_vnic + l3_outbound_chains_for_vnic
   end
 
+  def l2_inbound_main_chain_jumps
+    [
+      "vdc_#{@vnic_id}_d_isolation",
+      "vdc_#{@vnic_id}_d_reffers",
+      "vdc_#{@vnic_id}_d_standard",
+      "DROP"
+    ]
+  end
+
+  def l3_inbound_main_chain_jumps
+    [
+      "vdc_#{@vnic_id}_d_isolation",
+      "vdc_#{@vnic_id}_d_reffees",
+      "vdc_#{@vnic_id}_d_security",
+      "vdc_#{@vnic_id}_d_standard",
+      "DROP"
+    ]
+  end
+
+  def l2_outbound_main_chain_jumps
+    [
+      "vdc_#{@vnic_id}_s_standard"
+    ]
+  end
+
+  def l3_outbound_main_chain_jumps
+    [
+      "vdc_#{@vnic_id}_s_security"
+    ]
+  end
+
   def group_chains(suffix)
     @groups.map {|g| "vdc_#{g.canonical_uuid}_#{suffix}" }
   end
@@ -160,25 +191,10 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
       "-m physdev --physdev-is-bridged --physdev-out #{@vnic_id} -j vdc_#{@vnic_id}_d",
       "-m physdev --physdev-is-bridged --physdev-in #{@vnic_id} -j vdc_#{@vnic_id}_s"
     ]) &&
-    expect_jumps("ebtables","vdc_#{@vnic_id}_d",[
-      "vdc_#{@vnic_id}_d_isolation",
-      "vdc_#{@vnic_id}_d_reffers",
-      "vdc_#{@vnic_id}_d_standard",
-      "DROP"
-    ]) &&
-    expect_jumps("iptables","vdc_#{@vnic_id}_d",[
-      "vdc_#{@vnic_id}_d_isolation",
-      "vdc_#{@vnic_id}_d_reffees",
-      "vdc_#{@vnic_id}_d_security",
-      "vdc_#{@vnic_id}_d_standard",
-      "DROP"
-    ]) &&
-    expect_jumps("ebtables", "vdc_#{@vnic_id}_s", [
-      "vdc_#{@vnic_id}_s_standard"
-    ]) &&
-    expect_jumps("iptables", "vdc_#{@vnic_id}_s", [
-      "vdc_#{@vnic_id}_s_security"
-    ]) &&
+    expect_jumps("ebtables", "vdc_#{@vnic_id}_d", l2_inbound_main_chain_jumps) &&
+    expect_jumps("ebtables", "vdc_#{@vnic_id}_s", l2_outbound_main_chain_jumps) &&
+    expect_jumps("iptables", "vdc_#{@vnic_id}_s", l3_outbound_main_chain_jumps) &&
+    expect_jumps("iptables", "vdc_#{@vnic_id}_d", l3_inbound_main_chain_jumps) &&
     expect_rules("ebtables", "vdc_#{@vnic_id}_d_standard", l2_inbound_stnd_rules_for_vnic) &&
     expect_rules("iptables", "vdc_#{@vnic_id}_d_standard", l3_inbound_stnd_rules_for_vnic) &&
     ( @groups.nil? || (
