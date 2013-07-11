@@ -63,12 +63,23 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
     vnic_map[:network] && vnic_map[:network][:dhcp_server] && I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule("-p udp -s #{vnic_map[:network][:dhcp_server]} --sport 67:68 -j ACCEPT")]
   end
 
+  def translate_metadata_address(vnic_map)
+    return nil unless vnic_map[:network] && vnic_map[:network][:metadata_server] && vnic_map[:network][:metadata_server_port]
+    vnic_l3_dnat_chain(vnic_map[:uuid]).add_rule("-d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{vnic_map[:network][:metadata_server]}:#{vnic_map[:network][:metadata_server_port]}")
+  end
+
   def forward_chain_jumps(vnic_id, action = "add")
     [
       l2_forward_chain.send("#{action}_rule", "-o #{vnic_id} -j #{I.vnic_l2_main_chain(vnic_id).name}"),
       l2_forward_chain.send("#{action}_rule", "-i #{vnic_id} -j #{O.vnic_l2_main_chain(vnic_id).name}"),
       l3_forward_chain.send("#{action}_rule", "-m physdev --physdev-is-bridged --physdev-out #{vnic_id} -j #{I.vnic_l3_main_chain(vnic_id).name}"),
       l3_forward_chain.send("#{action}_rule", "-m physdev --physdev-is-bridged --physdev-in #{vnic_id} -j #{O.vnic_l3_main_chain(vnic_id).name}")
+    ]
+  end
+
+  def nat_prerouting_chain_jumps(vnic_id, action = "add")
+    [
+      l3_nat_prerouting_chain.send("#{action}_rule", "-m physdev --physdev-in #{vnic_id} -j #{O.vnic_l3_dnat_chain(vnic_id).name}")
     ]
   end
 

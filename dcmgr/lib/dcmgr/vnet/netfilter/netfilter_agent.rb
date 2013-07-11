@@ -15,12 +15,13 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     logger.info "Creating chains for vnic '#{vnic_id}'."
 
     exec [
-      #chain setup for both layers
+      # chain setup for both layers
       vnic_chains(vnic_id).map {|chain| chain.create},
       forward_chain_jumps(vnic_map[:uuid]),
+      nat_prerouting_chain_jumps(vnic_map[:uuid]),
       vnic_main_chain_jumps(vnic_map),
       vnic_main_drop_rules(vnic_map),
-      #l2 standard rules
+      # l2 standard rules
       drop_ip_spoofing(vnic_map),
       drop_mac_spoofing(vnic_map),
       accept_arp_from_gateway(vnic_map),
@@ -28,16 +29,20 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       accept_garp_from_gateway(vnic_map),
       accept_arp_reply_with_correct_mac_ip_combo(vnic_map),
       accept_ipv4_protocol(vnic_map),
-      #l3 standard rules
+      # l3 standard rules
       accept_related_established(vnic_map),
       accept_wakame_dns(vnic_map),
-      accept_wakame_dhcp_only(vnic_map)
+      accept_wakame_dhcp_only(vnic_map),
+      # address translation rules
+      # translate_logger_address(vnic_map),
+      translate_metadata_address(vnic_map)
     ].flatten.compact
   end
 
   def destroy_vnic(vnic_id)
     logger.info "Removing chains for vnic '#{vnic_id}'."
-    exec forward_chain_jumps(vnic_id,"del")
+    exec forward_chain_jumps(vnic_id, "del")
+    exec nat_prerouting_chain_jumps(vnic_id, "del")
     exec vnic_chains(vnic_id).map {|chain| chain.destroy}
   end
 

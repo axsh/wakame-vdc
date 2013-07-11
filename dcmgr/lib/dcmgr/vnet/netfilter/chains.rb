@@ -9,32 +9,33 @@ module Dcmgr::VNet::Netfilter::Chains
       bin.nil? ? @binary : @binary = bin
     end
 
-    def initialize(name)
+    def initialize(name, table = :filter)
       @name = name
+      @table = table
     end
 
     def flush
-      "#{self.class.binary} -F #{@name}"
+      "#{self.class.binary} -t #{@table} -F #{@name}"
     end
 
     def destroy
-      "#{self.class.binary} -F #{@name}; #{self.class.binary} -X #{@name}"
+      "#{self.class.binary} -t #{@table} -F #{@name}; #{self.class.binary} -t #{@table} -X #{@name}"
     end
 
     def add_jump(target)
-      "#{self.class.binary} -A #{@name} -j #{target.name}"
+      "#{self.class.binary} -t #{@table} -A #{@name} -j #{target.name}"
     end
 
     def del_jump(target)
-      "#{self.class.binary} -D #{@name} -j #{target.name}"
+      "#{self.class.binary} -t #{@table} -D #{@name} -j #{target.name}"
     end
 
     def add_rule(rule)
-      "#{self.class.binary} -A #{@name} #{rule}"
+      "#{self.class.binary} -t #{@table} -A #{@name} #{rule}"
     end
 
     def del_rule(rule)
-      "#{self.class.binary} -D #{@name} #{rule}"
+      "#{self.class.binary} -t #{@table} -D #{@name} #{rule}"
     end
 
     def ==(chain)
@@ -45,14 +46,14 @@ module Dcmgr::VNet::Netfilter::Chains
   class L2Chain < Chain
     binary "ebtables"
     def create
-      "#{self.class.binary} -N #{@name}; ebtables -P #{@name} RETURN"
+      "#{self.class.binary} -t #{@table} -N #{@name}; ebtables -t #{@table} -P #{@name} RETURN"
     end
   end
 
   class L3Chain < Chain
     binary "iptables"
     def create
-      "#{self.class.binary} -N #{@name}"
+      "#{self.class.binary} -t #{@table} -N #{@name}"
     end
   end
 
@@ -62,6 +63,10 @@ module Dcmgr::VNet::Netfilter::Chains
 
   def l3_forward_chain
     L3Chain.new("FORWARD")
+  end
+
+  def l3_nat_prerouting_chain
+    L3Chain.new "PREROUTING", :nat
   end
 
   module Inbound
@@ -143,6 +148,10 @@ module Dcmgr::VNet::Netfilter::Chains
       def vnic_l3_secg_chain(vnic_id)
         L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s_security"
       end
+
+      def vnic_l3_dnat_chain(vnic_id)
+        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s_dnat", :nat
+      end
     end
   end
 
@@ -194,7 +203,8 @@ module Dcmgr::VNet::Netfilter::Chains
   def vnic_l3_outbound_chains(vnic_id)
     [
       O.vnic_l3_main_chain(vnic_id),
-      O.vnic_l3_secg_chain(vnic_id)
+      O.vnic_l3_secg_chain(vnic_id),
+      O.vnic_l3_dnat_chain(vnic_id)
     ]
   end
 
