@@ -155,7 +155,6 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
 
     expect_chains("ebtables", l2_chains_for_vnic) &&
     expect_chains("iptables", l3_chains_for_vnic) &&
-    # expect_chains("iptables", ["vdc_#{@vnic_id}_s_standard"]) &&
     expect_rules_to_contain("ebtables", "FORWARD", ["-o #{@vnic_id} -j vdc_#{@vnic_id}_d", "-i #{@vnic_id} -j vdc_#{@vnic_id}_s"]) &&
     expect_rules_to_contain("iptables", "FORWARD", [
       "-m physdev --physdev-is-bridged --physdev-out #{@vnic_id} -j vdc_#{@vnic_id}_d",
@@ -177,9 +176,9 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
     expect_jumps("ebtables", "vdc_#{@vnic_id}_s", [
       "vdc_#{@vnic_id}_s_standard"
     ]) &&
-    # expect_jumps("iptables", "vdc_#{@vnic_id}_s", [
-    #   "vdc_#{@vnic_id}_s_security"
-    # ]) &&
+    expect_jumps("iptables", "vdc_#{@vnic_id}_s", [
+      "vdc_#{@vnic_id}_s_security"
+    ]) &&
     expect_rules("ebtables", "vdc_#{@vnic_id}_d_standard", l2_inbound_stnd_rules_for_vnic) &&
     expect_rules("iptables", "vdc_#{@vnic_id}_d_standard", l3_inbound_stnd_rules_for_vnic) &&
     ( @groups.nil? || (

@@ -137,6 +137,12 @@ module Dcmgr::VNet::Netfilter::Chains
       def vnic_l3_main_chain(vnic_id)
         L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s"
       end
+
+      # This chain is for the future implementation of outbound
+      # security group rules.
+      def vnic_l3_secg_chain(vnic_id)
+        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s_security"
+      end
     end
   end
 
@@ -187,8 +193,8 @@ module Dcmgr::VNet::Netfilter::Chains
 
   def vnic_l3_outbound_chains(vnic_id)
     [
-      O.vnic_l3_main_chain(vnic_id)
-      #TODO: Add the security group chain for future outbound rules
+      O.vnic_l3_main_chain(vnic_id),
+      O.vnic_l3_secg_chain(vnic_id)
     ]
   end
 

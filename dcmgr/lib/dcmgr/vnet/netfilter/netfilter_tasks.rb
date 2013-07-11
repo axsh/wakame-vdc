@@ -89,7 +89,8 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
       l3_main.add_jump(chain)
     }.compact,
 
-    O.vnic_l2_main_chain(vnic_id).add_jump(O.vnic_l2_stnd_chain(vnic_id))]
+    O.vnic_l2_main_chain(vnic_id).add_jump(O.vnic_l2_stnd_chain(vnic_id)),
+    O.vnic_l3_main_chain(vnic_id).add_jump(O.vnic_l3_secg_chain(vnic_id))]
   end
 
   def vnic_main_drop_rules(vnic_map)
