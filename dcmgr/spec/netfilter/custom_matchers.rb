@@ -53,6 +53,20 @@ module ChainMethods
     end
   end
 
+  def expect_nat_rules(chain, rules)
+    actual = @nfa.iptables("nat").get_chain(chain).rules.sort
+    expected = rules.sort
+
+    if actual == expected
+      succeed_with "iptables nat chain '#{chain}' had rules we expected it not to have.\n
+      rules: [#{actual.join(", ")}]"
+    else
+      fail_with "iptables nat chain '#{chain}' didn't have the rules we expected.\n
+      expected: [#{expected.join(", ")}]\n
+      got: [#{actual.join(", ")}]"
+    end
+  end
+
   def expect_jumps(bin, chain, targets)
     actual = @nfa.send(bin).get_chain(chain).jumps.sort
     expected = targets.sort
@@ -100,7 +114,7 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
   def l3_outbound_chains_for_vnic
     [
       "vdc_#{@vnic_id}_s",
-      # "vdc_#{@vnic_id}_s_security"
+      "vdc_#{@vnic_id}_s_security"
     ]
   end
 
@@ -175,6 +189,13 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
     rules
   end
 
+  def l3_address_translation_rules
+    metadata_server = @vnic.network && @vnic.network.metadata_server
+    metadata_server_port = @vnic.network && @vnic.network.metadata_server_port
+
+    metadata_server.nil? ? [] : ["-d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{@vnic.network.metadata_server}:#{@vnic.network.metadata_server_port}"]
+  end
+
   chain :with_secgs do |secg_array|
     @groups = secg_array
   end
@@ -198,6 +219,7 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
     expect_jumps("iptables", "vdc_#{@vnic_id}_s", l3_outbound_main_chain_jumps) &&
     expect_jumps("iptables", "vdc_#{@vnic_id}_d", l3_inbound_main_chain_jumps) &&
     expect_rules("iptables", "vdc_#{@vnic_id}_d_standard", l3_inbound_stnd_rules_for_vnic) &&
+    expect_nat_rules("vdc_#{@vnic_id}_s_dnat", l3_address_translation_rules) &&
 
     ( @groups.nil? || (
       expect_jumps("ebtables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&

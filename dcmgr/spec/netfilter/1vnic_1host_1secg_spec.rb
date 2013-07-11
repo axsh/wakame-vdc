@@ -45,8 +45,14 @@ describe "SGHandler and NetfilterAgent" do
     end
 
     #TODO: Add metadata server test
-    context "with gateway, dns and dhcp set" do
-      let(:network) { Fabricate(:network, ipv4_gw: "10.0.0.1", dns_server: "8.8.8.8", dhcp_server: "10.0.0.2") }
+    context "with gateway, dns, dhcp and metadata server set" do
+      let(:network) { Fabricate(:network,
+        ipv4_gw: "10.0.0.1",
+        dns_server: "8.8.8.8",
+        dhcp_server: "10.0.0.2",
+        metadata_server: "10.0.0.3",
+        metadata_server_port: 9876
+      )}
       let(:vnic) do
         Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
           n.instance.host_node = host
