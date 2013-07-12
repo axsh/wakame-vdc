@@ -29,6 +29,7 @@ module Dcmgr
     autoload :LoadBalancer, 'dcmgr/constants/load_balancer'
     autoload :Image, 'dcmgr/constants/image'
     autoload :BackupObject, 'dcmgr/constants/backup_object'
+    autoload :Alarm, 'dcmgr/constants/alarm'
   end
   Const = Constants
 
@@ -89,6 +90,7 @@ module Dcmgr
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
     autoload :QueuedJob, 'dcmgr/models/queued_job'
+    autoload :Alarm, 'dcmgr/models/alarm'
 
     require 'dcmgr/models/log_storage/base'
     module LogStorage

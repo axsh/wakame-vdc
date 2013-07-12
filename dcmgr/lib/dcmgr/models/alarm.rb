@@ -1,0 +1,76 @@
+# -*- coding: utf-8 -*-
+module Dcmgr::Models
+
+  class Alarm < AccountResource
+    taggable 'al'
+    subset(:alives, {:deleted_at => nil})
+    plugin :serialization, :yaml, :params
+    include Dcmgr::Constants::Alarm
+
+    def validate
+      super
+
+      if self.is_log_alarm?
+        if params["match_pattern"].blank?
+          errors.add(:match_pattern, "Unknown value")
+        end
+
+        unless /^[0-9a-z.]+$/ =~ params['label']
+          errors.add(:label, "Invalid format")
+        end
+      end
+
+      if self.is_metric_alarm?
+        if params["period"] < 0
+          errors.add(:period, "it must have digit more than zero")
+        end
+
+        if params["threshold"] < 0
+          errors.add(:threshold, "it must have digit more than zero")
+        end
+
+        unless SUPPORT_STATISTICS.include?(params['statistics'])
+          errors.add(:statistics, "it must have #{SUPPORT_STATISTICS.join(',')}")
+        end
+
+        unless SUPPORT_COMPARISON_OPERATOR.include?(params['comparison_operator'])
+          errors.add(:comparison_operator, "it must have #{SUPPORT_COMPARISON_OPERATOR.join(',')}")
+        end
+      end
+    end
+
+    def delete
+      super
+      self.deleted_at ||= Time.now
+      self.save_changes
+    end
+
+    def before_save
+      super
+      if is_log_alarm?
+        match_pattern = Regexp.escape(params['match_pattern'])
+        puts 'update match_pattern'
+      end
+    end
+
+    def self.entry_new(account, &blk)
+      al = self.new
+      al.account_id = (account.is_a?(Account) ? account.canonical_uuid : account.to_s)
+      blk.call(al)
+      al.save
+    end
+
+    def update_alarm(&blk)
+      blk.call(self)
+      self.save_changes
+    end
+
+    def is_log_alarm?
+      LOG_METRICS.include?(metric_name)
+    end
+
+    def is_metric_alarm?
+      RESOURCE_METRICS.include?(metric_name)
+    end
+  end
+end
