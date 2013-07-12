@@ -185,15 +185,6 @@ class NFCmdParser
     }
   end
 
-  private
-  def chain_mapping(bin, table = "filter")
-    #TODO: Write this code properly
-    if table == "filter"
-      {"iptables" => @l2chains, "ebtables" => @l3chains}[bin]
-    elsif table == "nat"
-      @l3_nat_chains
-    end
-  end
 end
 
 class NetfilterAgentTest
