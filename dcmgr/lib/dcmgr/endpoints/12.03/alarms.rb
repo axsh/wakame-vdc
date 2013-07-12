@@ -98,4 +98,56 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
     respond_with(R::Alarm.new(al).generate)
   end
+
+  put '/:id' do
+    al = find_by_uuid(:Alarm, params[:id])
+    al.update_alarm do |v|
+      if params[:display_name]
+        al.display_name = params[:display_name]
+      end
+
+      if params[:description]
+        al.description = params[:description]
+      end
+
+      if params[:enable]
+        al.enable = params[:enable].to_i
+      end
+
+      if params['params'] && params['params'].is_a?(Hash)
+        update_params = {}
+        if al.is_log_alarm?
+          update_params['label'] = al.params['label']
+          if params['params']['match_pattern']
+            update_params['match_pattern'] = params['params']['match_pattern']
+          else
+            update_params['match_pattern'] = al.params['match_pattern']
+          end
+        elsif al.is_metric_alarm?
+          if params['params']['period']
+            params['params']['period'] = params['params']['period'].to_i
+          end
+
+          if params['params']['threshold']
+            params['params']['threshold'] = params['params']['threshold'].to_f
+          end
+
+          ['period', 'threshold', 'statistics', 'comparison_operator'].each {|key|
+            if params['params'][key]
+              update_params[key] = params['params'][key]
+            else
+              update_params[key] = al.params[key]
+            end
+          }
+        else
+          raise E::UnknownMetricName, al.metric_name
+        end
+        al.params = update_params
+      end
+      raise E::InvalidParameter, al.errors.full_messages.first unless al.valid?
+    end
+
+    respond_with([al.canonical_uuid])
+  end
+
 end
