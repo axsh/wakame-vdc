@@ -72,7 +72,7 @@ module Dcmgr::VNet::Netfilter::Chains
   module Inbound
     class << self
       def secg_l3_rules_chain(sg_id)
-        L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_rules")
+        L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_d_rules")
       end
 
       def secg_l2_iso_chain(sg_id)
@@ -152,6 +152,10 @@ module Dcmgr::VNet::Netfilter::Chains
       def vnic_l3_dnat_chain(vnic_id)
         L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s_dnat", :nat
       end
+
+      def secg_l3_rules_chain(secg_id)
+        L3Chain.new "#{CHAIN_PREFIX}_#{secg_id}_s_rules"
+      end
     end
   end
 
@@ -162,7 +166,8 @@ module Dcmgr::VNet::Netfilter::Chains
     [
       I.secg_l2_ref_chain(sg_id),
       I.secg_l3_ref_chain(sg_id),
-      I.secg_l3_rules_chain(sg_id)
+      I.secg_l3_rules_chain(sg_id),
+      O.secg_l3_rules_chain(sg_id)
     ]
   end
 

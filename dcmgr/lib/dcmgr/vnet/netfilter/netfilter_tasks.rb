@@ -69,6 +69,31 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
     #TODO: Accept tcp and arp traffic to metadata server
   end
 
+  def translate_logging_address(vnic_map, host_ip)
+    return nil unless Dcmgr.conf.use_logging_service
+
+    unless Dcmgr.conf.logging_service_ip
+      logger.warn "Logging service enabled but its ip was not set."
+      return nil
+    end
+    unless Dcmgr.conf.logging_service_port
+      logger.warn "Logging service enabled but its port was not set"
+      return nil
+    end
+    unless host_ip
+      logger.warn "Logging service enabled but host_ip was not set."
+      return nil
+    end
+
+    [:udp, :tcp].each.inject(
+      O.vnic_l3_dnat_chain(vnic_map[:uuid]),
+      Dcmgr.conf.logging_service_ip,
+      Dcmgr.conf.logging_service_port
+    ) { |chain, ip, port, protocol|
+      chain.add_rule("-d #{ip} --dport #{port} -p #{protocol} -j DNAT --to-destination #{host_ip}:#{logging_port}")
+    }
+  end
+
   def forward_chain_jumps(vnic_id, action = "add")
     [
       l2_forward_chain.send("#{action}_rule", "-o #{vnic_id} -j #{I.vnic_l2_main_chain(vnic_id).name}"),

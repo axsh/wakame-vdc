@@ -225,8 +225,9 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
       expect_jumps("ebtables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&
       expect_jumps("ebtables", "vdc_#{@vnic_id}_d_reffers", group_chains("reffers")) &&
       expect_jumps("iptables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&
-      expect_jumps("iptables", "vdc_#{@vnic_id}_d_security", group_chains("rules")) &&
-      expect_jumps("iptables", "vdc_#{@vnic_id}_d_reffees", group_chains("reffees"))
+      expect_jumps("iptables", "vdc_#{@vnic_id}_d_security", group_chains("d_rules")) &&
+      expect_jumps("iptables", "vdc_#{@vnic_id}_d_reffees", group_chains("reffees")) &&
+      expect_jumps("iptables", "vdc_#{@vnic_id}_s_security", group_chains("s_rules"))
     ))
   end
 
@@ -243,7 +244,8 @@ RSpec::Matchers.define :have_applied_secg do |secg|
 
   def l3_chains_for_secg(secg_id)
     [
-      "vdc_#{secg_id}_rules",
+      "vdc_#{secg_id}_s_rules",
+      "vdc_#{secg_id}_d_rules",
       "vdc_#{secg_id}_reffees",
       "vdc_#{secg_id}_isolation"
     ]

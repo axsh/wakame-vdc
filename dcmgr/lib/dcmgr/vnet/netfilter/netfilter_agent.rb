@@ -10,9 +10,12 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     end
   end
   I = Dcmgr::VNet::Netfilter::Chains::Inbound
+  O = Dcmgr::VNet::Netfilter::Chains::Outbound
 
   def init_vnic(vnic_id, vnic_map)
     logger.info "Creating chains for vnic '#{vnic_id}'."
+    # This is a bug in Isono where the gw address is actually the host's
+    host_ip = Isono::Util.default_gw_ipaddr rescue nil
 
     exec [
       # chain setup for both layers
@@ -34,7 +37,7 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       accept_wakame_dns(vnic_map),
       accept_wakame_dhcp_only(vnic_map),
       # address translation rules
-      # translate_logger_address(vnic_map),
+      # translate_logging_address(vnic_map, host_ip),
       translate_metadata_address(vnic_map)
     ].flatten.compact
   end
@@ -76,7 +79,8 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       I.vnic_l2_ref_chain(vnic_id).flush,
       I.vnic_l3_iso_chain(vnic_id).flush,
       I.vnic_l3_ref_chain(vnic_id).flush,
-      I.vnic_l3_secg_chain(vnic_id).flush
+      I.vnic_l3_secg_chain(vnic_id).flush,
+      O.vnic_l3_secg_chain(vnic_id).flush
     ]
 
     exec secg_ids.map { |secg_id|
@@ -84,7 +88,8 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       I.vnic_l2_ref_chain(vnic_id).add_jump(I.secg_l2_ref_chain(secg_id)),
       I.vnic_l3_iso_chain(vnic_id).add_jump(I.secg_l3_iso_chain(secg_id)),
       I.vnic_l3_ref_chain(vnic_id).add_jump(I.secg_l3_ref_chain(secg_id)),
-      I.vnic_l3_secg_chain(vnic_id).add_jump(I.secg_l3_rules_chain(secg_id))]
+      I.vnic_l3_secg_chain(vnic_id).add_jump(I.secg_l3_rules_chain(secg_id)),
+      O.vnic_l3_secg_chain(vnic_id).add_jump(O.secg_l3_rules_chain(secg_id))]
     }.flatten
   end
 
@@ -111,15 +116,27 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     # We flush all chains first so there are no links left that would
     # prevent us from deleting them.
 
-    #TODO: Delete jumps in FORWARD chains
+    # Delete forward and prerouting jumps
+    #TODO: Write this cleaner... probably in ruby instead of bash
+    ["iptables"].each { |bin|
+      {:filter => :FORWARD, :nat => :PREROUTING}.each { |table,chain|
+        system("
+          #{bin} -t #{table} -L #{chain} --line-numbers | grep -q vdc_vif-
+            while [ \"$?\" == \"0\" ]; do
+            #{bin} -t #{table} -D #{chain} $(#{bin} -t #{table} -L #{chain} --line-numbers | grep -m 1 vdc_vif- | cut -d ' ' -f1)
+            #{bin} -t #{table} -L #{chain} --line-numbers | grep -q vdc_vif-
+          done
+        ")
+        system("for i in $(iptables -t #{table} -L | grep 'Chain #{prefix}' | cut -d ' ' -f2); do iptables -t #{table} -F $i; done")
+        system("for i in $(iptables -t #{table} -L | grep 'Chain #{prefix}' | cut -d ' ' -f2); do iptables -t #{table} -X $i; done")
+      }
+    }
 
     # Flush 'em all
     system("for i in $(ebtables -L | grep 'Bridge chain: #{prefix}' | cut -d ' ' -f3 | cut -d ',' -f1); do ebtables -F; done")
-    system("for i in $(iptables -L | grep 'Chain #{prefix}' | cut -d ' ' -f2); do iptables -F $i; done")
 
     # Kill 'em all
     system("for i in $(ebtables -L | grep 'Bridge chain: #{prefix}' | cut -d ' ' -f3 | cut -d ',' -f1); do ebtables -X; done")
-    system("for i in $(iptables -L | grep 'Chain #{prefix}' | cut -d ' ' -f2); do iptables -X $i; done")
   end
 
   private
