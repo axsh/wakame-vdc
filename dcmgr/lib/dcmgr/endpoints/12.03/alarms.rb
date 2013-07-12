@@ -4,11 +4,11 @@ require 'dcmgr/endpoints/12.03/responses/alarm'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
-  C = Dcmgr::Constants::Alarm
+  CA = Dcmgr::Constants::Alarm
 
   get do
 
-    unless C::METRIC_NAMES.include?(params[:metric_name])
+    unless CA::SUPPORT_METRICS.include?(params[:metric_name])
       raise E::UnknownMetricName, "#{params[:metric_name]}"
     end
 
