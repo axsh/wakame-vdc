@@ -40,14 +40,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       raise E::UnknownResourceID, "#{params[:resource_id]}"
     end
 
-    unless C::METRIC_NAMES.include?(params[:metric_name])
-      raise E::UnknownMetricName, "#{params[:metric_name]}"
+    unless params['params']
+      raise E::UnknownParams, params["params"]
     end
 
     alarm = M::Alarm.entry_new(@account) {|al|
 
       al.resource_id = params[:resource_id]
-      al.metric_name = params[:metric_name]
 
       if params[:display_name]
         al.display_name = params[:display_name]
@@ -57,20 +56,30 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.description = params[:description]
       end
 
-      if params['params']
+      if params[:enable]
+        al.enable = params[:enable].to_i
+      end
+
+      if params['params'] && params['params'].is_a?(Hash)
         save_params = {}
-        if params[:metric_name] == 'log'
+        if CA::LOG_METRICS.include?(params['metric_name'])
           save_params['label'] = params['params']['label']
           save_params['match_pattern'] = params['params']['match_pattern']
-        else
+        elsif CA::RESOURCE_METRICS.include?(params['metric_name'])
           save_params['period'] = params['params']['period'].to_i
           save_params['statistics'] = params['params']['statistics']
           save_params['threshold'] = params['params']['threshold'].to_f
-          save_params['unit'] = params['params']['unit']
           save_params['comparison_operator'] = params['params']['comparison_operator']
+        else
+          raise E::UnknownMetricName, "#{params['metric_name']}"
         end
+
+        al.metric_name = params[:metric_name]
+
         al.params = save_params
       end
+
+      raise E::InvalidParameter, al.errors.full_messages.first unless al.valid?
     }
 
     respond_with(R::Alarm.new(alarm).generate)
