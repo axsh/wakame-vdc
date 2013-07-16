@@ -43,6 +43,7 @@ class Host < Base
   method_option :memory_size, :type => :numeric, :desc => "Amount of memory to be offered (in MB)"
   method_option :hypervisor, :type => :string, :desc => "The hypervisor name. [#{HostNode::SUPPORTED_HYPERVISOR.join(', ')}]"
   method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{HostNode::SUPPORTED_ARCH.join(', ')}]"
+  method_option :node_id, :type => :string, :size => 255, :desc => "The node ID for the host node"
   def modify(uuid)
     UnsupportedArchError.raise(options[:arch]) unless SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
@@ -52,6 +53,7 @@ class Host < Base
               :offering_cpu_cores=>options[:cpu_cores],
               :hypervisor=>options[:hypervisor],
               :arch=>options[:arch],
+              :node_id=>options[:node_id],
     }
     super(HostNode,uuid,fields)
   end
