@@ -263,6 +263,10 @@ RSpec::Matchers.define :have_applied_secg do |secg|
     @vnics = vnic_array
   end
 
+  chain :with_rules do |rules_array|
+    @rules = rules_array
+  end
+
   match do |nfa|
     @nfa = nfa
     secg_id = secg.canonical_uuid
@@ -273,6 +277,9 @@ RSpec::Matchers.define :have_applied_secg do |secg|
       @vnics.each {|v| raise "VNic '#{v.canonical_uuid}' doesn't have a direct ip lease." if v.direct_ip_lease.first.nil?}
       expect_rules("ebtables", "vdc_#{secg_id}_isolation", l2_iso_rules) &&
       expect_rules("iptables", "vdc_#{secg_id}_isolation", l3_iso_rules)
+    )) &&
+    ( @rules.nil? || (
+      expect_rules("iptables", "vdc_#{secg_id}_d_rules", @rules)
     ))
   end
 

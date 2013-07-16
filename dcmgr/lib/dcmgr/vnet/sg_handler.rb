@@ -21,7 +21,7 @@ module Dcmgr::VNet::SGHandler
     host.security_groups.each { |sg|
       group_id = sg.canonical_uuid
       logger.debug "Initializing security group #{group_id}"
-      call_packetfilter_service(host, "init_security_group", group_id, [])
+      call_packetfilter_service(host, "init_security_group", group_id, sg.rules_array)
       friend_ips = sg.vnic_ips
       call_packetfilter_service(host, "init_isolation_group", group_id, friend_ips)
     }
@@ -57,8 +57,7 @@ module Dcmgr::VNet::SGHandler
         if query.empty?
           logger.debug "Host '#{host_node.canonical_uuid}' doesn't have security group '#{group.canonical_uuid}' yet. Initialize it."
 
-          sec_tasks = [] # These will be the rules in this security group
-          call_packetfilter_service(host_node, "init_security_group", group_id, sec_tasks)
+          call_packetfilter_service(host_node, "init_security_group", group_id, group.rules_array)
           call_packetfilter_service(host_node, "init_isolation_group", group_id, friend_ips)
         else
           logger.debug "Host '#{host_node.canonical_uuid}' already has security group '#{group.canonical_uuid}'. Update its isolation."
@@ -97,8 +96,7 @@ module Dcmgr::VNet::SGHandler
       }
 
       unless host_had_secg_already
-        sec_tasks = []
-        call_packetfilter_service(vnic_host, "init_security_group", group_id, sec_tasks)
+        call_packetfilter_service(vnic_host, "init_security_group", group_id, group.rules_array)
         call_packetfilter_service(vnic_host, "init_isolation_group", group_id, friend_ips)
       end
     }

@@ -49,10 +49,10 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     exec vnic_chains(vnic_id).map {|chain| chain.destroy}
   end
 
-  def init_security_group(secg_id, tasks)
+  def init_security_group(secg_id, rules)
     logger.info "Adding security chains for group '#{secg_id}'."
     exec secg_chains(secg_id).map {|chain| chain.create }
-    #TODO: Add secg rules to this chain
+    update_sg_rules(secg_id, rules)
   end
 
   def destroy_security_group(secg_id)
@@ -71,7 +71,6 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     exec isog_chains(isog_id).map {|chain| chain.destroy}
   end
 
-  # Split this in security group and isolation group?
   def set_vnic_security_groups(vnic_id, secg_ids)
     logger.info "Setting security groups of vnic '#{vnic_id}' to [#{secg_ids.join(", ")}]."
     exec [
@@ -93,7 +92,13 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     }.flatten
   end
 
-  def update_sg_rules(secg_id, tasks)
+  def update_sg_rules(secg_id, rules)
+    logger.info "Updating rules for security group: '#{secg_id}'"
+
+    chain = I.secg_l3_rules_chain(secg_id)
+    exec(Dcmgr::VNet::Netfilter.parse_rules(rules).map { |rule|
+      chain.add_rule rule
+    })
   end
 
   def update_isolation_group(group_id, friend_ips)
