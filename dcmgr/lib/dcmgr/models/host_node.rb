@@ -14,6 +14,8 @@ module Dcmgr::Models
     one_to_many :host_node_vnet
     alias :vnet :host_node_vnet
 
+    one_to_many :local_volumes
+
     def_dataset_method(:online_nodes) do
       # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)

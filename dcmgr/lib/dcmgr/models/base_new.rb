@@ -58,13 +58,19 @@ module Dcmgr::Models
       end
 
       def before_validation
-        # trim uuid prefix if it is in the self[:uuid]
-        self[:uuid].sub!(/^#{self.class.uuid_prefix}-/, '')
+        # trim uuid prefix if it is in the uuid column.
+        self.uuid.sub!(/^#{self.uuid_prefix}-/, '')
         super
       end
 
       def before_create
-        if !self.class.find(:uuid=>self[:uuid]).nil?
+        # special care for class table inheritance plugin.
+        uuid_model_class = if self.class.respond_to?(:cti_base_model)
+                             self.class.cti_base_model
+                           else
+                             self.class
+                           end
+        if !uuid_model_class.find(:uuid=>self.uuid).nil?
           raise "Duplicate UUID: #{self.canonical_uuid} already exists"
         end
         super
@@ -372,7 +378,10 @@ module Dcmgr::Models
       end
 
       def history_dataset
-        @history_ds
+         # case for class_table_inheritable plugin
+        @history_ds ||
+          (superclass.history_dataset if superclass.respond_to?(:history_dataset)) ||
+          raise("@history_dataset is unset")
       end
     end
 
@@ -458,10 +467,15 @@ module Dcmgr::Models
     end
 
     module ClassMethods
-      attr_accessor :track_columns
+      def track_columns
+        # care for class_table_inheritance plugin
+        @track_columns ||
+          (superclass.track_columns if superclass.respond_to?(:track_columns)) ||
+          (@track_columns = Hash.new)
+      end
+      
       def track_column_set(event_name, columns)
-        @track_columns = {} if @track_columns.nil?
-        @track_columns[event_name] = columns
+        track_columns[event_name] = columns
       end
     end
 

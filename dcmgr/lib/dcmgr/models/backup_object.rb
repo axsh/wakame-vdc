@@ -60,6 +60,12 @@ module Dcmgr::Models
       super.merge(:backup_storage=> self.backup_storage.to_hash)
     end
 
+    def create_volume(account=nil)
+      Volume.entry_new(account || self.account, self.size, {}) do |v|
+        v.backup_object_id = self.canonical_uuid
+      end
+    end
+
     private
     
     def before_save

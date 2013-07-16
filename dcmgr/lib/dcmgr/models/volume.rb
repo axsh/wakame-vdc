@@ -6,7 +6,6 @@ module Dcmgr::Models
     accept_service_type
     include Dcmgr::Constants::Volume
 
-    many_to_one :storage_node, :after_set=>:validate_storage_node_assigned
     many_to_one :instance
 
     plugin ArchiveChangedColumn, :histories
@@ -19,21 +18,16 @@ module Dcmgr::Models
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
     }
 
+    many_to_one :backup_object, :class=>BackupObject, :dataset=> lambda { BackupObject.filter(:uuid=>self.backup_object_id[BackupObject.uuid_prefix.size + 1, 255]) }
+
     # serialization plugin must be defined at the bottom of all class
     # method calls.
-    # Possible column data:
-    # iscsi:
-    # {:iqn=>'iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc', :lun=>0}
-    plugin :serialization, :yaml, :transport_information
     plugin :serialization, :yaml, :request_params
 
     class CapacityError < RuntimeError; end
     class RequestError < RuntimeError; end
 
     def validate_storage_node_assigned(sp)
-      unless sp.is_a?(StorageNode)
-        raise "unknown class: #{sp.class}"
-      end
       if self.size > sp.free_disk_space
         raise CapacityError, "Allocation exceeds storage node blank size: #{self.size(MB)} MB (#{self.canonical_uuid}) > #{sp.free_disk_space(MB)} MB (#{sp.canonical_uuid})"
       end
@@ -83,10 +77,6 @@ module Dcmgr::Models
       self
     end
 
-    def merge_pool_data
-      v = self.to_hash.merge(:storage_node=>storage_node.to_hash)
-    end
-
     # Hash data for API response.
     def to_api_document
       h = {
@@ -101,6 +91,16 @@ module Dcmgr::Models
         :deleted_at => self.deleted_at,
         :detached_at => self.detached_at,
       }
+    end
+
+    def to_hash
+      super().merge(:is_local_volume=>local_volume?,
+                    :volume_device=>self.volume_device.to_hash
+                    )
+    end
+
+    def local_volume?
+      self.volume_type == 'Dcmgr::Models::LocalVolume'
     end
 
     def ready_to_take_snapshot?
@@ -128,6 +128,16 @@ module Dcmgr::Models
       v
     end
 
+    # Sequel's class_table_inheritance plugin caused many changes for our
+    # model base class. so I stopped to use it.
+    def volume_class
+      self.volume_type.split('::').unshift(Object).inject{|r, i| r.const_get(i) }
+    end
+
+    def volume_device
+      self.volume_class.find(:id=>self.id.to_i)
+    end
+
     def on_changed_accounting_log(changed_column)
       AccountingLog.record(self, changed_column)
     end
@@ -138,12 +148,23 @@ module Dcmgr::Models
       convert_byte(self[:size], byte_unit)
     end
 
+    def detach_from_instance
+      self.instance_id = nil
+      self.state = STATE_AVAILABLE
+      self.save_changes
+    end
+    
     private
     def _destroy_delete
       self.deleted_at ||= Time.now
       self.state = STATE_DELETED if self.state != STATE_DELETED
-      self.status = STATUS_OFFILINE if self.status != STATUS_OFFLINE
+      self.status = STATUS_OFFLINE if self.status != STATUS_OFFLINE
       self.save_changes
+    end
+
+    def before_save
+      self.export_path ||= self.canonical_uuid
+      super
     end
   end
 end

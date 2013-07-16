@@ -102,6 +102,26 @@ module Dcmgr::Models
       end
     end
 
+    def create_volume(account=nil)
+      bo = self.backup_object || raise("Unknown backup object: #{self.backup_object_id}")
+
+      account ||= self.account
+
+      vol = bo.create_volume(account)
+      vol.boot_dev = 1
+      vol.volume_type = case self.boot_dev_type
+                        when BOOT_DEV_LOCAL
+                          LocalVolume.to_s
+                        when BOOT_DEV_SAN
+                          nil
+                        else
+                          raise "unknown boot device type: #{self.boot_dev_type}"
+                        end
+      vol.save
+
+      vol
+    end
+
     private
     def before_destroy
       if !Instance.alives.filter(:image_id=>self.canonical_uuid).empty?

@@ -100,6 +100,9 @@ module Dcmgr
     end
 
     autoload :ResourceLabel, 'dcmgr/models/resource_label'
+    autoload :LocalVolume, 'dcmgr/models/local_volume'
+    autoload :IscsiVolume, 'dcmgr/models/iscsi_volume'
+    autoload :IscsiStorageNode, 'dcmgr/models/iscsi_storage_node'
   end
 
   module Endpoints
