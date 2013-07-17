@@ -60,3 +60,7 @@ module DcmgrGui
     config.endpoints = YAML::load(IO.read(File.join(Rails.root, 'config', 'dcmgr_gui.yml')))[Rails.env]
   end
 end
+
+# ruby-2.0 specific work around: https://github.com/rails/rails/issues/9619
+ActionController::Base.config.relative_url_root=""
+
