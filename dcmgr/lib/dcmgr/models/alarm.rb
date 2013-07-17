@@ -11,13 +11,20 @@ module Dcmgr::Models
       super
 
       if self.is_log_alarm?
-        if params["match_pattern"].blank?
-          errors.add(:match_pattern, "Unknown value")
+        begin
+          if params["match_pattern"].blank?
+            errors.add(:match_pattern, "Unknown value")
+          else
+            Regexp.compile(Regexp.escape(params["match_pattern"]))
+          end
+        rescue => e
+          errors.add(:match_pattern, "Invalid pattern")
         end
 
         unless /^[0-9a-z.]+$/ =~ params['label']
           errors.add(:label, "Invalid format")
         end
+
       elsif self.is_metric_alarm?
         if params["period"] < 0
           errors.add(:period, "it must have digit more than zero")
