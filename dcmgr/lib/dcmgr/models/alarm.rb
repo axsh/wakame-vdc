@@ -37,19 +37,6 @@ module Dcmgr::Models
       end
     end
 
-    def _destroy_delete
-      self.deleted_at ||= Time.now
-      self.save_changes
-    end
-
-    def before_save
-      super
-      if is_log_alarm?
-        match_pattern = Regexp.escape(params['match_pattern'])
-        puts 'update match_pattern'
-      end
-    end
-
     def self.entry_new(account, &blk)
       al = self.new
       al.account_id = (account.is_a?(Account) ? account.canonical_uuid : account.to_s)
@@ -68,6 +55,20 @@ module Dcmgr::Models
 
     def is_metric_alarm?
       RESOURCE_METRICS.include?(metric_name)
+    end
+
+    private
+    def _destroy_delete
+      self.deleted_at ||= Time.now
+      self.save_changes
+    end
+
+    def before_save
+      super
+      if is_log_alarm?
+        match_pattern = Regexp.escape(params['match_pattern'])
+        puts 'update match_pattern'
+      end
     end
   end
 end
