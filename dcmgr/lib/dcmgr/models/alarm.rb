@@ -18,9 +18,7 @@ module Dcmgr::Models
         unless /^[0-9a-z.]+$/ =~ params['label']
           errors.add(:label, "Invalid format")
         end
-      end
-
-      if self.is_metric_alarm?
+      elsif self.is_metric_alarm?
         if params["period"] < 0
           errors.add(:period, "it must have digit more than zero")
         end
