@@ -41,6 +41,8 @@ module Dcmgr::Models
         unless SUPPORT_COMPARISON_OPERATOR.include?(params['comparison_operator'])
           errors.add(:comparison_operator, "it must have #{SUPPORT_COMPARISON_OPERATOR.join(',')}")
         end
+      else
+        errors.add(:metric_name, 'Unknown metric name')
       end
     end
 
