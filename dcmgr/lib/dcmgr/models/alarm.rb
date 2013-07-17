@@ -2,7 +2,7 @@
 module Dcmgr::Models
 
   class Alarm < AccountResource
-    taggable 'al'
+    taggable 'alm'
     subset(:alives, {:deleted_at => nil})
     plugin :serialization, :yaml, :params
     include Dcmgr::Constants::Alarm
