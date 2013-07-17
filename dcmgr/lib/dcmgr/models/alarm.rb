@@ -37,8 +37,7 @@ module Dcmgr::Models
       end
     end
 
-    def delete
-      super
+    def _destroy_delete
       self.deleted_at ||= Time.now
       self.save_changes
     end
