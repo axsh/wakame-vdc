@@ -76,7 +76,6 @@ module Dcmgr::Models
       super
       if is_log_alarm?
         match_pattern = Regexp.escape(params['match_pattern'])
-        puts 'update match_pattern'
       end
     end
   end
