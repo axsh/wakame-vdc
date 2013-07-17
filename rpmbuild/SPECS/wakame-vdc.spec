@@ -126,9 +126,37 @@ Requires: %{oname}-rack-config = %{version}-%{release}
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
-Requires: nginx
-Requires: dnsmasq
 %description dcmgr-vmapp-config
+<insert long description, indented with spaces>
+
+# webui-vmapp-config
+%package webui-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for webui VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+Requires: %{oname}-rack-config = %{version}-%{release}
+%description webui-vmapp-config
+<insert long description, indented with spaces>
+
+# auth-vmapp-config
+%package auth-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for auth VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+Requires: %{oname}-rack-config = %{version}-%{release}
+%description auth-vmapp-config
+<insert long description, indented with spaces>
+
+# proxy-vmapp-config
+%package proxy-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for proxy VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+Requires: nginx
+%description proxy-vmapp-config
 <insert long description, indented with spaces>
 
 # admin-vmapp-config
@@ -222,6 +250,61 @@ Requires: bridge-utils
 Requires: kmod-openvswitch
 Requires: openvswitch
 %description  natbox-vmapp-config
+<insert long description, indented with spaces>
+
+# bksta-vmapp-config
+%package bksta-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for bksta VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description  bksta-vmapp-config
+<insert long description, indented with spaces>
+
+# nsa-vmapp-config
+%package nsa-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for nsa VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+Requires: dnsmasq
+%description  nsa-vmapp-config
+<insert long description, indented with spaces>
+
+# sta-vmapp-config
+%package sta-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for sta VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description  sta-vmapp-config
+<insert long description, indented with spaces>
+
+# metadata-server-vmapp-config
+%package metadata-server-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for metadata VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description  metadata-server-vmapp-config
+<insert long description, indented with spaces>
+
+# nwmongw
+%package nwmongw-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for nwmongw VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description  nwmongw-vmapp-config
+<insert long description, indented with spaces>
+
+# dolphin
+%package dolphin-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for dolphin VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description  dolphin-vmapp-config
 <insert long description, indented with spaces>
 
 # vdcsh
@@ -384,10 +467,6 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %dir /var/log/%{oname}
 %dir /var/lib/%{oname}
 %exclude %{prefix}/%{oname}/tests/
-## TENTATIVE
-%config(noreplace) /etc/default/vdc-bksta
-%config /etc/init/vdc-bksta.conf
-## TENTATIVE
 
 %files vdcsh
 %defattr(-,root,root)
@@ -440,30 +519,26 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-dcmgr
 %config(noreplace) /etc/default/vdc-collector
-%config(noreplace) /etc/default/vdc-metadata
-%config(noreplace) /etc/default/vdc-nsa
-%config(noreplace) /etc/default/vdc-sta
-%config(noreplace) /etc/default/vdc-webui
-%config(noreplace) /etc/default/vdc-proxy
-%config(noreplace) /etc/default/vdc-auth
-%config(noreplace) /etc/default/vdc-nwmongw
-%config(noreplace) /etc/default/vdc-dolphin
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
-%config /etc/init/vdc-metadata.conf
-%config /etc/init/vdc-nsa.conf
-%config /etc/init/vdc-sta.conf
-%config /etc/init/vdc-webui.conf
-%config /etc/init/vdc-proxy.conf
-%config /etc/init/vdc-auth.conf
-%config /etc/init/vdc-nwmongw.conf
-%config /etc/init/vdc-dolphin.conf
-%dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs
+
+%files webui-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-webui
+%config /etc/init/vdc-webui.conf
+%dir /etc/%{oname}/dcmgr_gui
 %dir /var/log/%{oname}/dcmgr_gui
-%dir /var/lib/%{oname}/images
-%dir /var/lib/%{oname}/volumes
-%dir /var/lib/%{oname}/snap
+
+%files auth-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-auth
+%config /etc/init/vdc-auth.conf
+
+%files proxy-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-proxy
+%config /etc/init/vdc-proxy.conf
 
 %files admin-vmapp-config
 %defattr(-,root,root)
@@ -496,5 +571,38 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config(noreplace) /etc/default/vdc-natbox
 %config /etc/init/vdc-natbox.conf
 %config /etc/sysctl.d/30-natbox.conf
+
+%files bksta-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-bksta
+%config /etc/init/vdc-bksta.conf
+
+%files nsa-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-nsa
+%config /etc/init/vdc-nsa.conf
+
+%files sta-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-sta
+%config /etc/init/vdc-sta.conf
+%dir /var/lib/%{oname}/images
+%dir /var/lib/%{oname}/volumes
+%dir /var/lib/%{oname}/snap
+
+%files metadata-server-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-metadata
+%config /etc/init/vdc-metadata.conf
+
+%files nwmongw-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-nwmongw
+%config /etc/init/vdc-nwmongw.conf
+
+%files dolphin-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-dolphin
+%config /etc/init/vdc-dolphin.conf
 
 %changelog

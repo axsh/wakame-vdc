@@ -1,4 +1,4 @@
-ruby_ver ?= 1.9.3-p385
+ruby_ver ?= 2.0.0-p247
 
 # should be in wakame-vdc
 CURDIR ?= $(PWD)
@@ -30,25 +30,23 @@ unexport GEM_HOME GEM_PATH
 
 build: build-ruby-stamp
 
-build-ruby-stamp: ruby-build ruby install-core-gem bundle-install
+build-ruby-stamp: ruby-build ruby bundle-install
 	touch $@
 
-ruby-build: ruby-build-stamp
-ruby-build-stamp:
-	(cd $(CURDIR); git clone $(RUBY_BUILD_REPO_URI))
+ruby-build:
+	(if [ -d ruby-build ]; then \
+	  cd ruby-build; git pull; \
+        else \
+	  git clone $(RUBY_BUILD_REPO_URI); \
+	fi)
 	(cd $(CURDIR)/ruby-build; sed -i s,http://ftp.ruby-lang.org/pub/ruby/,$(RUBY_MIRROR_SITE), share/ruby-build/*)
 	(cd $(CURDIR)/ruby-build; sed -i s,http://pyyaml.org/download/libyaml/,$(LIBYAML_MIRROR_SITE), share/ruby-build/*)
 	(cd $(CURDIR)/ruby-build; sed -i s,http://production.cf.rubygems.org/rubygems/,$(RUBYGEMS_MIRROR_SITE), share/ruby-build/*)
-	touch $@
 
 ruby: ruby-stamp
 ruby-stamp:
 	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(RUBYDIR))
-	touch $@
-
-install-core-gem: install-core-gem-stamp
-install-core-gem-stamp:
-	gem install bundler rake --no-rdoc --no-ri
+	gem install bundler --no-rdoc --no-ri
 	touch $@
 
 bundle-install: bundle-install-stamp
