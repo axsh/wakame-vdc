@@ -34,8 +34,6 @@ BuildRequires: git
 BuildRequires: mysql-devel
 BuildRequires: chrpath
 BuildRequires: pkgconfig
-# Ruby binary build dependency
-BuildRequires: readline-devel ncurses-devel openssl-devel libxml2-devel libxslt-devel gdbm-devel zlib-devel
 # vmapp dependency
 BuildRequires: parted
 # build local cache
@@ -58,6 +56,7 @@ Requires: tar
 Requires: file
 Requires: prelink
 # Ruby binary dependency
+Requires: %{oname}-ruby
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 Requires: jemalloc
 # for erlang, rabbitmq-server
