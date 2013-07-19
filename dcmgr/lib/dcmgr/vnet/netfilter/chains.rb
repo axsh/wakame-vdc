@@ -15,45 +15,50 @@ module Dcmgr::VNet::Netfilter::Chains
     end
 
     def flush
-      "#{self.class.binary} -t #{@table} -F #{@name}"
+      nf_cmd(:F)
     end
 
     def destroy
-      "#{self.class.binary} -t #{@table} -F #{@name}; #{self.class.binary} -t #{@table} -X #{@name}"
+      nf_cmd(:F) + ";" + nf_cmd(:X)
     end
 
     def add_jump(target)
-      "#{self.class.binary} -t #{@table} -A #{@name} -j #{target.name}"
+      nf_cmd(:A, "-j #{target.name}")
     end
 
     def del_jump(target)
-      "#{self.class.binary} -t #{@table} -D #{@name} -j #{target.name}"
+      nf_cmd(:D, "-j #{target.name}")
     end
 
     def add_rule(rule)
-      "#{self.class.binary} -t #{@table} -A #{@name} #{rule}"
+      nf_cmd(:A, rule)
     end
 
     def del_rule(rule)
-      "#{self.class.binary} -t #{@table} -D #{@name} #{rule}"
+      nf_cmd(:D, rule)
     end
 
     def ==(chain)
       (chain.class == self.class) && (chain.name == self.name)
+    end
+
+    private
+    def nf_cmd(action, cmd = "")
+      "#{self.class.binary} -t #{@table} -#{action} #{@name} #{cmd}"
     end
   end
 
   class L2Chain < Chain
     binary "ebtables"
     def create
-      "#{self.class.binary} -t #{@table} -N #{@name}; ebtables -t #{@table} -P #{@name} RETURN"
+      nf_cmd(:N) + ";" + nf_cmd(:P, "RETURN")
     end
   end
 
   class L3Chain < Chain
     binary "iptables"
     def create
-      "#{self.class.binary} -t #{@table} -N #{@name}"
+      nf_cmd(:N)
     end
   end
 
@@ -69,92 +74,111 @@ module Dcmgr::VNet::Netfilter::Chains
     L3Chain.new "PREROUTING", :nat
   end
 
+  module Factory
+    class << self
+    def newchain(layer, suffix, table = :filter)
+      raise "Layer must be either :L2 or :L3" unless layer == :L2 || layer == :L3
+      Dcmgr::VNet::Netfilter::Chains.const_get("#{layer}Chain").new("#{CHAIN_PREFIX}_#{suffix}", table)
+    end
+
+    def vnic_chain(layer, vnic_id, suffix, table = :filter)
+      newchain(layer, "#{vnic_id}_#{suffix}", table)
+    end
+
+    def secg_chain(layer, secg_id, suffix, table = :filter)
+      newchain(layer, "#{secg_id}_#{suffix}", table)
+    end
+    end
+  end
+
   module Inbound
+    F = Dcmgr::VNet::Netfilter::Chains::Factory
     class << self
       def secg_l3_rules_chain(sg_id)
-        L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_d_rules")
+        F.secg_chain(:L3, sg_id, "d_rules")
       end
 
       def secg_l2_iso_chain(sg_id)
-        L2Chain.new("#{CHAIN_PREFIX}_#{sg_id}_isolation")
+        F.secg_chain(:L2, sg_id, "isolation")
       end
 
       def secg_l2_ref_chain(sg_id)
-        L2Chain.new("#{CHAIN_PREFIX}_#{sg_id}_reffers")
+        F.secg_chain(:L2, sg_id, "reffers")
       end
 
       def secg_l3_iso_chain(sg_id)
-        L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_isolation")
+        F.secg_chain(:L3, sg_id, "isolation")
       end
 
       def secg_l3_ref_chain(sg_id)
-        L3Chain.new("#{CHAIN_PREFIX}_#{sg_id}_reffees")
+        F.secg_chain(:L3, sg_id, "reffees")
       end
 
       def vnic_l2_main_chain(vnic_id)
-        L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d")
+        F.vnic_chain(:L2, vnic_id, "d")
       end
 
       def vnic_l2_iso_chain(vnic_id)
-        L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d_isolation")
+        F.vnic_chain(:L2, vnic_id, "d_isolation")
       end
 
       def vnic_l2_stnd_chain(vnic_id)
-        L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d_standard")
+        F.vnic_chain(:L2, vnic_id, "d_standard")
       end
 
       def vnic_l2_ref_chain(vnic_id)
-        L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d_reffers")
+        F.vnic_chain(:L2, vnic_id, "d_reffers")
       end
 
       def vnic_l3_main_chain(vnic_id)
-        L3Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_d")
+        F.vnic_chain(:L3, vnic_id, "d")
       end
 
       def vnic_l3_stnd_chain(vnic_id)
-        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_standard"
+        F.vnic_chain(:L3, vnic_id, "d_standard")
       end
 
       def vnic_l3_iso_chain(vnic_id)
-        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_isolation"
+        F.vnic_chain(:L3, vnic_id, "d_isolation")
       end
 
       def vnic_l3_ref_chain(vnic_id)
-        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_reffees" # Referencees was too long of a name for iptables (must be under 29 chars)
+        F.vnic_chain(:L3, vnic_id, "d_reffees") # Referencees was too long of a name for iptables (must be under 29 chars)
       end
 
       def vnic_l3_secg_chain(vnic_id)
-        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_d_security" # Only L3 needs the secg chain. We don't have user defined L2 rules atm.
+        F.vnic_chain(:L3, vnic_id, "d_security") # Only L3 needs the secg chain. We don't have user defined L2 rules atm.
       end
     end
   end
 
   module Outbound
+    F = Dcmgr::VNet::Netfilter::Chains::Factory
     class << self
       def vnic_l2_main_chain(vnic_id)
-        L2Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s"
+        F.vnic_chain(:L2, vnic_id, "s")
       end
 
       def vnic_l2_stnd_chain(vnic_id)
-        L2Chain.new("#{CHAIN_PREFIX}_#{vnic_id}_s_standard")
+        F.vnic_chain(:L2, vnic_id, "s_standard")
       end
 
       def vnic_l3_main_chain(vnic_id)
-        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s"
+        F.vnic_chain(:L3, vnic_id, "s")
       end
 
       # This chain is for the future implementation of outbound
       # security group rules.
       def vnic_l3_secg_chain(vnic_id)
-        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s_security"
+        F.vnic_chain(:L3, vnic_id, "s_security")
       end
 
       def vnic_l3_dnat_chain(vnic_id)
-        L3Chain.new "#{CHAIN_PREFIX}_#{vnic_id}_s_dnat", :nat
+        F.vnic_chain(:L3, vnic_id, "s_dnat", :nat)
       end
 
       def secg_l3_rules_chain(secg_id)
-        L3Chain.new "#{CHAIN_PREFIX}_#{secg_id}_s_rules"
+        F.secg_chain(:L3, secg_id, "s_rules")
       end
     end
   end
