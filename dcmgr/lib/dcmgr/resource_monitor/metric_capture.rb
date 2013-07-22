@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-require 'pry'
 
 module Dcmgr
   module ResourceMonitor
@@ -33,11 +32,9 @@ module Dcmgr
         raise ArgumentError unless resource_id.is_a?(String)
         raise ArgumentError unless metric.is_a?(String)
         raise ArgumentError unless data.is_a?(Hash)
-        p @cache[resource_id][metric]
         data.values.each { |h|
           @cache[resource_id][metric].delete(h["time"])
         }
-        p @cache[resource_id][metric]
       end
     end
   end

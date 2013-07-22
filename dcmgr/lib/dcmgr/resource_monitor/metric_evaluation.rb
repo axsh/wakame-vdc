@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-require 'pry'
+
 require 'metric_libs'
 module Dcmgr
   module ResourceMonitor
