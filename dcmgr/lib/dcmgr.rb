@@ -373,6 +373,11 @@ module Dcmgr
 
   autoload :TextLog, 'dcmgr/text_log'
 
+  module ResourceMonitor
+    autoload :MetricCapture, 'dcmgr/resource_monitor/metric_capture'
+    autoload :MetricEvaluation, 'dcmgr/resource_monitor/metric_evaluation'
+  end
+
 end
 
 module Ext
