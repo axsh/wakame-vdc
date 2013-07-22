@@ -4,9 +4,6 @@ ruby_ver ?= 2.0.0-p247
 CURDIR ?= $(PWD)
 RUBYDIR ?= $(CURDIR)/ruby
 
-RUBY_MIRROR_SITE     ?= http://core.ring.gr.jp/archives/lang/ruby/
-LIBYAML_MIRROR_SITE  ?= http://pyyaml.org/download/libyaml/
-RUBYGEMS_MIRROR_SITE ?= http://production.cf.rubygems.org/rubygems/
 RUBY_BUILD_REPO_URI  ?= https://github.com/sstephenson/ruby-build.git
 
 CFLAGS := -fno-strict-aliasing
@@ -39,9 +36,6 @@ ruby-build:
         else \
 	  git clone $(RUBY_BUILD_REPO_URI); \
 	fi)
-	(cd $(CURDIR)/ruby-build; sed -i s,http://ftp.ruby-lang.org/pub/ruby/,$(RUBY_MIRROR_SITE),              share/ruby-build/*)
-	(cd $(CURDIR)/ruby-build; sed -i s,http://pyyaml.org/download/libyaml/,$(LIBYAML_MIRROR_SITE),          share/ruby-build/*)
-	(cd $(CURDIR)/ruby-build; sed -i s,http://production.cf.rubygems.org/rubygems/,$(RUBYGEMS_MIRROR_SITE), share/ruby-build/*)
 
 ruby: ruby-stamp
 ruby-stamp:
