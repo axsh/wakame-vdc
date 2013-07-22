@@ -360,7 +360,7 @@ components="
  contrib
 "
 for component in ${components}; do
-  rsync -aHA --exclude=".git/*" --exclude="*~" --exclude="*/vendor/cache/*.gem" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
+  rsync -aHA --exclude=".git/*" --exclude="*~" --exclude="*/cache/*.gem" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 done
 unset components
 
