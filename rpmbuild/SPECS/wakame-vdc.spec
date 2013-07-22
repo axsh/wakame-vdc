@@ -351,6 +351,7 @@ CURDIR=${RPM_BUILD_ROOT} rpmbuild/rules binary-arch
 mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
 # TODO: Remove contrib dir excluding contrib/fluentd .
+# vendor: bundler-specific directory
 components="
  dcmgr
  frontend
@@ -358,13 +359,12 @@ components="
  client
  dolphin
  contrib
+ vendor
 "
 for component in ${components}; do
   rsync -aHA --exclude=".git/*" --exclude="*~" --exclude="*/cache/*.gem" --exclude="*/cache/bundler/git/*" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 done
 unset components
-
-rsync -aHA --exclude=".git/*" --exclude="*~" --exclude="*/cache/*.gem" --exclude="*/cache/bundler/git/*" %{prefix}/%{oname}/vendor ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
 [ -d ${RPM_BUILD_ROOT}/etc ] || mkdir -p ${RPM_BUILD_ROOT}/etc
 rsync -aHA `pwd`/contrib/etc/default        ${RPM_BUILD_ROOT}/etc/
