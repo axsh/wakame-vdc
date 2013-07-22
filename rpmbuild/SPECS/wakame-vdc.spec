@@ -364,6 +364,8 @@ for component in ${components}; do
 done
 unset components
 
+rsync -aHA --exclude=".git/*" --exclude="*~" --exclude="*/cache/*.gem" --exclude="*/cache/bundler/git/*" %{prefix}/%{oname}/vendor ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
+
 [ -d ${RPM_BUILD_ROOT}/etc ] || mkdir -p ${RPM_BUILD_ROOT}/etc
 rsync -aHA `pwd`/contrib/etc/default        ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/init           ${RPM_BUILD_ROOT}/etc/
