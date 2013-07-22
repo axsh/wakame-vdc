@@ -2,7 +2,7 @@
 module Dcmgr::Models
 
   class Alarm < AccountResource
-    taggable 'al'
+    taggable 'alm'
     subset(:alives, {:deleted_at => nil})
     plugin :serialization, :yaml, :params
     include Dcmgr::Constants::Alarm
@@ -11,16 +11,21 @@ module Dcmgr::Models
       super
 
       if self.is_log_alarm?
-        if params["match_pattern"].blank?
-          errors.add(:match_pattern, "Unknown value")
+        begin
+          if params["match_pattern"].blank?
+            errors.add(:match_pattern, "Unknown value")
+          else
+            Regexp.compile(Regexp.escape(params["match_pattern"]))
+          end
+        rescue => e
+          errors.add(:match_pattern, "Invalid pattern")
         end
 
         unless /^[0-9a-z.]+$/ =~ params['label']
           errors.add(:label, "Invalid format")
         end
-      end
 
-      if self.is_metric_alarm?
+      elsif self.is_metric_alarm?
         if params["period"] < 0
           errors.add(:period, "it must have digit more than zero")
         end
@@ -36,20 +41,8 @@ module Dcmgr::Models
         unless SUPPORT_COMPARISON_OPERATOR.include?(params['comparison_operator'])
           errors.add(:comparison_operator, "it must have #{SUPPORT_COMPARISON_OPERATOR.join(',')}")
         end
-      end
-    end
-
-    def delete
-      super
-      self.deleted_at ||= Time.now
-      self.save_changes
-    end
-
-    def before_save
-      super
-      if is_log_alarm?
-        match_pattern = Regexp.escape(params['match_pattern'])
-        puts 'update match_pattern'
+      else
+        errors.add(:metric_name, 'Unknown metric name')
       end
     end
 
@@ -71,6 +64,19 @@ module Dcmgr::Models
 
     def is_metric_alarm?
       RESOURCE_METRICS.include?(metric_name)
+    end
+
+    private
+    def _destroy_delete
+      self.deleted_at ||= Time.now
+      self.save_changes
+    end
+
+    def before_save
+      super
+      if is_log_alarm?
+        match_pattern = Regexp.escape(params['match_pattern'])
+      end
     end
   end
 end
