@@ -40,10 +40,10 @@ bundle-install-stamp:
 
 	# in order to build rpm, client(ruby-hijiki)/ is no need.
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki $(CURDIR)/client/ruby-hijiki.saved
-	(cd $(CURDIR)/dcmgr              && bundle install --standalone --path $(CURDIR)/vendor/bundle)
-	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --standalone --path $(CURDIR)/vendor/bundle)
-	(cd $(CURDIR)/frontend/admin     && bundle install --standalone --path $(CURDIR)/vendor/bundle)
-	(cd $(CURDIR)/dolphin            && bundle install --standalone --path $(CURDIR)/vendor/bundle)
+	(cd $(CURDIR)/dcmgr              && bundle install --standalone --path    ../vendor/bundle)
+	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --standalone --path ../../vendor/bundle)
+	(cd $(CURDIR)/frontend/admin     && bundle install --standalone --path ../../vendor/bundle)
+	(cd $(CURDIR)/dolphin            && bundle install --standalone --path    ../vendor/bundle)
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki.saved $(CURDIR)/client/ruby-hijiki
 
 	touch $@
