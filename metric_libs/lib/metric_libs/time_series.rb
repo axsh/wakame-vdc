@@ -43,7 +43,7 @@ module MetricLibs
 
     def dump
       @timeseries.each{|k, v|
-        puts "#{k.timestamp} #{k.value}"
+        puts "#{k.timestamp}.#{k.timestamp.nsec} #{k.value}"
       }
       nil
     end
