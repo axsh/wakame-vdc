@@ -67,8 +67,7 @@ clean:
 	rm -rf $(CURDIR)/dolphin/vendor/bundle
 	rm -f $(CURDIR)/build-ruby-stamp
 	rm -f $(CURDIR)/bundle-install-stamp
-	rm -f $(CURDIR)/install-core-gem-stamp
 	rm -f $(CURDIR)/ruby-build-stamp
 	rm -f $(CURDIR)/ruby-stamp
 
-.PHONY: build ruby-build ruby clean install-core-gem bundle-install
+.PHONY: build ruby-build ruby clean bundle-install
