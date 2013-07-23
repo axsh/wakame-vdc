@@ -38,13 +38,13 @@ bundle-install-stamp:
 	mkdir -p $(CURDIR)/vendor/cache
 	(cd $(CURDIR)/client/ruby-hijiki && rake gem && mv pkg/ruby-hijiki-*.gem $(CURDIR)/vendor/cache)
 
-	mkdir -p $(CURDIR)/vendor/bundle
+	mkdir -p $(CURDIR)/vendor/bundle/ruby
 	# in order to build rpm, client(ruby-hijiki)/ is no need.
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki $(CURDIR)/client/ruby-hijiki.saved
-	(cd $(CURDIR)/dcmgr              && mkdir -p vendor/ && rm -rf vendor/bundle && ln -fs    ../../vendor/bundle vendor/ && bundle install --standalone --path vendor/bundle)
-	(cd $(CURDIR)/frontend/dcmgr_gui && mkdir -p vendor/ && rm -rf vendor/bundle && ln -fs ../../../vendor/bundle vendor/ && bundle install --standalone --path vendor/bundle)
-	(cd $(CURDIR)/frontend/admin     && mkdir -p vendor/ && rm -rf vendor/bundle && ln -fs ../../../vendor/bundle vendor/ && bundle install --standalone --path vendor/bundle)
-	(cd $(CURDIR)/dolphin            && mkdir -p vendor/ && rm -rf vendor/bundle && ln -fs    ../../vendor/bundle vendor/ && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/dcmgr              && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs    ../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/frontend/dcmgr_gui && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs ../../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/frontend/admin     && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs ../../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/dolphin            && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs    ../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki.saved $(CURDIR)/client/ruby-hijiki
 
 	touch $@
