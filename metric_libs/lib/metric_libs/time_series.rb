@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
 require 'set'
+require 'forwardable'
 
 module MetricLibs
   class TimeSeries
+    extend Forwardable
+
+    def_delegators :@timeseries, :each, :to_a, :length, :first
 
     def initialize
       @timeseries = SortedSet.new
@@ -37,16 +41,11 @@ module MetricLibs
       @timeseries.delete_if {|mv| time > mv.timestamp}
     end
 
-    def to_a
-      @timeseries.collect{|ms| ms}
-    end
-
     def dump
       @timeseries.each{|k, v|
         puts "#{k.timestamp}.#{k.timestamp.nsec} #{k.value}"
       }
       nil
     end
-
   end
 end
