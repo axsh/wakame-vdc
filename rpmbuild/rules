@@ -2,6 +2,7 @@
 
 # should be in wakame-vdc
 CURDIR ?= $(PWD)
+RUBYDIR ?= $(CURDIR)/ruby
 
 VDC_BUILD_ID  ?= HEAD
 VDC_REPO_URI  ?= git://github.com/axsh/wakame-vdc.git
@@ -21,14 +22,36 @@ TMP_INSTALL_ROOT ?=
 
 VDC_INSTALL_ROOT ?= /opt/axsh/wakame-vdc
 
-build: build-stamp
+PATH := $(RUBYDIR)/bin:${PATH}
+export PATH
+unexport GEM_HOME GEM_PATH
 
-build-stamp:
-	# dh_testdir
-	CURDIR=${CURDIR} make build
+build: build-stamp
+build-stamp: ruby-build bundle-install
 	touch $@
+ruby-build:
+	CURDIR=${CURDIR} make build
+
+bundle-install: bundle-install-stamp
+bundle-install-stamp:
+	# Use hijiki gem in local since the local version is the latest.
+	mkdir -p $(CURDIR)/vendor/cache
+	(cd $(CURDIR)/client/ruby-hijiki && rake gem && mv pkg/ruby-hijiki-*.gem $(CURDIR)/vendor/cache)
+
+	mkdir -p $(CURDIR)/vendor/bundle/ruby
+	# in order to build rpm, client(ruby-hijiki)/ is no need.
+	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki $(CURDIR)/client/ruby-hijiki.saved
+	(cd $(CURDIR)/dcmgr              && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs    ../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/frontend/dcmgr_gui && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs ../../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/frontend/admin     && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs ../../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/dolphin            && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs    ../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
+	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki.saved $(CURDIR)/client/ruby-hijiki
+
+	touch $@
+
 clean:
-	CURDIR=${CURDIR} make clean
+	rm -rf $(CURDIR)/vendor/bundle
+	rm -f $(CURDIR)/bundle-install-stamp
 	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS) $(RPMCLEAN_SPEC)
 	rm -f build-stamp
 
@@ -88,4 +111,4 @@ binary:
 binary-snap:
 	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh $(VDC_BUILD_ID))" --define "repo_uri $(VDC_REPO_URI)"
 
-.PHONY: build clean binary-indep binary-arch binary binary-snap install
+.PHONY: build clean binary-indep binary-arch binary binary-snap install ruby-build bundle-install
