@@ -56,7 +56,8 @@ Requires: tar
 Requires: file
 Requires: prelink
 # Ruby binary dependency
-Requires: %{oname}-ruby = 2.0.0.247
+Requires: %{oname}-ruby >= 2.0.0.247
+Requires: %{oname}-ruby <  2.0.1
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 Requires: jemalloc
 # for erlang, rabbitmq-server
