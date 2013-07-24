@@ -142,6 +142,7 @@ module Dcmgr
     autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
     autoload :MetricCollector, 'dcmgr/node_modules/metric_collector'
     autoload :MetricMonitor, 'dcmgr/node_modules/metric_monitor'
+    autoload :AlarmCollector, 'dcmgr/node_modules/alarm_collector'
   end
 
   module Helpers
