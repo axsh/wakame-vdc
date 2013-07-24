@@ -25,6 +25,7 @@ manifest.instance_eval do
   load_module Dcmgr::NodeModules::HvaCollector
   load_module Dcmgr::NodeModules::StaCollector
   load_module Dcmgr::NodeModules::NatboxCollector
+  load_module Dcmgr::NodeModules::AlarmCollector
   load_module Dcmgr::NodeModules::InstanceHA
   load_module Dcmgr::NodeModules::Scheduler
   load_module Dcmgr::NodeModules::Maintenance
