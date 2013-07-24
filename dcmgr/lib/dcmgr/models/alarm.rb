@@ -66,6 +66,11 @@ module Dcmgr::Models
       RESOURCE_METRICS.include?(metric_name)
     end
 
+    def to_hash
+      h = super
+      h
+    end
+
     private
     def _destroy_delete
       self.deleted_at ||= Time.now

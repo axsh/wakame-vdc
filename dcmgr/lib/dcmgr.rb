@@ -140,6 +140,8 @@ module Dcmgr
     autoload :EventHook, 'dcmgr/node_modules/event_hook'
     autoload :JobQueueProxy, 'dcmgr/node_modules/job_queue_proxy'
     autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
+    autoload :MetricCollector, 'dcmgr/node_modules/metric_collector'
+    autoload :MetricMonitor, 'dcmgr/node_modules/metric_monitor'
   end
 
   module Helpers
@@ -370,6 +372,11 @@ module Dcmgr
   end
 
   autoload :TextLog, 'dcmgr/text_log'
+
+  module ResourceMonitor
+    autoload :MetricCapture, 'dcmgr/resource_monitor/metric_capture'
+    autoload :MetricEvaluation, 'dcmgr/resource_monitor/metric_evaluation'
+  end
 
 end
 
