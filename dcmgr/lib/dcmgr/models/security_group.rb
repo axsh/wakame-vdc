@@ -86,6 +86,18 @@ module Dcmgr::Models
       rules.compact
     end
 
+    def rules_array_no_ref
+      rules_array.delete_if {|rule|
+        !IPAddress.valid_ipv4?(rule[:ip_source].split("/").first)
+      }
+    end
+
+    def rules_array_only_ref
+      rules_array.delete_if {|rule|
+        IPAddress.valid_ipv4?(rule[:ip_source]).split("/").first
+      }
+    end
+
     def handle_refs(action = :create)
       current_ref_group_ids = []
 
