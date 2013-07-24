@@ -66,11 +66,7 @@ module Dcmgr::VNet::SGHandler
           call_packetfilter_service(host_node, "update_isolation_group", group_id, friend_ips)
         end
 
-        group.referencees.each {|reffee|
-          reffee.host_nodes.each {|ref_host|
-            call_packetfilter_service(ref_host, "set_sg_referencers", reffee.canonical_uuid, friend_ips)
-          }
-        }
+        handle_referencees(group, friend_ips)
       }
     }
     logger.debug "Set security groups '#{group_ids}' for vnic '#{vnic_id}'."
@@ -95,12 +91,10 @@ module Dcmgr::VNet::SGHandler
       hosts_before_change = group.host_nodes
       vnic.add_security_group(group)
       friend_ips = group.vnic_ips
-      referencee_ips = group.referencees.map {|ref| ref.vnic_ips }.flatten.uniq
 
       hosts_before_change.each {|host_node|
         friend_ips = group.vnic_ips
         call_packetfilter_service(host_node, "update_isolation_group", group_id, friend_ips)
-        call_packetfilter_service(host_node, "set_sg_referencers", group_id, referencee_ips)
 
         host_had_secg_already = true if host_node == vnic_host
       }
@@ -109,6 +103,8 @@ module Dcmgr::VNet::SGHandler
         call_packetfilter_service(vnic_host, "init_security_group", group_id, group.rules_array_no_ref)
         call_packetfilter_service(vnic_host, "init_isolation_group", group_id, friend_ips)
       end
+
+      handle_referencees(group, friend_ips)
     }
     call_packetfilter_service(vnic_host, "set_vnic_security_groups", vnic_id, (sg_uuids + current_sgids).uniq)
 
@@ -133,10 +129,8 @@ module Dcmgr::VNet::SGHandler
 
       host_had_secg_already = false
       friend_ips = group.vnic_ips
-      referencee_ips = group.referencees.map {|ref| ref.vnic_ips }.flatten.uniq
       group.host_nodes.each {|host_node|
         call_packetfilter_service(host_node, "update_isolation_group", group_id, friend_ips)
-        call_packetfilter_service(host_node, "set_sg_referencers", group_id, referencee_ips)
 
         host_had_secg_already = true if host_node == vnic_host
       }
@@ -145,6 +139,8 @@ module Dcmgr::VNet::SGHandler
         call_packetfilter_service(vnic_host, "destroy_security_group", group_id)
         call_packetfilter_service(vnic_host, "destroy_isolation_group", group_id)
       end
+
+      handle_referencees(group, friend_ips)
     }
     nil # Returning nil to simulate a void method
   end
@@ -193,4 +189,14 @@ module Dcmgr::VNet::SGHandler
   def call_packetfilter_service(host_node, method, *args)
     raise NotImplementedError,  "Classes that include the sg handler module must define a 'call_packetfilter_service(host_node, method, *args)' method"
   end
+
+  private
+  def handle_referencees(group, friend_ips)
+    group.referencees.each {|reffee|
+      reffee.host_nodes.each {|ref_host|
+        call_packetfilter_service(ref_host, "set_sg_referencers", reffee.canonical_uuid, friend_ips)
+      }
+    }
+  end
+
 end

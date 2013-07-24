@@ -94,6 +94,12 @@ describe "SGHandler and NetfilterAgent" do
 
       nfa(hostA).should have_applied_secg(secgA).with_vnics([hostA_vnic1, hostB_vnic1]).with_referencers([hostA_vnic2])
       nfa(hostB).should have_applied_secg(secgA).with_vnics([hostA_vnic1, hostB_vnic1]).with_referencers([hostA_vnic2])
+
+      handler.remove_sgs_from_vnic(hostB_vnic1_id, [secgA.canonical_uuid])
+      handler.add_sgs_to_vnic(hostB_vnic1_id, [secgB.canonical_uuid])
+
+      nfa(hostA).should have_applied_secg(secgA).with_vnics([hostA_vnic1]).with_referencers([hostA_vnic2, hostB_vnic1])
+      nfa(hostB).should_not have_applied_secg(secgA)
     end
   end
 end
