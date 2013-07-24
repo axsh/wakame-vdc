@@ -255,6 +255,10 @@ RSpec::Matchers.define :have_applied_secg do |secg|
     @vnics.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src #{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
   end
 
+  def l2_reffer_rules
+    @reffers.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src #{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
+  end
+
   def l3_iso_rules
     @vnics.map {|v| "-s #{v.direct_ip_lease.first.ipv4} -j ACCEPT"}
   end
@@ -265,6 +269,10 @@ RSpec::Matchers.define :have_applied_secg do |secg|
 
   chain :with_rules do |rules_array|
     @rules = rules_array
+  end
+
+  chain :with_referencers do |reffer_array|
+    @reffers = reffer_array
   end
 
   match do |nfa|
@@ -280,6 +288,9 @@ RSpec::Matchers.define :have_applied_secg do |secg|
     )) &&
     ( @rules.nil? || (
       expect_rules("iptables", "vdc_#{secg_id}_d_rules", @rules)
+    )) &&
+    ( @reffers.nil? || (
+      expect_rules("ebtables", "vdc_#{secg_id}_reffers", l2_reffer_rules)
     ))
   end
 

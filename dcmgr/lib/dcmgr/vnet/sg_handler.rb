@@ -33,6 +33,8 @@ module Dcmgr::VNet::SGHandler
       call_packetfilter_service(host, "set_vnic_security_groups", vnic_id, group_ids)
     }
 
+    #TODO: Handle referencing
+
     nil # Returning nil to simulate a void method
   end
 
@@ -63,6 +65,12 @@ module Dcmgr::VNet::SGHandler
           logger.debug "Host '#{host_node.canonical_uuid}' already has security group '#{group.canonical_uuid}'. Update its isolation."
           call_packetfilter_service(host_node, "update_isolation_group", group_id, friend_ips)
         end
+
+        group.referencees.each {|reffee|
+          reffee.host_nodes.each {|ref_host|
+            call_packetfilter_service(ref_host, "set_sg_referencers", reffee.canonical_uuid, friend_ips)
+          }
+        }
       }
     }
     logger.debug "Set security groups '#{group_ids}' for vnic '#{vnic_id}'."

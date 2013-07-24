@@ -92,6 +92,17 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     }.flatten
   end
 
+  def set_sg_referencers(secg_id, ref_ips)
+    logger.info "Setting referencers for #{secg_id} to [#{ref_ips.join(", ")}]"
+    l2ref_chain = I.secg_l2_ref_chain(secg_id)
+    exec(
+      [l2ref_chain.flush] +
+      ref_ips.map { |r_ip|
+        l2ref_chain.add_rule("--protocol arp --arp-opcode Request --arp-ip-src #{r_ip} -j ACCEPT")
+      }
+    )
+  end
+
   def update_sg_rules(secg_id, rules)
     logger.info "Updating rules for security group: '#{secg_id}'"
 
