@@ -3,3 +3,8 @@ name=Wakame-VDC
 baseurl=http://dlc.wakame.axsh.jp/packages/rhel/6/master/current/
 enabled=1
 gpgcheck=0
+
+[wakame-3rd-rhel6]
+name=Wakame 3rd Party
+baseurl=http://dlc.wakame.axsh.jp/packages/3rd/rhel/6/master/
+gpgcheck=0
