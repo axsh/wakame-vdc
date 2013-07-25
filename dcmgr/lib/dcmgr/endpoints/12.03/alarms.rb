@@ -56,8 +56,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.description = params[:description]
       end
 
-      if params[:enable]
-        al.enable = params[:enable].to_i
+      if params[:enabled]
+        al.enabled = params[:enabled].to_i
+      end
+
+      if params[:evaluation_periods]
+        al.evaluation_periods = params[:evaluation_periods].to_i
       end
 
       if params['params'] && params['params'].is_a?(Hash)
@@ -66,7 +70,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
           save_params['label'] = params['params']['label']
           save_params['match_pattern'] = params['params']['match_pattern']
         elsif CA::RESOURCE_METRICS.include?(params['metric_name'])
-          save_params['period'] = params['params']['period'].to_i
           save_params['statistics'] = params['params']['statistics']
           save_params['threshold'] = params['params']['threshold'].to_f
           save_params['comparison_operator'] = params['params']['comparison_operator']
@@ -110,8 +113,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.description = params[:description]
       end
 
-      if params[:enable]
-        al.enable = params[:enable].to_i
+      if params[:enabled]
+        al.enabled = params[:enabled].to_i
+      end
+
+      if params[:evaluation_periods]
+        al.evaluation_periods = params[:evaluation_periods].to_i
       end
 
       if params['params'] && params['params'].is_a?(Hash)
@@ -124,15 +131,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
             update_params['match_pattern'] = al.params['match_pattern']
           end
         elsif al.is_metric_alarm?
-          if params['params']['period']
-            params['params']['period'] = params['params']['period'].to_i
-          end
-
           if params['params']['threshold']
             params['params']['threshold'] = params['params']['threshold'].to_f
           end
 
-          ['period', 'threshold', 'statistics', 'comparison_operator'].each {|key|
+          ['threshold', 'statistics', 'comparison_operator'].each {|key|
             if params['params'][key]
               update_params[key] = params['params'][key]
             else
