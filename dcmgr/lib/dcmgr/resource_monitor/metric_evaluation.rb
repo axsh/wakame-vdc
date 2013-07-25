@@ -30,17 +30,22 @@ module Dcmgr
         }
       end
 
-      def delete
+      def delete(resource_id, metric, time)
+        raise ArgumentError unless resource_id.is_a?(String)
+        raise ArgumentError unless metric.is_a?(String)
+        raise ArgumentError unless time.is_a?(Time)
+        @cache[resource_id][metric].delete_all_since_at(time)
       end
 
-      def evaluate(alarm)
+      def evaluate(alarm, time)
         raise ArgumentError unless alarm.is_a?(Hash)
-        
+        raise ArgumentError unless time.is_a?(Time)
+
         case alarm[:metric_name]
         when 'cpu.usage'
-          end_time = Time.now.to_i
+          end_time = time.to_i
           start_time = end_time - alarm[:evaluation_periods]
-          metric_value = @cache[alarm[:resource_id]]["cpu.total_usage"]
+          metric_value = @cache[alarm[:resource_id]][alarm[:metric_name]]
 
           values = metric_value.find(Time.at(start_time), Time.at(end_time)).map {|v|
             v.value
