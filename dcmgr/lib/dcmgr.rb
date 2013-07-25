@@ -236,6 +236,7 @@ module Dcmgr
     autoload :Zabbix, 'dcmgr/drivers/zabbix'
     autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
     autoload :Natbox, 'dcmgr/drivers/natbox'
+    autoload :Fluent, 'dcmgr/drivers/fluent'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'
