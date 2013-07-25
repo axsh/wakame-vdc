@@ -4,12 +4,7 @@ require 'metric_libs'
 module Dcmgr
   module ResourceMonitor
     class MetricEvaluation
-      COMPARISON_OPERATOR = {
-        :gt => :>,
-        :ge => :>=,
-        :lt => :<,
-        :le => :<=,
-        }
+      include Dcmgr::Constants::Alarm
 
       def initialize
         @cache = {}
@@ -52,7 +47,7 @@ module Dcmgr
           }
           cpu_usage = values.inject{|sum, n| sum.to_f + n.to_f} / values.size
 
-          cpu_usage.method(COMPARISON_OPERATOR[alarm[:params]["comparison_operator"].to_sym]).call(alarm[:params]["threshold"])
+          cpu_usage.method(SUPPORT_COMPARISON_OPERATOR[alarm[:params]["comparison_operator"]]).call(alarm[:params]["threshold"])
         when 'memory.usage'
         else
           raise "Unknown metric name: #{alarm[:metric_name]}"
