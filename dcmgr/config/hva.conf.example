@@ -39,6 +39,7 @@ config.use_ipset       = false
 config.use_logging_service = false
 config.logging_service_ip = '169.254.169.253'
 config.logging_service_port = 8888
+config.logging_service_tmp = '/var/lib/wakame-vdc/'
 
 # Path for brctl
 config.brctl_path = '/usr/sbin/brctl'
