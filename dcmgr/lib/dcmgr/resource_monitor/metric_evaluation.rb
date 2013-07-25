@@ -39,7 +39,7 @@ module Dcmgr
         case alarm[:metric_name]
         when 'cpu.usage'
           end_time = Time.now.to_i
-          start_time = end_time - alarm[:params]["period"]
+          start_time = end_time - alarm[:evaluation_periods]
           metric_value = @cache[alarm[:resource_id]]["cpu.total_usage"]
 
           values = metric_value.find(Time.at(start_time), Time.at(end_time)).map {|v|
