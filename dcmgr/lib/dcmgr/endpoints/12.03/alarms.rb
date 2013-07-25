@@ -99,6 +99,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
     al = find_by_uuid(:Alarm, params[:id])
     al = al.destroy
 
+    on_after_commit do
+      i = find_by_uuid(:Instance, al.resource_id)
+      if i.state == 'running'
+        Dcmgr.messaging.submit(alarm_endpoint(al.metric_name, i.host_node.node_id), 'delete_alarm', al.canonical_uuid)
+      end
+    end
+
     respond_with([al.canonical_uuid])
   end
 
@@ -155,6 +162,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.params = update_params
       end
       raise E::InvalidParameter, al.errors.full_messages.first unless al.valid?
+    end
+
+    on_after_commit do
+      i = find_by_uuid(:Instance, al.resource_id)
+      if i.state == 'running'
+        Dcmgr.messaging.submit(alarm_endpoint(al.metric_name, i.host_node.node_id), 'update_alarm', al.canonical_uuid)
+      end
     end
 
     respond_with([al.canonical_uuid])
