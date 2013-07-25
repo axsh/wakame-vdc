@@ -8,8 +8,14 @@ Sequel.migration do
       column :display_name, "varchar(255)", :null=>true
       column :metric_name, "varchar(255)", :null=>false
       column :description, "text", :null=>true
+      column :evaluation_periods, "integer", :null=>false
       column :params, "text", :null=>false
-      column :enable, "tinyint(1)", :null=>false, :default=> 1, :null=>false
+      column :enabled, "tinyint(1)", :null=>false, :default=> 1, :null=>false
+      column :state, "varchar(255)", :null=>false, :null=>false
+      column :state_timestamp, "datetime", :null=>false
+      column :ok_actions, "text", :null=>true
+      column :alarm_actions, "text", :null=>true
+      column :insufficient_data_actions, "text", :null=>true
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
