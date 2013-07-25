@@ -143,6 +143,7 @@ module Dcmgr
     autoload :MetricCollector, 'dcmgr/node_modules/metric_collector'
     autoload :MetricMonitor, 'dcmgr/node_modules/metric_monitor'
     autoload :AlarmCollector, 'dcmgr/node_modules/alarm_collector'
+    autoload :AlarmConfigUpdater, 'dcmgr/node_modules/alarm_config_updater'
   end
 
   module Helpers
@@ -236,6 +237,7 @@ module Dcmgr
     autoload :Zabbix, 'dcmgr/drivers/zabbix'
     autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
     autoload :Natbox, 'dcmgr/drivers/natbox'
+    autoload :Fluent, 'dcmgr/drivers/fluent'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'

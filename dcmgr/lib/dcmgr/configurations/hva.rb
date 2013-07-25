@@ -130,6 +130,7 @@ module Dcmgr
       param :use_logging_service, :default=>false
       param :logging_service_ip, :default =>'169.254.169.253'
       param :logging_service_port, :default => 8888
+      param :logging_service_tmp, :default => '/var/lib/wakame-vdc/'
       param :enable_gre, :default=>false
       param :enable_subnet, :default=>false
 
