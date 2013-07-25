@@ -143,6 +143,7 @@ module Dcmgr
     autoload :MetricCollector, 'dcmgr/node_modules/metric_collector'
     autoload :MetricMonitor, 'dcmgr/node_modules/metric_monitor'
     autoload :AlarmCollector, 'dcmgr/node_modules/alarm_collector'
+    autoload :AlarmConfigUpdater, 'dcmgr/node_modules/alarm_config_updater'
   end
 
   module Helpers
