@@ -10,6 +10,10 @@ module Dcmgr::Models
     def validate
       super
 
+      if evaluation_periods < 0
+        errors.add(:evaluation_periods, "it must have digit more than zero")
+      end
+
       if self.is_log_alarm?
         begin
           if params["match_pattern"].blank?
@@ -26,10 +30,6 @@ module Dcmgr::Models
         end
 
       elsif self.is_metric_alarm?
-        if params["period"] < 0
-          errors.add(:period, "it must have digit more than zero")
-        end
-
         if params["threshold"] < 0
           errors.add(:threshold, "it must have digit more than zero")
         end
