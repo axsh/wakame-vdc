@@ -85,6 +85,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       raise E::InvalidParameter, al.errors.full_messages.first unless al.valid?
     }
 
+    on_after_commit do
+      i = find_by_uuid(:Instance, params['resource_id'])
+      if i.state == 'running'
+        Dcmgr.messaging.submit(alarm_endpoint(alarm.metric_name, i.host_node.node_id), 'update_alarm', alarm.canonical_uuid)
+      end
+    end
+
     respond_with(R::Alarm.new(alarm).generate)
   end
 
@@ -151,6 +158,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
     end
 
     respond_with([al.canonical_uuid])
+  end
+
+  private
+  def alarm_endpoint(metric_name, node_id)
+    case metric_name
+      when 'log'
+        name = 'log-alarm-registry'
+      else
+        name = 'resource-alarm-registry'
+    end
+    "#{name}.#{node_id}"
   end
 
 end
