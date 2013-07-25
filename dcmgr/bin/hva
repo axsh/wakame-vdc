@@ -46,6 +46,7 @@ manifest.instance_eval do
   else
     raise "Configuration error: '#{Dcmgr.conf.edge_networking}' is not a valid option for edge_networking. Valid options are 'openflow', 'netfilter', 'legacy_netfilter' and 'off'"
   end
+  load_module Dcmgr::NodeModules::AlarmConfigUpdater
 end
 
 Isono.at_disconnected do
