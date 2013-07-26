@@ -5,35 +5,44 @@ module Fluent
   class TextMatcherOutput < Output
     Fluent::Plugin.register_output('text_matcher', self)
 
-    MATCH_PATTERN_MAX_NUM = 100
-
-    config_param :alarm1, :string # string: NAME,REGEXP
-    (2..MATCH_PATTERN_MAX_NUM).each do |i|
-      config_param ('alarm' + i.to_s).to_sym, :string, :default => nil
-    end
-
     config_param :tag, :string, :default => 'textmatch'
+    config_param :alarm1, :string
+
+    # Parserd name key on fluent of Guest VM
+    MATCH_KEY = 'message'.freeze
 
     def initialize
       super
+      @monitor = {}
       @cache = {}
-      @queue = Queue.new
+      @alarms = []
     end
 
     def configure(conf)
-      super
-      @alarms = []
-      (1..MATCH_PATTERN_MAX_NUM).each do |i|
-        next unless conf["alarm#{i}"]
-        match_key, regexp, period = conf["alarm#{i}"].split(',', 3)
-        @alarms.push({
-          :alarm_id => i,
-          :match_key => match_key,
-          :match_pattern => Regexp.new(regexp),
-          :period => period.to_i
-        })
-        @cache[match_key] = MetricLibs::TimeSeries.new
+      alarm_pattern = /^alarm([0-9]+)$/
+      Fluent::TextMatcherOutput.module_eval do
+        conf.each {|k ,v|
+          if m = k.match(alarm_pattern)
+            config_param "alarm#{m[1].to_i}".to_sym, :string
+          end
+        }
       end
+      super
+      config.each {|k ,v|
+        if m = k.match(alarm_pattern)
+          resource_id, alarm_id, tag, regexp, evaluation_periods = v.split(',', 5)
+          @alarms.push({
+            :resource_id => resource_id,
+            :alarm_id => alarm_id,
+            :tag => tag,
+            :match_pattern => Regexp.new(regexp),
+            :evaluation_periods => evaluation_periods.to_i
+          })
+
+          @cache[resource_id] = {}
+          @cache[resource_id][tag] = MetricLibs::TimeSeries.new
+        end
+      }
     end
 
     class TimerWatcher < Coolio::TimerWatcher
@@ -55,23 +64,25 @@ module Fluent
       @loop = Coolio::Loop.new
 
       @alarms.each { |alarm|
-
         $log.info "set alarm #{alarm}"
-        user_timer = TimerWatcher.new(alarm[:period], true) {
-          if @cache.has_key?(alarm[:match_key]) && @cache[alarm[:match_key]].is_a?(MetricLibs::TimeSeries)
-
-            res = evaluate(@cache[alarm[:match_key]], alarm[:match_pattern])
+        user_timer = TimerWatcher.new(alarm[:evaluation_periods], true) {
+          resource_id = alarm[:resource_id]
+          if @cache[resource_id].has_key?(alarm[:tag])
+            now = Time.now
+            start_time = now - alarm[:evaluation_periods]
+            evaluation_data = @cache[resource_id][alarm[:tag]].find(start_time, now)
+            res = evaluate(evaluation_data, alarm[:match_pattern])
 
             message = {
               :alarm_id => alarm[:alarm_id],
-              :match_key => alarm[:match_key],
+              :tag => alarm[:tag],
               :match_count => res[:match_count]
             }
             $log.info "evaluate result: #{message}"
 
             if res[:match_count] > 0
-              sample = @cache[alarm[:match_key]].first.value['message']
-              message['instance_id'] = sample['x_wakame_instance_id']
+              sample = evaluation_data.first.value
+              message['resource_id'] = sample['x_wakame_instance_id']
               message['account_id'] = sample['x_wakame_account_id']
 
               Engine.emit(@tag, Engine.now, message)
@@ -79,10 +90,12 @@ module Fluent
             end
 
             # Clear time series data
-            @cache[alarm[:match_key]] = MetricLibs::TimeSeries.new
+            @cache[resource_id][alarm[:tag]] = MetricLibs::TimeSeries.new
 
           end
         }
+
+        @monitor[alarm[:alarm_id]] = user_timer
         @loop.attach(user_timer)
       }
 
@@ -104,11 +117,12 @@ module Fluent
 
     def emit(tag, es, chain)
       es.each do |time, record|
-        match_key = record['x_wakame_label']
-        unless @cache.has_key? match_key
-          $log.error "No such matching key in #{record}"
+        resource_id = record['x_wakame_instance_id']
+        label = record['x_wakame_label']
+        if @cache[resource_id].has_key? label
+          @cache[resource_id][label].push(record, Time.at(time))
         else
-          @cache[match_key].push(record, Time.at(time))
+          $log.error "Does't accepted #{record}"
         end
       end
     end
@@ -124,7 +138,7 @@ module Fluent
       match_count = 0
       if timeseries.length > 0
         timeseries.each do |h|
-          if match_pattern =~ h.value['message']
+          if match_pattern =~ h.value[MATCH_KEY]
             $log.info "matched: #{h.value}"
             match_count +=1
           else
