@@ -18,12 +18,12 @@ module Dcmgr::Constants
       'avg'
     ].freeze
 
-    SUPPORT_COMPARISON_OPERATOR = [
-      'ge',
-      'gt',
-      'le',
-      'lt',
-    ].freeze
+    SUPPORT_COMPARISON_OPERATOR = {
+      'ge' => :>=,
+      'gt' => :>,
+      'le' => :<=,
+      'lt' => :<,
+    }.freeze
 
   end
 end
