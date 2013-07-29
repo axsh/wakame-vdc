@@ -47,5 +47,9 @@ module MetricLibs
       }
       nil
     end
+
+    def last
+      @timeseries.to_a.last
+    end
   end
 end
