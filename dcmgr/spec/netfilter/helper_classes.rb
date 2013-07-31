@@ -130,6 +130,10 @@ end
 class NFCmdParser
 
   def initialize
+    flush
+  end
+
+  def flush
     @ebtables = {"filter" => Filter.new}
     @iptables = {"filter" => Filter.new, "nat" => Nat.new}
   end

@@ -24,6 +24,7 @@ module Dcmgr::VNet::SGHandler
       call_packetfilter_service(host, "init_security_group", group_id, sg.rules_array_no_ref)
       friend_ips = sg.vnic_ips
       call_packetfilter_service(host, "init_isolation_group", group_id, friend_ips)
+      handle_referencees(host, sg)
     }
 
     host.alive_vnics.each { |vnic|
@@ -32,8 +33,6 @@ module Dcmgr::VNet::SGHandler
       call_packetfilter_service(host, "init_vnic", vnic_id, vnic.to_hash)
       call_packetfilter_service(host, "set_vnic_security_groups", vnic_id, group_ids)
     }
-
-    #TODO: Handle referencing
 
     nil # Returning nil to simulate a void method
   end
@@ -198,6 +197,8 @@ module Dcmgr::VNet::SGHandler
 
   private
   def handle_referencees(host, group)
+    #TODO: Right now all of this is updated every time a single referencee is changed
+    # It would be better if we could handle it per referencee group somehow
     rules = group.rules_array_only_ref
     parsed_rules = group.referencees.map {|reffee|
       rules.map {|r|
@@ -211,7 +212,6 @@ module Dcmgr::VNet::SGHandler
       }
     }.flatten.compact
 
-    #TODO: handle this per referencee group
     ref_ips = group.referencees.map {|ref| ref.vnic_ips}.flatten.uniq
 
     call_packetfilter_service(host, "set_sg_referencers", group.canonical_uuid, ref_ips, parsed_rules)

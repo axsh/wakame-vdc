@@ -153,6 +153,29 @@ describe "SGHandler and NetfilterAgent" do
 
       nfa(hostA).should have_applied_secg(secgA).with_vnics([hostA_vnic1, hostA_vnic2]).with_referencees([]).with_reference_rules([])
       nfa(hostB).should_not have_applied_secg(secgA)
+
+      # After we restart the host nodes, their netfilter stuff should still be the same
+      nfa(hostA).flush
+      nfa(hostB).flush
+      handler.init_host(hostA.node_id)
+      handler.init_host(hostB.node_id)
+
+      nfa(hostA).should_not have_applied_secg(secgB)
+      nfa(hostB).should have_applied_secg(secgB).with_referencees([hostA_vnic1, hostA_vnic2]).with_reference_rules([
+        "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
+        "-p tcp -s 10.0.0.2 --dport 22 -j ACCEPT"
+      ])
+
+      nfa(hostA).should have_applied_secg(secgA).with_vnics([hostA_vnic1, hostA_vnic2]).with_referencees([]).with_reference_rules([])
+      nfa(hostB).should_not have_applied_secg(secgA)
+
+      nfa(hostA).should have_applied_vnic(hostA_vnic1).with_secgs([secgA])
+      nfa(hostA).should have_applied_vnic(hostA_vnic2).with_secgs([secgA])
+      nfa(hostA).should_not have_applied_vnic(hostB_vnic1)
+
+      nfa(hostB).should have_applied_vnic(hostB_vnic1).with_secgs([secgB])
+      nfa(hostB).should_not have_applied_vnic(hostA_vnic1)
+      nfa(hostB).should_not have_applied_vnic(hostA_vnic2)
     end
 
     #TODO: Add referencing to init_host
