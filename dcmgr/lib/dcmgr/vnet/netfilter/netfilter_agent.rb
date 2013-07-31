@@ -14,8 +14,6 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
 
   def init_vnic(vnic_id, vnic_map)
     logger.info "Creating chains for vnic '#{vnic_id}'."
-    # This is a bug in Isono where the gw address is actually the host's
-    host_ip = Isono::Util.default_gw_ipaddr rescue nil
 
     exec [
       # chain setup for both layers
@@ -37,7 +35,6 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       accept_wakame_dns(vnic_map),
       accept_wakame_dhcp_only(vnic_map),
       # address translation rules
-      # translate_logging_address(vnic_map, host_ip),
       translate_metadata_address(vnic_map)
     ].flatten.compact
   end
