@@ -188,7 +188,16 @@ module Dcmgr::VNet::SGHandler
   end
 
   def update_sg_rules(secg_id)
-    #TODO: Implement!
+    group = M::SecurityGroup[secg_id]
+    rules = group.rules_array_no_ref
+
+    group.host_nodes.each {|host_node|
+      logger.info "Updating rules of group '#{secg_id}' on host '#{host_node.canonical_uuid}'"
+      call_packetfilter_service(host_node, "update_sg_rules", secg_id, rules)
+      handle_referencees(host_node, group)
+    }
+
+    nil
   end
 
   def call_packetfilter_service(host_node, method, *args)

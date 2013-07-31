@@ -73,7 +73,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
         g.set_label(name, value)
       end
     end
-    
+
     respond_with(R::SecurityGroup.new(g).generate)
   end
 
@@ -110,6 +110,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     on_after_commit do
       Dcmgr.messaging.event_publish('hva/security_group_updated', :args=>[g.canonical_uuid])
       Dcmgr.messaging.event_publish("#{g.canonical_uuid}/rules_updated")
+      Dcmgr.messaging.submit("sg_handler", "update_sg_rules", g.canonical_uuid)
 
       send_reference_events(g,old_referencees,g.referencees) if params[:rule]
     end

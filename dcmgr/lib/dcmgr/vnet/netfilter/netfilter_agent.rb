@@ -108,6 +108,7 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     logger.info "Updating rules for security group: '#{secg_id}'"
 
     chain = I.secg_l3_rules_chain(secg_id)
+    exec chain.flush
     exec(Dcmgr::VNet::Netfilter.parse_rules(rules).map { |rule|
       chain.add_rule rule
     })
