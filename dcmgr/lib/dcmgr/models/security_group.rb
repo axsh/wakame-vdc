@@ -94,7 +94,7 @@ module Dcmgr::Models
 
     def rules_array_only_ref
       rules_array.delete_if {|rule|
-        IPAddress.valid_ipv4?(rule[:ip_source]).split("/").first
+        IPAddress.valid_ipv4?(rule[:ip_source].split("/").first)
       }
     end
 

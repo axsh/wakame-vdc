@@ -16,7 +16,7 @@ module Dcmgr::VNet::Netfilter
           #TODO: Figure out a way to do this without requiring the vnic address
           # chain.add_rule "--protocol arp --arp-opcode Request --arp-ip-dst #{@vnic[:address]} -j ACCEPT"
         else
-          "--protocol arp --arp-opcode Request --arp-ip-src #{rule[:ip_source]} --arp-ip-dst #{@vnic[:address]} -j ACCEPT"
+          # "--protocol arp --arp-opcode Request --arp-ip-src #{rule[:ip_source]} --arp-ip-dst #{@vnic[:address]} -j ACCEPT"
         end
       rescue ArgumentError => e
         STDERR.puts e

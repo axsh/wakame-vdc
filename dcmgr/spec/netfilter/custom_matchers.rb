@@ -271,8 +271,12 @@ RSpec::Matchers.define :have_applied_secg do |secg|
     @rules = rules_array
   end
 
-  chain :with_referencers do |reffer_array|
+  chain :with_referencees do |reffer_array|
     @reffers = reffer_array
+  end
+
+  chain :with_reference_rules do |rules_array|
+    @ref_rules = rules_array
   end
 
   match do |nfa|
@@ -291,6 +295,9 @@ RSpec::Matchers.define :have_applied_secg do |secg|
     )) &&
     ( @reffers.nil? || (
       expect_rules("ebtables", "vdc_#{secg_id}_reffers", l2_reffer_rules)
+    )) &&
+    ( @ref_rules.nil? || (
+      expect_rules("iptables", "vdc_#{secg_id}_reffees", @ref_rules)
     ))
   end
 
