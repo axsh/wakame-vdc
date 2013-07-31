@@ -19,12 +19,7 @@ module Dcmgr::VNet::SGHandler
     host_id = host.canonical_uuid
     logger.info "Telling host '#{host_id}' to initialize all its vnics and their security groups."
     host.security_groups.each { |sg|
-      group_id = sg.canonical_uuid
-      logger.debug "Initializing security group #{group_id}"
-      call_packetfilter_service(host, "init_security_group", group_id, sg.rules_array_no_ref)
-      friend_ips = sg.vnic_ips
-      call_packetfilter_service(host, "init_isolation_group", group_id, friend_ips)
-      handle_referencees(host, sg)
+      init_security_group(host, sg)
     }
 
     host.alive_vnics.each { |vnic|
@@ -49,7 +44,6 @@ module Dcmgr::VNet::SGHandler
     group_ids = []
     vnic.security_groups.each {|group|
       group_id = group.canonical_uuid
-      friend_ips = group.vnic_ips
       group_ids << group_id
 
       group.host_nodes.each {|host_node|
@@ -58,10 +52,9 @@ module Dcmgr::VNet::SGHandler
         if query.empty?
           logger.debug "Host '#{host_node.canonical_uuid}' doesn't have security group '#{group.canonical_uuid}' yet. Initialize it."
 
-          call_packetfilter_service(host_node, "init_security_group", group_id, group.rules_array_no_ref)
-          call_packetfilter_service(host_node, "init_isolation_group", group_id, friend_ips)
-          handle_referencees(host_node, group)
+          init_security_group(host_node, group)
         else
+      friend_ips = group.vnic_ips
           logger.debug "Host '#{host_node.canonical_uuid}' already has security group '#{group.canonical_uuid}'. Update its isolation."
           call_packetfilter_service(host_node, "update_isolation_group", group_id, friend_ips)
         end
@@ -99,11 +92,7 @@ module Dcmgr::VNet::SGHandler
         host_had_secg_already = true if host_node == vnic_host
       }
 
-      unless host_had_secg_already
-        call_packetfilter_service(vnic_host, "init_security_group", group_id, group.rules_array_no_ref)
-        call_packetfilter_service(vnic_host, "init_isolation_group", group_id, friend_ips)
-        handle_referencees(vnic_host, group)
-      end
+      init_security_group(vnic_host, group) unless host_had_secg_already
 
       refresh_referencers(group)
     }
@@ -205,6 +194,17 @@ module Dcmgr::VNet::SGHandler
   end
 
   private
+  def init_security_group(host, group)
+    group_id = group.canonical_uuid
+    logger.debug "Initializing security group #{group_id}"
+    call_packetfilter_service(host, "init_security_group", group_id, group.rules_array_no_ref)
+
+    friend_ips = group.vnic_ips
+    call_packetfilter_service(host, "init_isolation_group", group_id, friend_ips)
+
+    handle_referencees(host, group)
+  end
+
   def handle_referencees(host, group)
     #TODO: Right now all of this is updated every time a single referencee is changed
     # It would be better if we could handle it per referencee group somehow
