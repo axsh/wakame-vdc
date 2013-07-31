@@ -180,6 +180,7 @@ describe "SGHandler and NetfilterAgent" do
 
     #TODO: Add referencing to init_host
     #TODO: Check referencing when updating security group rules
+    #TODO: Test with more rules referencing different groups
 
     it "starts ref rules in the right secg" do
       handler.init_vnic(hostA_vnic1_id)

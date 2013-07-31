@@ -115,5 +115,88 @@ describe "SGHandler and NetfilterAgent" do
       nfa(hostB).should have_applied_secg(secg).with_rules([])
     end
 
+    let(:secg_ref) { Fabricate(:secg) }
+
+    let(:hostB_vnic2) do
+      Fabricate(:vnic, mac_addr: "525400033c4c").tap do |n|
+        n.add_security_group(secg_ref)
+        n.instance.host_node = hostB
+        n.network = network
+        n.save
+
+        Dcmgr::Models::NetworkVifIpLease.create({
+          :ipv4 => IPAddr.new("10.0.0.4").to_i,
+          :network_id => network.id,
+          :network_vif_id => n.id
+        })
+
+        n.instance.save
+      end
+    end
+    let(:hostB_vnic2_id) { hostB_vnic2.canonical_uuid }
+
+    it "updates reference rules on all hosts" do
+      handler.init_vnic(hostA_vnic1_id)
+      handler.init_vnic(hostB_vnic1_id)
+      handler.init_vnic(hostB_vnic2_id)
+
+      nfa(hostB).should have_applied_secg(secg_ref).with_rules([]).with_referencees([]).with_reference_rules([])
+
+      secg_ref.rule = "tcp:22,22,#{secg.canonical_uuid}"
+      secg_ref.save
+      handler.update_sg_rules(secg_ref.canonical_uuid)
+
+      nfa(hostB).should have_applied_secg(secg_ref).with_rules([]).with_reference_rules([
+        "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
+        "-p tcp -s 10.0.0.3 --dport 22 -j ACCEPT"
+      ]).with_referencees([hostA_vnic1, hostB_vnic1])
+
+      secg_ref.rule = "
+        tcp:22,22,#{secg.canonical_uuid}
+        icmp:-1,-1,ip4:0.0.0.0
+      "
+      secg_ref.save
+      handler.update_sg_rules(secg_ref.canonical_uuid)
+
+      nfa(hostB).should have_applied_secg(secg_ref).with_rules([
+        "-p icmp -s 0.0.0.0/0 -j ACCEPT"
+      ]).with_reference_rules([
+        "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
+        "-p tcp -s 10.0.0.3 --dport 22 -j ACCEPT"
+      ]).with_referencees([hostA_vnic1, hostB_vnic1])
+
+      secg_ref.rule = "
+        udp:53,53,#{secg.canonical_uuid}
+        tcp:666,666,#{secg.canonical_uuid}
+        icmp:-1,-1,ip4:0.0.0.0
+      "
+      secg_ref.save
+      handler.update_sg_rules(secg_ref.canonical_uuid)
+
+      nfa(hostB).should have_applied_secg(secg_ref).with_rules([
+        "-p icmp -s 0.0.0.0/0 -j ACCEPT"
+      ]).with_reference_rules([
+        "-p udp -s 10.0.0.1 --dport 53 -j ACCEPT",
+        "-p udp -s 10.0.0.3 --dport 53 -j ACCEPT",
+        "-p tcp -s 10.0.0.1 --dport 666 -j ACCEPT",
+        "-p tcp -s 10.0.0.3 --dport 666 -j ACCEPT"
+      ]).with_referencees([hostA_vnic1, hostB_vnic1])
+
+      secg_ref.rule = "
+        icmp:-1,-1,ip4:0.0.0.0
+      "
+      secg_ref.save
+      handler.update_sg_rules(secg_ref.canonical_uuid)
+      nfa(hostB).should have_applied_secg(secg_ref).with_rules([
+        "-p icmp -s 0.0.0.0/0 -j ACCEPT"
+      ]).with_reference_rules([]).with_referencees([])
+
+      secg_ref.rule = ""
+      secg_ref.save
+      handler.update_sg_rules(secg_ref.canonical_uuid)
+
+      nfa(hostB).should have_applied_secg(secg_ref).with_rules([]).with_referencees([]).with_reference_rules([])
+    end
+
   end
 end
