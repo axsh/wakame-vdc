@@ -126,10 +126,7 @@ module Dcmgr::VNet::SGHandler
         host_had_secg_already = true if host_node == vnic_host
       }
 
-      unless host_had_secg_already
-        call_packetfilter_service(vnic_host, "destroy_security_group", group_id)
-        call_packetfilter_service(vnic_host, "destroy_isolation_group", group_id)
-      end
+      destroy_security_group(vnic_host, group_id) unless host_had_secg_already
 
       refresh_referencers(group)
     }
@@ -161,8 +158,7 @@ module Dcmgr::VNet::SGHandler
         if query.empty?
           logger.debug "Host '#{host_node.canonical_uuid}' no longer has security group '#{group.canonical_uuid}' yet. Destroy it."
 
-          call_packetfilter_service(host_node, "destroy_security_group", group_id)
-          call_packetfilter_service(host_node, "destroy_isolation_group", group_id)
+          destroy_security_group(host_node, group_id)
         else
           logger.debug "Host '#{host_node.canonical_uuid}' still has security group '#{group.canonical_uuid}'. Update its isolation."
           call_packetfilter_service(host_node, "update_isolation_group", group_id, friend_ips)
@@ -203,6 +199,11 @@ module Dcmgr::VNet::SGHandler
     call_packetfilter_service(host, "init_isolation_group", group_id, friend_ips)
 
     handle_referencees(host, group)
+  end
+
+  def destroy_security_group(host, group_id)
+    call_packetfilter_service(host, "destroy_security_group", group_id)
+    call_packetfilter_service(host, "destroy_isolation_group", group_id)
   end
 
   def handle_referencees(host, group)
