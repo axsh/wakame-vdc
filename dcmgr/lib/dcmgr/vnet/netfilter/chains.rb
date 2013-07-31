@@ -103,7 +103,7 @@ module Dcmgr::VNet::Netfilter::Chains
       end
 
       def secg_l2_ref_chain(sg_id)
-        F.secg_chain(:L2, sg_id, "reffers")
+        F.secg_chain(:L2, sg_id, "ref")
       end
 
       def secg_l3_iso_chain(sg_id)
@@ -111,7 +111,7 @@ module Dcmgr::VNet::Netfilter::Chains
       end
 
       def secg_l3_ref_chain(sg_id)
-        F.secg_chain(:L3, sg_id, "reffees")
+        F.secg_chain(:L3, sg_id, "ref")
       end
 
       def vnic_l2_main_chain(vnic_id)
@@ -127,7 +127,7 @@ module Dcmgr::VNet::Netfilter::Chains
       end
 
       def vnic_l2_ref_chain(vnic_id)
-        F.vnic_chain(:L2, vnic_id, "d_reffers")
+        F.vnic_chain(:L2, vnic_id, "d_ref")
       end
 
       def vnic_l3_main_chain(vnic_id)
@@ -143,7 +143,7 @@ module Dcmgr::VNet::Netfilter::Chains
       end
 
       def vnic_l3_ref_chain(vnic_id)
-        F.vnic_chain(:L3, vnic_id, "d_reffees") # Referencees was too long of a name for iptables (must be under 29 chars)
+        F.vnic_chain(:L3, vnic_id, "d_ref")
       end
 
       def vnic_l3_secg_chain(vnic_id)
