@@ -68,7 +68,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
           save_params['label'] = params['params']['label']
           save_params['match_pattern'] = params['params']['match_pattern']
         elsif CA::RESOURCE_METRICS.include?(params['metric_name'])
-          save_params['statistics'] = params['params']['statistics']
           save_params['threshold'] = params['params']['threshold'].to_f
           save_params['comparison_operator'] = params['params']['comparison_operator']
         else
@@ -147,7 +146,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
             params['params']['threshold'] = params['params']['threshold'].to_f
           end
 
-          ['threshold', 'statistics', 'comparison_operator'].each {|key|
+          ['threshold', 'comparison_operator'].each {|key|
             if params['params'][key]
               update_params[key] = params['params'][key]
             else

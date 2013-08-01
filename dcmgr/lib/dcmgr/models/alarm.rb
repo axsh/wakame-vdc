@@ -34,10 +34,6 @@ module Dcmgr::Models
           errors.add(:threshold, "it must have digit more than zero")
         end
 
-        unless SUPPORT_STATISTICS.include?(params['statistics'])
-          errors.add(:statistics, "it must have #{SUPPORT_STATISTICS.join(',')}")
-        end
-
         unless SUPPORT_COMPARISON_OPERATOR.include?(params['comparison_operator'])
           errors.add(:comparison_operator, "it must have #{SUPPORT_COMPARISON_OPERATOR.join(',')}")
         end

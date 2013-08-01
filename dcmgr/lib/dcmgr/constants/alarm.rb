@@ -14,10 +14,6 @@ module Dcmgr::Constants
 
     SUPPORT_METRICS = (RESOURCE_METRICS + LOG_METRICS).freeze
 
-    SUPPORT_STATISTICS = [
-      'avg'
-    ].freeze
-
     SUPPORT_COMPARISON_OPERATOR = {
       'ge' => :>=,
       'gt' => :>,
