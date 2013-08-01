@@ -11,6 +11,23 @@ module Dcmgr
       concurrency Dcmgr.conf.local_store.thread_concurrency.to_i
       job_thread_pool Isono::ThreadPool.new(Dcmgr.conf.local_store.thread_concurrency.to_i, "LocalStore")
 
+      def deploy_local_volumes
+        @inst[:volume].each { |vol_uuid, v|
+          opts = {}
+          if v[:backup_object]
+            opts[:cache] = @inst[:image][:is_cacheable]
+            # create volume from backup object.
+            task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+                                :deploy_volume, [@hva_ctx, v, v[:backup_object], opts])
+          else
+            task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+                                :deploy_volume, [@hva_ctx, v])
+          end
+
+          update_volume_state(vol_uuid, {:state=>:available}, 'hva/volume_available')
+        }
+      end
+      
       job :run_local_store, proc {
         # create hva context
         @hva_ctx = HvaContext.new(self)
@@ -22,9 +39,8 @@ module Dcmgr
 
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:initializing})
 
-        task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
-                            :deploy_image, [@inst, @hva_ctx])
-
+        deploy_local_volumes
+        
         job.submit("hva-handle.#{@node.node_id}", 'run_local_store', @inst_id)
       }, proc {
         ignore_error { terminate_instance(false) }

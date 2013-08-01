@@ -27,7 +27,24 @@ module Dcmgr
       end
 
       def os_devpath
-        @hva.instance_variable_get(:@os_devpath) || File.expand_path(self.inst[:uuid], self.inst_data_dir)
+        if @hva.instance_variable_get(:@os_devpath)
+          return @hva.instance_variable_get(:@os_devpath)
+        end
+        
+        boot_vol = inst[:volume][inst[:boot_volume_id]]
+        raise "Unknown boot volume details: #{inst[:boot_volume_id]}" if boot_vol.nil?
+        
+        if boot_vol[:is_local_volume]
+          # TODO: more supports for mount label names.
+          case boot_vol[:volume_device][:mount_label]
+          when 'instance'
+            File.join(self.inst_data_dir, boot_vol[:volume_device][:path])
+          else
+            raise "Unsupoorted mount label: #{boot_vol[:volume_device][:mount_label]}"
+          end
+        else
+          boot_vol[:host_device_name]
+        end
       end
 
       def metadata_img_path

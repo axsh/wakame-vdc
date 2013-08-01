@@ -11,22 +11,41 @@ module Dcmgr
       include Helpers::Cgroup::CgroupContextProvider
       include Helpers::CliHelper
 
-      def deploy_image(inst,ctx)
-        @ctx = ctx
+      def delete_volume(hva_ctx, volume)
+        @ctx = hva_ctx
+        volume_path = File.expand_path(volume[:volume_device][:path], @ctx.inst_data_dir)
+
+        if File.exists?(volume_path)
+          sh("rm '#{volume_path}'")
+        else
+          raise "Failed to delete volume: #{volume_path}"
+        end
+      end
+
+      def deploy_volume(hva_ctx, volume, backup_object=nil, opts={:cache=>false})
+        @ctx = hva_ctx
+        FileUtils.mkdir(@ctx.inst_data_dir) unless File.exists?(@ctx.inst_data_dir)
+
+        volume_path = File.expand_path(volume[:volume_device][:path], @ctx.inst_data_dir)
+
+        if backup_object.nil?
+          # create empty image file.
+          sh("truncate --size=#{volume[:size]} '#{volume_path}'")
+          return
+        end
+
+        Task::TaskSession.current[:backup_storage] = backup_object[:backup_storage]
         # setup vm data folder
-        FileUtils.mkdir(ctx.inst_data_dir) unless File.exists?(ctx.inst_data_dir)
-        img_src_uri = inst[:image][:backup_object][:uri]
-        vmimg_basename = inst[:image][:backup_object][:uuid]
+        img_src_uri = backup_object[:uri]
 
-        Task::TaskSession.current[:backup_storage] = inst[:image][:backup_object][:backup_storage]
-        @bkst_drv_class = BackupStorage.driver_class(inst[:image][:backup_object][:backup_storage][:storage_type])
+        @bkst_drv_class = BackupStorage.driver_class(backup_object[:backup_storage][:storage_type])
 
-        logger.info("Deploying image: #{inst[:image][:uuid]} from #{inst[:image][:backup_object][:uri]} to #{ctx.os_devpath}")
+        logger.info("Deploying image: #{@ctx.inst[:image][:uuid]} from #{@ctx.inst[:image][:backup_object][:uri]} to #{volume_path}")
         # cmd_tuple has ["", []] array.
-        cmd_tuple = if Dcmgr.conf.local_store.enable_image_caching && inst[:image][:is_cacheable]
+        cmd_tuple = if Dcmgr.conf.local_store.enable_image_caching && opts[:cache]
                       FileUtils.mkdir_p(vmimg_cache_dir) unless File.exist?(vmimg_cache_dir)
-                      download_to_local_cache(inst[:image][:backup_object])
-                      logger.debug("Copying #{vmimg_cache_path()} to #{ctx.os_devpath}")
+                      download_to_local_cache(backup_object)
+                      logger.debug("Copying #{vmimg_cache_path()} to #{volume_path}")
                       
                       ["cat %s", [vmimg_cache_path()]]
                     else
@@ -34,21 +53,21 @@ module Dcmgr
                         # download_command() returns cmd_tuple.
                         invoke_task(@bkst_drv_class,
                                     :download_command,
-                                    [inst[:image][:backup_object], vmimg_tmp_path()])
+                                    [backup_object, vmimg_tmp_path()])
                       else
-                        logger.info("Downloading image file: #{ctx.os_devpath}")
+                        logger.info("Downloading image file: #{volume_path}")
                         invoke_task(@bkst_drv_class,
-                                    :download, [inst[:image][:backup_object], vmimg_tmp_path()])
-                        logger.debug("Copying #{vmimg_tmp_path()} to #{ctx.os_devpath}")
+                                    :download, [backup_object, vmimg_tmp_path()])
+                        logger.debug("Copying #{vmimg_tmp_path()} to #{volume_path}")
                         
                         ["cat %s", [vmimg_tmp_path()]]
                       end
                     end
       
 
-        pv_command = "pv -W -f -p -s #{inst[:image][:backup_object][:size]} |"
+        pv_command = "pv -W -f -p -s #{backup_object[:size]} |"
 
-        case inst[:image][:backup_object][:container_format].to_sym
+        case backup_object[:container_format].to_sym
         when :tgz
           Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
             cmd_tuple[0] << "| #{pv_command} tar -zxS -C %s"
@@ -57,12 +76,12 @@ module Dcmgr
 
             # Use first file in the tmp directory as image file.
             img_path = Dir["#{tmpdir}/*"].first
-            File.rename(img_path, ctx.os_devpath)
+            File.rename(img_path, volume_path)
           }
         when :gz
           cmd_tuple[0] << "| %s | #{pv_command} cp --sparse=always /dev/stdin %s"
           cmd_tuple[1] += [Dcmgr.conf.local_store.gunzip_command,
-                           ctx.os_devpath]
+                           volume_path]
           shell.run!(*cmd_tuple)
         when :tar
           Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
@@ -72,18 +91,32 @@ module Dcmgr
 
             # Use first file in the tmp directory as image file.
             img_path = Dir["#{tmpdir}/*"].first
-            File.rename(img_path, ctx.os_devpath)
+            File.rename(img_path, volume_path)
           }
         else
           cmd_tuple[0] << "| #{pv_command} cp -p --sparse=always /dev/stdin %s"
-          cmd_tuple[1] += [ctx.os_devpath]
+          cmd_tuple[1] += [volume_path]
           shell.run!(*cmd_tuple)
         end
 
-        raise "Image file is not ready: #{ctx.os_devpath}" unless File.exist?(ctx.os_devpath)
-
+        raise "Image file is not ready: #{volume_path}" unless File.exist?(volume_path)
       ensure
         File.unlink(vmimg_tmp_path()) rescue nil
+      end
+      
+      def deploy_image(inst, ctx)
+        @ctx = ctx
+        # setup vm data folder
+        FileUtils.mkdir(ctx.inst_data_dir) unless File.exists?(ctx.inst_data_dir)
+        img_src_uri = inst[:image][:backup_object][:uri]
+
+        @ctx.inst[:volume].each { |v|
+          if v[:device_index] == 0
+            deploy_volume(@ctx, v, inst[:image][:backup_object], {:cache=>inst[:image][:is_cacheable]})
+          else
+            deploy_volume(@ctx, v, v[:backup_object])
+          end
+        }
       end
 
       def upload_image(inst, ctx, bo, evcb)
