@@ -308,7 +308,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         i.display_name = params[:display_name]
       end
     end
-    instance.save
 
     #
     unless params['labels'].blank?
@@ -334,6 +333,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       ## Assign the custom host node
       instance.host_node = host_node
+      instance.save_changes
     end
 
     if is_manual_ip_set
@@ -353,41 +353,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     insert_monitoring_items(instance)
     set_monitoring_parameters(instance)
 
-    instance.state = :scheduling
+    instance.state = C::Instance::STATE_SCHEDULING
+    instance.volumes.each {|v| v.state = C::Volume::STATE_SCHEDULING }
     instance.save_changes
-
-    bo = M::BackupObject[wmi.backup_object_id] || raise("Unknown backup object: #{wmi.backup_object_id}")
-
-    case wmi.boot_dev_type
-    when M::Image::BOOT_DEV_SAN
-      # create new volume from backup object.
-
-      if !M::StorageNode.check_domain_capacity?(bo.size)
-        raise E::OutOfDiskSpace
-      end
-
-      vol = M::Volume.entry_new(@account, bo.size, params.to_hash) do |v|
-        v.backup_object_id = bo.canonical_uuid
-        v.boot_dev = 1
-      end
-      # assign instance -> volume
-      vol.instance = instance
-      vol.state = :scheduling
-      vol.save
-
-    when M::Image::BOOT_DEV_LOCAL
-    else
-      raise "Unknown boot type"
-    end
 
     on_after_commit do
       Dcmgr.messaging.submit("scheduler",
                              'schedule_instance', instance.canonical_uuid)
     end
-
-    # retrieve latest instance data.
-    # if not, security_groups value is empty.
-    instance = find_by_uuid(:Instance, instance.canonical_uuid)
 
     respond_with(R::Instance.new(instance).generate)
   end

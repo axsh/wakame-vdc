@@ -23,6 +23,7 @@ module Dcmgr::Endpoints::V1203
     M = Dcmgr::Models
     E = Dcmgr::Endpoints::Errors
     R = Dcmgr::Endpoints::V1203::Responses
+    C = Dcmgr::Constants
 
     SYSTEM_ACCOUNT_ID = 'a-00000000'.freeze
 
