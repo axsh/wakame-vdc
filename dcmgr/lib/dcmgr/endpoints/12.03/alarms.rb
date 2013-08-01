@@ -54,6 +54,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
       if params[:enabled]
         al.enabled = params[:enabled].to_i
+      else
+        al.enabled = 1
       end
 
       if params[:evaluation_periods]
