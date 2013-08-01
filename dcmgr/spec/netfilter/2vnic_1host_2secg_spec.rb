@@ -12,38 +12,8 @@ describe "SGHandler and NetfilterAgent" do
     let(:groupA) { Fabricate(:secg) }; let(:groupA_id) {groupA.canonical_uuid}
     let(:groupB) { Fabricate(:secg) }; let(:groupB_id) {groupB.canonical_uuid}
 
-    let(:vnicA) do
-      Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
-        n.add_security_group(groupA)
-        n.network = network
-        n.save
-
-        Dcmgr::Models::NetworkVifIpLease.create({
-          :ipv4 => IPAddr.new("10.0.0.1").to_i,
-          :network_id => network.id,
-          :network_vif_id => n.id
-        })
-
-        n.instance.host_node = host
-        n.instance.save
-      end
-    end
-    let(:vnicB) do
-      Fabricate(:vnic, mac_addr: "525400033c49").tap do |n|
-        n.add_security_group(groupB)
-        n.network = network
-        n.save
-
-        Dcmgr::Models::NetworkVifIpLease.create({
-          :ipv4 => IPAddr.new("10.0.0.2").to_i,
-          :network_id => network.id,
-          :network_vif_id => n.id
-        })
-
-        n.instance.host_node = host
-        n.instance.save
-      end
-    end
+    let(:vnicA) { create_vnic(host, [groupA], "525400033c48", network, "10.0.0.1") }
+    let(:vnicB) { create_vnic(host, [groupB], "525400033c49", network, "10.0.0.2") }
     let(:vnicA_id) {vnicA.canonical_uuid}
     let(:vnicB_id) {vnicB.canonical_uuid}
 

@@ -10,40 +10,10 @@ describe "SGHandler and NetfilterAgent" do
     let(:secg) { Fabricate(:secg) }
     let(:host) { Fabricate(:host_node) }
     let(:network) { Fabricate(:network) }
-    let(:vnicA) do
-      Fabricate(:vnic, mac_addr: "525400033c48").tap do |n|
-        n.add_security_group(secg)
-        n.network = network
-        n.save
+    let(:vnicA) { create_vnic(host, [secg], "525400033c48", network, "10.0.0.1") }
+    let(:vnicB) { create_vnic(host, [secg], "525400033c49", network, "10.0.0.2") }
 
-        Dcmgr::Models::NetworkVifIpLease.create({
-          :ipv4 => IPAddr.new("10.0.0.1").to_i,
-          :network_id => network.id,
-          :network_vif_id => n.id
-        })
-
-        n.instance.host_node = host
-        n.instance.save
-      end
-    end
     let(:vnicA_id) {vnicA.canonical_uuid}
-
-    let(:vnicB) do
-      Fabricate(:vnic, mac_addr: "525400033c49").tap do |n|
-        n.add_security_group(secg)
-        n.network = network
-        n.save
-
-        Dcmgr::Models::NetworkVifIpLease.create({
-          :ipv4 => IPAddr.new("10.0.0.2").to_i,
-          :network_id => network.id,
-          :network_vif_id => n.id
-        })
-
-        n.instance.host_node = host
-        n.instance.save
-      end
-    end
     let(:vnicB_id) {vnicB.canonical_uuid}
 
     let(:handler) {SGHandlerTest.new.tap{|sgh| sgh.add_host(host)}}

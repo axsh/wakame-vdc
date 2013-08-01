@@ -63,3 +63,20 @@ end
 Fabricator(:secg, class_name: Dcmgr::Models::SecurityGroup) do
   account_id TEST_ACCOUNT
 end
+
+def create_vnic(host, secgs, mac_addr, network, ipv4)
+  Fabricate(:vnic, mac_addr: mac_addr).tap do |n|
+    secgs.each {|sg| n.add_security_group(sg) }
+    n.instance.host_node = host
+    n.network = network
+    n.save
+
+    Dcmgr::Models::NetworkVifIpLease.create({
+      :ipv4 => IPAddr.new(ipv4).to_i,
+      :network_id => n.network.id,
+      :network_vif_id => n.id
+    })
+
+    n.instance.save
+  end
+end

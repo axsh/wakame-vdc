@@ -14,39 +14,8 @@ describe "SGHandler and NetfilterAgent" do
     let(:network_l2o) { Fabricate(:network, network_mode: "l2overlay") }
     let(:host) { Fabricate(:host_node, node_id: "hva.hostA") }
 
-    let(:vnic_pt) do
-      Fabricate(:vnic, mac_addr: "525400033c49").tap do |n|
-        n.add_security_group(secg)
-        n.instance.host_node = host
-        n.network = network_pt
-        n.save
-
-        Dcmgr::Models::NetworkVifIpLease.create({
-          :ipv4 => IPAddr.new("10.0.0.2").to_i,
-          :network_id => n.network.id,
-          :network_vif_id => n.id
-        })
-
-        n.instance.save
-      end
-    end
-
-    let(:vnic_l2o) do
-      Fabricate(:vnic, mac_addr: "525400033c4a").tap do |n|
-        n.add_security_group(secg)
-        n.instance.host_node = host
-        n.network = network_l2o
-        n.save
-
-        Dcmgr::Models::NetworkVifIpLease.create({
-          :ipv4 => IPAddr.new("10.0.0.3").to_i,
-          :network_id => n.network.id,
-          :network_vif_id => n.id
-        })
-
-        n.instance.save
-      end
-    end
+    let(:vnic_pt) { create_vnic(host, [secg], "525400033c49", network_pt, "10.0.0.2") }
+    let(:vnic_l2o) { create_vnic(host, [secg], "525400033c4a", network_l2o, "10.0.0.3") }
 
     let(:handler) {
       SGHandlerTest.new.tap {|sgh|
