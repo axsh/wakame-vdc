@@ -65,8 +65,9 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
 
   def translate_metadata_address(vnic_map)
     return nil unless vnic_map[:network] && vnic_map[:network][:metadata_server] && vnic_map[:network][:metadata_server_port]
-    O.vnic_l3_dnat_chain(vnic_map[:uuid]).add_rule("-d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{vnic_map[:network][:metadata_server]}:#{vnic_map[:network][:metadata_server_port]}")
-    #TODO: Accept tcp and arp traffic to metadata server
+    [O.vnic_l3_dnat_chain(vnic_map[:uuid]).add_rule("-d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{vnic_map[:network][:metadata_server]}:#{vnic_map[:network][:metadata_server_port]}"),
+    I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-opcode Request --arp-ip-src=#{vnic_map[:network][:metadata_server]} --arp-ip-dst=#{vnic_map[:address]} -j ACCEPT"),
+    I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule("-p tcp -s #{vnic_map[:network][:metadata_server]} --sport #{vnic_map[:network][:metadata_server_port]} -j ACCEPT")]
   end
 
   def translate_logging_address(vnic_map, host_ip)

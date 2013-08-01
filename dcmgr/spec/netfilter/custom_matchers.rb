@@ -165,10 +165,12 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
     vnic_ip = @vnic.direct_ip_lease.first.ipv4
     gw_ip = @vnic.network && @vnic.network.ipv4_gw
     dns_server = @vnic.network && @vnic.network.dns_server
+    metadata_server = @vnic.network && @vnic.network.metadata_server
     rules = []
 
     rules << "--protocol arp --arp-opcode Request --arp-ip-src=#{gw_ip} --arp-ip-dst=#{vnic_ip} -j ACCEPT" if gw_ip
     rules << "--protocol arp --arp-opcode Request --arp-ip-src=#{dns_server} --arp-ip-dst=#{vnic_ip} -j ACCEPT" if dns_server
+    rules << "--protocol arp --arp-opcode Request --arp-ip-src=#{metadata_server} --arp-ip-dst=#{vnic_ip} -j ACCEPT" if metadata_server
     rules << "--protocol arp --arp-gratuitous --arp-ip-src=#{gw_ip} -j ACCEPT" if gw_ip
     rules << "--protocol arp --arp-opcode Reply --arp-ip-dst=#{vnic_ip} --arp-mac-dst=#{@vnic.pretty_mac_addr} -j ACCEPT"
     rules << "--protocol IPv4 -j ACCEPT"
@@ -179,12 +181,15 @@ RSpec::Matchers.define :have_applied_vnic do |vnic|
   def l3_inbound_stnd_rules_for_vnic
     dns_server = @vnic.network && @vnic.network.dns_server
     dhcp_server = @vnic.network && @vnic.network.dhcp_server
+    metadata_server = @vnic.network && @vnic.network.metadata_server
+    metadata_server_port = @vnic.network && @vnic.network.metadata_server_port
     rules = []
 
     rules << "-m state --state RELATED,ESTABLISHED -j ACCEPT"
     rules << "-p udp -d #{dns_server} --dport 53 -j ACCEPT" if dns_server
     rules << "-p udp ! -s #{dhcp_server} --sport 67:68 -j DROP" if dhcp_server
     rules << "-p udp -s #{dhcp_server} --sport 67:68 -j ACCEPT" if dhcp_server
+    rules << "-p tcp -s #{metadata_server} --sport #{metadata_server_port} -j ACCEPT" if metadata_server
 
     rules
   end
