@@ -8,10 +8,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
   get do
 
-    unless CA::SUPPORT_METRICS.include?(params[:metric_name])
-      raise E::UnknownMetricName, "#{params[:metric_name]}"
-    end
-
     ds = M::Alarm.dataset
 
     if params[:resource_id]
