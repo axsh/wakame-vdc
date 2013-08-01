@@ -23,11 +23,8 @@ module Dcmgr::VNet::SGHandler
     }
 
     host.alive_vnics.each { |vnic|
-      vnic_id = vnic.canonical_uuid
-      group_ids = vnic.security_groups.map {|sg| sg.canonical_uuid}
-
       init_vnic_on_host(host, vnic)
-      call_packetfilter_service(host, "set_vnic_security_groups", vnic_id, group_ids)
+      set_vnic_security_groups(host, vnic)
     }
 
     nil # Returning nil to simulate a void method
@@ -42,12 +39,10 @@ module Dcmgr::VNet::SGHandler
     logger.info "Telling host '#{host_node.canonical_uuid}' to initialize vnic '#{vnic_id}'."
     init_vnic_on_host(host_node, vnic)
 
-    group_ids = []
     vnic.security_groups.each {|group|
-      group_ids << group.canonical_uuid
-
       group.host_nodes.each {|host_node|
         didnt_have_secg_yet = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance).empty?
+
         if didnt_have_secg_yet
           logger.debug "Host '#{host_node.canonical_uuid}' doesn't have security group '#{group.canonical_uuid}' yet. Initialize it."
           init_security_group(host_node, group)
@@ -59,8 +54,8 @@ module Dcmgr::VNet::SGHandler
         refresh_referencers(group)
       }
     }
-    logger.debug "Set security groups '#{group_ids}' for vnic '#{vnic_id}'."
-    call_packetfilter_service(host_node, "set_vnic_security_groups", vnic_id, group_ids)
+
+    set_vnic_security_groups(host_node, vnic)
 
     nil # Returning nil to simulate a void method
   end
@@ -70,57 +65,46 @@ module Dcmgr::VNet::SGHandler
     vnic = M::NetworkVif[vnic_id]
     vnic_host = vnic.instance.host_node
 
-    host_had_secg_already = false
-    current_sgids = vnic.security_groups.map {|g| g.canonical_uuid }
-    sg_uuids.each { |group_id|
-      if current_sgids.member?(group_id)
-        logger.warn "Vnic '#{vnic_id}' is already in security group '#{group_id}'."
-        next
-      end
+    current_sg_uuids = vnic.security_groups.map {|g| g.canonical_uuid }
+    new_sg_uuids = sg_uuids - current_sg_uuids
+
+    new_sg_uuids.each { |group_id|
       group = M::SecurityGroup[group_id]
       hosts_before_change = group.host_nodes
       vnic.add_security_group(group)
 
       hosts_before_change.each {|host_node|
         update_isolation_group(host_node, group)
-
-        host_had_secg_already = true if host_node == vnic_host
       }
 
-      init_security_group(vnic_host, group) unless host_had_secg_already
+      init_security_group(vnic_host, group) unless hosts_before_change.member?(vnic_host)
 
       refresh_referencers(group)
     }
-    call_packetfilter_service(vnic_host, "set_vnic_security_groups", vnic_id, (sg_uuids + current_sgids).uniq)
+
+    set_vnic_security_groups(vnic_host, vnic)
 
     nil # Returning nil to simulate a void method
   end
 
-  def remove_sgs_from_vnic(vnic_id, sg_uuids)
-    logger.info "Removing vnic: '#{vnic_id}' from security groups '#{sg_uuids.join(", ")}'"
+  def remove_sgs_from_vnic(vnic_id, sg_ids_to_remove)
+    logger.info "Removing vnic: '#{vnic_id}' from security groups '#{sg_ids_to_remove.join(", ")}'"
     vnic = M::NetworkVif[vnic_id]
     vnic_host = vnic.instance.host_node
 
-    host_had_secg_already = false
-    current_sgids = vnic.security_groups.map {|g| g.canonical_uuid }
-    call_packetfilter_service(vnic_host, "set_vnic_security_groups", vnic_id, (current_sgids - sg_uuids))
-    sg_uuids.each { |group_id|
-      if vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(group_id)).empty?
-        logger.warn "Vnic '#{vnic_id}' isn't in security group '#{group_id}'."
-        next
-      end
+    current_sg_ids = vnic.security_groups.map {|g| g.canonical_uuid }
+    set_vnic_security_groups(vnic_host, vnic, (current_sg_ids - sg_ids_to_remove))
+
+    (sg_ids_to_remove & current_sg_ids).each { |group_id|
       group = M::SecurityGroup[group_id]
       vnic.remove_security_group(group)
 
-      host_had_secg_already = false
       group.host_nodes.each {|host_node|
         update_isolation_group(host_node, group)
-
         handle_referencees(host_node, group)
-        host_had_secg_already = true if host_node == vnic_host
       }
 
-      destroy_security_group(vnic_host, group_id) unless host_had_secg_already
+      destroy_security_group(vnic_host, group_id) unless group.host_nodes.member?(vnic_host)
 
       refresh_referencers(group)
     }
@@ -202,6 +186,11 @@ module Dcmgr::VNet::SGHandler
 
   def init_vnic_on_host(host, vnic)
     call_packetfilter_service(host, "init_vnic", vnic.canonical_uuid, vnic.to_hash)
+  end
+
+  def set_vnic_security_groups(host, vnic, group_ids = nil)
+    group_ids ||= vnic.security_groups.map {|sg| sg.canonical_uuid}
+    call_packetfilter_service(host, "set_vnic_security_groups", vnic.canonical_uuid, group_ids)
   end
 
   def handle_referencees(host, group)
