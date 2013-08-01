@@ -26,7 +26,7 @@ module Dcmgr::VNet::SGHandler
       vnic_id = vnic.canonical_uuid
       group_ids = vnic.security_groups.map {|sg| sg.canonical_uuid}
 
-      call_packetfilter_service(host, "init_vnic", vnic_id, vnic.to_hash)
+      init_vnic_on_host(host, vnic)
       call_packetfilter_service(host, "set_vnic_security_groups", vnic_id, group_ids)
     }
 
@@ -40,7 +40,7 @@ module Dcmgr::VNet::SGHandler
     host_node = vnic.instance.host_node
 
     logger.info "Telling host '#{host_node.canonical_uuid}' to initialize vnic '#{vnic_id}'."
-    call_packetfilter_service(host_node, "init_vnic", vnic_id, vnic.to_hash)
+    init_vnic_on_host(host_node, vnic)
 
     group_ids = []
     vnic.security_groups.each {|group|
@@ -50,7 +50,6 @@ module Dcmgr::VNet::SGHandler
         didnt_have_secg_yet = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance).empty?
         if didnt_have_secg_yet
           logger.debug "Host '#{host_node.canonical_uuid}' doesn't have security group '#{group.canonical_uuid}' yet. Initialize it."
-
           init_security_group(host_node, group)
         else
           logger.debug "Host '#{host_node.canonical_uuid}' already has security group '#{group.canonical_uuid}'. Update its isolation."
@@ -199,6 +198,10 @@ module Dcmgr::VNet::SGHandler
   def update_isolation_group(host, group, exclude_friend_ips = [])
     friend_ips = group.vnic_ips - exclude_friend_ips
     call_packetfilter_service(host, "update_isolation_group", group.canonical_uuid, friend_ips)
+  end
+
+  def init_vnic_on_host(host, vnic)
+    call_packetfilter_service(host, "init_vnic", vnic.canonical_uuid, vnic.to_hash)
   end
 
   def handle_referencees(host, group)
