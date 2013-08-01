@@ -6,27 +6,15 @@ module Dcmgr::VNet::NetworkModes
   # Therefore there is an empty array returned for all netfilter
   # rule factory methods.
   class PassThrough
-    def netfilter_all_tasks(vnic,network,friends,security_groups,node)
+    def init_vnic(vnic_map)
       []
     end
 
-    def netfilter_isolation_tasks(vnic,friends,node)
+    def destroy_vnic(vnic_map)
       []
     end
 
-    def netfilter_nat_tasks(vnic,network,node)
-      []
-    end
-
-    def netfilter_secgroup_tasks(secgroup)
-      []
-    end
-
-    def netfilter_drop_tasks(vnic,node)
-      []
-    end
-
-    def netfilter_arp_isolation_tasks(vnic,friends,node)
+    def set_vnic_security_groups(vnic_id, secg_ids)
       []
     end
   end

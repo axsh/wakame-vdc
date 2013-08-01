@@ -14,36 +14,14 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
 
   def init_vnic(vnic_id, vnic_map)
     logger.info "Creating chains for vnic '#{vnic_id}'."
-
-    exec [
-      # chain setup for both layers
-      vnic_chains(vnic_id).map {|chain| chain.create},
-      forward_chain_jumps(vnic_map[:uuid]),
-      nat_prerouting_chain_jumps(vnic_map[:uuid]),
-      vnic_main_chain_jumps(vnic_map),
-      vnic_main_drop_rules(vnic_map),
-      # l2 standard rules
-      drop_ip_spoofing(vnic_map),
-      drop_mac_spoofing(vnic_map),
-      accept_arp_from_gateway(vnic_map),
-      accept_arp_from_dns(vnic_map),
-      accept_garp_from_gateway(vnic_map),
-      accept_arp_reply_with_correct_mac_ip_combo(vnic_map),
-      accept_ipv4_protocol(vnic_map),
-      # l3 standard rules
-      accept_related_established(vnic_map),
-      accept_wakame_dns(vnic_map),
-      accept_wakame_dhcp_only(vnic_map),
-      # address translation rules
-      translate_metadata_address(vnic_map)
-    ].flatten.compact
+    return if vnic_map[:network].nil?
+    exec network_mode(vnic_map).init_vnic(vnic_map)
   end
 
-  def destroy_vnic(vnic_id)
-    logger.info "Removing chains for vnic '#{vnic_id}'."
-    exec forward_chain_jumps(vnic_id, "del")
-    exec nat_prerouting_chain_jumps(vnic_id, "del")
-    exec vnic_chains(vnic_id).map {|chain| chain.destroy}
+  def destroy_vnic(vnic_map)
+    logger.info "Removing chains for vnic '#{vnic_map[:uuid]}'."
+    return if vnic_map[:network].nil?
+    exec network_mode(vnic_map).destroy_vnic(vnic_map)
   end
 
   def init_security_group(secg_id, rules)
@@ -68,25 +46,9 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     exec isog_chains(isog_id).map {|chain| chain.destroy}
   end
 
-  def set_vnic_security_groups(vnic_id, secg_ids)
-    logger.info "Setting security groups of vnic '#{vnic_id}' to [#{secg_ids.join(", ")}]."
-    exec [
-      I.vnic_l2_iso_chain(vnic_id).flush,
-      I.vnic_l2_ref_chain(vnic_id).flush,
-      I.vnic_l3_iso_chain(vnic_id).flush,
-      I.vnic_l3_ref_chain(vnic_id).flush,
-      I.vnic_l3_secg_chain(vnic_id).flush,
-      O.vnic_l3_secg_chain(vnic_id).flush
-    ]
-
-    exec secg_ids.map { |secg_id|
-      [I.vnic_l2_iso_chain(vnic_id).add_jump(I.secg_l2_iso_chain(secg_id)),
-      I.vnic_l2_ref_chain(vnic_id).add_jump(I.secg_l2_ref_chain(secg_id)),
-      I.vnic_l3_iso_chain(vnic_id).add_jump(I.secg_l3_iso_chain(secg_id)),
-      I.vnic_l3_ref_chain(vnic_id).add_jump(I.secg_l3_ref_chain(secg_id)),
-      I.vnic_l3_secg_chain(vnic_id).add_jump(I.secg_l3_rules_chain(secg_id)),
-      O.vnic_l3_secg_chain(vnic_id).add_jump(O.secg_l3_rules_chain(secg_id))]
-    }.flatten
+  def set_vnic_security_groups(vnic_map, secg_ids)
+    logger.info "Setting security groups of vnic '#{vnic_map[:uuid]}' to [#{secg_ids.join(", ")}]."
+    exec network_mode(vnic_map).set_vnic_security_groups(vnic_map[:uuid], secg_ids)
   end
 
   def set_sg_referencers(secg_id, ref_ips, rules)
@@ -163,5 +125,9 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     cmds = [cmds] unless cmds.is_a?(Array)
     puts cmds.join("\n")
     system cmds.join("\n")
+  end
+
+  def network_mode(vnic_map)
+    Dcmgr::VNet::NetworkModes.get_mode(vnic_map[:network][:network_mode])
   end
 end

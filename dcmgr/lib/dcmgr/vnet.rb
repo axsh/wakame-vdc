@@ -50,17 +50,17 @@ module Dcmgr
       class NetworkModeNotFoundError < StandardError
       end
 
-      def self.get_mode(mode_name)
+      def self.get_mode(mode_name, legacy = false)
         case mode_name
         when NM_SECURITYGROUP
           logger.debug "Selecting #{NM_SECURITYGROUP} network mode"
-          SecurityGroup.new
+          legacy ? Legacy::SecurityGroup.new : SecurityGroup.new
         when NM_PASSTHROUGH
           logger.debug "Selecting #{NM_PASSTHROUGH} network mode"
-          PassThrough.new
+          legacy ? Legacy::PassThrough.new : PassThrough.new
         when NM_L2OVERLAY
           logger.debug "Selecting #{NM_L2OVERLAY} network mode"
-          L2Overlay.new
+          legacy ? Legacy::L2Overlay.new : L2Overlay.new
         else
           raise NetworkModeNotFoundError, "Network mode #{mode_name} doesn't exist. Valid network modes: #{NETWORK_MODES.join(',')}"
         end

@@ -42,7 +42,7 @@ module Dcmgr
 
         def add_network_mode(network)
           logger.debug "Setting network mode for '#{network[:uuid]}'"
-          network[:network_mode_class] = Dcmgr::VNet::NetworkModes.get_mode(network[:network_mode])
+          network[:network_mode_class] = Dcmgr::VNet::NetworkModes.get_mode(network[:network_mode], true)
         end
         private :add_network_mode
 

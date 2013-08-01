@@ -117,7 +117,7 @@ module Dcmgr::VNet::SGHandler
     raise "Vnic '#{vnic.canonical_uuid}' is not on a host node." if vnic.instance.host_node.nil?
     host_node = vnic.instance.host_node
     logger.info "Telling host '#{host_node.canonical_uuid}' to destroy vnic '#{vnic_id}'."
-    call_packetfilter_service(host_node, "destroy_vnic", vnic_id)
+    call_packetfilter_service(host_node, "destroy_vnic", vnic.to_hash)
 
     vnic.security_groups.each { |group|
       group_id = group.canonical_uuid
@@ -188,7 +188,7 @@ module Dcmgr::VNet::SGHandler
 
   def set_vnic_security_groups(host, vnic, group_ids = nil)
     group_ids ||= vnic.security_groups.map { |sg| sg.canonical_uuid}
-    call_packetfilter_service(host, "set_vnic_security_groups", vnic.canonical_uuid, group_ids)
+    call_packetfilter_service(host, "set_vnic_security_groups", vnic.to_hash, group_ids)
   end
 
   def handle_referencees(host, group)

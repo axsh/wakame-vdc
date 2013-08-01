@@ -3,141 +3,60 @@
 module Dcmgr::VNet::NetworkModes
 
   class SecurityGroup
+    include Dcmgr::VNet::Netfilter::Chains
+    include Dcmgr::VNet::Netfilter::NetfilterTasks
     include Dcmgr::Helpers::NicHelper
-    include Dcmgr::VNet::Tasks
 
-    def netfilter_all_tasks(vnic,network,friends,security_groups,node)
-      tasks = []
-
-      # ***work-around***
-      # TODO
-      # - multi host nic
-      host_addr = begin
-                    Isono::Util.default_gw_ipaddr
-                  rescue => e
-                    nil
-                  end
-
-      enable_logging = Dcmgr.conf.packet_drop_log
-      ipset_enabled = Dcmgr.conf.use_ipset
-
-      # Drop all traffic that isn't explicitely accepted
-      tasks += self.netfilter_drop_tasks(vnic,node)
-
-      # General data link layer tasks
-      if host_addr
-        tasks << AcceptARPToHost.new(host_addr,vnic[:address],enable_logging,"A arp to_host #{vnic[:uuid]}: ")
-      end
-      tasks << AcceptARPFromGateway.new(network[:ipv4_gw],vnic[:address],enable_logging,"A arp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
-      tasks << AcceptARPFromDNS.new(network[:dns_server],vnic[:address],enable_logging,"A arp from_dns #{vnic[:uuid]}: ") unless network[:dns_server].nil?
-      tasks << DropIpSpoofing.new(vnic[:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
-      tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
-      tasks << AcceptGARPFromGateway.new(network[:ipv4_gw],enable_logging,"A garp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
-      if host_addr
-        tasks << AcceptArpBroadcast.new(host_addr,enable_logging,"A arp bc #{vnic[:uuid]}: ")
-      end
-
-      # General ip layer tasks
-      tasks << AcceptIcmpRelatedEstablished.new
-      tasks << AcceptTcpRelatedEstablished.new
-      tasks << AcceptUdpEstablished.new
-      #tasks << AcceptAllDNS.new
-      tasks << AcceptWakameDNSOnly.new(network[:dns_server]) unless network[:dns_server].nil?
-      tasks << AcceptWakameDHCPOnly.new(network[:dhcp_server]) unless network[:dhcp_server].nil?
-
-      # VM isolation based
-      tasks += self.netfilter_isolation_tasks(vnic,friends,node)
-      tasks += self.netfilter_nat_tasks(vnic,network,node)
-
-      # Logging Service
-      if host_addr
-        tasks += self.netfilter_logging_service_tasks(vnic, host_addr)
-      end
-
-      # Security group rules
-      security_groups.each { |secgroup|
-        tasks += self.netfilter_secgroup_tasks(vnic, secgroup)
-
-        # Accept ARP from referencing security groups
-        ref_vnics = secgroup[:referencers].values.map {|rg| rg.values}.flatten.uniq
-        tasks += self.netfilter_arp_isolation_tasks(vnic,ref_vnics,node)
-      }
-
-      tasks << AcceptARPReply.new(vnic[:address],clean_mac(vnic[:mac_addr]),enable_logging,"A arp reply #{vnic[:uuid]}: ")
-      tasks
+    def init_vnic(vnic_map)
+      [
+        # chain setup for both layers
+        vnic_chains(vnic_map[:uuid]).map {|chain| chain.create},
+        forward_chain_jumps(vnic_map[:uuid]),
+        nat_prerouting_chain_jumps(vnic_map[:uuid]),
+        vnic_main_chain_jumps(vnic_map),
+        vnic_main_drop_rules(vnic_map),
+        # l2 standard rules
+        drop_ip_spoofing(vnic_map),
+        drop_mac_spoofing(vnic_map),
+        accept_arp_from_gateway(vnic_map),
+        accept_arp_from_dns(vnic_map),
+        accept_garp_from_gateway(vnic_map),
+        accept_arp_reply_with_correct_mac_ip_combo(vnic_map),
+        accept_ipv4_protocol(vnic_map),
+        # l3 standard rules
+        accept_related_established(vnic_map),
+        accept_wakame_dns(vnic_map),
+        accept_wakame_dhcp_only(vnic_map),
+        # address translation rules
+        translate_metadata_address(vnic_map)
+      ].flatten.compact
     end
 
-    def netfilter_logging_service_tasks(vnic, host_ip)
-      tasks = []
-      logging_service_enabled = Dcmgr.conf.use_logging_service
-      logging_service_ip = Dcmgr.conf.logging_service_ip
-      logging_service_port = Dcmgr.conf.logging_service_port
-
-      # Logging Service for inside instance.
-      if logging_service_enabled && !logging_service_ip.nil? && !logging_service_port.nil?
-        tasks << TranslateLoggingAddress.new(vnic[:uuid], host_ip, logging_service_ip, logging_service_port)
-      end
-      tasks
+    def destroy_vnic(vnic_map)
+      [
+        forward_chain_jumps(vnic_map[:uuid], "del"),
+        nat_prerouting_chain_jumps(vnic_map[:uuid], "del"),
+        vnic_chains(vnic_map[:uuid]).map {|chain| chain.destroy}
+      ].flatten
     end
 
-    def netfilter_nat_tasks(vnic,network,node)
-      tasks = []
-
-      # Nat tasks
-      unless vnic[:nat_ip_lease].nil?
-        tasks << StaticNatLog.new(vnic[:address], vnic[:nat_ip_lease], "SNAT #{vnic[:uuid]}", "DNAT #{vnic[:uuid]}") if Dcmgr.conf.packet_drop_log
-        tasks << StaticNat.new(vnic[:address], vnic[:nat_ip_lease], clean_mac(vnic[:mac_addr]))
-      end
-
-      #TODO:Move this line out of nat tasks
-      tasks << TranslateMetadataAddress.new(vnic[:uuid],network[:metadata_server],network[:metadata_server_port] || 80) unless network[:metadata_server].nil?
-
-      tasks
-    end
-
-    def netfilter_isolation_tasks(vnic,friends,node)
-      tasks = []
-      enable_logging = Dcmgr.conf.packet_drop_log
-      ipset_enabled = Dcmgr.conf.use_ipset
-
-      friend_ips = friends.map { |friend| friend[:address] }.compact
-
-      tasks << AcceptARPFromFriends.new(vnic[:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")
-      tasks << AcceptIpFromFriends.new(friend_ips)
-
-      unless vnic[:nat_ip_lease].nil?
-        # Friends don't use NAT, friends talk to each other with their REAL ip addresses.
-        # It's a heart warming scene, really
-        if ipset_enabled
-          # Not implemented yet
-          #tasks << ExcludeFromNatIpSet.new(friend_ips,vnic[:address])
-        else
-          #tasks << ExcludeFromNat.new(friend_ips,vnic[:address])
-          tasks << ExcludeFromNat.new(friend_ips,vnic[:address])
-        end
-      end
-
-      tasks
-    end
-
-    def netfilter_secgroup_tasks(vnic, secgroup)
-      [Dcmgr::VNet::Tasks::SecurityGroup.new(vnic, secgroup)]
-    end
-
-    def netfilter_drop_tasks(vnic,node)
-      enable_logging = Dcmgr.conf.packet_drop_log
-
-      #TODO: Add logging to ip drops
-      [DropIpFromAnywhere.new, DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: "),DropArpToHost.new]
-      #[DropIpFromAnywhere.new]
-    end
-
-    def netfilter_arp_isolation_tasks(vnic,friends,node)
-      enable_logging = Dcmgr.conf.packet_drop_log
-
-      friend_ips = friends.map { |friend| friend[:address] }.compact
-
-      [AcceptARPFromFriends.new(vnic[:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")]
+    def set_vnic_security_groups(vnic_id, secg_ids)
+      [
+        I.vnic_l2_iso_chain(vnic_id).flush,
+        I.vnic_l2_ref_chain(vnic_id).flush,
+        I.vnic_l3_iso_chain(vnic_id).flush,
+        I.vnic_l3_ref_chain(vnic_id).flush,
+        I.vnic_l3_secg_chain(vnic_id).flush,
+        O.vnic_l3_secg_chain(vnic_id).flush
+      ] +
+      secg_ids.map { |secg_id|
+        [I.vnic_l2_iso_chain(vnic_id).add_jump(I.secg_l2_iso_chain(secg_id)),
+        I.vnic_l2_ref_chain(vnic_id).add_jump(I.secg_l2_ref_chain(secg_id)),
+        I.vnic_l3_iso_chain(vnic_id).add_jump(I.secg_l3_iso_chain(secg_id)),
+        I.vnic_l3_ref_chain(vnic_id).add_jump(I.secg_l3_ref_chain(secg_id)),
+        I.vnic_l3_secg_chain(vnic_id).add_jump(I.secg_l3_rules_chain(secg_id)),
+        O.vnic_l3_secg_chain(vnic_id).add_jump(O.secg_l3_rules_chain(secg_id))]
+      }.flatten
     end
   end
 

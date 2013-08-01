@@ -289,6 +289,11 @@ module Dcmgr
     autoload :SGHandler, 'dcmgr/vnet/sg_handler.rb'
 
     module NetworkModes
+      module Legacy
+        autoload :SecurityGroup, 'dcmgr/vnet/network_modes/legacy/security_group'
+        autoload :PassThrough, 'dcmgr/vnet/network_modes/legacy/passthrough'
+        autoload :L2Overlay, 'dcmgr/vnet/network_modes/legacy/l2overlay'
+      end
       autoload :SecurityGroup, 'dcmgr/vnet/network_modes/security_group'
       autoload :PassThrough, 'dcmgr/vnet/network_modes/passthrough'
       autoload :L2Overlay, 'dcmgr/vnet/network_modes/l2overlay'
