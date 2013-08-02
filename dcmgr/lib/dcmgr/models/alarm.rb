@@ -4,7 +4,12 @@ module Dcmgr::Models
   class Alarm < AccountResource
     taggable 'alm'
     subset(:alives, {:deleted_at => nil})
-    plugin :serialization, :yaml, :params
+    plugin :serialization
+    serialize_attributes :yaml, :params
+    serialize_attributes :yaml, :ok_actions
+    serialize_attributes :yaml, :alarm_actions
+    serialize_attributes :yaml, :insufficient_data_actions
+
     include Dcmgr::Constants::Alarm
 
     def validate
@@ -15,6 +20,8 @@ module Dcmgr::Models
       end
 
       if self.is_log_alarm?
+        notification_actions = LOG_NOTIFICATION_ACTIONS
+
         begin
           if params["match_pattern"].blank?
             errors.add(:match_pattern, "Unknown value")
@@ -30,6 +37,7 @@ module Dcmgr::Models
         end
 
       elsif self.is_metric_alarm?
+        notification_actions = RESOURCE_NOTIFICATION_ACTIONS
         if params["threshold"] < 0
           errors.add(:threshold, "it must have digit more than zero")
         end
@@ -40,6 +48,26 @@ module Dcmgr::Models
       else
         errors.add(:metric_name, 'Unknown metric name')
       end
+
+      notification_actions.each {|name|
+        action_name = name + "_actions"
+        values = self.__send__(action_name)
+        if values.blank?
+          errors.add(action_name.to_sym, "Invalid action")
+        else
+          if SUPPORT_NOTIFICATION_TYPE.include?(values['notification_type'])
+            unless values.has_key? 'notification_type'
+              errors.add(:notification_type, 'Unknown value')
+            end
+
+            unless values.has_key? 'notification_id'
+              errors.add(:notification_id, 'Unknown value')
+            end
+          else
+            errors.add(action_name.to_sym, "Invalid notification type")
+          end
+        end
+      }
     end
 
     def self.entry_new(account, &blk)

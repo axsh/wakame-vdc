@@ -21,5 +21,21 @@ module Dcmgr::Constants
       'lt' => :<,
     }.freeze
 
+    SUPPORT_NOTIFICATION_TYPE = [
+      'dolphin'
+    ].freeze
+
+
+    RESOURCE_NOTIFICATION_ACTIONS = [
+      'ok',
+      'alarm',
+      'insufficient_data'
+    ].freeze
+
+    LOG_NOTIFICATION_ACTIONS = [
+      'alarm',
+      'insufficient_data'
+    ].freeze
+
   end
 end
