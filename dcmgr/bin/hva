@@ -34,7 +34,7 @@ manifest.instance_eval do
 
   load_module Isono::NodeModules::NodeHeartbeat
   load_module Dcmgr::NodeModules::InstanceMonitor
-  load_module Dcmgr::NodeModules::MetricMonitor
+  load_module Dcmgr::NodeModules::Monitor
   case Dcmgr.conf.edge_networking
   when 'openflow'
     load_module Dcmgr::NodeModules::DebugOpenFlow
