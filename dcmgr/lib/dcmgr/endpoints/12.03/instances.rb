@@ -467,17 +467,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       # This is to work around a bug where LB security groups would be deleted if the instance
       # is registered to a load balancer
       st = instance.service_type
-      sg_ids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
-      sg_ids_trimmed= sg_ids.map {|sgid| M::SecurityGroup.trim_uuid(sgid) }
+
+      new_sg_ids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
 
       instance.nic.each { |vnic|
-        sg_ids_to_remove = vnic.security_groups_dataset.filter(
-          :service_type => st
-        ).exclude(:uuid => sg_ids_trimmed).map { |sg| sg.canonical_uuid }
+        current_sg_ids = vnic.security_groups.map {|g| g.canonical_uuid}
+        sg_ids_to_add = new_sg_ids - current_sg_ids
+        sg_ids_to_remove = current_sg_ids - new_sg_ids
 
         on_after_commit do
-          Dcmgr.messaging.submit("sg_handler","remove_sgs_from_vnic",vnic.canonical_uuid,sg_ids_to_remove)
-          Dcmgr.messaging.submit("sg_handler","add_sgs_to_vnic",vnic.canonical_uuid,sg_ids)
+          Dcmgr.messaging.submit("sg_handler", "remove_sgs_from_vnic", vnic.canonical_uuid, sg_ids_to_remove) unless sg_ids_to_remove.empty?
+          Dcmgr.messaging.submit("sg_handler", "add_sgs_to_vnic", vnic.canonical_uuid, sg_ids_to_add) unless sg_ids_to_add.empty?
         end
       }
     end
