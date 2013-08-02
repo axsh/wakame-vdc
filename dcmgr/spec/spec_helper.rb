@@ -37,7 +37,13 @@ Fabricator(:host_node, class_name: Dcmgr::Models::HostNode) do
   offering_cpu_cores 100
   offering_memory_size 409600
   arch "x86_64"
+
+  after_create do |host, transients|
+    Fabricate(:node_state, state: "online", node_id: host.node_id)
+  end
 end
+
+Fabricator(:node_state, class_name: Isono::Models::NodeState)
 
 Fabricator(:instance, class_name: Dcmgr::Models::Instance) do
   account_id TEST_ACCOUNT

@@ -67,6 +67,14 @@ module Dcmgr::Models
       self.network_vif.map {|vif| vif.instance && vif.instance.host_node}.uniq
     end
 
+    def online_host_nodes
+      HostNode.dataset.online_nodes.filter(
+        :instances => Instance.filter(
+          :network_vif => self.network_vif_dataset
+        )
+      ).all
+    end
+
     def vnic_ips
       network_vif.map {|vif|
         lease = vif.direct_ip_lease.first
