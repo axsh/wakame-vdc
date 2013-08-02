@@ -27,14 +27,12 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
   end
 
   def drop_ip_spoofing(vnic_map)
-    # drop ip spoofing
     O.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-ip-src ! #{vnic_map[:address]} -j DROP")
     #TODO: drop ip spoofing to the host EbtablesRule.new(:filter,:input,:arp,:outgoing,"--protocol arp --arp-ip-src ! #{self.ip} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
     #TODO: drop ip spoofing from the host EbtablesRule.new(:filter,:output,:arp,:incoming,"--protocol arp --arp-ip-dst ! #{self.ip} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
   end
 
   def drop_mac_spoofing(vnic_map)
-    # drop mac spoofing
     O.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-mac-src ! #{clean_mac(vnic_map[:mac_addr])} -j DROP")
     #TODO: drop mac spoofing to the host EbtablesRule.new(:filter,:input,:arp,:outgoing,"--protocol arp --arp-mac-src ! #{self.mac} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
     #TODO: drop mac spoofing from the host EbtablesRule.new(:filter,:output,:arp,:incoming,"--protocol arp --arp-mac-dst ! #{self.mac} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
