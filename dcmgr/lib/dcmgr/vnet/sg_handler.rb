@@ -157,7 +157,7 @@ module Dcmgr::VNet::SGHandler
   private
   def init_security_group(host, group)
     group_id = group.canonical_uuid
-    logger.debug "Telling host '#{host.canonical_uuid}' to initialize security group '#{group_id}'"
+    logger.info "Telling host '#{host.canonical_uuid}' to initialize security group '#{group_id}'"
     call_packetfilter_service(host, "init_security_group", group_id, group.rules_array_no_ref)
 
     friend_ips = group.vnic_ips
@@ -167,19 +167,19 @@ module Dcmgr::VNet::SGHandler
   end
 
   def destroy_security_group(host, group_id)
-    logger.debug "Telling host '#{host.canonical_uuid}' to destroy security group '#{group_id}'"
+    logger.info "Telling host '#{host.canonical_uuid}' to destroy security group '#{group_id}'"
     call_packetfilter_service(host, "destroy_security_group", group_id)
     call_packetfilter_service(host, "destroy_isolation_group", group_id)
   end
 
   def update_isolation_group(host, group, friend_ips = nil)
     group_id = group.canonical_uuid
-    logger.debug "Telling host '#{host.canonical_uuid}' to update isolation group '#{group_id}'"
+    logger.info "Telling host '#{host.canonical_uuid}' to update isolation group '#{group_id}'"
     call_packetfilter_service(host, "update_isolation_group", group_id, friend_ips || group.vnic_ips)
   end
 
   def init_vnic_on_host(host, vnic)
-    logger.debug "Telling host '#{host.canonical_uuid}' to initialize vnic '#{vnic.canonical_uuid}'."
+    logger.info "Telling host '#{host.canonical_uuid}' to initialize vnic '#{vnic.canonical_uuid}'."
     call_packetfilter_service(host, "init_vnic", vnic.canonical_uuid, vnic.to_hash)
   end
 
@@ -190,6 +190,7 @@ module Dcmgr::VNet::SGHandler
 
   def set_vnic_security_groups(host, vnic, group_ids = nil)
     group_ids ||= vnic.security_groups.map { |sg| sg.canonical_uuid}
+    logger.info "Telling host '#{host.canonical_uuid}' to set security groups of vnic '#{vnic.canonical_uuid}' to #{group_ids}."
     call_packetfilter_service(host, "set_vnic_security_groups", vnic.to_hash, group_ids)
   end
 
