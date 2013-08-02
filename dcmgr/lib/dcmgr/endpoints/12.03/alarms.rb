@@ -64,10 +64,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
       if params['params'] && params['params'].is_a?(Hash)
         save_params = {}
-        if CA::LOG_METRICS.include?(params['metric_name'])
+        if CA::LOG_METRICS.include?(params[:metric_name])
           save_params['label'] = params['params']['label']
           save_params['match_pattern'] = params['params']['match_pattern']
-        elsif CA::RESOURCE_METRICS.include?(params['metric_name'])
+        elsif CA::RESOURCE_METRICS.include?(params[:metric_name])
           save_params['threshold'] = params['params']['threshold'].to_f
           save_params['comparison_operator'] = params['params']['comparison_operator']
         else
