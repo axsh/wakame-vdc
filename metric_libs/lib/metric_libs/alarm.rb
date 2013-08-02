@@ -2,6 +2,7 @@
 
 module MetricLibs
   class Alarm
+    include MetricLibs::Constants::Alarm
 
     def initialize(alm, manager)
       set_variable(alm)
