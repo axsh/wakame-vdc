@@ -53,17 +53,6 @@ module Dcmgr
       
       def run_instance(ctx)
         # run lxc
-        @os_devpath = ctx.os_devpath
-        if @os_devpath.nil?
-          if ctx.inst[:image][:boot_dev_type] == 1
-            ctx.inst[:volume].each{ |vol_id, vol|
-              @os_devpath = vol[:host_device_name] if vol[:boot_dev] == 1
-            }
-          else
-            @os_devpath = "#{ctx.inst_data_dir}/#{ctx.inst_id}"
-          end
-        end
-
         generate_config(ctx)
         sh("lxc-create -f %s -n %s", [ctx.lxc_conf_path, ctx.inst[:uuid]])
 
