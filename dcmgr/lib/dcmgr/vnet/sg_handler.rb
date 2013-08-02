@@ -36,7 +36,7 @@ module Dcmgr::VNet::SGHandler
     raise "Vnic '#{vnic.canonical_uuid}' is not on a host node." if vnic.instance.host_node.nil?
     host_node = vnic.instance.host_node
 
-    logger.info "Telling host '#{host_node.canonical_uuid}' to initialize vnic '#{vnic_id}'."
+    # logger.info "Telling host '#{host_node.canonical_uuid}' to initialize vnic '#{vnic_id}'."
     init_vnic_on_host(host_node, vnic)
 
     vnic.security_groups.each { |group|
@@ -44,10 +44,10 @@ module Dcmgr::VNet::SGHandler
         host_didnt_have_secg_yet = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance).empty?
 
         if host_didnt_have_secg_yet
-          logger.debug "Host '#{host_node.canonical_uuid}' doesn't have security group '#{group.canonical_uuid}' yet. Initialize it."
+          # logger.debug "Host '#{host_node.canonical_uuid}' doesn't have security group '#{group.canonical_uuid}' yet. Initialize it."
           init_security_group(host_node, group)
         else
-          logger.debug "Host '#{host_node.canonical_uuid}' already has security group '#{group.canonical_uuid}'. Update its isolation."
+          # logger.debug "Host '#{host_node.canonical_uuid}' already has security group '#{group.canonical_uuid}'. Update its isolation."
           update_isolation_group(host_node, group)
         end
 
@@ -116,8 +116,7 @@ module Dcmgr::VNet::SGHandler
     raise "Vnic '#{vnic.canonical_uuid}' not attached to an instance." if vnic.instance.nil?
     raise "Vnic '#{vnic.canonical_uuid}' is not on a host node." if vnic.instance.host_node.nil?
     host_node = vnic.instance.host_node
-    logger.info "Telling host '#{host_node.canonical_uuid}' to destroy vnic '#{vnic_id}'."
-    call_packetfilter_service(host_node, "destroy_vnic", vnic.to_hash)
+    destroy_vnic_on_host(host_node, vnic)
 
     vnic.security_groups.each { |group|
       group_id = group.canonical_uuid
@@ -127,10 +126,10 @@ module Dcmgr::VNet::SGHandler
         no_more_vnics_left_in_group = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance).empty?
 
         if no_more_vnics_left_in_group
-          logger.debug "Host '#{host_node.canonical_uuid}' no longer has security group '#{group.canonical_uuid}' yet. Destroy it."
+          # logger.debug "Host '#{host_node.canonical_uuid}' no longer has security group '#{group.canonical_uuid}' yet. Destroy it."
           destroy_security_group(host_node, group_id)
         else
-          logger.debug "Host '#{host_node.canonical_uuid}' still has security group '#{group.canonical_uuid}'. Update its isolation."
+          # logger.debug "Host '#{host_node.canonical_uuid}' still has security group '#{group.canonical_uuid}'. Update its isolation."
           # The vnic isn't destroyed in the database until after this method is called.
           # Therefore we delete it from the ips we pass to the isolation group.
           self_ips = vnic.direct_ip_lease.map { |lease| lease.ipv4_s }
@@ -163,7 +162,7 @@ module Dcmgr::VNet::SGHandler
   private
   def init_security_group(host, group)
     group_id = group.canonical_uuid
-    logger.debug "Initializing security group #{group_id}"
+    logger.debug "Telling host '#{host.canonical_uuid}' to initialize security group '#{group_id}'"
     call_packetfilter_service(host, "init_security_group", group_id, group.rules_array_no_ref)
 
     friend_ips = group.vnic_ips
@@ -173,17 +172,25 @@ module Dcmgr::VNet::SGHandler
   end
 
   def destroy_security_group(host, group_id)
+    logger.debug "Telling host '#{host.canonical_uuid}' to destroy security group '#{group_id}'"
     call_packetfilter_service(host, "destroy_security_group", group_id)
     call_packetfilter_service(host, "destroy_isolation_group", group_id)
   end
 
   def update_isolation_group(host, group, friend_ips = nil)
-    friend_ips ||= group.vnic_ips
-    call_packetfilter_service(host, "update_isolation_group", group.canonical_uuid, friend_ips)
+    group_id = group.canonical_uuid
+    logger.debug "Telling host '#{host.canonical_uuid}' to update isolation group '#{group_id}'"
+    call_packetfilter_service(host, "update_isolation_group", group_id, friend_ips || group.vnic_ips)
   end
 
   def init_vnic_on_host(host, vnic)
+    logger.debug "Telling host '#{host.canonical_uuid}' to initialize vnic '#{vnic.canonical_uuid}'."
     call_packetfilter_service(host, "init_vnic", vnic.canonical_uuid, vnic.to_hash)
+  end
+
+  def destroy_vnic_on_host(host_node, vnic)
+    logger.info "Telling host '#{host_node.canonical_uuid}' to destroy vnic '#{vnic.canonical_uuid}'."
+    call_packetfilter_service(host_node, "destroy_vnic", vnic.to_hash)
   end
 
   def set_vnic_security_groups(host, vnic, group_ids = nil)
