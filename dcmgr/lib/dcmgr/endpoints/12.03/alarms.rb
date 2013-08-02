@@ -8,10 +8,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
   get do
 
-    unless CA::SUPPORT_METRICS.include?(params[:metric_name])
-      raise E::UnknownMetricName, "#{params[:metric_name]}"
-    end
-
     ds = M::Alarm.dataset
 
     if params[:resource_id]
@@ -58,6 +54,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
       if params[:enabled]
         al.enabled = params[:enabled].to_i
+      else
+        al.enabled = 1
       end
 
       if params[:evaluation_periods]
@@ -66,11 +64,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
       if params['params'] && params['params'].is_a?(Hash)
         save_params = {}
-        if CA::LOG_METRICS.include?(params['metric_name'])
+        if CA::LOG_METRICS.include?(params[:metric_name])
           save_params['label'] = params['params']['label']
           save_params['match_pattern'] = params['params']['match_pattern']
-        elsif CA::RESOURCE_METRICS.include?(params['metric_name'])
-          save_params['statistics'] = params['params']['statistics']
+        elsif CA::RESOURCE_METRICS.include?(params[:metric_name])
           save_params['threshold'] = params['params']['threshold'].to_f
           save_params['comparison_operator'] = params['params']['comparison_operator']
         else
@@ -80,6 +77,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.metric_name = params[:metric_name]
 
         al.params = save_params
+      end
+
+      if params[:ok_actions] || params[:alarm_actions] || params[:insufficient_data_actions]
+        if CA::LOG_METRICS.include?(params[:metric_name])
+          al.alarm_actions = params[:alarm_actions]
+          al.insufficient_data_actions = params[:insufficient_data_actions]
+        elsif CA::RESOURCE_METRICS.include?(params[:metric_name])
+          al.ok_actions = params[:ok_actions]
+          al.alarm_actions = params[:alarm_actions]
+          al.insufficient_data_actions = params[:insufficient_data_actions]
+        end
       end
 
       raise E::InvalidParameter, al.errors.full_messages.first unless al.valid?
@@ -149,7 +157,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
             params['params']['threshold'] = params['params']['threshold'].to_f
           end
 
-          ['threshold', 'statistics', 'comparison_operator'].each {|key|
+          ['threshold', 'comparison_operator'].each {|key|
             if params['params'][key]
               update_params[key] = params['params'][key]
             else
