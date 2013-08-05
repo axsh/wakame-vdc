@@ -3,7 +3,8 @@
 require 'spec_helper'
 require "ipaddr"
 require_relative 'helper_classes'
-require_relative 'custom_matchers'
+require_relative 'matchers/have_applied_vnic'
+require_relative 'matchers/have_applied_secg'
 
 describe "SGHandler and NetfilterAgent" do
   context "using network mode" do

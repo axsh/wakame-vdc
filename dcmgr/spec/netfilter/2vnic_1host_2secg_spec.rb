@@ -3,7 +3,9 @@
 require 'spec_helper'
 require "ipaddr"
 require_relative 'helper_classes'
-require_relative 'custom_matchers'
+require_relative 'matchers/have_applied_vnic'
+require_relative 'matchers/have_applied_secg'
+require_relative 'matchers/have_nothing_applied'
 
 describe "SGHandler and NetfilterAgent" do
   context "with 2 vnics, 1 host node, 2 security groups" do
