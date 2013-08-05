@@ -17,4 +17,15 @@ module DcmgrSpec
       autoload :ChainMethods, "netfilter/matchers/chain_methods"
     end
   end
+
+  module Fabricators
+    require 'fabrication'
+
+    TEST_ACCOUNT="a-shpoolxx"
+    require "fabricators/host_node"
+    require "fabricators/instance"
+    require "fabricators/vnic"
+    require "fabricators/network"
+    require "fabricators/secg"
+  end
 end

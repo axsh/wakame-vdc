@@ -3,6 +3,7 @@
 require 'dcmgr_spec'
 
 include DcmgrSpec::Netfilter
+include DcmgrSpec::Fabricators
 
 describe "SGHandler and NetfilterAgent" do
   context "on multiple hosts" do

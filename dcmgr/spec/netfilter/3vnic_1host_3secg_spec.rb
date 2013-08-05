@@ -3,6 +3,7 @@
 require 'dcmgr_spec'
 
 include DcmgrSpec::Netfilter
+include DcmgrSpec::Fabricators
 
 describe "SGHandler and NetfilterAgent" do
   context "with 3 vnics, 1 host node, 3 security groups" do
