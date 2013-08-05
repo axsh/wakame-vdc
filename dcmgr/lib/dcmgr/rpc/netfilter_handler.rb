@@ -17,7 +17,7 @@ module Dcmgr::Rpc
 
     ["init_vnic","destroy_vnic", "init_security_group", "destroy_security_group",
       "init_isolation_group", "destroy_isolation_group", "set_vnic_security_groups",
-      "update_sg_rules", "update_isolation_group", "set_sg_referencers"].each {|job_name|
+      "update_sg_rules", "update_isolation_group", "set_sg_referencees"].each {|job_name|
 
       job job_name.to_sym, proc { send(job_name,*request.args) }
     }

@@ -51,8 +51,8 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     exec network_mode(vnic_map).set_vnic_security_groups(vnic_map[:uuid], secg_ids)
   end
 
-  def set_sg_referencers(secg_id, ref_ips, rules)
-    logger.info "Setting referencers for #{secg_id} to [#{ref_ips.join(", ")}]"
+  def set_sg_referencees(secg_id, ref_ips, rules)
+    logger.info "Setting referencees for #{secg_id} to [#{ref_ips.join(", ")}]"
     l2ref_chain = I.secg_l2_ref_chain(secg_id)
     l3ref_chain = I.secg_l3_ref_chain(secg_id)
     exec(

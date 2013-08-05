@@ -117,18 +117,24 @@ describe "SGHandler and NetfilterAgent" do
       nfa(hostB).should_not have_applied_vnic(hostA_vnic2)
     end
 
-    #TODO: Add referencing to init_host
     #TODO: Check referencing when updating security group rules
     #TODO: Test with more rules referencing different groups
-    #TODO: Test reference rules when destroying vnics
 
-    it "starts ref rules in the right secg" do
+    it "removes ref rules when destroying a vnic" do
+      handler.init_vnic(hostA_vnic2_id)
       handler.init_vnic(hostA_vnic1_id)
-      handler.init_vnic(hostB_vnic2_id)
+      handler.init_vnic(hostB_vnic1_id)
 
-      nfa(hostA).should have_applied_secg(secgA).with_vnics([hostA_vnic1]).with_referencees([]).with_reference_rules([])
-      nfa(hostB).should have_applied_secg(secgB).with_vnics([hostB_vnic2]).with_referencees([hostA_vnic1]).with_reference_rules([
-        "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT"
+      nfa(hostA).should have_applied_secg(secgB).with_referencees([hostA_vnic1, hostB_vnic1]).with_reference_rules([
+        "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
+        "-p tcp -s 10.0.0.3 --dport 22 -j ACCEPT"
+      ])
+
+      handler.destroy_vnic(hostA_vnic1_id)
+      hostA_vnic1.destroy
+
+      nfa(hostA).should have_applied_secg(secgB).with_referencees([hostB_vnic1]).with_reference_rules([
+        "-p tcp -s 10.0.0.3 --dport 22 -j ACCEPT"
       ])
     end
   end

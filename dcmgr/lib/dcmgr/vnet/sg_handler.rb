@@ -118,7 +118,6 @@ module Dcmgr::VNet::SGHandler
     vnic.security_groups.each { |group|
       group_id = group.canonical_uuid
 
-      refresh_referencers(group)
       group.online_host_nodes.each { |host_node|
         no_more_vnics_left_in_group = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance).empty?
 
@@ -129,6 +128,7 @@ module Dcmgr::VNet::SGHandler
           # Therefore we delete it from the ips we pass to the isolation group.
           self_ips = vnic.direct_ip_lease.map { |lease| lease.ipv4_s }
           update_isolation_group(host_node, group, group.vnic_ips - self_ips)
+          refresh_referencers(group, vnic)
         end
       }
 
@@ -194,14 +194,16 @@ module Dcmgr::VNet::SGHandler
     call_packetfilter_service(host, "set_vnic_security_groups", vnic.to_hash, group_ids)
   end
 
-  def handle_referencees(host, group)
+  def handle_referencees(host, group, destroyed_vnic = nil)
     #TODO: Right now all of this is updated every time a single referencee is changed
     # It would be better if we could handle it per referencee group somehow
     rules = group.rules_array_only_ref
     parsed_rules = group.referencees.map { |reffee|
       rules.map { |r|
         if r[:ip_source] == reffee.canonical_uuid
-          reffee.vnic_ips.map { |ref_ip|
+          reffee_ips = reffee.vnic_ips
+          reffee_ips -= destroyed_vnic.direct_ip_lease.map {|ip| ip.ipv4_s} if destroyed_vnic
+          reffee_ips.map { |ref_ip|
             parsed_rule = r.dup
             parsed_rule[:ip_source] = ref_ip
             parsed_rule
@@ -211,15 +213,17 @@ module Dcmgr::VNet::SGHandler
     }.flatten.compact
 
     ref_ips = group.referencees.map { |ref| ref.vnic_ips}.flatten.uniq
+    ref_ips -= destroyed_vnic.direct_ip_lease.map {|ip| ip.ipv4_s} if destroyed_vnic
 
-    call_packetfilter_service(host, "set_sg_referencers", group.canonical_uuid, ref_ips, parsed_rules)
+    call_packetfilter_service(host, "set_sg_referencees", group.canonical_uuid, ref_ips, parsed_rules)
   end
 
-  def refresh_referencers(group)
-    group.referencers.each { |ref_g|
+  def refresh_referencers(group, destroyed_vnic = nil)
+    referencers ||= group.referencers
+    referencers.each { |ref_g|
       ref_g.online_host_nodes.each { |ref_h|
         logger.info "Telling host '#{ref_h.canonical_uuid}' to update referencees for group '#{ref_g.canonical_uuid}'."
-        handle_referencees(ref_h, ref_g)
+        handle_referencees(ref_h, ref_g, destroyed_vnic)
       }
     }
   end
