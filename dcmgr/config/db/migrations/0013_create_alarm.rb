@@ -16,9 +16,11 @@ Sequel.migration do
       column :ok_actions, "text", :null=>true
       column :alarm_actions, "text", :null=>true
       column :insufficient_data_actions, "text", :null=>true
+      column :last_evaluated_value, "varchar(255)", :null=>true
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
+      column :last_evaluated_at, "datetime", :null=>true
     end
   end
 
