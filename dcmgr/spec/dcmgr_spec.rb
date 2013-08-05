@@ -21,7 +21,7 @@ module DcmgrSpec
   module Fabricators
     require 'fabrication'
 
-    TEST_ACCOUNT="a-shpoolxx"
+    TEST_ACCOUNT ||= "a-shpoolxx"
     require "fabricators/host_node"
     require "fabricators/instance"
     require "fabricators/vnic"
