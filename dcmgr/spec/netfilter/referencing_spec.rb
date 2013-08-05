@@ -175,6 +175,13 @@ describe "SGHandler and NetfilterAgent" do
         "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
         "-p udp -s 10.0.0.5 --dport 53 -j ACCEPT"
       ])
+
+      secgD.rule = "udp:53,53,#{secgC.canonical_uuid}"
+      secgD.save
+      handler.update_sg_rules(secgD.canonical_uuid)
+
+      nfa(hostB).should have_applied_secg(secgD).with_vnics([hostB_vnic3]).with_referencees(
+      [hostA_vnic3]).with_reference_rules(["-p udp -s 10.0.0.5 --dport 53 -j ACCEPT"])
     end
   end
 end
