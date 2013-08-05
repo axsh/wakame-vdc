@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-require 'spec_helper'
+require 'dcmgr_spec'
 
 include DcmgrSpec::Netfilter
 

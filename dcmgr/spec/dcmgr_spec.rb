@@ -2,6 +2,7 @@
 
 require 'rubygems'
 require 'dcmgr'
+require 'spec_helper'
 
 module DcmgrSpec
   module Netfilter

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-require 'dcmgr_spec'
 require 'fabrication'
 require 'database_cleaner'
 require 'ipaddress'
