@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 require "ipaddr"
-require_relative 'test_classes/nf_cmd_parser.rb'
-require_relative 'matchers/have_applied_secg'
 
 include DcmgrSpec::Netfilter
 

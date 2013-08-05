@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 require "ipaddr"
-require_relative 'matchers/have_applied_vnic'
-require_relative 'matchers/have_applied_secg'
 
 include DcmgrSpec::Netfilter
 
