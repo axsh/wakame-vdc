@@ -2,6 +2,7 @@
 require 'dcmgr_spec'
 require 'fabrication'
 require 'database_cleaner'
+require 'ipaddress'
 require 'isono' # Isono is needed for adding host nodes to the database
 
 
@@ -77,7 +78,7 @@ def create_vnic(host, secgs, mac_addr, network, ipv4)
     n.save
 
     Dcmgr::Models::NetworkVifIpLease.create({
-      :ipv4 => IPAddr.new(ipv4).to_i,
+      :ipv4 => IPAddress::IPv4.new(ipv4).to_i,
       :network_id => n.network.id,
       :network_vif_id => n.id
     })
