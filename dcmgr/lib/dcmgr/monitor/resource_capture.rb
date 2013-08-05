@@ -7,8 +7,8 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
 
       SUPPORT_METRIC_NAMES = {
-        "cpu" => ['time', 'pid', 'usr_usage', 'system_usage', 'guest_usage', 'usage', 'cpu_number', 'cswch', 'nvcswch', 'usr_ms', 'system_ms', 'guest_ms'],
-        "memory" => ['time', 'pid', 'minflt', 'majflt', 'vsz', 'rss', 'usage', 'minflt-nr', 'majflt-nr']
+        "cpu" => ['time', 'pid', 'cpu.usr_usage', 'cpu.system_usage', 'cpu.guest_usage', 'cpu.usage', 'cpu.number', 'cpu.cswch', 'cpu.nvcswch', 'cpu.usr_ms', 'cpu.system_ms', 'cpu.guest_ms'],
+        "memory" => ['time', 'pid', 'memory.minflt', 'memory.majflt', 'memory.vsz', 'memory.rss', 'memory.usage', 'memory.minflt-nr', 'memory.majflt-nr']
       }.freeze
 
       def initialize(node)
@@ -16,15 +16,13 @@ module Dcmgr
         @rpc = Isono::NodeModules::RpcChannel.new(@node)
       end
 
-      def get_resources
+      def get_resources(metric_name)
         # TODO: add volume and network vif
         instlst = @rpc.request('hva-collector', 'get_instance_monitor_data', @node.node_id)
 
         h = {}
         instlst.each {|i|
           begin
-            h["#{i[:uuid]}"] = {}
-
             pidfile = "#{Dcmgr.conf.vm_data_dir}/#{i[:uuid]}/kvm.pid"
             raise "Unable to find the pid file: #{i[:uuid]}" unless File.exists?(pidfile)
             logger.debug("Find pidfile: #{pidfile}")
@@ -32,23 +30,31 @@ module Dcmgr
             kvmpid = File.read(pidfile)
             logger.debug("#{i[:uuid]} pid: #{kvmpid}")
 
-            cpu = sh("pidstat -h -u -w -T ALL -p #{kvmpid}")
-            h["#{i[:uuid]}"]["cpu"] = parse_pidstat("cpu", cpu)
-
-            memory = sh("pidstat -h -r -T ALL -p #{kvmpid}")
-            h["#{i[:uuid]}"]["memory"] = parse_pidstat("memory", memory)
-
+            h["#{i[:uuid]}"] = parse_pidstat(metric_name, exec_pidstat(metric_name, kvmpid.to_i))
             logger.debug(h)
-
           rescue Exception => e
-            logger.error("Error occured. [Instance ID: #{i[:uuid]}]")
-            logger.error(e)
+            logger.error("Error occured. [Instance ID: #{i[:uuid]}]: #{e}")
           end
         }
         h
       end
 
       private
+      def exec_pidstat(metric_name, pid)
+        raise ArgumentError unless metric_name.is_a?(String)
+        raise ArgumentError unless pid.is_a?(Integer)
+
+        option = case metric_name
+                 when "cpu"
+                   " -u -w"
+                 when "memory"
+                   " -r"
+                 else
+                   raise "Unknown Metric type: #{metric_name}"
+                 end
+        sh("pidstat -h #{option} -T ALL -p #{pid}")
+      end
+
       def parse_pidstat(metric_name, data)
         raise ArgumentError unless metric_name.is_a?(String)
         raise ArgumentError unless data.is_a?(Hash)
