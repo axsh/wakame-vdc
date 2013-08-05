@@ -2,11 +2,10 @@
 
 require 'spec_helper'
 require "ipaddr"
-require_relative 'matchers/have_applied_vnic'
-require_relative 'test_classes/netfilter_agent'
-require_relative 'test_classes/sg_handler'
 require_relative 'test_classes/nf_cmd_parser.rb'
 require_relative 'matchers/have_applied_secg'
+
+include DcmgrSpec::Netfilter
 
 describe "SGHandler and NetfilterAgent" do
   context "with 2 vnics, 1 host node, 1 security group" do

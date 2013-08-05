@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-require 'rubygems'
-require 'dcmgr'
+require 'dcmgr_spec'
 require 'fabrication'
 require 'database_cleaner'
 require 'isono' # Isono is needed for adding host nodes to the database
