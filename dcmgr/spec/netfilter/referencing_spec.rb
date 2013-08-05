@@ -117,9 +117,6 @@ describe "SGHandler and NetfilterAgent" do
       nfa(hostB).should_not have_applied_vnic(hostA_vnic2)
     end
 
-    #TODO: Check referencing when updating security group rules
-    #TODO: Test with more rules referencing different groups
-
     it "removes ref rules when destroying a vnic" do
       handler.init_vnic(hostA_vnic2_id)
       handler.init_vnic(hostA_vnic1_id)
@@ -135,6 +132,29 @@ describe "SGHandler and NetfilterAgent" do
 
       nfa(hostA).should have_applied_secg(secgB).with_referencees([hostB_vnic1]).with_reference_rules([
         "-p tcp -s 10.0.0.3 --dport 22 -j ACCEPT"
+      ])
+    end
+
+    #TODO: Test with more rules referencing different groups
+
+    it "handles ref rules when updating security group rules" do
+      handler.init_vnic(hostA_vnic2_id)
+      handler.init_vnic(hostA_vnic1_id)
+      handler.init_vnic(hostB_vnic1_id)
+
+      secgB.rule = "icmp:-1,-1,#{secgA.canonical_uuid}"; secgB.save
+      handler.update_sg_rules(secgB.canonical_uuid)
+
+      nfa(hostA).should have_applied_secg(secgB).with_referencees([hostA_vnic1, hostB_vnic1]).with_reference_rules([
+        "-p icmp -s 10.0.0.1 -j ACCEPT",
+        "-p icmp -s 10.0.0.3 -j ACCEPT"
+      ])
+
+      secgB.rule = "icmp:-1,-1,ip4:0.0.0.0"; secgB.save
+      handler.update_sg_rules(secgB.canonical_uuid)
+
+      nfa(hostA).should have_applied_secg(secgB).with_referencees([]).with_reference_rules([]).with_rules([
+        "-p icmp -s 0.0.0.0/0 -j ACCEPT"
       ])
     end
   end
