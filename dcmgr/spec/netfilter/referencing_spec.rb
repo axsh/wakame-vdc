@@ -135,8 +135,6 @@ describe "SGHandler and NetfilterAgent" do
       ])
     end
 
-    #TODO: Test with more rules referencing different groups
-
     it "handles ref rules when updating security group rules" do
       handler.init_vnic(hostA_vnic2_id)
       handler.init_vnic(hostA_vnic1_id)
@@ -155,6 +153,27 @@ describe "SGHandler and NetfilterAgent" do
 
       nfa(hostA).should have_applied_secg(secgB).with_referencees([]).with_reference_rules([]).with_rules([
         "-p icmp -s 0.0.0.0/0 -j ACCEPT"
+      ])
+    end
+
+    let(:secgC) { Fabricate(:secg) }
+    let(:secgD) { Fabricate(:secg, rule: "
+      tcp:22,22,#{secgA.canonical_uuid}
+      udp:53,53,#{secgC.canonical_uuid}"
+    )}
+    let(:hostA_vnic3) { create_vnic(hostA, [secgC], "525400033c4e", network, "10.0.0.5")}
+    let(:hostB_vnic3) { create_vnic(hostB, [secgD], "525400033c4f", network, "10.0.0.6")}
+
+    it "references multiple groups at the same time" do
+      handler.init_vnic(hostA_vnic1_id)
+      handler.init_vnic(hostA_vnic3.canonical_uuid)
+      handler.init_vnic(hostB_vnic3.canonical_uuid)
+
+      nfa(hostB).should have_applied_secg(secgD).with_vnics([hostB_vnic3]).with_referencees(
+      [hostA_vnic1, hostA_vnic3]
+      ).with_reference_rules([
+        "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
+        "-p udp -s 10.0.0.5 --dport 53 -j ACCEPT"
       ])
     end
   end
