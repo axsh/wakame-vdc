@@ -70,6 +70,21 @@ module Dcmgr
         end
       end
 
+      class Capture < Fuguta::Configuration
+        param :cpu_time, :default =>60
+        param :memory_time, :default =>60
+
+        def validate(errors)
+          super
+          unless self.cpu_time.to_i > 0
+            errors << "cpu_time needs to set positive integer(>0): #{self.cpu_time}"
+          end
+          unless self.memory_time.to_i > 0
+            errors << "memory_time needs to set positive integer(>0): #{self.memory_time}"
+          end
+        end
+      end
+
       def hypervisor_driver(driver_class)
         if driver_class.is_a?(Class) && driver_class < (Drivers::Hypervisor)
           # TODO: do not create here. the configuration object needs to be attached in earlier phase.
@@ -99,6 +114,10 @@ module Dcmgr
           @config[:backup_storage].parse_dsl(&blk)
         end
 
+        def capture(&blk)
+          @config[:capture].parse_dsl(&blk)
+        end
+
         # hypervisor_driver configuration section.
         def hypervisor_driver(driver_type, &blk)
           c = Drivers::Hypervisor.driver_class(driver_type)
@@ -113,6 +132,7 @@ module Dcmgr
         @config[:dc_networks] = {}
         @config[:local_store] = LocalStore.new(self)
         @config[:backup_storage] = BackupStorage.new(self)
+        @config[:capture] = Capture.new(self)
         @config[:hypervisor_driver] = {}
       end
 
