@@ -37,7 +37,7 @@ bundle-install-stamp:
 	# Use hijiki gem in local since the local version is the latest.
 	mkdir -p $(CURDIR)/vendor/cache
 	(cd $(CURDIR)/client/ruby-hijiki && rake gem && mv pkg/ruby-hijiki-*.gem $(CURDIR)/vendor/cache)
-	(cd $(CURDIR)/frontend/dcmgr_gui && rm -rf vendor/cache && mkdir -p vendor && ln -fs ../../vendor/cache vendor/)
+	(cd $(CURDIR)/frontend/dcmgr_gui && rm -rf vendor/cache && mkdir -p vendor && ln -fs ../../../vendor/cache vendor/)
 
 	mkdir -p $(CURDIR)/vendor/bundle/ruby
 	# in order to build rpm, client(ruby-hijiki)/ is no need.
