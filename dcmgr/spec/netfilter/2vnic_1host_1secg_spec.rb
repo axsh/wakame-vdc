@@ -2,8 +2,10 @@
 
 require 'spec_helper'
 require "ipaddr"
-require_relative 'helper_classes'
 require_relative 'matchers/have_applied_vnic'
+require_relative 'test_classes/netfilter_agent'
+require_relative 'test_classes/sg_handler'
+require_relative 'test_classes/nf_cmd_parser.rb'
 require_relative 'matchers/have_applied_secg'
 
 describe "SGHandler and NetfilterAgent" do
