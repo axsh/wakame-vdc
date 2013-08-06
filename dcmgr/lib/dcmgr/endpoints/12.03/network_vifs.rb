@@ -39,7 +39,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     Dcmgr.messaging.submit("sg_handler", "add_sgs_to_vnic", params[:vif_id], group_ids)
 
     #TODO: Figure out the right response since the groups will be changed in an asynchoronous method
-    respond_with(R::NetworkVif.new(vnic.generate))
+    respond_with(R::NetworkVif.new(vnic).generate)
   end
 
   put '/:vif_id/remove_security_group' do
