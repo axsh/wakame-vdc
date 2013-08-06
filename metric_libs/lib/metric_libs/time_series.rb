@@ -34,6 +34,10 @@ module MetricLibs
       ts
     end
 
+    def delete_first
+      @timeseries.delete_if {|mv| mv.timestamp == @timeseries.first.timestamp}
+    end
+
     def delete_all_since_at(time)
       unless time.is_a? Time
         raise ArgumentError, "Not Time class"
