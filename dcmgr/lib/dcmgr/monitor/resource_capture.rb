@@ -29,9 +29,15 @@ module Dcmgr
 
             kvmpid = File.read(pidfile)
             logger.debug("#{i[:uuid]} pid: #{kvmpid}")
-
-            h["#{i[:uuid]}"] = parse_pidstat(metric_name, exec_pidstat(metric_name, kvmpid.to_i))
+            tryagain(opts={:timeout=>10, :retry=>1}) do
+              h["#{i[:uuid]}"] = parse_pidstat(metric_name, exec_pidstat(metric_name, kvmpid.to_i))
+            end
             logger.debug(h)
+          rescue TimeoutError => e
+            logger.debug("Caught Error. #{e} pidstat #{i[:uuid]}")
+            hash = {}
+            SUPPORT_METRIC_NAMES[metric_name].each {|m| hash[m] = "error"}
+            h["#{i[:uuid]}"] = hash.merge({"timeout"=>"true", "time"=>Time.now})
           rescue Exception => e
             logger.error("Error occured. [Instance ID: #{i[:uuid]}]: #{e}")
           end
