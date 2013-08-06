@@ -10,6 +10,7 @@ module MetricLibs
       set_variable(alm)
       @manager = manager
       @resource = MetricLibs::TimeSeries.new
+      @error_count = 0
     end
 
     def update(alm)
@@ -18,7 +19,11 @@ module MetricLibs
 
     def feed(data)
       raise ArgumentError unless data.is_a?(Hash)
-      @resource.push(data[@metric_name], Time.at(data["time"].to_i))
+      if data["timeout"]
+        @resource.push(nil, Time.at(data["time"].to_i))
+      else
+        @resource.push(data[@metric_name], Time.at(data["time"].to_i))
+      end
     end
 
     def evaluate
@@ -26,16 +31,30 @@ module MetricLibs
       when 'cpu.usage'
         end_time = Time.now.to_i
         start_time = end_time - @evaluation_periods
+
         values = @resource.find(Time.at(start_time), Time.at(end_time)).map {|v|
           v.value
         }
+
+        if values.empty? || values.size <= 1
+          @error_count += 1
+          @resource.delete_first
+          return false
+        end
+
         usage = values.inject{|sum, n| sum.to_f + n.to_f} / values.size
         ev = usage.method(SUPPORT_COMPARISON_OPERATOR[@params["comparison_operator"]]).call(@params["threshold"])
         @resource.delete_first
         ev
       when 'memory.usage'
-        memory_usage = @resource.last.value.to_f
-        ev = memory_usage.method(SUPPORT_COMPARISON_OPERATOR[@params["comparison_operator"]]).call(@params["threshold"])
+        memory_usage = @resource.last.value
+        if values.empty?
+          @error_count += 1
+          @resource.delete_first
+          return false
+        end
+
+        ev = memory_usage.to_f.method(SUPPORT_COMPARISON_OPERATOR[@params["comparison_operator"]]).call(@params["threshold"])
         @resource.delete_first
         ev
       else
