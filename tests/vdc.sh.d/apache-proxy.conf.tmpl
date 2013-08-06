@@ -1,0 +1,52 @@
+# Minimal apache configuration for image storage.
+# Gerenated from apache-proxy.conf.tmpl SHELL variable template.
+Listen *:8080
+User apache
+Group apache
+
+ServerRoot \"/etc/httpd\"
+DocumentRoot \"/var/www/html\"
+
+LoadModule mime_module modules/mod_mime.so
+LoadModule dir_module modules/mod_dir.so
+LoadModule log_config_module modules/mod_log_config.so
+LoadModule authz_host_module modules/mod_authz_host.so
+LoadModule alias_module modules/mod_alias.so
+LoadModule dav_module modules/mod_dav.so
+LoadModule dav_fs_module modules/mod_dav_fs.so
+LoadModule rewrite_module modules/mod_rewrite.so
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+
+<IfModule prefork.c>
+PidFile /dev/null
+</IfModule>
+
+TypesConfig /etc/mime.types
+DefaultType None
+AddDefaultCharset utf-8
+
+LogFormat \"%h %l %u %t \\\"%r\\\" %>s %b\" common
+CustomLog \"|/bin/cat\" common
+ErrorLog \"|/bin/cat\"
+LogLevel info
+
+DirectoryIndex index.html
+
+<Directory />
+  AllowOverride None
+</Directory>
+
+<Directory ${VDC_ROOT}/tmp>
+  AllowOverride All
+  #Order deny,allow
+  Allow from all
+</Directory>
+
+DavLockDB ${VDC_ROOT}/tmp/images/davlock
+Alias /images ${VDC_ROOT}/tmp/images
+<Location /images>
+  DAV on
+  Options All
+</Location>
