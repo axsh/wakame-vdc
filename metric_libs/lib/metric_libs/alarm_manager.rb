@@ -43,11 +43,33 @@ module MetricLibs
       }
     end
 
+    def update_resource(uuid, resource)
+      raise ArgumentError unless uuid.is_a?(String)
+      raise ArgumentError unless resource.is_a?(Hash)
+      get_alarm(uuid).feed(resource)
+    end
+
     def update_resources(resources)
       raise ArgumentError unless resources.is_a?(Hash)
       @manager.each_value {|alm|
         alm[:alarm].feed(resources)
       }
+    end
+
+    def evaluate(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      get_alarm(uuid).evaluate
+    end
+
+    def find_alarm(resource_id, resource)
+      raise ArgumentError unless resource.is_a?(Hash)
+
+      alarm = @manager.values.keep_if {|alm|
+        alm[:alarm].resource_id == resource_id &&
+        resource[alm[:alarm].metric_name]
+      }
+      return nil if alarm.empty?
+      alarm.first[:alarm]
     end
 
     private
