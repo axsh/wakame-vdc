@@ -287,6 +287,8 @@ module Dcmgr
   module VNet
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
     autoload :SGHandler, 'dcmgr/vnet/sg_handler.rb'
+    autoload :VNicInitializer, 'dcmgr/vnet/vnic_initializer.rb'
+    autoload :SGHandlerCommon, 'dcmgr/vnet/sg_handler_common.rb'
 
     module NetworkModes
       module Legacy

@@ -121,12 +121,6 @@ module Dcmgr
         }
       end
 
-      def create_instance_vnics(inst)
-        inst[:vif].each { |vnic|
-          self.job.submit("sg_handler","init_vnic",vnic[:uuid])
-        }
-      end
-
       def destroy_instance_vnics(inst)
         inst[:vif].each { |vnic|
           self.job.submit("sg_handler","destroy_vnic",vnic[:uuid])
@@ -273,8 +267,6 @@ module Dcmgr
         # Node specific instance_started event for netfilter and general instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started'])
 
-        # Security group vnic joined events for vnet netfilter
-        create_instance_vnics(@inst)
       }, proc {
         ignore_error { terminate_instance(false) }
         ignore_error {
@@ -320,9 +312,6 @@ module Dcmgr
         update_instance_state({:state=>:running}, ['hva/instance_started'])
 
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
-
-        # Security group vnic joined events for vnet netfilter
-        create_instance_vnics(@inst)
       }, proc {
         # TODO: Run detach & destroy volume
         ignore_error { terminate_instance(false) }
@@ -530,7 +519,6 @@ module Dcmgr
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweron_instance, [@hva_ctx])
         update_instance_state({:state=>:running}, [])
-        create_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power on")
       }, proc {
         ignore_error {
