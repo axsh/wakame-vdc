@@ -183,5 +183,43 @@ describe "SGHandler and NetfilterAgent" do
       nfa(hostB).should have_applied_secg(secgD).with_vnics([hostB_vnic3]).with_referencees(
       [hostA_vnic3]).with_reference_rules(["-p udp -s 10.0.0.5 --dport 53 -j ACCEPT"])
     end
+
+    context "with two security groups that reference each other" do
+      let(:secgE) { Fabricate(:secg) }
+      let(:secgF) { Fabricate(:secg) }
+      let(:hostA_vnic4) { create_vnic(hostA, [secgE, secgF], "525400033c50", network, "10.0.0.7")}
+      let(:hostB_vnic4) { create_vnic(hostB, [secgE, secgF], "525400033c51", network, "10.0.0.8")}
+
+      it "works with multiple security groups on the same vnic and multiple hosts" do
+        secgE.rule = "tcp:22,22,#{secgF.canonical_uuid}"; secgE.save
+        secgF.rule = "udp:53,53,#{secgE.canonical_uuid}"; secgF.save
+        handler.init_vnic(hostA_vnic4.canonical_uuid)
+        handler.init_vnic(hostB_vnic4.canonical_uuid)
+
+        nfa(hostA).should have_applied_vnic(hostA_vnic4).with_secgs([secgE, secgF])
+        nfa(hostA).should have_applied_secg(secgE).with_vnics([hostB_vnic4, hostA_vnic4]
+        ).with_referencees([hostB_vnic4, hostA_vnic4]).with_reference_rules([
+          "-p tcp -s 10.0.0.7 --dport 22 -j ACCEPT",
+          "-p tcp -s 10.0.0.8 --dport 22 -j ACCEPT"
+        ])
+        nfa(hostA).should have_applied_secg(secgF).with_vnics([hostB_vnic4, hostA_vnic4]
+        ).with_referencees([hostB_vnic4, hostA_vnic4]).with_reference_rules([
+          "-p udp -s 10.0.0.7 --dport 53 -j ACCEPT",
+          "-p udp -s 10.0.0.8 --dport 53 -j ACCEPT"
+        ])
+
+        nfa(hostB).should have_applied_vnic(hostB_vnic4).with_secgs([secgE, secgF])
+        nfa(hostB).should have_applied_secg(secgE).with_vnics([hostB_vnic4, hostA_vnic4]
+        ).with_referencees([hostB_vnic4, hostA_vnic4]).with_reference_rules([
+          "-p tcp -s 10.0.0.7 --dport 22 -j ACCEPT",
+          "-p tcp -s 10.0.0.8 --dport 22 -j ACCEPT"
+        ])
+        nfa(hostB).should have_applied_secg(secgF).with_vnics([hostB_vnic4, hostA_vnic4]
+        ).with_referencees([hostB_vnic4, hostA_vnic4]).with_reference_rules([
+          "-p udp -s 10.0.0.7 --dport 53 -j ACCEPT",
+          "-p udp -s 10.0.0.8 --dport 53 -j ACCEPT"
+        ])
+      end
+    end
   end
 end
