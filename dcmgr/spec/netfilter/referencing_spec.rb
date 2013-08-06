@@ -127,11 +127,11 @@ describe "SGHandler and NetfilterAgent" do
         "-p tcp -s 10.0.0.3 --dport 22 -j ACCEPT"
       ])
 
-      handler.destroy_vnic(hostA_vnic1_id)
-      hostA_vnic1.destroy
+      handler.destroy_vnic(hostB_vnic1_id)
+      hostB_vnic1.destroy
 
-      nfa(hostA).should have_applied_secg(secgB).with_referencees([hostB_vnic1]).with_reference_rules([
-        "-p tcp -s 10.0.0.3 --dport 22 -j ACCEPT"
+      nfa(hostA).should have_applied_secg(secgB).with_referencees([hostA_vnic1]).with_reference_rules([
+        "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT"
       ])
     end
 
