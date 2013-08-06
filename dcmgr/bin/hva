@@ -40,8 +40,6 @@ manifest.instance_eval do
   when 'openflow'
     load_module Dcmgr::NodeModules::DebugOpenFlow
     load_module Dcmgr::NodeModules::ServiceOpenFlow
-  when 'legacy_netfilter'
-    load_module Dcmgr::NodeModules::ServiceNetfilter
   when 'netfilter'
     load_netfilter_handler = true
   when 'off'
