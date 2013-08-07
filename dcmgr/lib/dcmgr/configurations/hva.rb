@@ -73,6 +73,8 @@ module Dcmgr
       class Capture < Fuguta::Configuration
         param :cpu_time, :default =>60
         param :memory_time, :default =>60
+        param :timeout_sec, :default =>10
+        param :retry_count, :default =>1
 
         def validate(errors)
           super

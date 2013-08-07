@@ -29,7 +29,7 @@ module Dcmgr
 
             kvmpid = File.read(pidfile)
             logger.debug("#{i[:uuid]} pid: #{kvmpid}")
-            tryagain(opts={:timeout=>10, :retry=>1}) do
+            tryagain(opts={:timeout=>Dcmgr.conf.capture.timeout_sec, :retry=>Dcmgr.conf.capture.retry_count}) do
               h["#{i[:uuid]}"] = parse_pidstat(metric_name, exec_pidstat(metric_name, kvmpid.to_i))
             end
             logger.debug(h)
