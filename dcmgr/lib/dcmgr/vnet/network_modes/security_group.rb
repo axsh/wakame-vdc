@@ -44,6 +44,7 @@ module Dcmgr::VNet::NetworkModes
       [
         I.vnic_l2_iso_chain(vnic_id).flush,
         I.vnic_l2_ref_chain(vnic_id).flush,
+        I.vnic_l2_secg_chain(vnic_id).flush,
         I.vnic_l3_iso_chain(vnic_id).flush,
         I.vnic_l3_ref_chain(vnic_id).flush,
         I.vnic_l3_secg_chain(vnic_id).flush,
@@ -52,6 +53,7 @@ module Dcmgr::VNet::NetworkModes
       secg_ids.map { |secg_id|
         [I.vnic_l2_iso_chain(vnic_id).add_jump(I.secg_l2_iso_chain(secg_id)),
         I.vnic_l2_ref_chain(vnic_id).add_jump(I.secg_l2_ref_chain(secg_id)),
+        I.vnic_l2_secg_chain(vnic_id).add_jump(I.secg_l2_rules_chain(secg_id)),
         I.vnic_l3_iso_chain(vnic_id).add_jump(I.secg_l3_iso_chain(secg_id)),
         I.vnic_l3_ref_chain(vnic_id).add_jump(I.secg_l3_ref_chain(secg_id)),
         I.vnic_l3_secg_chain(vnic_id).add_jump(I.secg_l3_rules_chain(secg_id)),

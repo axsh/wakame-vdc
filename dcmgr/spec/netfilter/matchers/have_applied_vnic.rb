@@ -9,7 +9,8 @@ module DcmgrSpec::Netfilter::Matchers
         "vdc_#{@vnic_id}_d",
         "vdc_#{@vnic_id}_d_isolation",
         "vdc_#{@vnic_id}_d_ref",
-        "vdc_#{@vnic_id}_d_standard"
+        "vdc_#{@vnic_id}_d_security",
+        "vdc_#{@vnic_id}_d_standard",
       ]
     end
 
@@ -49,6 +50,7 @@ module DcmgrSpec::Netfilter::Matchers
       [
         "vdc_#{@vnic_id}_d_isolation",
         "vdc_#{@vnic_id}_d_ref",
+        "vdc_#{@vnic_id}_d_security",
         "vdc_#{@vnic_id}_d_standard",
         "DROP"
       ]
@@ -148,6 +150,7 @@ module DcmgrSpec::Netfilter::Matchers
       ( @groups.nil? || (
         expect_jumps("ebtables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&
         expect_jumps("ebtables", "vdc_#{@vnic_id}_d_ref", group_chains("ref")) &&
+        expect_jumps("ebtables", "vdc_#{@vnic_id}_d_security", group_chains("d_rules")) &&
         expect_jumps("iptables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&
         expect_jumps("iptables", "vdc_#{@vnic_id}_d_security", group_chains("d_rules")) &&
         expect_jumps("iptables", "vdc_#{@vnic_id}_d_ref", group_chains("ref")) &&

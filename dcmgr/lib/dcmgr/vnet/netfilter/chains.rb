@@ -94,8 +94,8 @@ module Dcmgr::VNet::Netfilter::Chains
   module Inbound
     F = Dcmgr::VNet::Netfilter::Chains::Factory
     class << self
-      def secg_l3_rules_chain(sg_id)
-        F.secg_chain(:L3, sg_id, "d_rules")
+      def secg_l2_rules_chain(sg_id)
+        F.secg_chain(:L2, sg_id, "d_rules")
       end
 
       def secg_l2_iso_chain(sg_id)
@@ -104,6 +104,10 @@ module Dcmgr::VNet::Netfilter::Chains
 
       def secg_l2_ref_chain(sg_id)
         F.secg_chain(:L2, sg_id, "ref")
+      end
+
+      def secg_l3_rules_chain(sg_id)
+        F.secg_chain(:L3, sg_id, "d_rules")
       end
 
       def secg_l3_iso_chain(sg_id)
@@ -130,6 +134,12 @@ module Dcmgr::VNet::Netfilter::Chains
         F.vnic_chain(:L2, vnic_id, "d_ref")
       end
 
+      # We need a rules chain for L2 as well because we have to accept
+      # ARP from the ip addresses in the rules
+      def vnic_l2_secg_chain(vnic_id)
+        F.vnic_chain(:L2, vnic_id, "d_security")
+      end
+
       def vnic_l3_main_chain(vnic_id)
         F.vnic_chain(:L3, vnic_id, "d")
       end
@@ -147,7 +157,7 @@ module Dcmgr::VNet::Netfilter::Chains
       end
 
       def vnic_l3_secg_chain(vnic_id)
-        F.vnic_chain(:L3, vnic_id, "d_security") # Only L3 needs the secg chain. We don't have user defined L2 rules atm.
+        F.vnic_chain(:L3, vnic_id, "d_security")
       end
     end
   end
@@ -189,6 +199,7 @@ module Dcmgr::VNet::Netfilter::Chains
   def secg_chains(sg_id)
     [
       I.secg_l2_ref_chain(sg_id),
+      I.secg_l2_rules_chain(sg_id),
       I.secg_l3_ref_chain(sg_id),
       I.secg_l3_rules_chain(sg_id),
       O.secg_l3_rules_chain(sg_id)
@@ -205,6 +216,7 @@ module Dcmgr::VNet::Netfilter::Chains
       I.vnic_l2_stnd_chain(vnic_id),
       I.vnic_l2_iso_chain(vnic_id),
       I.vnic_l2_ref_chain(vnic_id),
+      I.vnic_l2_secg_chain(vnic_id)
     ]
   end
 

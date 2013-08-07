@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+require "ipaddress"
 
 module Dcmgr::VNet::Netfilter::NetfilterAgent
   def self.included klass
@@ -60,7 +61,7 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       ref_ips.map { |r_ip|
         l2ref_chain.add_rule("--protocol arp --arp-opcode Request --arp-ip-src #{r_ip} -j ACCEPT")
       } +
-      Dcmgr::VNet::Netfilter.parse_rules(rules).map { |r|
+      parse_rules(rules).map { |r|
         l3ref_chain.add_rule(r)
       }
     )
@@ -69,11 +70,14 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
   def update_sg_rules(secg_id, rules)
     logger.info "Updating rules for security group: '#{secg_id}'"
 
-    chain = I.secg_l3_rules_chain(secg_id)
-    exec chain.flush
-    exec(Dcmgr::VNet::Netfilter.parse_rules(rules).map { |rule|
-      chain.add_rule rule
-    })
+    l2chain = I.secg_l2_rules_chain(secg_id)
+    l3chain = I.secg_l3_rules_chain(secg_id)
+
+    exec(
+      [I.secg_l2_rules_chain(secg_id).flush, I.secg_l3_rules_chain(secg_id).flush] +
+      parse_arp_for_rules(rules).map {|rule| l2chain.add_rule(rule)} +
+      parse_rules(rules).map {|rule| l3chain.add_rule(rule)}
+    )
   end
 
   def update_isolation_group(group_id, friend_ips)
@@ -129,5 +133,37 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
 
   def network_mode(vnic_map)
     Dcmgr::VNet::NetworkModes.get_mode(vnic_map[:network][:network_mode])
+  end
+
+  def accept_arp_from_ip(ipv4)
+    "--protocol arp --arp-opcode Request --arp-ip-src #{ipv4} -j ACCEPT"
+  end
+
+  def parse_arp_for_rules(sg_rules)
+    sg_rules.map { |rule| accept_arp_from_ip(rule[:ip_source]) }.uniq
+  end
+
+  def parse_rules(sg_rules)
+    sg_rules.map { |rule|
+      case rule[:ip_protocol]
+      when 'tcp', 'udp'
+        if rule[:ip_fport] == rule[:ip_tport]
+          "-p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_fport]} -j ACCEPT"
+        else
+          "-p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_fport]}:#{rule[:ip_tport]} -j ACCEPT"
+        end
+      when 'icmp'
+        # icmp
+        #   This extension can be used if `--protocol icmp' is specified. It provides the following option:
+        #   [!] --icmp-type {type[/code]|typename}
+        #     This allows specification of the ICMP type, which can be a numeric ICMP type, type/code pair, or one of the ICMP type names shown by the command
+        #      iptables -p icmp -h
+        if rule[:icmp_type] == -1 && rule[:icmp_code] == -1
+          "-p icmp -s #{rule[:ip_source]} -j ACCEPT"
+        else
+          "-p icmp -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
+        end
+      end
+    }
   end
 end

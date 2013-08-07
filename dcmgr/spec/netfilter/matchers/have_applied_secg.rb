@@ -17,6 +17,11 @@ module DcmgrSpec::Netfilter::Matchers
       ]
     end
 
+    def l2_rule_arp
+      source_ips = @rules.map { |rule| rule.split("-s")[1].split(" ")[0] }.uniq
+      source_ips.map {|ip| "--protocol arp --arp-opcode Request --arp-ip-src #{ip} -j ACCEPT"}
+    end
+
     def l2_iso_rules
       @vnics.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src #{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
     end
@@ -57,7 +62,8 @@ module DcmgrSpec::Netfilter::Matchers
         expect_rules("iptables", "vdc_#{secg_id}_isolation", l3_iso_rules)
       )) &&
       ( @rules.nil? || (
-        expect_rules("iptables", "vdc_#{secg_id}_d_rules", @rules)
+        expect_rules("iptables", "vdc_#{secg_id}_d_rules", @rules) &&
+        expect_rules("ebtables", "vdc_#{secg_id}_d_rules", l2_rule_arp)
       )) &&
       ( @reffers.nil? || (
         expect_rules("ebtables", "vdc_#{secg_id}_ref", l2_reffer_rules)

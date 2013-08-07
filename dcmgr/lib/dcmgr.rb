@@ -297,7 +297,6 @@ module Dcmgr
     end
 
     module Netfilter
-      require "dcmgr/vnet/netfilter/rule_parser.rb"
       autoload :NetfilterAgent, 'dcmgr/vnet/netfilter/netfilter_agent'
       autoload :NetfilterTasks, 'dcmgr/vnet/netfilter/netfilter_tasks'
       autoload :Chains, 'dcmgr/vnet/netfilter/chains'
