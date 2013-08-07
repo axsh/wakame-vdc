@@ -15,18 +15,15 @@ module Dcmgr::VNet::SGHandlerCommon
   def init_security_group(host, group)
     group_id = group.canonical_uuid
     logger.info "Telling host '#{host.canonical_uuid}' to initialize security group '#{group_id}'"
-    call_packetfilter_service(host, "init_security_group", group_id, group.rules_array_no_ref)
 
     friend_ips = group.vnic_ips
-    call_packetfilter_service(host, "init_isolation_group", group_id, friend_ips)
-
+    call_packetfilter_service(host, "init_security_group", group_id, group.rules_array_no_ref, friend_ips)
     handle_referencees(host, group)
   end
 
   def destroy_security_group(host, group_id)
     logger.info "Telling host '#{host.canonical_uuid}' to destroy security group '#{group_id}'"
     call_packetfilter_service(host, "destroy_security_group", group_id)
-    call_packetfilter_service(host, "destroy_isolation_group", group_id)
   end
 
   def update_isolation_group(host, group, friend_ips = nil)

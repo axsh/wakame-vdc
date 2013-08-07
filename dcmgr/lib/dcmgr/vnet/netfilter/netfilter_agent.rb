@@ -27,26 +27,22 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     exec network_mode(vnic_map).destroy_vnic(vnic_map)
   end
 
-  def init_security_group(secg_id, rules)
+  def init_security_group(secg_id, rules, friend_ips)
     logger.info "Adding security chains for group '#{secg_id}'."
-    exec secg_chains(secg_id).map {|chain| chain.create }
+    exec(
+      secg_chains(secg_id).map {|chain| chain.create} +
+      isog_chains(secg_id).map {|chain| chain.create}
+    )
     update_sg_rules(secg_id, rules)
+    update_isolation_group(secg_id, friend_ips)
   end
 
   def destroy_security_group(secg_id)
-    logger.info "Removing security chains for group '#{secg_id}'."
-    exec secg_chains(secg_id).map {|chain| chain.destroy }
-  end
-
-  def init_isolation_group(isog_id, friend_ips)
-    logger.info "Adding isolation chains for group '#{isog_id}'."
-    exec isog_chains(isog_id).map {|chain| chain.create}
-    update_isolation_group(isog_id, friend_ips)
-  end
-
-  def destroy_isolation_group(isog_id)
-    logger.info "Removing isolation chains for group '#{isog_id}'."
-    exec isog_chains(isog_id).map {|chain| chain.destroy}
+    logger.info "Removing chains for group '#{secg_id}'."
+    exec(
+      secg_chains(secg_id).map {|chain| chain.destroy} +
+      isog_chains(secg_id).map {|chain| chain.destroy}
+    )
   end
 
   def set_vnic_security_groups(vnic_map, secg_ids)
