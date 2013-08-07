@@ -378,6 +378,7 @@ module Dcmgr
 
   module Monitor
     autoload :ResourceCapture, 'dcmgr/monitor/resource_capture'
+    autoload :Notification, 'dcmgr/monitor/notification'
   end
 end
 
