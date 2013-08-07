@@ -19,15 +19,15 @@ module DcmgrSpec::Netfilter::Matchers
 
     def l2_rule_arp
       source_ips = @rules.map { |rule| rule.split("-s")[1].split(" ")[0] }.uniq
-      source_ips.map {|ip| "--protocol arp --arp-opcode Request --arp-ip-src #{ip} -j ACCEPT"}
+      source_ips.map {|ip| "--protocol arp --arp-opcode Request --arp-ip-src=#{ip} -j ACCEPT"}
     end
 
     def l2_iso_rules
-      @vnics.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src #{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
+      @vnics.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src=#{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
     end
 
     def l2_reffer_rules
-      @reffers.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src #{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
+      @reffers.map {|v| "--protocol arp --arp-opcode Request --arp-ip-src=#{v.direct_ip_lease.first.ipv4} -j ACCEPT" }
     end
 
     def l3_iso_rules

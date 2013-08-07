@@ -59,7 +59,7 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     exec(
       [l2ref_chain.flush, l3ref_chain.flush] +
       ref_ips.map { |r_ip|
-        l2ref_chain.add_rule("--protocol arp --arp-opcode Request --arp-ip-src #{r_ip} -j ACCEPT")
+        l2ref_chain.add_rule(accept_arp_from_ip(r_ip))
       } +
       parse_rules(rules).map { |r|
         l3ref_chain.add_rule(r)
@@ -88,7 +88,7 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       l2c.flush,
       l3c.flush,
       friend_ips.map { |f_ip|
-        [l2c.add_rule("--protocol arp --arp-opcode Request --arp-ip-src #{f_ip} -j ACCEPT"),
+        [l2c.add_rule(accept_arp_from_ip(f_ip)),
         l3c.add_rule("-s #{f_ip} -j ACCEPT")]
       }
     ].flatten
@@ -133,10 +133,6 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
 
   def network_mode(vnic_map)
     Dcmgr::VNet::NetworkModes.get_mode(vnic_map[:network][:network_mode])
-  end
-
-  def accept_arp_from_ip(ipv4)
-    "--protocol arp --arp-opcode Request --arp-ip-src #{ipv4} -j ACCEPT"
   end
 
   def parse_arp_for_rules(sg_rules)

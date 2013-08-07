@@ -11,29 +11,44 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
 
   private
   def accept_arp_from_gateway(vnic_map)
-    vnic_map[:network] && vnic_map[:network][:ipv4_gw] && I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-opcode Request --arp-ip-src=#{vnic_map[:network][:ipv4_gw]} --arp-ip-dst=#{vnic_map[:address]} -j ACCEPT")
+    vnic_map[:network] && vnic_map[:network][:ipv4_gw] &&
+      I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule(
+        accept_arp_from_ip(vnic_map[:network][:ipv4_gw], vnic_map[:address])
+      )
   end
 
   def accept_arp_from_dns(vnic_map)
-    vnic_map[:network] && vnic_map[:network][:dns_server] && I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-opcode Request --arp-ip-src=#{vnic_map[:network][:dns_server]} --arp-ip-dst=#{vnic_map[:address]} -j ACCEPT")
+    vnic_map[:network] && vnic_map[:network][:dns_server] &&
+      I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule(
+        accept_arp_from_ip(vnic_map[:network][:dns_server], vnic_map[:address])
+      )
   end
 
   def accept_garp_from_gateway(vnic_map)
-    vnic_map[:network] && vnic_map[:network][:ipv4_gw] && I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-gratuitous --arp-ip-src=#{vnic_map[:network][:ipv4_gw]} -j ACCEPT")
+    vnic_map[:network] && vnic_map[:network][:ipv4_gw] &&
+      I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule(
+        "--protocol arp --arp-gratuitous --arp-ip-src=#{vnic_map[:network][:ipv4_gw]} -j ACCEPT"
+      )
   end
 
   def accept_arp_reply_with_correct_mac_ip_combo(vnic_map)
-    I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-opcode Reply --arp-ip-dst=#{vnic_map[:address]} --arp-mac-dst=#{clean_mac(vnic_map[:mac_addr])} -j ACCEPT")
+    I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule(
+      "--protocol arp --arp-opcode Reply --arp-ip-dst=#{vnic_map[:address]} --arp-mac-dst=#{clean_mac(vnic_map[:mac_addr])} -j ACCEPT"
+    )
   end
 
   def drop_ip_spoofing(vnic_map)
-    O.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-ip-src ! #{vnic_map[:address]} -j DROP")
+    O.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule(
+      "--protocol arp --arp-ip-src ! #{vnic_map[:address]} -j DROP"
+    )
     #TODO: drop ip spoofing to the host EbtablesRule.new(:filter,:input,:arp,:outgoing,"--protocol arp --arp-ip-src ! #{self.ip} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
     #TODO: drop ip spoofing from the host EbtablesRule.new(:filter,:output,:arp,:incoming,"--protocol arp --arp-ip-dst ! #{self.ip} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
   end
 
   def drop_mac_spoofing(vnic_map)
-    O.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-mac-src ! #{clean_mac(vnic_map[:mac_addr])} -j DROP")
+    O.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule(
+      "--protocol arp --arp-mac-src ! #{clean_mac(vnic_map[:mac_addr])} -j DROP"
+    )
     #TODO: drop mac spoofing to the host EbtablesRule.new(:filter,:input,:arp,:outgoing,"--protocol arp --arp-mac-src ! #{self.mac} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
     #TODO: drop mac spoofing from the host EbtablesRule.new(:filter,:output,:arp,:incoming,"--protocol arp --arp-mac-dst ! #{self.mac} #{EbtablesRule.log_arp(self.log_prefix) if self.enable_logging} -j DROP")
   end
@@ -46,51 +61,46 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
 
   #TODO: Read up on what iptables means by related/established for connectionless protocols like icmp and umd. Then comment about that here.
   def accept_related_established(vnic_map)
-    I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule("-m state --state RELATED,ESTABLISHED -j ACCEPT")
+    I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule(
+      "-m state --state RELATED,ESTABLISHED -j ACCEPT"
+    )
   end
 
   # accept only wakame's dns (users can use their custom ones by opening a port in their security groups)
   def accept_wakame_dns(vnic_map)
-    I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule("-p udp -d #{vnic_map[:network][:dns_server]} --dport 53 -j ACCEPT") if vnic_map[:network] && vnic_map[:network][:dns_server]
+    I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule(
+      "-p udp -d #{vnic_map[:network][:dns_server]} --dport 53 -j ACCEPT"
+    ) if vnic_map[:network] && vnic_map[:network][:dns_server]
   end
 
   # Explicitely block out dhcp that isn't wakame's.
   # Unlike dns, you can not allow more than one dhcp server in a network.
   def accept_wakame_dhcp_only(vnic_map)
-    [vnic_map[:network] && vnic_map[:network][:dhcp_server] && I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule("-p udp ! -s #{vnic_map[:network][:dhcp_server]} --sport 67:68 -j DROP"),
-    vnic_map[:network] && vnic_map[:network][:dhcp_server] && I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule("-p udp -s #{vnic_map[:network][:dhcp_server]} --sport 67:68 -j ACCEPT")]
+    [
+      vnic_map[:network] && vnic_map[:network][:dhcp_server] &&
+      I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule(
+        "-p udp ! -s #{vnic_map[:network][:dhcp_server]} --sport 67:68 -j DROP"
+      ),
+      vnic_map[:network] && vnic_map[:network][:dhcp_server] &&
+      I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule(
+        "-p udp -s #{vnic_map[:network][:dhcp_server]} --sport 67:68 -j ACCEPT"
+      )
+    ]
   end
 
   def translate_metadata_address(vnic_map)
     return nil unless vnic_map[:network] && vnic_map[:network][:metadata_server] && vnic_map[:network][:metadata_server_port]
-    [O.vnic_l3_dnat_chain(vnic_map[:uuid]).add_rule("-d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{vnic_map[:network][:metadata_server]}:#{vnic_map[:network][:metadata_server_port]}"),
-    I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule("--protocol arp --arp-opcode Request --arp-ip-src=#{vnic_map[:network][:metadata_server]} --arp-ip-dst=#{vnic_map[:address]} -j ACCEPT"),
-    I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule("-p tcp -s #{vnic_map[:network][:metadata_server]} --sport #{vnic_map[:network][:metadata_server_port]} -j ACCEPT")]
-  end
-
-  def translate_logging_address(vnic_map, host_ip)
-    return nil unless Dcmgr.conf.use_logging_service
-
-    unless Dcmgr.conf.logging_service_ip
-      logger.warn "Logging service enabled but its ip was not set."
-      return nil
-    end
-    unless Dcmgr.conf.logging_service_port
-      logger.warn "Logging service enabled but its port was not set"
-      return nil
-    end
-    unless host_ip
-      logger.warn "Logging service enabled but host_ip was not set."
-      return nil
-    end
-
-    [:udp, :tcp].each.inject(
-      O.vnic_l3_dnat_chain(vnic_map[:uuid]),
-      Dcmgr.conf.logging_service_ip,
-      Dcmgr.conf.logging_service_port
-    ) { |chain, ip, port, protocol|
-      chain.add_rule("-d #{ip} --dport #{port} -p #{protocol} -j DNAT --to-destination #{host_ip}:#{logging_port}")
-    }
+    [
+      O.vnic_l3_dnat_chain(vnic_map[:uuid]).add_rule(
+        "-d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{vnic_map[:network][:metadata_server]}:#{vnic_map[:network][:metadata_server_port]}"
+      ),
+      I.vnic_l2_stnd_chain(vnic_map[:uuid]).add_rule(
+        accept_arp_from_ip(vnic_map[:network][:metadata_server], vnic_map[:address])
+      ),
+      I.vnic_l3_stnd_chain(vnic_map[:uuid]).add_rule(
+        "-p tcp -s #{vnic_map[:network][:metadata_server]} --sport #{vnic_map[:network][:metadata_server_port]} -j ACCEPT"
+      )
+    ]
   end
 
   def forward_chain_jumps(vnic_id, action = "add")
@@ -132,5 +142,10 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
   def vnic_main_drop_rules(vnic_map)
     [I.vnic_l2_main_chain(vnic_map[:uuid]).add_rule("-j DROP"),
     I.vnic_l3_main_chain(vnic_map[:uuid]).add_rule("-j DROP")]
+  end
+
+  # Helper method for accepting ARP from an ip
+  def accept_arp_from_ip(from, to = nil)
+    "--protocol arp --arp-opcode Request --arp-ip-src=#{from} #{to.nil? ? "" : "--arp-ip-dst=#{to}"} -j ACCEPT"
   end
 end
