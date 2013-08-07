@@ -10,6 +10,7 @@ module Dcmgr::Rpc
     def initialize(*args)
       super(*args)
 
+      self.verbose_netfilter = Dcmgr.conf.verbose_netfilter
       remove_all_chains
       job = Isono::NodeModules::JobChannel.new(@node)
       job.submit("sg_handler","init_host","hva.#{@node.manifest.node_instance_id}")

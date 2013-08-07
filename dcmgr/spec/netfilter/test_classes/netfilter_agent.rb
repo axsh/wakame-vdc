@@ -15,8 +15,11 @@ module DcmgrSpec::Netfilter
 
     private
     def exec(cmds)
-      cmds = [cmds] unless cmds.is_a?(Array)
-      @parser.parse(cmds)
+      def system(cmd)
+        @parser.parse(cmd.split("\n"))
+      end
+
+      super
     end
   end
 end

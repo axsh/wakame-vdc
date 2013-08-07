@@ -8,6 +8,8 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
       include Dcmgr::VNet::Netfilter::Chains
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::VNet::Netfilter::NetfilterTasks
+
+      attr_accessor :verbose_netfilter
     end
   end
   I = Dcmgr::VNet::Netfilter::Chains::Inbound
@@ -125,10 +127,26 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
 
   private
   def exec(cmds)
-    #TODO: Make vebose commands options
     cmds = [cmds] unless cmds.is_a?(Array)
-    puts cmds.join("\n")
-    system cmds.join("\n")
+
+    l2_cmds = []
+    l3_cmds = []
+    cmds.each { |c|
+      case c.split(" ")[0]
+      when "ebtables"
+        l2_cmds << c
+      when "iptables"
+        l3_cmds << c
+      end
+    }
+
+    if verbose_netfilter
+      puts l2_cmds.join("\n")
+      puts l3_cmds.join("\n")
+    end
+
+    system l2_cmds.join("\n")
+    system l3_cmds.join("\n")
   end
 
   def network_mode(vnic_map)
