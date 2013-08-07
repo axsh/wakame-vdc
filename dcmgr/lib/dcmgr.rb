@@ -376,6 +376,10 @@ module Dcmgr
 
   autoload :TextLog, 'dcmgr/text_log'
 
+  module Monitor
+    autoload :ResourceCapture, 'dcmgr/monitor/resource_capture'
+    autoload :Notification, 'dcmgr/monitor/notification'
+  end
 end
 
 module Ext
