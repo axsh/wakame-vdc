@@ -17,6 +17,11 @@ module MetricLibs
       set_variable(alm)
     end
 
+    def update_state(state)
+      raise ArgumentError unless state.is_a?(String)
+      @state = state
+    end
+
     def feed(data)
       raise ArgumentError unless data.is_a?(Hash)
       if data["timeout"]
@@ -69,6 +74,16 @@ module MetricLibs
       when "memory.usage"
       end
       @resource.length >= @evaluation_count ? true : false
+    end
+
+    def to_hash
+      h = {}
+      self.instance_variables.map {|v|
+       h[v.to_s.delete('@')] = instance_variable_get(v) 
+      }
+      h.delete("manager") if h.has_key?("manager")
+      h.delete("resource") if h.has_key?("resource")
+      h
     end
 
     private
