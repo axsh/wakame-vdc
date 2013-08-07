@@ -3,7 +3,7 @@
 module MetricLibs
   class AlarmManager
 
-    def initialize(timer)
+    def initialize(timer=nil)
       @timer = timer
       # @manager = {:alarm_id => {:timer => @timer, :alarm => Alarm.new}
       @manager = {}
@@ -12,7 +12,11 @@ module MetricLibs
     def update(alm)
       if alm[:enabled]
         if get_hash(alm[:uuid])
-          cancel_update_alarm(alm)
+          if @timer.nil?
+            update_alarm(alm)
+          else
+            cancel_update_alarm(alm)
+          end
         else
           create_alarm(alm)
         end
@@ -39,11 +43,33 @@ module MetricLibs
       }
     end
 
+    def update_resource(uuid, resource)
+      raise ArgumentError unless uuid.is_a?(String)
+      raise ArgumentError unless resource.is_a?(Hash)
+      get_alarm(uuid).feed(resource)
+    end
+
     def update_resources(resources)
       raise ArgumentError unless resources.is_a?(Hash)
       @manager.each_value {|alm|
         alm[:alarm].feed(resources)
       }
+    end
+
+    def evaluate(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      get_alarm(uuid).evaluate
+    end
+
+    def find_alarm(resource_id, resource)
+      raise ArgumentError unless resource.is_a?(Hash)
+
+      alarm = @manager.values.keep_if {|alm|
+        alm[:alarm].resource_id == resource_id &&
+        resource[alm[:alarm].metric_name]
+      }
+      return nil if alarm.empty?
+      alarm.first[:alarm]
     end
 
     private
@@ -82,10 +108,15 @@ module MetricLibs
       @manager.delete(uuid)
     end
 
+    def update_alarm(alm)
+      raise ArgumentError unless alm.is_a?(Hash)
+      get_alarm(alm[:uuid]).update(alm)
+    end
+
     def cancel_update_alarm(alm)
       raise ArgumentError unless alm.is_a?(Hash)
       get_timer(alm[:uuid]).cancel
-      get_alarm(alm[:uuid]).update(alm)
+      update_alarm(alm)
       set_timer(alm[:uuid])
     end
 
@@ -93,13 +124,13 @@ module MetricLibs
       raise ArgumentError unless alm.is_a?(Hash)
       set_hash(alm[:uuid])
       set_alarm(alm)
-      set_timer(alm[:uuid])
+      set_timer(alm[:uuid]) unless @timer.nil?
     end
 
     def delete_alarm(uuid)
       raise ArgumentError unless uuid.is_a?(String)
       if get_hash(uuid)
-        get_timer(uuid).cancel
+        get_timer(uuid).cancel unless @timer.nil?
         delete_hash(uuid)
       end
     end

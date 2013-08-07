@@ -25,5 +25,8 @@ module MetricLibs::Constants
       'lt' => :<,
     }.freeze
 
+    INSUFFICIENT_DATA_STATE = 'insufficient_data_state'
+    OK_STATE = 'ok_state'
+    ALARM_STATE = 'alarm_state'
   end
 end
