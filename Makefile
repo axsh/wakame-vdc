@@ -1,12 +1,9 @@
-ruby_ver ?= 1.9.3-p385
+ruby_ver ?= 2.0.0-p247
 
 # should be in wakame-vdc
 CURDIR ?= $(PWD)
 RUBYDIR ?= $(CURDIR)/ruby
 
-RUBY_MIRROR_SITE     ?= http://core.ring.gr.jp/archives/lang/ruby/
-LIBYAML_MIRROR_SITE  ?= http://pyyaml.org/download/libyaml/
-RUBYGEMS_MIRROR_SITE ?= http://production.cf.rubygems.org/rubygems/
 RUBY_BUILD_REPO_URI  ?= https://github.com/sstephenson/ruby-build.git
 
 CFLAGS := -fno-strict-aliasing
@@ -30,56 +27,26 @@ unexport GEM_HOME GEM_PATH
 
 build: build-ruby-stamp
 
-build-ruby-stamp: ruby-build ruby install-core-gem bundle-install
+build-ruby-stamp: ruby-build ruby
 	touch $@
 
-ruby-build: ruby-build-stamp
-ruby-build-stamp:
-	(cd $(CURDIR); git clone $(RUBY_BUILD_REPO_URI))
-	(cd $(CURDIR)/ruby-build; sed -i s,http://ftp.ruby-lang.org/pub/ruby/,$(RUBY_MIRROR_SITE), share/ruby-build/*)
-	(cd $(CURDIR)/ruby-build; sed -i s,http://pyyaml.org/download/libyaml/,$(LIBYAML_MIRROR_SITE), share/ruby-build/*)
-	(cd $(CURDIR)/ruby-build; sed -i s,http://production.cf.rubygems.org/rubygems/,$(RUBYGEMS_MIRROR_SITE), share/ruby-build/*)
-	touch $@
+ruby-build:
+	(if [ -d ruby-build ]; then \
+	  cd ruby-build; git pull; \
+        else \
+	  git clone $(RUBY_BUILD_REPO_URI); \
+	fi)
 
 ruby: ruby-stamp
 ruby-stamp:
 	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(RUBYDIR))
-	touch $@
-
-install-core-gem: install-core-gem-stamp
-install-core-gem-stamp:
-	gem install bundler rake --no-rdoc --no-ri
-	touch $@
-
-bundle-install: bundle-install-stamp
-bundle-install-stamp:
-	(cd $(CURDIR)/dcmgr && bundle install --standalone --path vendor/bundle)
-	# Use hijiki gem in local since the local version is the latest.
-	(cd $(CURDIR)/frontend/dcmgr_gui && mkdir -p vendor/cache)
-	(cd $(CURDIR)/frontend/admin && mkdir -p vendor/cache)
-	(cd $(CURDIR)/tests/cucumber && mkdir -p vendor/cache)
-	(cd $(CURDIR)/client/ruby-hijiki && rake gem && mv pkg/ruby-hijiki-*.gem ../../frontend/dcmgr_gui/vendor/cache)
-	(cd $(CURDIR)/dolphin && mkdir -p vendor/cache)
-
-	# in order to build rpm, client(ruby-hijiki)/ is no need.
-	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki $(CURDIR)/client/ruby-hijiki.saved
-	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --standalone --path vendor/bundle)
-	(cd $(CURDIR)/frontend/admin && bundle install --standalone --path vendor/bundle)
-	(cd $(CURDIR)/dolphin && bundle install --standalone --path vendor/bundle)
-	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki.saved $(CURDIR)/client/ruby-hijiki
-
+	gem install bundler --no-rdoc --no-ri
 	touch $@
 
 clean:
 	rm -rf $(CURDIR)/ruby-build $(RUBYDIR)
-	rm -rf $(CURDIR)/dcmgr/vendor/bundle
-	rm -rf $(CURDIR)/frontend/dcmgr_gui/vendor/bundle
-	rm -rf $(CURDIR)/frontend/admin/vendor/bundle
-	rm -rf $(CURDIR)/dolphin/vendor/bundle
 	rm -f $(CURDIR)/build-ruby-stamp
-	rm -f $(CURDIR)/bundle-install-stamp
-	rm -f $(CURDIR)/install-core-gem-stamp
 	rm -f $(CURDIR)/ruby-build-stamp
 	rm -f $(CURDIR)/ruby-stamp
 
-.PHONY: build ruby-build ruby clean install-core-gem bundle-install
+.PHONY: build ruby-build ruby clean bundle-install
