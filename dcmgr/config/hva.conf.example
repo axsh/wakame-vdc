@@ -86,3 +86,7 @@ dc_network('management') {
 #    write_iops 200
 #  }
 #}
+
+# Dolphin server connection uri
+config.dolphin_server_uri = "http://localhost:9004"
+

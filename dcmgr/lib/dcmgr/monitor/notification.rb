@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+require 'dolphin_client'
 
 module Dcmgr
   module Monitor
@@ -22,6 +23,9 @@ module Dcmgr
         end
 
         def send(value)
+          raise ArgumentError unless value.is_a?(Hash)
+          DolphinClient.domain = Dcmgr.conf.dolphin_server_uri
+          DolphinClient::Event.post(value)
         end
       end        
     end

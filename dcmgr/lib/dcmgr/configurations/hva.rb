@@ -192,6 +192,9 @@ module Dcmgr
       # transition.
       param :enable_instance_state_recovery, :default=>true
 
+      # Dolphin server connection string
+      param :dolphin_server_uri, :default=> 'http://127.0.0.1:9004/'
+
       def validate(errors)
         if @config[:vm_data_dir].nil?
           errors << "vm_data_dir not set"
