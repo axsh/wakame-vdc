@@ -18,6 +18,7 @@ module Dcmgr
         @alarms = []
         alarms.each do |alarm|
           @alarms << {
+            :resource_id => alarm[:resource_id],
             :alarm_id => alarm[:alarm_id],
             :tag => alarm[:tag],
             :match_pattern => alarm[:match_pattern],
