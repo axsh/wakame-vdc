@@ -50,9 +50,7 @@ module Dcmgr::VNet::NetworkModes
       tasks += self.netfilter_nat_tasks(vnic,network,node)
 
       # Logging Service
-      if host_addr
-        tasks += self.netfilter_logging_service_tasks(vnic, host_addr)
-      end
+      tasks += self.netfilter_logging_service_tasks(vnic)
 
       # Security group rules
       security_groups.each { |secgroup|
@@ -67,15 +65,18 @@ module Dcmgr::VNet::NetworkModes
       tasks
     end
 
-    def netfilter_logging_service_tasks(vnic, host_ip)
+    def netfilter_logging_service_tasks(vnic)
       tasks = []
+      logging_service_host_ip = Dcmgr.conf.logging_service_host_ip
+      logging_service_dest_ip = Dcmgr.conf.logging_service_dest_ip
       logging_service_enabled = Dcmgr.conf.use_logging_service
-      logging_service_ip = Dcmgr.conf.logging_service_ip
       logging_service_port = Dcmgr.conf.logging_service_port
 
       # Logging Service for inside instance.
-      if logging_service_enabled && !logging_service_ip.nil? && !logging_service_port.nil?
-        tasks << TranslateLoggingAddress.new(vnic[:uuid], host_ip, logging_service_ip, logging_service_port)
+      if logging_service_enabled
+        unless [logging_service_host_ip, logging_service_dest_ip, logging_service_port].any? {|v| v.nil? }
+          tasks << TranslateLoggingAddress.new(vnic[:uuid], logging_service_host_ip, logging_service_dest_ip, logging_service_port)
+        end
       end
       tasks
     end

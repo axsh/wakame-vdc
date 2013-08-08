@@ -148,7 +148,8 @@ module Dcmgr
       param :debug_iptables, :default=>false
       param :use_ipset, :default=>false
       param :use_logging_service, :default=>false
-      param :logging_service_ip, :default =>'169.254.169.253'
+      param :logging_service_host_ip, :default =>'127.0.0.2'
+      param :logging_service_dest_ip, :default =>'169.254.169.253'
       param :logging_service_port, :default => 8888
       param :logging_service_tmp, :default => '/var/lib/wakame-vdc/'
       param :enable_gre, :default=>false
