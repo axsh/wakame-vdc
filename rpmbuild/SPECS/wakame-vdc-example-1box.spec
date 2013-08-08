@@ -44,6 +44,24 @@ Requires: %{name}-common-vmapp-config
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
+# example:webui
+%package webui-vmapp-config
+Summary: Configuration set for webui %{osubname}
+Group: Development/Languages
+Requires: %{oname}-webui-vmapp-config
+Requires: %{name}-common-vmapp-config
+%description webui-vmapp-config
+<insert long description, indented with spaces>
+
+# example:proxy
+%package proxy-vmapp-config
+Summary: Configuration set for proxy %{osubname}
+Group: Development/Languages
+Requires: %{oname}-proxy-vmapp-config
+Requires: %{name}-common-vmapp-config
+%description proxy-vmapp-config
+<insert long description, indented with spaces>
+
 # example:admin
 %package admin-vmapp-config
 Summary: Configuration set for admin %{osubname}
@@ -62,11 +80,33 @@ Requires: %{name}-common-vmapp-config
 %description hva-vmapp-config
 <insert long description, indented with spaces>
 
+# example:nsa
+%package nsa-vmapp-config
+Summary: Configuration set for nsa %{osubname}
+Group: Development/Languages
+Requires: %{oname}-nsa-vmapp-config
+Requires: %{name}-common-vmapp-config
+%description nsa-vmapp-config
+<insert long description, indented with spaces>
+
+# example:sta
+%package sta-vmapp-config
+Summary: Configuration set for sta %{osubname}
+Group: Development/Languages
+Requires: %{oname}-sta-vmapp-config
+Requires: %{name}-common-vmapp-config
+%description sta-vmapp-config
+<insert long description, indented with spaces>
+
 # example:full
 %package full-vmapp-config
 Summary: Configuration set for full %{osubname}
 Group: Development/Languages
 Requires: %{name}-dcmgr-vmapp-config
+Requires: %{name}-proxy-vmapp-config
+Requires: %{name}-webui-vmapp-config
+Requires: %{name}-nsa-vmapp-config
+Requires: %{name}-sta-vmapp-config
 Requires: %{name}-hva-vmapp-config
 Requires: %{name}-admin-vmapp-config
 %description full-vmapp-config
@@ -186,21 +226,29 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 
 %files dcmgr-vmapp-config
-%config /etc/%{oname}/dcmgr.conf
-%config /etc/%{oname}/nsa.conf
-%config /etc/%{oname}/sta.conf
-%config /etc/%{oname}/proxy.conf
-%config /etc/%{oname}/dcmgr_gui/database.yml
-%config /etc/%{oname}/dcmgr_gui/instance_spec.yml
-%config /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
-%config /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml
-%config /etc/%{oname}/convert_specs/load_balancer.yml
+%config(noreplace) /etc/%{oname}/dcmgr.conf
+%config(noreplace) /etc/%{oname}/convert_specs/load_balancer.yml
+
+%files proxy-vmapp-config
+%config(noreplace) /etc/%{oname}/proxy.conf
+
+%files webui-vmapp-config
+%config(noreplace) /etc/%{oname}/dcmgr_gui/database.yml
+%config(noreplace) /etc/%{oname}/dcmgr_gui/instance_spec.yml
+%config(noreplace) /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
+%config(noreplace) /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml
 
 %files admin-vmapp-config
-%config /etc/%{oname}/admin/admin.yml
+%config(noreplace) /etc/%{oname}/admin/admin.yml
 
 %files hva-vmapp-config
-%config /etc/%{oname}/hva.conf
+%config(noreplace) /etc/%{oname}/hva.conf
+
+%files nsa-vmapp-config
+%config(noreplace) /etc/%{oname}/nsa.conf
+
+%files sta-vmapp-config
+%config(noreplace) /etc/%{oname}/sta.conf
 
 %files full-vmapp-config
 

@@ -1,24 +1,15 @@
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 
-gem 'reel', '0.3.0'
-gem 'cassandra', '0.17.0'
-gem 'actionmailer', '3.2.12'
-gem 'ltsv', '0.1.0'
-gem 'extlib', '~> 0.9.16'
-gem 'multi_json', '1.6.1'
-gem 'rake', '10.0.3'
-gem 'octarine', '0.0.3'
-gem 'parseconfig', '1.0.2'
-gem 'erubis', '2.7.0'
-gem 'mail-iso-2022-jp', '2.0.1'
+gem 'wakame-dolphin'
 
-# Fixed version for reel
-gem 'celluloid', '0.12.4'
-gem 'celluloid-io', '0.12.1'
-gem 'nio4r', '0.4.3'
+# 1. vdc-dolphin requires gem packages
+# 2. *should be* same version of wakame-dolphin/Gemfile
 
-group :development, :test do
-  gem 'rspec', '2.13.0'
-  gem 'pry'
-  gem 'rb-readline'
+group :mysql do
+  gem 'sequel', '3.48.0'
+  gem 'mysql2', '0.3.11'
+end
+
+group :cassandra do
+  gem 'cassandra', '0.17.0'
 end
