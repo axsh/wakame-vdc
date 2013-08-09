@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'metric_libs'
 
 module Fluent
