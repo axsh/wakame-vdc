@@ -37,3 +37,5 @@ gem 'cucumber'
 
 gem 'thin'
 gem 'em-http-request'
+gem 'metric_libs', :path=>File.expand_path('../../metric_libs/', __FILE__)
+gem 'dolphin_client', :path=>File.expand_path('../../client/dolphin/', __FILE__)

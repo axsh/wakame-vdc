@@ -172,6 +172,8 @@ module Dcmgr
     define_error(:InvalidLoadBalancerInstanceProtocol, 404, '193')
     define_error(:DuplicateLoadBalancerPort, 400, '194')
     define_error(:InvalidLoadBalancerSpec, 400, '195')
-
+    define_error(:UnknownResourceID, 400, '196')
+    define_error(:UnknownMetricName, 400, '197')
+    define_error(:UnknownParams, 400, '198')
   end
 end

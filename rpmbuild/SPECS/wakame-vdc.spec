@@ -34,8 +34,6 @@ BuildRequires: git
 BuildRequires: mysql-devel
 BuildRequires: chrpath
 BuildRequires: pkgconfig
-# Ruby binary build dependency
-BuildRequires: readline-devel ncurses-devel openssl-devel libxml2-devel libxslt-devel gdbm-devel zlib-devel
 # vmapp dependency
 BuildRequires: parted
 # build local cache
@@ -58,6 +56,8 @@ Requires: tar
 Requires: file
 Requires: prelink
 # Ruby binary dependency
+Requires: %{oname}-ruby >= 2.0.0.247
+Requires: %{oname}-ruby <  2.0.1
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 Requires: jemalloc
 # for erlang, rabbitmq-server
@@ -352,6 +352,7 @@ CURDIR=${RPM_BUILD_ROOT} rpmbuild/rules binary-arch
 mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
 # TODO: Remove contrib dir excluding contrib/fluentd .
+# vendor: bundler-specific directory
 components="
  dcmgr
  frontend
@@ -359,13 +360,12 @@ components="
  client
  dolphin
  contrib
+ vendor
 "
 for component in ${components}; do
-  rsync -aHA --exclude=".git/*" --exclude="*~" --exclude="*/vendor/cache/*.gem" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
+  rsync -aHA --exclude=".git/*" --exclude="*~" --exclude="*/cache/*.gem" --exclude="*/cache/bundler/git/*" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 done
 unset components
-
-rsync -aHA %{prefix}/%{oname}/ruby ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
 [ -d ${RPM_BUILD_ROOT}/etc ] || mkdir -p ${RPM_BUILD_ROOT}/etc
 rsync -aHA `pwd`/contrib/etc/default        ${RPM_BUILD_ROOT}/etc/
