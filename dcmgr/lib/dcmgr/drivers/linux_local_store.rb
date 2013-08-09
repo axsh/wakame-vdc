@@ -18,7 +18,7 @@ module Dcmgr
         if File.exists?(volume_path)
           sh("rm '#{volume_path}'")
         else
-          raise "Failed to delete volume: #{volume_path}"
+          @ctx.logger.warn("Failed to delete non-existing file: #{volume_path}")
         end
       end
 

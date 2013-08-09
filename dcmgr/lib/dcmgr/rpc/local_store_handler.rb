@@ -7,27 +7,73 @@ module Dcmgr
     # Inherit from HvaHandler to reuse utility methods in the class.
     class LocalStoreHandler < HvaHandler
       include Dcmgr::Logger
-
+      C = Dcmgr::Constants
+      
       concurrency Dcmgr.conf.local_store.thread_concurrency.to_i
       job_thread_pool Isono::ThreadPool.new(Dcmgr.conf.local_store.thread_concurrency.to_i, "LocalStore")
 
-      def deploy_local_volumes
-        @inst[:volume].each { |vol_uuid, v|
-          opts = {}
-          if v[:backup_object]
-            opts[:cache] = @inst[:image][:is_cacheable]
-            # create volume from backup object.
-            task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
-                                :deploy_volume, [@hva_ctx, v, v[:backup_object], opts])
-          else
-            task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
-                                :deploy_volume, [@hva_ctx, v])
-          end
-
-          update_volume_state(vol_uuid, {:state=>:available}, 'hva/volume_available')
+      def each_all_local_volumes(&blk)
+        @inst[:volume].values.find_all { |v|
+          v[:is_local_volume]
+        }.each { |v|
+          blk.call(v)
         }
       end
       
+      def deploy_local_volume(volume_hash)
+        v = volume_hash
+        opts = {}
+        if v[:backup_object]
+          opts[:cache] = (@inst[:image][:backup_object_id] == v[:backup_object_id] && @inst[:image][:is_cacheable] == 1)
+          @hva_ctx.logger.info("Creating volume #{v[:uuid]} from #{v[:backup_object_id]}.")
+          # create volume from backup object.
+          task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+                              :deploy_volume, [@hva_ctx, v, v[:backup_object], opts])
+        else
+          @hva_ctx.logger.info("Creating empty volume #{v[:uuid]}.")
+          task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+                              :deploy_volume, [@hva_ctx, v])
+        end
+        
+        update_volume_state(v[:uuid], {:state=>C::Volume::STATE_AVAILABLE}, 'hva/volume_available')
+      end
+
+      # setup local volume then run instance.
+      # setup single local volume then attach.
+      job :deploy_volume_and_attach, proc {
+        # create hva context
+        @hva_ctx = HvaContext.new(self)
+        @vol_id = request.args[0]
+        @inst_id = request.args[1]
+        @hva_ctx.logger.info("Booting #{@inst_id}: phase 1")
+
+        @volume = rpc.request('sta-collector', 'get_volume',  @vol_id)
+        raise "Invalid volume state: #{@inst[:state]}" unless C::Volume::DEPLOY_STATES.member?(@volume[:state].to_s)
+
+        deploy_local_volume(@volume)
+        
+        job.submit("hva-handle.#{@node.node_id}", 'attach_volume', @inst_id, @vol_id)
+      }, proc {
+        ignore_error {
+          update_instance_state_to_terminated({:state=>:terminated, :terminated_at=>Time.now.utc})
+        }
+      }
+
+      job :delete_volume, proc {
+        @vol_id = request.args[0]
+
+        @volume = rpc.request('sta-collector', 'get_volume',  @vol_id)
+        
+        task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+                            :delete_volume, [@hva_ctx, v])
+        event.publish('hva/volume_deleted', :args=>[v[:uuid]])
+      }, proc {
+        ignore_error {
+          update_instance_state_to_terminated({:state=>:terminated, :terminated_at=>Time.now.utc})
+        }
+      }
+
+      # setup all local volumes and triggers run instance.
       job :run_local_store, proc {
         # create hva context
         @hva_ctx = HvaContext.new(self)
@@ -39,11 +85,23 @@ module Dcmgr
 
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:initializing})
 
-        deploy_local_volumes
+        each_all_local_volumes do |v|
+          deploy_local_volume(v)
+        end
         
         job.submit("hva-handle.#{@node.node_id}", 'run_local_store', @inst_id)
       }, proc {
-        ignore_error { terminate_instance(false) }
+        each_all_local_volumes do |v|
+          ignore_error {
+            @hva_ctx.logger.info("Cleaning volume #{v[:uuid]}")
+            # create volume from backup object.
+            task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+                                :delete_volume, [@hva_ctx, v])
+          }
+          ignore_error {
+            update_volume_state(v[:uuid], {:state=>:available}, 'hva/volume_available')
+          }
+        end
         ignore_error {
           update_instance_state_to_terminated({:state=>:terminated, :terminated_at=>Time.now.utc})
         }
