@@ -10,6 +10,7 @@ module Dcmgr::Models
 
     plugin ArchiveChangedColumn, :histories
     plugin ChangedColumnEvent, :accounting_log => [:state, :size]
+    plugin Plugins::ResourceLabel
 
     subset(:lives, {:deleted_at => nil})
     subset(:alives, {:deleted_at => nil})
