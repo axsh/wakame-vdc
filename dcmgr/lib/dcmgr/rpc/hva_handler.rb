@@ -59,6 +59,7 @@ module Dcmgr
       # are also failed to be set. They need to be checked before looked
       # up.
       def terminate_instance(state_update=false)
+        destroy_instance_vnics(@inst)
         ignore_error {
           if @hva_ctx
             task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -110,7 +111,6 @@ module Dcmgr
 
       def update_instance_state_to_terminated(opts)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
-        destroy_instance_vnics(@inst)
 
         # syncronized
         rpc.request('hva-collector', 'update_instance', @inst_id, opts)
@@ -123,7 +123,7 @@ module Dcmgr
 
       def destroy_instance_vnics(inst)
         inst[:vif].each { |vnic|
-          self.job.submit("sg_handler","destroy_vnic",vnic[:uuid])
+          self.job.run("sg_handler","destroy_vnic",vnic[:uuid])
         }
       end
 
@@ -489,7 +489,6 @@ module Dcmgr
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweroff_instance, [@hva_ctx])
         update_instance_state({:state=>:halted}, [])
-        destroy_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power off")
       }
 
@@ -503,7 +502,6 @@ module Dcmgr
         @hva_ctx.logger.info("Turning soft power off")
          task_session.invoke(@hva_ctx.hypervisor_driver_class,
                              :soft_poweroff_instance, [@hva_ctx])
-        destroy_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned soft power off")
       }
 
