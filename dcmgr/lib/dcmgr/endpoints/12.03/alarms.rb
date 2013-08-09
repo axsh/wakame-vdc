@@ -151,7 +151,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.enabled = params[:enabled].to_i
       end
 
-      if params[:evaluation_periods] && CA::RESOURCE_METRICS.include?(params[:metric_name])
+      if params[:evaluation_periods] && CA::RESOURCE_METRICS.include?(al.metric_name)
         al.evaluation_periods = params[:evaluation_periods].to_i
       end
 
