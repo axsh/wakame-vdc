@@ -61,6 +61,7 @@ module Dcmgr
         
         return unless volume[:is_local_volume]
 
+        update_volume_state(volume[:uuid], {:state=>:deleting})
         task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
                             :delete_volume, [@hva_ctx, volume])
         update_volume_state(volume[:uuid], {:state=>:deleted, :deleted_at=>Time.now.utc},
@@ -85,6 +86,7 @@ module Dcmgr
         end
         
         ignore_error {
+          @hva_ctx.logger.info("teminating instance")
           task_session.invoke(@hva_ctx.hypervisor_driver_class,
                               :terminate_instance, [@hva_ctx])
         }
@@ -307,10 +309,10 @@ module Dcmgr
       end
 
       def wait_volumes_available
-        if @inst[:volume].values.all?{|v| v[:state] == 'available'}
+        if @inst[:volume].values.all?{|v| v[:state].to_s == 'available'}
           # boot instance becase all volumes are ready.
           job.submit("hva-handle.#{node.node_id}", 'run_local_store', @inst[:uuid])
-        elsif @inst[:state] == 'terminated' || @inst[:volume].values.find{|v| v[:state] == 'deleted' }
+        elsif @inst[:state].to_s == 'terminated' || @inst[:volume].values.find{|v| v[:state].to_s == 'deleted' }
           # it cancels all available volumes.
           rpc.request("hva-collector", 'finalize_instance', @inst[:uuid], Time.now.utc)
         else
@@ -336,7 +338,7 @@ module Dcmgr
         @hva_ctx.logger.info("Booting instance")
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless %w(initializing).member?(@inst[:state].to_s)
-        if !@inst[:volume].values.all? {|v| v[:state] == 'available' }
+        if !@inst[:volume].values.all? {|v| v[:state].to_s == 'available' }
           @hva_ctx.logger.error("Could not boot the instance. some volumes are not available yet: #{@inst[:volume].map{|volid, v| volid + ": " + v[:state] }.join(', ')}")
           return
         end
