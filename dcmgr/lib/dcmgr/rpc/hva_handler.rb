@@ -31,9 +31,7 @@ module Dcmgr
                       :state=>:attaching,
                       :attached_at => nil,
                       :instance_id => @inst[:id], # needed after cleanup
-                      :host_device_name => @os_devpath}) do |req|
-          req.oneshot = true
-        end
+                      :host_device_name => @os_devpath})
       end
 
       def detach_volume_from_host(volume)
@@ -51,9 +49,7 @@ module Dcmgr
                       :host_device_name=>nil,
                       :instance_id=>nil,
                       :detached_at => Time.now.utc,
-                    }) do |req|
-          req.oneshot = true
-        end
+                    })
         event.publish('hva/volume_detached', :args=>[@inst_id, @vol_id])
       end
 
@@ -122,9 +118,7 @@ module Dcmgr
 
       def update_instance_state(opts, ev=nil)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
-        rpc.request('hva-collector', 'update_instance', @inst_id, opts) do |req|
-          req.oneshot = true
-        end
+        rpc.request('hva-collector', 'update_instance', @inst_id, opts)
         if ev
           ev = [ev] unless ev.is_a? Array
           ev.each { |e|
@@ -135,20 +129,34 @@ module Dcmgr
         update_state_file(opts[:state]) unless opts[:state].nil?
       end
 
-      def update_instance_state_to_terminated(opts)
+      def finalize_instance
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
 
-        # syncronized
-        rpc.request('hva-collector', 'update_instance', @inst_id, opts)
+        # Security group vnic left events for vnet netfilter
+        destroy_instance_vnics(@inst)
+
+        rpc.request("hva-collector", 'finalize_instance', @inst_id, Time.now.utc)
 
         ev = ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"]
         ev.each { |e|
           event.publish(e, :args=>[@inst_id])
         }
+      end
 
+      def update_instance_state_to_terminated(opts)
+        raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
+        
+        # syncronized
+        rpc.request('hva-collector', 'update_instance', @inst_id, opts)
+        
+        ev = ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"]
+        ev.each { |e|
+          event.publish(e, :args=>[@inst_id])
+        }
+        
         # Security group vnic left events for vnet netfilter
         destroy_instance_vnics(@inst)
-
+        
         @inst[:volume].values.each { |v|
           rpc.request('sta-collector', 'update_volume', v[:uuid], {
                         :state=>:deleted,
@@ -181,9 +189,7 @@ module Dcmgr
 
       def update_volume_state(vol_id, opts, ev)
         raise "Can't update volume parameter" if vol_id.nil?
-        rpc.request('sta-collector', 'update_volume', vol_id, opts) do |req|
-          req.oneshot = true
-        end
+        rpc.request('sta-collector', 'update_volume', vol_id, opts)
         event.publish(ev, :args=>[@vol_id])
       end
 
@@ -300,16 +306,38 @@ module Dcmgr
                           end
       end
 
+      def wait_volumes_available
+        if @inst[:volume].values.all?{|v| v[:state] == 'available'}
+          # boot instance becase all volumes are ready.
+          job.submit("hva-handle.#{node.node_id}", 'run_local_store', @inst[:uuid])
+        elsif @inst[:state] == 'terminated' || @inst[:volume].values.find{|v| v[:state] == 'deleted' }
+          # it cancels all available volumes.
+          rpc.request("hva-collector", 'finalize_instance', @inst[:uuid], Time.now.utc)
+        else
+          # do nothing and wait other volumes become available.
+          @hva_ctx.logger.info("Waiting for volumes are ready.")
+        end
+      end
+
+      job :wait_volumes_available, proc {
+        # create hva context
+        @hva_ctx = HvaContext.new(self)
+        @inst_id = request.args[0]
+        @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
+
+        wait_volumes_available
+      }
+
       job :run_local_store, proc {
         # create hva context
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
 
-        @hva_ctx.logger.info("Booting #{@inst_id}: phase 2")
+        @hva_ctx.logger.info("Booting instance")
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless %w(initializing).member?(@inst[:state].to_s)
         if !@inst[:volume].values.all? {|v| v[:state] == 'available' }
-          @hva_ctx.logger.info("Wait for all volumes become ready: #{@inst[:volume].map{|volid, v| volid + ": " + v[:state] }.join(', ')}")
+          @hva_ctx.logger.error("Could not boot the instance. some volumes are not available yet: #{@inst[:volume].map{|volid, v| volid + ": " + v[:state] }.join(', ')}")
           return
         end
 
@@ -340,9 +368,7 @@ module Dcmgr
         }
       }, proc {
         ignore_error { terminate_instance(false) }
-        ignore_error {
-          update_instance_state_to_terminated({:state=>:terminated, :terminated_at=>Time.now.utc})
-        }
+        ignore_error { finalize_instance() }
       }
 
       job :run_vol_store, proc {
@@ -389,13 +415,7 @@ module Dcmgr
       }, proc {
         # TODO: Run detach & destroy volume
         ignore_error { terminate_instance(false) }
-        ignore_error {
-          update_instance_state_to_terminated({:state=>:terminated, :terminated_at=>Time.now.utc})
-        }
-        ignore_error {
-          update_volume_state(@vol_id, {:state=>:deleted, :deleted_at=>Time.now.utc},
-                              'hva/volume_deleted')
-        }
+        ignore_error { finalize_instance() }
       }
 
       job :terminate do
@@ -411,7 +431,7 @@ module Dcmgr
           update_instance_state({:state=>:shuttingdown})
           ignore_error { terminate_instance(true) }
         ensure
-          update_instance_state_to_terminated({:state=>:terminated,:terminated_at=>Time.now.utc})
+          finalize_instance()
         end
       end
 
@@ -428,7 +448,7 @@ module Dcmgr
           ignore_error { terminate_instance(false) }
         ensure
           # just publish "hva/instance_terminated" to update security group rules once
-          update_instance_state_to_terminated({})
+          finalize_instance
         end
       end
 

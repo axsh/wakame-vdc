@@ -8,6 +8,8 @@ module Dcmgr::Models
     taggable 'i'
     accept_service_type
 
+    include Dcmgr::Constants::Instance
+
     many_to_one :image
     many_to_one :host_node
     one_to_many :volumes
@@ -24,11 +26,9 @@ module Dcmgr::Models
       
     subset(:lives, {:terminated_at => nil})
     subset(:alives, {:terminated_at => nil})
-    subset(:runnings, {:state => 'running'})
-    subset(:stops, {:state => 'stopped'})
+    subset(:runnings, {:state => STATE_RUNNING})
+    subset(:stops, {:state => STATE_STOPPED})
 
-    include Dcmgr::Constants::Instance
-    
     # lists the instances which alives and died within
     # term_period sec.
     def_dataset_method(:alives_and_termed) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
@@ -140,8 +140,8 @@ module Dcmgr::Models
     # delete flags.
     def _destroy_delete
       self.terminated_at ||= Time.now
-      self.state = :terminated if self.state != :terminated
-      self.status = :offline if self.status != :offline
+      self.state = STATE_TERMINATED if self.state != STATE_TERMINATED
+      self.status = STATUS_OFFLINE if self.status != STATUS_OFFLINE
       self.ssh_key_pair_id = nil
       self.save_changes
     end

@@ -11,6 +11,7 @@ module Dcmgr::Endpoints::V1203::Responses
       @backup_object.instance_exec {
         {:id => canonical_uuid,
           :uuid => canonical_uuid,
+          :account_id => account_id,
           :state => state,
           :size => size,
           :allocation_size => allocation_size,

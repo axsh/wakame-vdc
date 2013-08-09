@@ -19,7 +19,7 @@ module Dcmgr::Models
     }
 
     plugin :serialization
-    serialize_attributes :yaml, :features
+    serialize_attributes :yaml, :features, :disks, :vifs
 
     plugin ArchiveChangedColumn, :histories
 
@@ -27,6 +27,12 @@ module Dcmgr::Models
       super
       unless self.features.is_a?(Hash)
         self.features = {}
+      end
+      unless self.disks.is_a?(Array)
+        self.disks = []
+      end
+      unless self.vifs.is_a?(Array)
+        self.vifs = []
       end
     end
 
@@ -90,16 +96,15 @@ module Dcmgr::Models
     end
 
     def entry_clone(&blk)
-      self.class.entry_new(self.account, self.arch, self.boot_dev_type, self.file_format) do |i|
-        i.display_name = self.display_name
+      src = self.values.dup.tap { |i|
+        i.delete(:id)
+        i.delete(:uuid)
+      }
+      self.class.new(src) do |i|
         i.description = "#{self.description} (copy of #{self.canonical_uuid})"
-        i.features = self.features
-        i.root_device = self.root_device
-        i.service_type = self.service_type
-        i.instance_model_name = self.instance_model_name unless self.instance_model_name.nil?
         i.parent_image_id = self.canonical_uuid
         blk.call(i) if blk
-      end
+      end.save
     end
 
     def create_volume(account=nil)

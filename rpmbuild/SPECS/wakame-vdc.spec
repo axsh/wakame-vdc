@@ -155,7 +155,7 @@ BuildArch: noarch
 Summary: Configuration set for proxy VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
-Requires: nginx
+Requires: httpd
 %description proxy-vmapp-config
 <insert long description, indented with spaces>
 
