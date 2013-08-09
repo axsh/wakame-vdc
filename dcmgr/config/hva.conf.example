@@ -37,10 +37,11 @@ config.use_ipset       = false
 
 # logging service for inside instance.
 config.use_logging_service = false
+config.logging_service_ip = '169.254.169.253'
 config.logging_service_host_ip = '127.0.0.2'
-config.logging_service_dest_ip = '169.254.169.253'
 config.logging_service_port = 8888
-config.logging_service_tmp = '/var/lib/wakame-vdc/'
+config.logging_service_conf = '/var/lib/wakame-vdc/fluent.conf'
+config.logging_service_reload = '/etc/init.d/td-agent reload'
 
 # Path for brctl
 config.brctl_path = '/usr/sbin/brctl'
