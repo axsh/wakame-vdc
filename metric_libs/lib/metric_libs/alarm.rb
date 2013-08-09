@@ -80,6 +80,10 @@ module MetricLibs
       @state != @before_state
     end
 
+    def enabled?
+      @enabled
+    end
+
     def to_hash
       h = {}
       self.instance_variables.map {|v|
