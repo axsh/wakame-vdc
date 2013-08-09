@@ -103,6 +103,20 @@ module Dcmgr::VNet::Netfilter::NetfilterTasks
     ]
   end
 
+  def translate_logging_address(vnic_map)
+    enabled = Dcmgr.conf.use_logging_service
+    log_ip = Dcmgr.conf.logging_service_ip
+    log_port = Dcmgr.conf.logging_service_port
+    return nil unless enabled && log_ip && log_port
+
+    #TODO: Figure out host ip
+    [:udp, :tcp].each { |prot|
+      O.vnic_l3_dnat_chain(vnic_map[:uuid]).add_rule(
+        "-d #{log_ip} -p #{prot} --dport #{log_port} -j DNAT --to-destination #{host_ip}:#{log_port}"
+      )
+    }
+  end
+
   def forward_chain_jumps(vnic_id, action = "add")
     [
       l2_forward_chain.send("#{action}_rule", "-o #{vnic_id} -j #{I.vnic_l2_main_chain(vnic_id).name}"),
