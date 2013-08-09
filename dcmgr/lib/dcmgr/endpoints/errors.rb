@@ -175,5 +175,6 @@ module Dcmgr
     define_error(:UnknownResourceID, 400, '196')
     define_error(:UnknownMetricName, 400, '197')
     define_error(:UnknownParams, 400, '198')
+    define_error(:UnknownEvaluationPeriods, 400, '199')
   end
 end

@@ -40,6 +40,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       raise E::UnknownParams, params["params"]
     end
 
+    if CA::RESOURCE_METRICS.include?(params[:metric_name]) && !params[:evaluation_periods]
+      raise E::UnknownEvaluationPeriods, "#{params[:evaluation_periods]}"
+    end
+
     alarm = M::Alarm.entry_new(@account) {|al|
 
       al.resource_id = params[:resource_id]
@@ -58,7 +62,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.enabled = 1
       end
 
-      if params[:evaluation_periods]
+      if CA::RESOURCE_METRICS.include?(params[:metric_name]) && params[:evaluation_periods]
         al.evaluation_periods = params[:evaluation_periods].to_i
       end
 
@@ -139,7 +143,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.enabled = params[:enabled].to_i
       end
 
-      if params[:evaluation_periods]
+      if params[:evaluation_periods] && CA::RESOURCE_METRICS.include?(params[:metric_name])
         al.evaluation_periods = params[:evaluation_periods].to_i
       end
 
