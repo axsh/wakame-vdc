@@ -370,10 +370,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     i = find_by_uuid(:Instance, params[:id])
 
     case i.state
-    when 'stopped'
+    when C::Instance::STATE_STOPPED
       # just destroy the record.
       i.destroy
-    when 'terminated', 'scheduling'
+    when C::Instance::STATE_TERMINATED, C::Instance::STATE_SCHEDULING
       raise E::InvalidInstanceState, i.state
     else
       on_after_commit do
@@ -554,8 +554,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       }
 
       i.account_id = @account.canonical_uuid
-      i.backup_object_id = bo.canonical_uuid
-      i.state = :pending
+      i.backup_object_id = boot_bko.canonical_uuid
+      i.state = C::Image::STATE_PENDING
     end
 
     on_after_commit do
