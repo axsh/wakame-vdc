@@ -130,7 +130,7 @@ module Dcmgr::Models
     def before_destroy
       HostnameLease.filter(:account_id=>self.account_id, :hostname=>self.hostname).destroy
       self.instance_nic.each { |o| o.destroy }
-      self.volume.each { |v|
+      self.volumes_dataset.attached.each { |v|
         v.detach_from_instance
       }
       super
