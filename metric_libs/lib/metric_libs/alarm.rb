@@ -125,6 +125,7 @@ module MetricLibs
     def update_state(state)
       raise ArgumentError unless state.is_a?(String)
       @state = state
+      @state_timestamp = Time.now
     end
 
     def update_last_evaluated_value(value)
