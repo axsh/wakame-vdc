@@ -44,6 +44,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       raise E::UnknownEvaluationPeriods, "#{params[:evaluation_periods]}"
     end
 
+    if CA::LOG_METRICS.include?(params[:metric_name]) && !params[:notification_periods]
+      raise E::UnknownNotificationPeriods, "#{params[:notification_periods]}"
+    end
+
     alarm = M::Alarm.entry_new(@account) {|al|
 
       al.resource_id = params[:resource_id]
@@ -64,6 +68,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
       if CA::RESOURCE_METRICS.include?(params[:metric_name]) && params[:evaluation_periods]
         al.evaluation_periods = params[:evaluation_periods].to_i
+      end
+
+      if CA::LOG_METRICS.include?(params[:metric_name]) && params[:notification_periods]
+        al.notification_periods = params[:notification_periods]
       end
 
       if params['params'] && params['params'].is_a?(Hash)
@@ -145,6 +153,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
       if params[:evaluation_periods] && CA::RESOURCE_METRICS.include?(params[:metric_name])
         al.evaluation_periods = params[:evaluation_periods].to_i
+      end
+
+      if params[:notification_periods] && CA::LOG_METRICS.include?(al.metric_name)
+        al.notification_periods = params[:notification_periods].to_i
       end
 
       if params['params'] && params['params'].is_a?(Hash)

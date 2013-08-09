@@ -19,6 +19,10 @@ module Dcmgr::Models
         errors.add(:evaluation_periods, "it must have digit more than zero")
       end
 
+      if (notification_periods.nil? || notification_periods < 0) && is_log_alarm?
+        errors.add(:notiification_periods, "it must have digit more than zero")
+      end
+
       if self.is_log_alarm?
         notification_actions = LOG_NOTIFICATION_ACTIONS
 

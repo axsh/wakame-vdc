@@ -9,6 +9,7 @@ Sequel.migration do
       column :metric_name, "varchar(255)", :null=>false
       column :description, "text", :null=>true
       column :evaluation_periods, "integer", :null=>true
+      column :notification_periods, "integer", :null=>true
       column :params, "text", :null=>false
       column :enabled, "tinyint(1)", :null=>false, :default=> 1, :null=>false
       column :state, "varchar(255)", :null=>false, :null=>false
