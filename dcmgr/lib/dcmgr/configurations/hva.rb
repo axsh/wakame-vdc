@@ -73,6 +73,8 @@ module Dcmgr
       class Capture < Fuguta::Configuration
         param :cpu_time, :default =>60
         param :memory_time, :default =>60
+        param :timeout_sec, :default =>10
+        param :retry_count, :default =>1
 
         def validate(errors)
           super
@@ -190,6 +192,9 @@ module Dcmgr
       # Allow hva to change instance state seems to be incomplete
       # transition.
       param :enable_instance_state_recovery, :default=>true
+
+      # Dolphin server connection string
+      param :dolphin_server_uri, :default=> 'http://127.0.0.1:9004/'
 
       def validate(errors)
         if @config[:vm_data_dir].nil?

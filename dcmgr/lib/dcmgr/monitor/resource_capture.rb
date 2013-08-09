@@ -18,10 +18,10 @@ module Dcmgr
 
       def get_resources(metric_name)
         # TODO: add volume and network vif
-        instlst = @rpc.request('hva-collector', 'get_instance_monitor_data', @node.node_id)
+        list = @rpc.request('hva-collector', 'get_resource_monitor_data', @node.node_id)
 
         h = {}
-        instlst.each {|i|
+        list.each {|i|
           begin
             pidfile = "#{Dcmgr.conf.vm_data_dir}/#{i[:uuid]}/kvm.pid"
             raise "Unable to find the pid file: #{i[:uuid]}" unless File.exists?(pidfile)
@@ -29,7 +29,7 @@ module Dcmgr
 
             kvmpid = File.read(pidfile)
             logger.debug("#{i[:uuid]} pid: #{kvmpid}")
-            tryagain(opts={:timeout=>10, :retry=>1}) do
+            tryagain(opts={:timeout=>Dcmgr.conf.capture.timeout_sec, :retry=>Dcmgr.conf.capture.retry_count}) do
               h["#{i[:uuid]}"] = parse_pidstat(metric_name, exec_pidstat(metric_name, kvmpid.to_i))
             end
             logger.debug(h)
@@ -40,6 +40,11 @@ module Dcmgr
             h["#{i[:uuid]}"] = hash.merge({"timeout"=>"true", "time"=>Time.now})
           rescue Exception => e
             logger.error("Error occured. [Instance ID: #{i[:uuid]}]: #{e}")
+          ensure
+            unless i[:vif].blank?
+              vif = i[:vif].first
+              h["#{i[:uuid]}"] = h["#{i[:uuid]}"].merge({"ipaddr"=>vif[:ipv4][:address]}) unless vif[:ipv4].blank?
+            end
           end
         }
         h
