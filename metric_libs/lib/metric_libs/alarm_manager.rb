@@ -49,13 +49,6 @@ module MetricLibs
       get_alarm(uuid).feed(resource)
     end
 
-    def update_resources(resources)
-      raise ArgumentError unless resources.is_a?(Hash)
-      @manager.each_value {|alm|
-        alm[:alarm].feed(resources)
-      }
-    end
-
     def evaluate(uuid)
       raise ArgumentError unless uuid.is_a?(String)
       get_alarm(uuid).evaluate
