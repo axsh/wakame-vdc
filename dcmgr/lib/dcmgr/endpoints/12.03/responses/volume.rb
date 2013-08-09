@@ -9,7 +9,9 @@ module Dcmgr::Endpoints::V1203::Responses
 
     def generate()
       @volume.instance_exec {
-        to_hash.merge(:id=>canonical_uuid)
+        to_hash.merge(:id=>canonical_uuid,
+                      :instance_id=>(self.instance.nil? ? nil : self.instance.canonical_uuid),
+                      :labels=>resource_labels.map{ |l| ResourceLabel.new(l).generate })
       }
     end
   end

@@ -13,6 +13,7 @@ module Dcmgr::Models
 
     subset(:lives, {:deleted_at => nil})
     subset(:alives, {:deleted_at => nil})
+    subset(:attached, {:state => STATE_ATTACHED})
 
     def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
@@ -152,6 +153,17 @@ module Dcmgr::Models
       self.instance_id = nil
       self.state = STATE_AVAILABLE
       self.save_changes
+    end
+
+    def create_backup_object(account, &blk)
+      bo = BackupObject.create(:account_id => account.canonical_uuid,
+                               :service_type => self.service_type,
+                               :allocation_size=>self.size,
+                               :source_volume_id=>self.canonical_uuid,
+                               )
+      blk.call(bo)
+      bo.save_changes
+      bo
     end
     
     private

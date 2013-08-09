@@ -316,6 +316,46 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
     end
 
+    if params['volumes'].is_a?(Hash)
+      params['volumes'].values.each { |vparam|
+        bo = if vparam['backup_object_id'].blank?
+               nil
+             else
+               M::BackupObject[vparam['backup_object_id']] || raise("Unknown backup object: #{vparam['backup_object_id']}")
+             end
+
+        if !vparam['size'].blank? && bo
+          # create volume from the backup object and grow its size.
+          # check size is larger or equal than backup object's size.
+          if bo.size > vparam['size'].to_i
+            raise "Shrink operation is not supported: size change request from #{bo.size} to #{vparam['size'].to_i}"
+          end
+          vol = bo.create_volume(instance.account)
+          vol.size = vparam['size'].to_i
+        elsif !vparam['size'].blank? && bo.nil?
+          # create empty volume.
+          vol = M::Volume.entry_new(instance.account, vparam['size'].to_i)
+        elsif vparam['size'].blank? && bo
+          # create volume from the backup object.
+          vol = bo.create_volume(instance.account)          
+        else
+          raise "Invalid volume sub parameters: backup_object_id=#{vparam['backup_object_id']}, size=#{vparam['size']}"
+        end
+
+        case vparam['volume_type']
+        when 'local'
+          vol.volume_type = 'Dcmgr::Models::LocalVolume'
+        when 'shared'
+          # provisioned by storage scheduler.
+          vol.volume_type = nil
+        else
+          raise "Invalid volume_type parameter: #{vparam['volume_type']}"
+        end
+
+        instance.add_volume(vol)
+      }
+    end
+    
     #
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
@@ -514,7 +554,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   quota('backup_object.size_mb') do
     request_amount do
       instance = find_by_uuid(:Instance, params[:id])
-      return (instance.image.backup_object.size / (1024 * 1024)).to_i
+      return (instance.volumes_dataset.attached.sum(:size) / (1024 * 1024)).to_i
     end
   end
   put '/:id/backup' do
@@ -533,19 +573,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
              nil
            end
 
-    bo = instance.image.backup_object.entry_clone do |i|
-      [:display_name, :description].each { |k|
-        if params[k]
-          i[k] = params[k]
+    boot_bko = nil
+    bko_list = []
+    instance.volumes_dataset.attached.each { |v|
+      bo = v.create_backup_object(@account) do |b|
+        b.state = C::BackupObject::STATE_PENDING
+        if bkst
+          b.backup_storage = bkst
         end
-      }
-
-      i.state = :pending
-      i.account_id = @account.canonical_uuid
-      if bkst
-        i.backup_storage = bkst
       end
-    end
+
+      if instance.boot_volume_id == v.canonical_uuid
+        boot_bko = bo
+      end
+
+      bko_list << bo
+    }
+
     image = instance.image.entry_clone do |i|
       [:display_name, :description, :is_public, :is_cacheable].each { |k|
         if params[k]
@@ -678,6 +722,39 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
 
       respond_with(R::InstanceMonitorItem.new(@instance, params[:monitor_id]).generate)
+    end
+  end
+
+  namespace '/:instance_id/volumes' do
+    before do
+      @instance = find_by_uuid(:Instance, params[:instance_id])
+    end
+
+    # list attached volumes to the instance.
+    get '' do
+      ds = @instance.volumes_dataset
+      respond_with(R::VolumeCollection.new(ds))
+    end
+
+    # take a backup from the volume.
+    quota 'backup_object.count'
+    quota 'instance.backup_operations_per_hour'
+    quota('backup_object.size_mb') do
+      request_amount do
+        volume = find_by_uuid(:Volume, params[:id])
+        return (volume.size / (1024 * 1024)).to_i
+      end
+    end
+    put '/:id/backup' do
+      @volume = find_by_uuid(:Volume, params[:id])
+      if @volume.instance != @instance
+        raise E::UnknownVolume, @volume.canonical_uuid
+      end
+      bo = @volume.create_backup_object(@volume.account) do |b|
+      end
+
+      on_after_commit do
+      end
     end
   end
 end
