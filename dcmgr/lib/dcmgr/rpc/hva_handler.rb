@@ -59,7 +59,10 @@ module Dcmgr
       # are also failed to be set. They need to be checked before looked
       # up.
       def terminate_instance(state_update=false)
-        destroy_instance_vnics(@inst)
+        @inst[:vif].each { |vnic|
+          self.job.run("sg_handler","destroy_vnic",vnic[:uuid], state_update)
+        }
+
         ignore_error {
           if @hva_ctx
             task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -118,12 +121,6 @@ module Dcmgr
         ev = ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"]
         ev.each { |e|
           event.publish(e, :args=>[@inst_id])
-        }
-      end
-
-      def destroy_instance_vnics(inst)
-        inst[:vif].each { |vnic|
-          self.job.run("sg_handler","destroy_vnic",vnic[:uuid])
         }
       end
 

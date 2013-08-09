@@ -81,7 +81,7 @@ module Dcmgr::VNet::SGHandler
     nil # Returning nil to simulate a void method
   end
 
-  def destroy_vnic(vnic_id)
+  def destroy_vnic(vnic_id, update_database = false)
     vnic = M::NetworkVif[vnic_id]
     raise "Vnic '#{vnic.canonical_uuid}' not attached to an instance." if vnic.instance.nil?
     raise "Vnic '#{vnic.canonical_uuid}' is not on a host node." if vnic.instance.host_node.nil?
@@ -106,6 +106,8 @@ module Dcmgr::VNet::SGHandler
       }
 
     }
+
+    vnic.destroy if update_database
 
     nil # Returning nil to simulate a void method
   end
