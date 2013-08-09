@@ -88,5 +88,5 @@ dc_network('management') {
 #}
 
 # Dolphin server connection uri
-config.dolphin_server_uri = "http://localhost:9004"
+config.dolphin_server_uri = "http://localhost:9004/"
 
