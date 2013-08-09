@@ -41,6 +41,7 @@ config.logging_service_ip = '169.254.169.253'
 config.logging_service_host_ip = '127.0.0.2'
 config.logging_service_port = 8888
 config.logging_service_tmp = '/var/lib/wakame-vdc/'
+config.logging_service_reload = '/etc/init.d/td-agent reload'
 
 # Path for brctl
 config.brctl_path = '/usr/sbin/brctl'

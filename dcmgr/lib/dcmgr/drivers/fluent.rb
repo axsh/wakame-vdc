@@ -4,6 +4,7 @@ module Dcmgr
 
       include Dcmgr::Logger
       include Dcmgr::Helpers::TemplateHelper
+      include Dcmgr::Helpers::CliHelper
 
       CONFIG_FILENAME = 'fluent.conf'.freeze
 
@@ -34,6 +35,16 @@ module Dcmgr
         end
         render_template(@template_file_name, output_file_path, binding)
       end
+
+      def reload
+        if Dcmgr.conf.logging_service_reload
+          sh("#{Dcmgr.conf.logging_service_reload} reload")
+          logger.info("Reload fluent with #{File.join(Dcmgr.conf.logging_service_tmp, @output_file_name)}")
+        else
+          logger.error("Failed to reload fluent. Not found #{Dcmgr.conf.logging_service_reload}")
+        end
+      end
+
     end
   end
 end

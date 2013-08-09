@@ -152,6 +152,7 @@ module Dcmgr
       param :logging_service_ip, :default =>'169.254.169.253'
       param :logging_service_port, :default => 8888
       param :logging_service_tmp, :default => '/var/lib/wakame-vdc/'
+      param :logging_service_reload, :default => '/etc/init.d/td-agent reload'
       param :enable_gre, :default=>false
       param :enable_subnet, :default=>false
 
