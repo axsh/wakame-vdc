@@ -31,9 +31,7 @@ module Dcmgr
                       :state=>:attaching,
                       :attached_at => nil,
                       :instance_id => @inst[:id], # needed after cleanup
-                      :host_device_name => @os_devpath}) do |req|
-          req.oneshot = true
-        end
+                      :host_device_name => @os_devpath})
       end
 
       def detach_volume_from_host(volume)
@@ -51,9 +49,7 @@ module Dcmgr
                       :host_device_name=>nil,
                       :instance_id=>nil,
                       :detached_at => Time.now.utc,
-                    }) do |req|
-          req.oneshot = true
-        end
+                    })
         event.publish('hva/volume_detached', :args=>[@inst_id, @vol_id])
       end
 
@@ -122,9 +118,7 @@ module Dcmgr
 
       def update_instance_state(opts, ev=nil)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
-        rpc.request('hva-collector', 'update_instance', @inst_id, opts) do |req|
-          req.oneshot = true
-        end
+        rpc.request('hva-collector', 'update_instance', @inst_id, opts)
         if ev
           ev = [ev] unless ev.is_a? Array
           ev.each { |e|
@@ -195,9 +189,7 @@ module Dcmgr
 
       def update_volume_state(vol_id, opts, ev)
         raise "Can't update volume parameter" if vol_id.nil?
-        rpc.request('sta-collector', 'update_volume', vol_id, opts) do |req|
-          req.oneshot = true
-        end
+        rpc.request('sta-collector', 'update_volume', vol_id, opts)
         event.publish(ev, :args=>[@vol_id])
       end
 
