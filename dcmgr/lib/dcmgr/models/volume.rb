@@ -140,6 +140,10 @@ module Dcmgr::Models
       self.volume_class.find(:id=>self.id.to_i)
     end
 
+    def boot_volume?
+      self.instance && self.instance.boot_volume_id == self.canonical_uuid
+    end
+
     def on_changed_accounting_log(changed_column)
       AccountingLog.record(self, changed_column)
     end

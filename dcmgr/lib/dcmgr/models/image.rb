@@ -113,7 +113,6 @@ module Dcmgr::Models
       account ||= self.account
 
       vol = bo.create_volume(account)
-      vol.boot_dev = 1
       vol.volume_type = case self.boot_dev_type
                         when BOOT_DEV_LOCAL
                           LocalVolume.to_s

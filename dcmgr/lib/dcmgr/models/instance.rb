@@ -484,5 +484,9 @@ module Dcmgr::Models
       clear_labels("monitoring.items.#{uuid}.%")
       item
     end
+
+    def boot_volume
+      Volume[self.boot_volume_id]
+    end
   end
 end

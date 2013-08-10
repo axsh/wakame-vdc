@@ -37,6 +37,7 @@ Sequel.migration do
     # TODO: Data migration before drop columns.
 
     alter_table(:volumes) do
+      drop_column :boot_dev
       drop_column :storage_node_id
       drop_column :transport_information
     end
