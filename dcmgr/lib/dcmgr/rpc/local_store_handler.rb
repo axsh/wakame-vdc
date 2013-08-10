@@ -60,17 +60,23 @@ module Dcmgr
       }
 
       job :delete_volume, proc {
-        @vol_id = request.args[0]
+        @hva_ctx = HvaContext.new(self)
+        @inst_id = request.args[0]
+        @vol_id = request.args[1]
 
+        @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
         @volume = rpc.request('sta-collector', 'get_volume',  @vol_id)
+
+        if @volume[:state].to_s != 'deleting'
+          @hva_ctx.logger.warn("Unexpected state #{@volume[:state]} of #{@vol_id}. But try to delete.")
+        end
         
-        task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
-                            :delete_volume, [@hva_ctx, v])
-        event.publish('hva/volume_deleted', :args=>[v[:uuid]])
-      }, proc {
         ignore_error {
-          update_instance_state_to_terminated({:state=>:terminated, :terminated_at=>Time.now.utc})
+          task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+                              :delete_volume, [@hva_ctx, @volume])
         }
+        update_volume_state(@volume[:uuid], {:state=>:deleted, :deleted_at=>Time.now.utc},
+                            'hva/volume_deleted')
       }
 
       # setup all local volumes and triggers run instance.

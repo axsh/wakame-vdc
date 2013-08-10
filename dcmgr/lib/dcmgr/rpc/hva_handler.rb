@@ -302,8 +302,9 @@ module Dcmgr
       def task_session
         @task_session ||= begin
                             Task::TaskSession.reset!(:thread)
-                            Task::TaskSession.current[:logger] = @hva_ctx.logger
-
+                            if @hva_ctx
+                              Task::TaskSession.current[:logger] = @hva_ctx.logger
+                            end
                             Task::TaskSession.current
                           end
       end
