@@ -14,6 +14,11 @@ module Dcmgr::Models
     many_to_one :host_node
     one_to_many :volumes
     alias :volume :volumes
+    one_to_many :local_volumes, :class=>Volume, :read_only=>true do |ds|
+      # SELECT volumes.* FROM volumes, l1 LEFT JOIN local_volumes ON self.pk = local_volumes.instance_id
+      #   WHERE volumes.id = l1.id
+      Volume.left_join(:local_volumes, :instance_id=>self.pk).filter(:local_volumes__id=>:volumes__id)
+    end
     one_to_many :network_vif
     alias :instance_nic :network_vif
     alias :nic :network_vif

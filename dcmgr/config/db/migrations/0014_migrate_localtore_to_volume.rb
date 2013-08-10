@@ -15,7 +15,7 @@ Sequel.migration do
 
     create_table(:local_volumes) do
       primary_key :id, :type=>"int(11)"
-      column :host_node_id, "int(11)", :null=>true
+      column :instance_id, "int(11)", :null=>false
       column :mount_label, "varchar(255)", :null=>false
       column :path, "varchar(255)", :null=>false
     end
