@@ -4,7 +4,7 @@ Sequel.migration do
   up do
     # Disk information.
     alter_table(:images) do
-      add_column :disks, "text", :null=>false
+      add_column :volumes, "text", :null=>false
       add_column :vifs, "text", :null=>false
     end
 

@@ -19,7 +19,7 @@ module Dcmgr::Models
     }
 
     plugin :serialization
-    serialize_attributes :yaml, :features, :disks, :vifs
+    serialize_attributes :yaml, :features, :volumes, :vifs
 
     plugin ArchiveChangedColumn, :histories
 
@@ -28,8 +28,8 @@ module Dcmgr::Models
       unless self.features.is_a?(Hash)
         self.features = {}
       end
-      unless self.disks.is_a?(Array)
-        self.disks = []
+      unless self.volumes.is_a?(Array)
+        self.volumes = []
       end
       unless self.vifs.is_a?(Array)
         self.vifs = []
