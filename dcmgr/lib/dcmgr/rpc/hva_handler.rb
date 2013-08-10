@@ -55,7 +55,7 @@ module Dcmgr
 
       def delete_local_volume(volume)
         if @hva_ctx.nil?
-          logger.warn("Skip delte_local_volume since hva context is unset.")
+          logger.warn("Skip delete_local_volume since hva context is unset.")
           return
         end
         
