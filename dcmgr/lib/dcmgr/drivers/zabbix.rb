@@ -188,9 +188,10 @@ module Dcmgr::Drivers
     def register_instance(instance)
     end
 
-
     def unregister_instance(instance)
     end
 
+    def update_instance(instance)
+    end
   end
 end
