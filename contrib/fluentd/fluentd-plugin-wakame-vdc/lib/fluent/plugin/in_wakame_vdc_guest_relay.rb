@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 require 'ipaddr'
+require 'yaml'
 
 module Fluent
 
   class WakemeVdcGuestRelay < ForwardInput
     Plugin.register_input('wakame_vdc_guest_relay', self)
-
-    SEARCH_KEYS = ['local-ipv4', 'x-account-id'].freeze
 
     LOCAL_LABEL = 'wakame_vdc'.freeze
     INVALID_LABEL = 'invalid'.freeze
@@ -67,7 +66,7 @@ module Fluent
       # Merge data
       es = MessagePackEventStream.new(entries, @cached_unpacker)
       mes = MultiEventStream.new
-      es.entries.each{|e| mes.add(Time.now.to_i, e[1].merge(send_data)) }
+      es.entries.each{|e| mes.add(Time.now.to_f, e[1].merge(send_data)) }
       es = mes
       Engine.emit_stream(tag, es)
     end
@@ -87,28 +86,19 @@ module Fluent
 
     def build_instances_mapping_table
 
-      search_path = @instances_path + '*'
       instance_ids = []
-
-      Dir.glob(search_path) {|path|
+      search_pattern = @instances_path + 'i-*'
+      Dir.glob(search_pattern) {|path|
         instance_ids << path.sub(@instances_path, '')
       }
-
       instance_ids.each {|instance_id|
-        meta_data_path = "#{@instances_path}#{instance_id}/metadata_host/meta-data/"
-        meta_data = []
-        SEARCH_KEYS.each {|key|
-          meta_data_file = "#{meta_data_path}/#{key}"
-          if File.exists? meta_data_file
-            meta_data << File.read(meta_data_file)
-          end
-        }
-
+        meta_data_file = "#{@instances_path}#{instance_id}/metadata.yml"
+        meta_data = load_meta_data(meta_data_file)
         if !meta_data.empty?
-          instance_ipv4 = meta_data[0].chomp!
+          instance_ipv4 = meta_data['local-ipv4']
           @instances[instance_ipv4] = {}
           @instances[instance_ipv4][:instance_id] = instance_id
-          @instances[instance_ipv4][:account_id] = meta_data[1].chomp!
+          @instances[instance_ipv4][:account_id] = meta_data['x-account-id']
         end
       }
 
@@ -129,6 +119,23 @@ module Fluent
         @peeraddr[3]
       end
     end
+
+    private
+    def load_meta_data(meta_data_file)
+      $log.debug meta_data_file
+      meta_data  = {}
+      begin
+        if File.exists? meta_data_file
+          meta_data = YAML.load(File.read(meta_data_file, :encoding => Encoding::UTF_8))
+        else
+          $log.warn "No suche file #{meta_data_file}"
+        end
+      rescue => e
+        raise e
+      end
+      meta_data
+    end
+
 
   end
 end
