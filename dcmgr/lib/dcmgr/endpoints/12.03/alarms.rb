@@ -77,7 +77,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       if params['params'] && params['params'].is_a?(Hash)
         save_params = {}
         if CA::LOG_METRICS.include?(params[:metric_name])
-          save_params['label'] = params['params']['label']
+          save_params['tag'] = params['params']['tag']
           save_params['match_pattern'] = params['params']['match_pattern']
         elsif CA::RESOURCE_METRICS.include?(params[:metric_name])
           save_params['threshold'] = params['params']['threshold'].to_f
@@ -162,7 +162,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       if params['params'] && params['params'].is_a?(Hash)
         update_params = {}
         if al.is_log_alarm?
-          update_params['label'] = al.params['label']
+          update_params['tag'] = al.params['tag']
           if params['params']['match_pattern']
             update_params['match_pattern'] = params['params']['match_pattern']
           else

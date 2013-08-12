@@ -36,8 +36,8 @@ module Dcmgr::Models
           errors.add(:match_pattern, "Invalid pattern")
         end
 
-        unless /^[0-9a-z.]+$/ =~ params['label']
-          errors.add(:label, "Invalid format")
+        unless /^[0-9a-z.]+$/ =~ params['tag']
+          errors.add(:tag, "Invalid format")
         end
 
       elsif self.is_metric_alarm?
