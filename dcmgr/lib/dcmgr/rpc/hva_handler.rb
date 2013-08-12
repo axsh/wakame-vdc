@@ -61,7 +61,7 @@ module Dcmgr
         
         return unless volume[:is_local_volume]
 
-        update_volume_state(volume[:uuid], {:state=>:deleting})
+        update_volume_state(volume[:uuid], {:state=>:deleting}, [])
         task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
                             :delete_volume, [@hva_ctx, volume])
         update_volume_state(volume[:uuid], {:state=>:deleted, :deleted_at=>Time.now.utc},
@@ -189,10 +189,24 @@ module Dcmgr
         }
       end
 
-      def update_volume_state(vol_id, opts, ev)
+      def update_volume_state(vol_id, opts, ev=nil)
         raise "Can't update volume parameter" if vol_id.nil?
         rpc.request('sta-collector', 'update_volume', vol_id, opts)
-        event.publish(ev, :args=>[@vol_id])
+        event_list = []
+        event_list = case ev
+                     when nil
+                       if opts[:state]
+                         event_list = ["hva/volume_#{opts[:state]}"]
+                       end
+                     when Array
+                       ev
+                     when String
+                       [ev]
+                     end || []
+
+        event_list.flatten.each { |evstr|
+          event.publish(evstr, :args=>[@vol_id])
+        }
       end
 
       def check_interface

@@ -334,7 +334,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
           vol.size = vparam['size'].to_i
         elsif !vparam['size'].blank? && bo.nil?
           # create empty volume.
-          vol = M::Volume.entry_new(instance.account, vparam['size'].to_i)
+          vol = M::Volume.entry_new(instance.account, vparam['size'].to_i, {})
         elsif vparam['size'].blank? && bo
           # create volume from the backup object.
           vol = bo.create_volume(instance.account)          
@@ -394,8 +394,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     set_monitoring_parameters(instance)
 
     instance.state = C::Instance::STATE_SCHEDULING
-    instance.volumes.each {|v| v.state = C::Volume::STATE_SCHEDULING }
     instance.save_changes
+    instance.volumes.each {|v|
+      v.state = C::Volume::STATE_SCHEDULING
+      v.save_changes
+    }
 
     on_after_commit do
       Dcmgr.messaging.submit("scheduler",
