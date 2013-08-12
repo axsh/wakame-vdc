@@ -28,16 +28,14 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).should have_applied_vnic(vnicB).with_secgs([groupB])
       nfa(host).should have_applied_secg(groupB).with_vnics([vnicB])
 
-      handler.destroy_vnic(vnicB_id)
-      vnicB.destroy
+      handler.destroy_vnic(vnicB_id, true)
 
       nfa(host).should_not have_applied_vnic(vnicB)
       nfa(host).should_not have_applied_secg(groupB)
       nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
       nfa(host).should have_applied_secg(groupA).with_vnics([vnicA])
 
-      handler.destroy_vnic(vnicA_id)
-      vnicA.destroy
+      handler.destroy_vnic(vnicA_id, true)
       nfa(host).should have_nothing_applied
     end
 
@@ -65,8 +63,7 @@ describe "SGHandler and NetfilterAgent" do
       handler.add_sgs_to_vnic(vnicA_id, [groupA_id, groupB_id])
       nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA, groupB])
 
-      handler.destroy_vnic(vnicA_id)
-      vnicA.destroy
+      handler.destroy_vnic(vnicA_id, true)
       nfa(host).should have_nothing_applied
     end
 

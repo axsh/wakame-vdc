@@ -21,8 +21,7 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).should have_applied_vnic(vnic).with_secgs([secg])
       nfa(host).should have_applied_secg(secg).with_vnics([vnic])
 
-      handler.destroy_vnic(vnic_id)
-      vnic.destroy
+      handler.destroy_vnic(vnic_id, true)
 
       nfa(host).should_not have_applied_vnic(vnic)
       nfa(host).should_not have_applied_secg(secg)
@@ -71,8 +70,7 @@ describe "SGHandler and NetfilterAgent" do
         "-p icmp -s 0.0.0.0/0 -j ACCEPT"
       ])
 
-      handler.destroy_vnic(vnic_id)
-      vnic.destroy
+      handler.destroy_vnic(vnic_id, true)
 
       nfa(host).should_not have_applied_vnic(vnic)
       nfa(host).should_not have_applied_secg(secg)

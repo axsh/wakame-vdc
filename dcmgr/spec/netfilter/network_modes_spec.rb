@@ -30,8 +30,7 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).should have_applied_vnic(vnic_l2o).with_secgs([])
       nfa(host).should have_applied_secg(secg).with_vnics([vnic_l2o])
 
-      handler.destroy_vnic(vnic_l2o.canonical_uuid)
-      vnic_l2o.destroy
+      handler.destroy_vnic(vnic_l2o.canonical_uuid, true)
       nfa(host).should_not have_applied_vnic(vnic_l2o)
       nfa(host).should_not have_applied_secg(secg)
     end
@@ -44,8 +43,7 @@ describe "SGHandler and NetfilterAgent" do
       nfa(host).should_not have_applied_vnic(vnic_pt)
       nfa(host).should have_applied_secg(secg).with_vnics([vnic_pt])
 
-      handler.destroy_vnic(vnic_pt.canonical_uuid)
-      vnic_pt.destroy
+      handler.destroy_vnic(vnic_pt.canonical_uuid, true)
 
       nfa(host).should_not have_applied_vnic(vnic_pt)
       nfa(host).should_not have_applied_secg(secg)
