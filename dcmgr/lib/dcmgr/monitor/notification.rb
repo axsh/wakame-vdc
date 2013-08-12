@@ -17,7 +17,10 @@ module Dcmgr
               :state => value["state"],
               :metric_name => value["metric_name"],
               :resource_id => value["resource_id"],
-              :ipaddr => value["ipaddr"]
+              :ipaddr => value["ipaddr"],
+              :last_evaluated_value => value["last_evaluated_value"],
+              :last_evaluated_at => value["last_evaluated_at"],
+              :threshold => value["params"]["threshold"]
             }
           }
         end
