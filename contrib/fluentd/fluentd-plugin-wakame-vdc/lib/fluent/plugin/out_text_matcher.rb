@@ -1,10 +1,12 @@
 # -*- encoding: utf-8 -*-
 require 'metric_libs'
+require 'dolphin_client'
 
 module Fluent
   class TextMatcherOutput < Output
     Fluent::Plugin.register_output('text_matcher', self)
 
+    config_param :dolphin_server_uri
     config_param :tag, :string, :default => 'textmatch'
     config_param :alarm1, :string
 
@@ -27,22 +29,42 @@ module Fluent
           end
         }
       end
+
       super
+
       config.each {|k ,v|
-        if m = k.match(alarm_pattern)
-          resource_id, alarm_id, tag, regexp, evaluation_periods = v.split(',', 5)
+        if k.match(alarm_pattern)
+
+          values = v.split(',', 7)
+          alarm_actions = {}
+          insufficient_data_actions = {}
+
+          resource_id = values[0]
+          alarm_id = values[1]
+          tag = values[2]
+          match_pattern = values[3]
+          notification_periods = values[4]
+          alarm_actions[:notification_id], alarm_actions[:message_type] = values[5].split(':')
+          insufficient_data_actions[:notification_id], insufficient_data_actions[:message_type] = values[6].split(':')
+
           @alarms.push({
             :resource_id => resource_id,
             :alarm_id => alarm_id,
             :tag => tag,
-            :match_pattern => Regexp.new(regexp),
-            :evaluation_periods => evaluation_periods.to_i
+            :match_pattern => Regexp.new(match_pattern),
+            :match_value => match_pattern,
+            :notification_periods => notification_periods,
+            :alarm_actions => alarm_actions,
+            :insufficient_data_actions => insufficient_data_actions,
+            :evaluation_periods => 1
           })
 
           @cache[resource_id] = {}
           @cache[resource_id][tag] = MetricLibs::TimeSeries.new
+
         end
       }
+      DolphinClient.domain = @dolphin_server_uri
     end
 
     class TimerWatcher < Coolio::TimerWatcher
@@ -73,19 +95,23 @@ module Fluent
             evaluation_data = @cache[resource_id][alarm[:tag]].find(start_time, now)
             res = evaluate(evaluation_data, alarm[:match_pattern])
 
-            message = {
-              :alarm_id => alarm[:alarm_id],
-              :tag => alarm[:tag],
-              :match_count => res[:match_count]
-            }
-            $log.info "evaluate result: #{message}"
-
             if res[:match_count] > 0
               sample = evaluation_data.first.value
-              message['resource_id'] = sample['x_wakame_instance_id']
-              message['account_id'] = sample['x_wakame_account_id']
+              message = {
+                :notification_id => alarm[:alarm_actions][:notification_id],
+                :message_type => alarm[:alarm_actions][:message_type],
+                :params => {
+                  :state => 'alarm',
+                  :metric_name => 'log',
+                  :resource_id => resource_id,
+                  :ipaddr => sample['x_wakame_ipaddr'],
+                  :last_evaluated_at => Time.at(Time.now).iso8601,
+                  :match_value => alarm[:match_value],
+                  :tag => alarm[:tag]
+                }
+              }
 
-              Engine.emit(@tag, Engine.now, message)
+              DolphinClient::Event.post(message)
               $log.info "emit: #{message}"
             end
 
@@ -119,7 +145,8 @@ module Fluent
       es.each do |time, record|
         resource_id = record['x_wakame_instance_id']
         label = record['x_wakame_label']
-        if @cache[resource_id].has_key? label
+
+        if @cache[resource_id] && @cache[resource_id].has_key?(label)
           @cache[resource_id][label].push(record, Time.at(time))
         else
           $log.error "Does't accepted #{record}"
