@@ -97,7 +97,7 @@ module Dcmgr::VNet::SGHandler
         if no_more_vnics_left_in_group
           destroy_security_group(host_node, group_id)
         else
-          # The vnic isn't destroyed in the database until after this method is called.
+          # The vnic isn't destroyed in the database until later.
           # Therefore we delete it from the ips we pass to the isolation group.
           self_ips = vnic.direct_ip_lease.map { |lease| lease.ipv4_s }
           update_isolation_group(host_node, group, group.vnic_ips - self_ips)
@@ -107,6 +107,9 @@ module Dcmgr::VNet::SGHandler
 
     }
 
+    # Some time we might want to destroy the vnic in this method so the next
+    # security group update isn't called inbetween this method and the actual
+    # vnic destruction.
     vnic.destroy if update_database
 
     nil # Returning nil to simulate a void method
