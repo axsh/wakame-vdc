@@ -37,7 +37,6 @@ module Fluent
 
           values = v.split(',', 7)
           alarm_actions = {}
-          insufficient_data_actions = {}
 
           resource_id = values[0]
           alarm_id = values[1]
@@ -45,7 +44,6 @@ module Fluent
           match_pattern = values[3]
           notification_periods = values[4]
           alarm_actions[:notification_id], alarm_actions[:message_type] = values[5].split(':')
-          insufficient_data_actions[:notification_id], insufficient_data_actions[:message_type] = values[6].split(':')
 
           @alarms.push({
             :resource_id => resource_id,
@@ -55,7 +53,6 @@ module Fluent
             :match_value => match_pattern,
             :notification_periods => notification_periods,
             :alarm_actions => alarm_actions,
-            :insufficient_data_actions => insufficient_data_actions,
             :evaluation_periods => 1
           })
 

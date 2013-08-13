@@ -94,7 +94,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       if params[:ok_actions] || params[:alarm_actions] || params[:insufficient_data_actions]
         if CA::LOG_METRICS.include?(params[:metric_name])
           al.alarm_actions = params[:alarm_actions]
-          al.insufficient_data_actions = params[:insufficient_data_actions]
         elsif CA::RESOURCE_METRICS.include?(params[:metric_name])
           al.ok_actions = params[:ok_actions]
           al.alarm_actions = params[:alarm_actions]

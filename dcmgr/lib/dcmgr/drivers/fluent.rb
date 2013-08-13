@@ -24,7 +24,6 @@ module Dcmgr
           values << a[:match_pattern]
           values << a[:notification_periods]
           values << a[:alarm_action]
-          values << a[:insufficient_data_action]
           @alarms << values.join(',')
         end
       end
