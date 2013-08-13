@@ -344,15 +344,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
         case vparam['volume_type']
         when 'local'
-          vol.volume_type = 'Dcmgr::Models::LocalVolume'
+          instance.add_local_volume(vol)
         when 'shared'
           # provisioned by storage scheduler.
-          vol.volume_type = nil
+          instance.add_shared_volume(vol)
         else
           raise "Invalid volume_type parameter: #{vparam['volume_type']}"
         end
-
-        instance.add_volume(vol)
       }
     end
     

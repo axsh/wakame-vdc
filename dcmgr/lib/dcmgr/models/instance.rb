@@ -488,5 +488,15 @@ module Dcmgr::Models
     def boot_volume
       Volume[self.boot_volume_id]
     end
+
+    def add_local_volume(volume)
+      volume.volume_type = LocalVolume.to_s
+      volume.save_changes
+      self.add_volume(volume)
+    end
+
+    def add_shared_volume(volume)
+      self.add_volume(volume)
+    end
   end
 end
