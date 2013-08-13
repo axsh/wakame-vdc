@@ -36,7 +36,7 @@ module Dcmgr::Models
           errors.add(:match_pattern, "Invalid pattern")
         end
 
-        unless /^[0-9a-z.]+$/ =~ params['tag']
+        unless /^[0-9a-z._]+$/ =~ params['tag']
           errors.add(:tag, "Invalid format")
         end
 
