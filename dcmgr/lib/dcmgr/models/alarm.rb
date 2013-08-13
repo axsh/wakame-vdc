@@ -56,9 +56,7 @@ module Dcmgr::Models
       notification_actions.each {|name|
         action_name = name + "_actions"
         values = self.__send__(action_name)
-        if values.blank?
-          errors.add(action_name.to_sym, "Invalid action")
-        else
+        unless values.blank?
           if SUPPORT_NOTIFICATION_TYPE.include?(values['notification_type'])
             unless values.has_key? 'notification_type'
               errors.add(:notification_type, 'Unknown value')
