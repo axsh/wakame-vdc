@@ -23,6 +23,7 @@ module Dcmgr
           values << a[:tag]
           values << a[:match_pattern]
           values << a[:notification_periods]
+          values << a[:enabled]
           values << a[:alarm_action]
           @alarms << values.join(',')
         end

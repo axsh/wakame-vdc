@@ -35,7 +35,7 @@ module Fluent
       config.each {|k ,v|
         if k.match(alarm_pattern)
 
-          values = v.split(',', 7)
+          values = v.split(',', 8)
           alarm_actions = {}
 
           resource_id = values[0]
@@ -43,7 +43,8 @@ module Fluent
           tag = values[2]
           match_pattern = values[3]
           notification_periods = values[4]
-          alarm_actions[:notification_id], alarm_actions[:message_type] = values[5].split(':')
+          enabled = values[5] == 'true' ? true : false
+          alarm_actions[:notification_id], alarm_actions[:message_type] = values[6].split(':')
 
           @alarms.push({
             :resource_id => resource_id,
@@ -52,6 +53,7 @@ module Fluent
             :match_pattern => Regexp.new(match_pattern),
             :match_value => match_pattern,
             :notification_periods => notification_periods,
+            :enabled => enabled,
             :alarm_actions => alarm_actions,
             :evaluation_periods => 1
           })
