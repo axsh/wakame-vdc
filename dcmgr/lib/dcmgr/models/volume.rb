@@ -97,7 +97,7 @@ module Dcmgr::Models
 
     def to_hash
       super().merge(:is_local_volume=>local_volume?,
-                    :volume_device=>self.volume_device.to_hash
+                    :volume_device=>(self.volume_device.nil? ? nil : self.volume_device.to_hash)
                     )
     end
 

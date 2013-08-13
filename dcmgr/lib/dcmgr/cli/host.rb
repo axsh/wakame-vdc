@@ -17,6 +17,7 @@ class Host < Base
   method_option :memory_size, :type => :numeric, :default=>1024, :desc => "Amount of memory to be offered (in MB)"
   method_option :hypervisor, :type => :string, :default=>'kvm', :desc => "The hypervisor name. [#{SUPPORTED_HYPERVISOR.join(', ')}]"
   method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{SUPPORTED_ARCH.join(', ')}]"
+  option :disk_space, :type => :numeric, :required => false, :default=>0, :desc => "Amount of disk space to store instances local volumes (MB)"
   def add(node_id)
     UnsupportedArchError.raise(options[:arch]) unless SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
@@ -32,6 +33,7 @@ class Host < Base
               :offering_memory_size=>options[:memory_size],
               :hypervisor=>options[:hypervisor],
               :arch=>options[:arch],
+              :offering_disk_space_mb=>options[:disk_space],
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     puts super(HostNode,fields)
@@ -44,6 +46,7 @@ class Host < Base
   method_option :hypervisor, :type => :string, :desc => "The hypervisor name. [#{HostNode::SUPPORTED_HYPERVISOR.join(', ')}]"
   method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{HostNode::SUPPORTED_ARCH.join(', ')}]"
   method_option :node_id, :type => :string, :size => 255, :desc => "The node ID for the host node"
+  option :disk_space, :type => :numeric, :desc => "Amount of disk space to store instances local volumes (MB)"
   def modify(uuid)
     UnsupportedArchError.raise(options[:arch]) unless SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
@@ -54,6 +57,7 @@ class Host < Base
               :hypervisor=>options[:hypervisor],
               :arch=>options[:arch],
               :node_id=>options[:node_id],
+              :offering_disk_space_mb=>options[:disk_space],
     }
     super(HostNode,uuid,fields)
   end
@@ -72,6 +76,7 @@ Host UUID: <%= host.canonical_uuid %>
 Node ID: <%= host.node_id %>
 CPU Cores (usage / offering): <%= host.cpu_core_usage %> / <%= host.offering_cpu_cores %>
 Memory (usage / offering): <%= host.memory_size_usage%>MB / <%= host.offering_memory_size %>MB
+Disk Space (usage / offering): <%= host.disk_space_usage %>MB / <%= host.offering_disk_space_mb %>MB
 Hypervisor: <%= host.hypervisor %>
 Architecture: <%= host.arch %>
 Status: <%= host.status %>

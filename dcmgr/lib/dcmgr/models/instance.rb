@@ -174,7 +174,7 @@ module Dcmgr::Models
       if self.volume
         self.volume.each { |v|
           h[:volume][v.canonical_uuid] = v.to_hash.tap { |h|
-            if v.volume_type
+            if v.volume_device
               h[:volume_device] = v.volume_device.to_hash
             end
             if v.backup_object

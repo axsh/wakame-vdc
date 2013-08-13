@@ -106,6 +106,13 @@ module Dcmgr::Models
       instances_usage(:memory_size)
     end
 
+    # Calc all local volume size on this host node.
+    def disk_space_usage
+      instances_dataset.alives.map { |i|
+        i.local_volumes_dataset.sum(:size).to_i
+      }.inject{|r, i| r + i }.to_i
+    end
+
     # Returns a usage percentage to show admins in quick overviews
     def usage_percent
       cpu_percent = (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100
@@ -124,6 +131,11 @@ module Dcmgr::Models
       self.offering_memory_size - self.memory_size_usage
     end
 
+    # Returns available memory size.
+    def available_disk_space
+      (self.offering_disk_space_mb * 1024 * 1024) - self.disk_space_usage
+    end
+    
     # Check the free resource capacity across entire local VDC domain.
     def self.check_domain_capacity?(cpu_cores, memory_size, num=1)
       ds = Instance.dataset.lives.filter(:host_node => HostNode.online_nodes)
