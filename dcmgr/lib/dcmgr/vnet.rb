@@ -17,6 +17,7 @@ module Dcmgr::VNet
         def handle_referencees(*args); end
         def refresh_referencers(*args); end
         def update_secg_rules(*args); end
+        def commit_changes(*args); end
       end
     end
   end

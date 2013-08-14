@@ -15,8 +15,8 @@ module Dcmgr::Rpc
       job.submit("sg_handler","init_host","hva.#{@node.manifest.node_instance_id}")
     end
 
-    job :apply_netfilter_cmds, proc {
-      apply_netfilter_cmds(request.args[0])
+    job :apply_packetfilter_cmds, proc {
+      apply_packetfilter_cmds(request.args[0])
     }
   end
 end

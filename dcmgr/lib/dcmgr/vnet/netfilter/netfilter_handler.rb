@@ -39,7 +39,7 @@ module Dcmgr::VNet::Netfilter::NetfilterHandler
     system("for i in $(ebtables -L | grep 'Bridge chain: #{prefix}' | cut -d ' ' -f3 | cut -d ',' -f1); do ebtables -X; done")
   end
 
-  def apply_netfilter_cmds(cmds)
+  def apply_packetfilter_cmds(cmds)
     cmds = [cmds] unless cmds.is_a?(Array)
 
     l2_cmds = []
