@@ -298,7 +298,7 @@ module Dcmgr
 
     module Netfilter
       autoload :PFService, 'dcmgr/vnet/netfilter/pf_service'
-      autoload :NetfilterAgent, 'dcmgr/vnet/netfilter/netfilter_agent'
+      autoload :NetfilterHandler, 'dcmgr/vnet/netfilter/netfilter_handler'
       autoload :NetfilterTasks, 'dcmgr/vnet/netfilter/netfilter_tasks'
       autoload :Chains, 'dcmgr/vnet/netfilter/chains'
     end

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require "ipaddress"
 
-module Dcmgr::VNet::Netfilter::NetfilterAgent
+module Dcmgr::VNet::Netfilter::NetfilterHandler
   def self.included klass
     klass.class_eval do
       include Dcmgr::Logger
