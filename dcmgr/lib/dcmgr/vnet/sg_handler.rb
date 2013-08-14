@@ -7,11 +7,7 @@ module Dcmgr::VNet::SGHandler
     end
   end
   M = Dcmgr::Models
-  # All methods in this module return nil. That's to prevent them from returning
-  # Sequel models to classes that might not have access to the database, which
-  # would make them crash.
 
-  # Initialized an entire host.
   # This is called when a hva host is restarted. Service netfilter itself
   # will ask sg_handler to initialize all of its vnics.
   def init_host(node_id)

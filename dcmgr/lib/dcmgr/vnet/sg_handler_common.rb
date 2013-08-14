@@ -21,6 +21,6 @@ module Dcmgr::VNet::SGHandlerCommon
       call_packetfilter_service(host, cmds)
     }
 
-    nil
+    nil # Return nil so nothing weird is returned over RPC calls
   end
 end
