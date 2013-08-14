@@ -25,9 +25,9 @@ module MetricLibs::Constants
       'lt' => :<,
     }.freeze
 
-    INSUFFICIENT_DATA_STATE = 'insufficient_data_state'
-    OK_STATE = 'ok_state'
-    ALARM_STATE = 'alarm_state'
+    INSUFFICIENT_DATA_STATE = 'insufficient_data'
+    OK_STATE = 'ok'
+    ALARM_STATE = 'alarm'
 
     METRICS_ERROR_COUNT = {
       'cpu.usage' => 5,
