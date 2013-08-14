@@ -14,6 +14,7 @@ module Dcmgr
             :notification_id => action["notification_id"],
             :message_type => action["notification_message_type"],
             :params => {
+              :uuid => value["uuid"],
               :state => value["state"],
               :metric_name => value["metric_name"],
               :resource_id => value["resource_id"],
