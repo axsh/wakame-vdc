@@ -18,7 +18,7 @@ module Dcmgr::VNet::Netfilter
         @pending_changes[host] += cmds
         @pending_changes[host].uniq!
       else
-        @pending_changes[host] = cmds
+        @pending_changes[host] = cmds.uniq
       end
     end
 
