@@ -13,15 +13,6 @@ module Dcmgr::VNet::Netfilter
       @pending_changes = {}
     end
 
-    def add_changes(host, cmds)
-      if @pending_changes.has_key?(host)
-        @pending_changes[host] += cmds
-        @pending_changes[host].uniq!
-      else
-        @pending_changes[host] = cmds.uniq
-      end
-    end
-
     def init_security_group(host, group)
       group_id = group.canonical_uuid
       logger.info "Telling host '#{host.canonical_uuid}' to initialize security group '#{group_id}'"
@@ -158,6 +149,15 @@ module Dcmgr::VNet::Netfilter
     end
 
     private
+    def add_changes(host, cmds)
+      if @pending_changes.has_key?(host)
+        @pending_changes[host] += cmds
+        @pending_changes[host].uniq!
+      else
+        @pending_changes[host] = cmds.uniq
+      end
+    end
+
     def network_mode(vnic_map)
       Dcmgr::VNet::NetworkModes.get_mode(vnic_map[:network][:network_mode])
     end
