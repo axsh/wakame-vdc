@@ -7,6 +7,7 @@ module DcmgrSpec::Netfilter
     def initialize(*args)
       super *args
       @parser = NFCmdParser.new
+      # self.verbose_netfilter = true
     end
 
     def method_missing(method, *args)
@@ -14,7 +15,7 @@ module DcmgrSpec::Netfilter
     end
 
     private
-    def exec(cmds)
+    def apply_cmds(cmds)
       def system(cmd)
         @parser.parse(cmd.split("\n"))
       end

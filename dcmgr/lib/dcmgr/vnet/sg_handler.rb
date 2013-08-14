@@ -19,15 +19,15 @@ module Dcmgr::VNet::SGHandler
     logger.info "Telling host '#{host.canonical_uuid}' to initialize all its vnics and their security groups."
 
     host.security_groups.each { |sg|
-      init_security_group(host, sg)
+      pf.init_security_group(host, sg)
     }
 
     host.alive_vnics.each { |vnic|
-      init_vnic_on_host(host, vnic)
-      set_vnic_security_groups(host, vnic)
+      pf.init_vnic_on_host(host, vnic)
+      pf.set_vnic_security_groups(host, vnic)
     }
 
-    nil # Returning nil to simulate a void method
+    pf.commit_changes
   end
 
   def add_sgs_to_vnic(vnic_id, sg_uuids)
@@ -44,17 +44,17 @@ module Dcmgr::VNet::SGHandler
       vnic.add_security_group(group)
 
       hosts_before_change.each { |host_node|
-        update_isolation_group(host_node, group)
+        pf.update_isolation_group(host_node, group)
       }
 
-      init_security_group(vnic_host, group) unless hosts_before_change.member?(vnic_host)
+      pf.init_security_group(vnic_host, group) unless hosts_before_change.member?(vnic_host)
 
-      refresh_referencers(group)
+      pf.refresh_referencers(group)
     }
 
-    set_vnic_security_groups(vnic_host, vnic)
+    pf.set_vnic_security_groups(vnic_host, vnic)
 
-    nil # Returning nil to simulate a void method
+    pf.commit_changes
   end
 
   def remove_sgs_from_vnic(vnic_id, sg_ids_to_remove)
@@ -63,22 +63,22 @@ module Dcmgr::VNet::SGHandler
     vnic_host = vnic.instance.host_node
 
     current_sg_ids = vnic.security_groups.map { |g| g.canonical_uuid }
-    set_vnic_security_groups(vnic_host, vnic, current_sg_ids - sg_ids_to_remove)
+    pf.set_vnic_security_groups(vnic_host, vnic, current_sg_ids - sg_ids_to_remove)
 
     (sg_ids_to_remove & current_sg_ids).each { |group_id|
       group = M::SecurityGroup[group_id]
       vnic.remove_security_group(group)
 
       group.online_host_nodes.each { |host_node|
-        update_isolation_group(host_node, group)
-        handle_referencees(host_node, group)
+        pf.update_isolation_group(host_node, group)
+        pf.handle_referencees(host_node, group)
       }
 
-      destroy_security_group(vnic_host, group_id) unless group.online_host_nodes.member?(vnic_host)
+      pf.destroy_security_group(vnic_host, group_id) unless group.online_host_nodes.member?(vnic_host)
 
-      refresh_referencers(group)
+      pf.refresh_referencers(group)
     }
-    nil # Returning nil to simulate a void method
+    pf.commit_changes
   end
 
   def destroy_vnic(vnic_id, update_database = false)
@@ -86,7 +86,7 @@ module Dcmgr::VNet::SGHandler
     raise "Vnic '#{vnic.canonical_uuid}' not attached to an instance." if vnic.instance.nil?
     raise "Vnic '#{vnic.canonical_uuid}' is not on a host node." if vnic.instance.host_node.nil?
     host_node = vnic.instance.host_node
-    destroy_vnic_on_host(host_node, vnic)
+    pf.destroy_vnic_on_host(host_node, vnic)
 
     vnic.security_groups.each { |group|
       group_id = group.canonical_uuid
@@ -95,13 +95,13 @@ module Dcmgr::VNet::SGHandler
         no_more_vnics_left_in_group = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance).empty?
 
         if no_more_vnics_left_in_group
-          destroy_security_group(host_node, group_id)
+          pf.destroy_security_group(host_node, group_id)
         else
           # The vnic isn't destroyed in the database until later.
           # Therefore we delete it from the ips we pass to the isolation group.
           self_ips = vnic.direct_ip_lease.map { |lease| lease.ipv4_s }
-          update_isolation_group(host_node, group, group.vnic_ips - self_ips)
-          refresh_referencers(group, vnic)
+          pf.update_isolation_group(host_node, group, group.vnic_ips - self_ips)
+          pf.refresh_referencers(group, vnic)
         end
       }
 
@@ -112,7 +112,7 @@ module Dcmgr::VNet::SGHandler
     # vnic destruction.
     vnic.destroy if update_database
 
-    nil # Returning nil to simulate a void method
+    pf.commit_changes
   end
 
   def update_sg_rules(secg_id)
@@ -121,11 +121,10 @@ module Dcmgr::VNet::SGHandler
 
     group.online_host_nodes.each { |host_node|
       logger.info "Updating rules of group '#{secg_id}' on host '#{host_node.canonical_uuid}'"
-      call_packetfilter_service(host_node, "update_sg_rules", secg_id, rules)
-      handle_referencees(host_node, group)
+      pf.update_secg_rules(host_node, group)
+      pf.handle_referencees(host_node, group)
     }
 
-    nil
+    pf.commit_changes
   end
-
 end

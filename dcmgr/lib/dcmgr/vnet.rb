@@ -2,6 +2,10 @@
 
 module Dcmgr::VNet
 
+  def self.packetfilter_service
+    Netfilter::PFService
+  end
+
   module NetworkModes
     include Dcmgr::Logger
     include Dcmgr::Constants::Network

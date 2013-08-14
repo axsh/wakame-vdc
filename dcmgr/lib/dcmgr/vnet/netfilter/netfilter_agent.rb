@@ -144,6 +144,7 @@ module Dcmgr::VNet::Netfilter::NetfilterAgent
     system l2_cmds.join("\n")
     system l3_cmds.join("\n")
   end
+  alias :apply_cmds :exec
 
   def network_mode(vnic_map)
     Dcmgr::VNet::NetworkModes.get_mode(vnic_map[:network][:network_mode])
