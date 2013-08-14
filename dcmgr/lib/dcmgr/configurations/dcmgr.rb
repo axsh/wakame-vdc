@@ -267,7 +267,7 @@ module Dcmgr
       # default instance poweroff behavior
       param :default_force_poweroff_instance, :default => true
 
-      param :edge_networking, :default => 'netfilter'
+      param :sg_implementation, :default => 'netfilter'
 
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]
@@ -278,8 +278,8 @@ module Dcmgr
           errors << "Invalid mac_address_vendor_id: #{@config[:mac_address_vendor_id]}"
         end
 
-        possible_edges = ["netfilter", "off"]
-        errors << "Invalid edge_networking. Must be one of the following: [#{possible_edges.join(", ")}]" unless possible_edges.member?(@config[:edge_networking])
+        sg_imps = ["netfilter", "off"]
+        errors << "Invalid sg_implementation. Must be one of the following: [#{sg_imps.join(", ")}]" unless sg_imps.member?(@config[:sg_implementation])
 
         unless @config[:create_volume_max_size].is_a?(Integer)
           errors << "create_volume_max_size must be a decimal value: #{@config[:create_volume_max_size]}"

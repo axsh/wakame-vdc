@@ -3,7 +3,7 @@
 module Dcmgr::VNet
 
   def self.packetfilter_service
-    case Dcmgr.conf.edge_networking
+    case Dcmgr.conf.sg_implementation
     when "netfilter"
       Netfilter::NetfilterAgent.new
     when "off"
