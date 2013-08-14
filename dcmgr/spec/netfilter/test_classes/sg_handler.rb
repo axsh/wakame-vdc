@@ -17,7 +17,7 @@ module DcmgrSpec::Netfilter
     alias :nfa :get_netfilter_agent
 
     def call(hn, cmds)
-      @hosts[hn.canonical_uuid].send(:apply_cmds, cmds)
+      @hosts[hn.canonical_uuid].send(:apply_netfilter_cmds, cmds)
     end
 
     def pf

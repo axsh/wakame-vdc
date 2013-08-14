@@ -15,7 +15,7 @@ module DcmgrSpec::Netfilter
     end
 
     private
-    def apply_cmds(cmds)
+    def apply_netfilter_cmds(cmds)
       def system(cmd)
         @parser.parse(cmd.split("\n"))
       end
