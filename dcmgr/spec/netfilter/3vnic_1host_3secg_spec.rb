@@ -5,7 +5,7 @@ require 'dcmgr_spec'
 include DcmgrSpec::Netfilter
 include DcmgrSpec::Fabricators
 
-describe "SGHandler and NetfilterAgent" do
+describe "SGHandler and NetfilterHandler" do
   context "with 3 vnics, 1 host node, 3 security groups" do
     let!(:host) { Fabricate(:host_node) }
     let(:network) { Fabricate(:network) }

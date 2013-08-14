@@ -5,7 +5,7 @@ require 'dcmgr_spec'
 include DcmgrSpec::Netfilter
 include DcmgrSpec::Fabricators
 
-describe "SGHandler and NetfilterAgent" do
+describe "SGHandler and NetfilterHandler" do
   context "on multiple hosts" do
     let(:secg) { Fabricate(:secg, rule:"
       # demo rule for demo instances

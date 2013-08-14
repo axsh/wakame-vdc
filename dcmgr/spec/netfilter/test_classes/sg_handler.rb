@@ -8,7 +8,7 @@ module DcmgrSpec::Netfilter
     def add_host(hn)
       @hosts ||= {}
       raise "Host already exists: #{hn.canonical_uuid}" if @hosts[hn.canonical_uuid]
-      @hosts[hn.canonical_uuid] = NetfilterAgentTest.new
+      @hosts[hn.canonical_uuid] = NetfilterHandlerTest.new
     end
 
     def get_netfilter_agent(hn)

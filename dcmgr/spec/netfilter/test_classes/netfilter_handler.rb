@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module DcmgrSpec::Netfilter
-  class NetfilterAgentTest
-    include Dcmgr::VNet::Netfilter::NetfilterAgent
+  class NetfilterHandlerTest
+    include Dcmgr::VNet::Netfilter::NetfilterHandler
 
     def initialize(*args)
       super *args

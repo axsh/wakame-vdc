@@ -8,7 +8,7 @@ module DcmgrSpec
   module Netfilter
     autoload :SGHandlerTest, 'netfilter/test_classes/sg_handler'
     autoload :NFCmdParser, 'netfilter/test_classes/nf_cmd_parser'
-    autoload :NetfilterAgentTest, 'netfilter/test_classes/netfilter_agent'
+    autoload :NetfilterHandlerTest, 'netfilter/test_classes/netfilter_handler'
 
     module Matchers
       require "netfilter/matchers/have_applied_vnic"
