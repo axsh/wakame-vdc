@@ -7,7 +7,7 @@ module Dcmgr::VNet
     when "netfilter"
       Netfilter::NetfilterAgent.new
     when "off"
-      Class.new do
+      Class.new {
         def init_security_group(*args); end
         def destroy_security_group(*args); end
         def update_isolation_group(*args); end
@@ -17,8 +17,8 @@ module Dcmgr::VNet
         def handle_referencees(*args); end
         def refresh_referencers(*args); end
         def update_secg_rules(*args); end
-        def commit_changes(*args); end
-      end
+        def commit_changes(*args); {}; end
+      }.new
     end
   end
 
