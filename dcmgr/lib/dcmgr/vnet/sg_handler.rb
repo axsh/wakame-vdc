@@ -27,7 +27,7 @@ module Dcmgr::VNet::SGHandler
       pf.set_vnic_security_groups(host, vnic)
     }
 
-    pf.commit_changes
+    commit_changes
   end
 
   def add_sgs_to_vnic(vnic_id, sg_uuids)
@@ -54,7 +54,7 @@ module Dcmgr::VNet::SGHandler
 
     pf.set_vnic_security_groups(vnic_host, vnic)
 
-    pf.commit_changes
+    commit_changes
   end
 
   def remove_sgs_from_vnic(vnic_id, sg_ids_to_remove)
@@ -78,7 +78,7 @@ module Dcmgr::VNet::SGHandler
 
       pf.refresh_referencers(group)
     }
-    pf.commit_changes
+    commit_changes
   end
 
   def destroy_vnic(vnic_id, update_database = false)
@@ -112,7 +112,7 @@ module Dcmgr::VNet::SGHandler
     # vnic destruction.
     vnic.destroy if update_database
 
-    pf.commit_changes
+    commit_changes
   end
 
   def update_sg_rules(secg_id)
@@ -125,6 +125,6 @@ module Dcmgr::VNet::SGHandler
       pf.handle_referencees(host_node, group)
     }
 
-    pf.commit_changes
+    commit_changes
   end
 end

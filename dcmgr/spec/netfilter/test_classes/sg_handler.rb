@@ -16,14 +16,8 @@ module DcmgrSpec::Netfilter
     end
     alias :nfa :get_netfilter_agent
 
-    def call(hn, cmds)
+    def call_packetfilter_service(hn, cmds)
       @hosts[hn.canonical_uuid].send(:apply_packetfilter_cmds, cmds)
-    end
-
-    def pf
-      @pf ||= Dcmgr::VNet.packetfilter_service.tap { |n|
-        n.host_caller = self
-      }
     end
   end
 

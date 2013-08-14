@@ -140,12 +140,10 @@ module Dcmgr::VNet::Netfilter
     end
 
     def commit_changes
-      @pending_changes.each { |host, cmds|
-        host_caller.call(host, cmds)
-      }
-
+      p = @pending_changes
       @pending_changes = {}
-      nil
+
+      p
     end
 
     private

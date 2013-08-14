@@ -35,6 +35,6 @@ module Dcmgr::VNet::VNicInitializer
 
     pf.set_vnic_security_groups(host_node, vnic)
 
-    pf.commit_changes
+    commit_changes
   end
 end

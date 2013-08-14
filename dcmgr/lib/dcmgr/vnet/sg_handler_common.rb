@@ -15,4 +15,12 @@ module Dcmgr::VNet::SGHandlerCommon
   def pf
     @pf ||= Dcmgr::VNet.packetfilter_service
   end
+
+  def commit_changes
+    pf.commit_changes.each { |host, cmds|
+      call_packetfilter_service(host, cmds)
+    }
+
+    nil
+  end
 end
