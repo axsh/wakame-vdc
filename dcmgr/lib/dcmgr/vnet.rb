@@ -3,7 +3,7 @@
 module Dcmgr::VNet
 
   def self.packetfilter_service
-    Netfilter::PFService
+    Netfilter::NetfilterAgent
   end
 
   module NetworkModes

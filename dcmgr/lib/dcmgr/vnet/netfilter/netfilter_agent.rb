@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::VNet::Netfilter
-  class PFService
+  class NetfilterAgent
     include Dcmgr::Logger
     include Dcmgr::VNet::Netfilter::Chains
     include Dcmgr::Helpers::NicHelper
