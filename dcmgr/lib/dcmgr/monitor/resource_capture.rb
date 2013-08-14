@@ -63,7 +63,7 @@ module Dcmgr
                  else
                    raise "Unknown Metric type: #{metric_name}"
                  end
-        sh("pidstat -h #{option} -T ALL -p #{pid}")
+        sh("pidstat -h #{option} -T ALL -p #{pid} 1 1")
       end
 
       def parse_pidstat(metric_name, data)
