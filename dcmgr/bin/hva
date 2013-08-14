@@ -57,5 +57,5 @@ end
 start(manifest) do
   endpoint "hva-handle.#{@node.node_id}", Dcmgr::Rpc::HvaHandler
   endpoint "local-store-handle.#{@node.node_id}", Dcmgr::Rpc::LocalStoreHandler
-  endpoint "netfilter-handle.#{@node.node_id}", Dcmgr::Rpc::NetfilterHandler if load_netfilter_handler
+  endpoint "packetfilter-handle.#{@node.node_id}", Dcmgr::Rpc::NetfilterHandler if load_netfilter_handler
 end
