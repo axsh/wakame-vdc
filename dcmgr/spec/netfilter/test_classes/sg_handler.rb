@@ -21,7 +21,7 @@ module DcmgrSpec::Netfilter
     end
 
     def pf
-      @pf ||= Dcmgr::VNet.packetfilter_service.new.tap { |n|
+      @pf ||= Dcmgr::VNet.packetfilter_service.tap { |n|
         n.host_caller = self
       }
     end

@@ -267,6 +267,8 @@ module Dcmgr
       # default instance poweroff behavior
       param :default_force_poweroff_instance, :default => true
 
+      param :edge_networking, :default => 'netfilter'
+
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]
         errors << "amqp_server_uri is undefined." unless @config[:amqp_server_uri]
@@ -275,6 +277,9 @@ module Dcmgr
         if @config[:mac_address_vendor_id].nil? || @config[:mac_address_vendor_id] !~ /^[\dA-Fa-f]{6}$/
           errors << "Invalid mac_address_vendor_id: #{@config[:mac_address_vendor_id]}"
         end
+
+        possible_edges = ["netfilter", "off"]
+        errors << "Invalid edge_networking. Must be one of the following: [#{possible_edges.join(", ")}]" unless possible_edges.member?(@config[:edge_networking])
 
         unless @config[:create_volume_max_size].is_a?(Integer)
           errors << "create_volume_max_size must be a decimal value: #{@config[:create_volume_max_size]}"

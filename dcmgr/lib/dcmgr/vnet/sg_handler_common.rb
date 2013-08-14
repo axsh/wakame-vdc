@@ -13,6 +13,6 @@ module Dcmgr::VNet::SGHandlerCommon
 
   private
   def pf
-    @pf ||= Dcmgr::VNet.packetfilter_service.new
+    @pf ||= Dcmgr::VNet.packetfilter_service
   end
 end
