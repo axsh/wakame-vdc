@@ -51,6 +51,37 @@ module MetricLibs
           raise EvaluationError if evaluated_value.empty?
 
           update_state(evaluated_value.to_f.method(SUPPORT_COMPARISON_OPERATOR[@params["comparison_operator"]]).call(@params["threshold"]) ? ALARM_STATE : OK_STATE)
+        when 'log'
+          tmp = []
+          match_count = 0
+          match_indexes = []
+          line_no = 0
+
+          @timeseries.find_all.reverse_each {|t|
+            tmp << t.value
+            if match_pattern =~ t.value
+              match_indexes << line_no
+              match_count += 1
+            end
+            line_no += 1
+          }
+
+          pre_read_size = 3
+          post_read_size = 3
+          evaluated_value = []
+          match_indexes.each {|matched_line|
+            m = {
+              :match_line => tmp[matched_line]
+            }
+
+            if 0 > (matched_line - pre_read_size)
+              m[:match_ranges] = tmp[0..(matched_line+post_read_size)]
+            else
+              m[:match_ranges] = tmp[(matched_line-pre_read_size)..(matched_line+post_read_size)]
+            end
+            evaluated_value << m
+          }
+          update_last_evaluated_value(evaluated_value)
         else
           raise "Unknown metric name: #{@metric_name}"
         end
