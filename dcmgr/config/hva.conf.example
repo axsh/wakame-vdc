@@ -92,3 +92,13 @@ dc_network('management') {
 # Dolphin server connection uri
 config.dolphin_server_uri = "http://localhost:9004/"
 
+# Setup of a capture interval.
+# By the default, the capture interval is set 60. (cpu_time, memory_time)
+# The response timeout use timeout_sec.
+# also, the retry count is set to retry_count.
+capture {
+  cpu_time 60
+  memory_time 60
+  timeout_sec 10
+  retry_count 1
+}
