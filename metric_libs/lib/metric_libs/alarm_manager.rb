@@ -54,58 +54,20 @@ module MetricLibs
       get_alarm(uuid).evaluate
     end
 
-    def find_alarm(resource_id=nil, metric_name=nil)
-      if resource_id.nil?
-        return @manager.values.collect {|a| a[:alarm]}
-      end
+    def find_alarm(resource_id, resource)
+      raise ArgumentError unless resource.is_a?(Hash)
 
-      if metric_name.nil?
-        alarm = @manager.values.collect {|alm|
-          alm[:alarm].resource_id == resource_id
-        }
-      else
-        alarm = @manager.values.select {|alm|
-          alm[:alarm].resource_id == resource_id && alm[:alarm].metric_name == metric_name
-        }
-      end
-      return [] if alarm.empty?
-      alarm.collect { |a| a[:alarm]}
-    end
-
-    private
-    def get_hash(uuid)
-      raise ArgumentError unless uuid.is_a?(String)
-      @manager[uuid]
+      alarm = @manager.values.keep_if {|alm|
+        alm[:alarm].resource_id == resource_id &&
+        resource[alm[:alarm].metric_name]
+      }
+      return nil if alarm.empty?
+      alarm.first[:alarm]
     end
 
     def get_alarm(uuid)
       raise ArgumentError unless uuid.is_a?(String)
       @manager[uuid][:alarm]
-    end
-
-    def get_timer(uuid)
-      raise ArgumentError unless uuid.is_a?(String)
-      @manager[uuid][:timer]
-    end
-
-    def set_hash(uuid)
-      raise ArgumentError unless uuid.is_a?(String)
-      @manager[uuid] ||= {}
-    end
-
-    def set_alarm(alm)
-      raise ArgumentError unless alm.is_a?(Hash)
-      @manager[alm[:uuid]][:alarm] = Alarm.new(alm, self)
-    end
-
-    def set_timer(uuid)
-      raise ArgumentError unless uuid.is_a?(String)
-      @manager[uuid][:timer] = @timer.add_periodic_timer(get_alarm(uuid))
-    end
-
-    def delete_hash(uuid)
-      raise ArgumentError unless uuid.is_a?(String)
-      @manager.delete(uuid)
     end
 
     def update_alarm(alm)
@@ -133,6 +95,37 @@ module MetricLibs
         get_timer(uuid).cancel unless @timer.nil?
         delete_hash(uuid)
       end
+    end
+
+    private
+    def get_hash(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      @manager[uuid]
+    end
+
+    def get_timer(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      @manager[uuid][:timer]
+    end
+
+    def set_hash(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      @manager[uuid] ||= {}
+    end
+
+    def set_alarm(alm)
+      raise ArgumentError unless alm.is_a?(Hash)
+      @manager[alm[:uuid]][:alarm] = Alarm.new(alm, self)
+    end
+
+    def set_timer(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      @manager[uuid][:timer] = @timer.add_periodic_timer(get_alarm(uuid))
+    end
+
+    def delete_hash(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      @manager.delete(uuid)
     end
 
   end
