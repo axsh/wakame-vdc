@@ -35,7 +35,7 @@ manifest.instance_eval do
 
   load_module Isono::NodeModules::NodeHeartbeat
   load_module Dcmgr::NodeModules::InstanceMonitor
-
+  load_module Dcmgr::NodeModules::Monitor
   case Dcmgr.conf.edge_networking
   when 'openflow'
     load_module Dcmgr::NodeModules::DebugOpenFlow
@@ -47,7 +47,7 @@ manifest.instance_eval do
   else
     raise "Configuration error: '#{Dcmgr.conf.edge_networking}' is not a valid option for edge_networking. Valid options are 'openflow', 'netfilter', 'legacy_netfilter' and 'off'"
   end
-
+  load_module Dcmgr::NodeModules::AlarmConfigUpdater
 end
 
 Isono.at_disconnected do
@@ -59,3 +59,4 @@ start(manifest) do
   endpoint "local-store-handle.#{@node.node_id}", Dcmgr::Rpc::LocalStoreHandler
   endpoint "packetfilter-handle.#{@node.node_id}", Dcmgr::Rpc::NetfilterHandler if load_netfilter_handler
 end
+

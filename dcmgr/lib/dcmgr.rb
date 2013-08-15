@@ -29,6 +29,7 @@ module Dcmgr
     autoload :LoadBalancer, 'dcmgr/constants/load_balancer'
     autoload :Image, 'dcmgr/constants/image'
     autoload :BackupObject, 'dcmgr/constants/backup_object'
+    autoload :Alarm, 'dcmgr/constants/alarm'
   end
   Const = Constants
 
@@ -89,6 +90,7 @@ module Dcmgr
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
     autoload :QueuedJob, 'dcmgr/models/queued_job'
+    autoload :Alarm, 'dcmgr/models/alarm'
 
     require 'dcmgr/models/log_storage/base'
     module LogStorage
@@ -139,6 +141,10 @@ module Dcmgr
     autoload :EventHook, 'dcmgr/node_modules/event_hook'
     autoload :JobQueueProxy, 'dcmgr/node_modules/job_queue_proxy'
     autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
+    autoload :ResourceCollector, 'dcmgr/node_modules/resource_collector'
+    autoload :Monitor, 'dcmgr/node_modules/monitor'
+    autoload :AlarmCollector, 'dcmgr/node_modules/alarm_collector'
+    autoload :AlarmConfigUpdater, 'dcmgr/node_modules/alarm_config_updater'
   end
 
   module Helpers
@@ -233,6 +239,7 @@ module Dcmgr
     autoload :Zabbix, 'dcmgr/drivers/zabbix'
     autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
     autoload :Natbox, 'dcmgr/drivers/natbox'
+    autoload :Fluent, 'dcmgr/drivers/fluent'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'
@@ -338,6 +345,10 @@ module Dcmgr
 
   autoload :TextLog, 'dcmgr/text_log'
 
+  module Monitor
+    autoload :ResourceCapture, 'dcmgr/monitor/resource_capture'
+    autoload :Notification, 'dcmgr/monitor/notification'
+  end
 end
 
 module Ext
