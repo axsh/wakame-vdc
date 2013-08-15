@@ -68,7 +68,8 @@ module DcmgrSpec::Netfilter::Matchers
 
     def l2_outbound_main_chain_jumps
       [
-        "vdc_#{@vnic_id}_s_standard"
+        "vdc_#{@vnic_id}_s_standard",
+        "DROP"
       ]
     end
 
@@ -82,28 +83,49 @@ module DcmgrSpec::Netfilter::Matchers
       @groups.map {|g| "vdc_#{g.canonical_uuid}_#{suffix}" }
     end
 
+    def vnic_ip
+      @vnic.direct_ip_lease.first.ipv4
+    end
+
+    def vnic_mac
+      @vnic.pretty_mac_addr
+    end
+
+    def dns_server
+      @vnic.network && @vnic.network.dns_server
+    end
+
+    def metadata_server
+      @vnic.network && @vnic.network.metadata_server
+    end
+
+    def metadata_server_port
+      @vnic.network && @vnic.network.metadata_server_port
+    end
+
     def l2_inbound_stnd_rules_for_vnic
-      vnic_ip = @vnic.direct_ip_lease.first.ipv4
       gw_ip = @vnic.network && @vnic.network.ipv4_gw
-      dns_server = @vnic.network && @vnic.network.dns_server
-      metadata_server = @vnic.network && @vnic.network.metadata_server
       rules = []
 
       rules << "--protocol arp --arp-opcode Request --arp-ip-src=#{gw_ip} --arp-ip-dst=#{vnic_ip} -j ACCEPT" if gw_ip
       rules << "--protocol arp --arp-opcode Request --arp-ip-src=#{dns_server} --arp-ip-dst=#{vnic_ip} -j ACCEPT" if dns_server
       rules << "--protocol arp --arp-opcode Request --arp-ip-src=#{metadata_server} --arp-ip-dst=#{vnic_ip} -j ACCEPT" if metadata_server
       rules << "--protocol arp --arp-gratuitous --arp-ip-src=#{gw_ip} -j ACCEPT" if gw_ip
-      rules << "--protocol arp --arp-opcode Reply --arp-ip-dst=#{vnic_ip} --arp-mac-dst=#{@vnic.pretty_mac_addr} -j ACCEPT"
+      rules << "--protocol arp --arp-opcode Reply --arp-ip-dst=#{vnic_ip} --arp-mac-dst=#{vnic_mac} -j ACCEPT"
       rules << "--protocol IPv4 -j ACCEPT"
 
       rules
     end
 
+    def l2_outbound_stnd_rules_for_vnic
+      [
+        "-p ARP --arp-ip-src #{vnic_ip} --arp-mac-src #{vnic_mac} -j ACCEPT",
+        "-p IPv4 --among-src #{vnic_mac}=#{vnic_ip}, -j ACCEPT"
+      ]
+    end
+
     def l3_inbound_stnd_rules_for_vnic
-      dns_server = @vnic.network && @vnic.network.dns_server
       dhcp_server = @vnic.network && @vnic.network.dhcp_server
-      metadata_server = @vnic.network && @vnic.network.metadata_server
-      metadata_server_port = @vnic.network && @vnic.network.metadata_server_port
       rules = []
 
       rules << "-m state --state RELATED,ESTABLISHED -j ACCEPT"
@@ -116,9 +138,6 @@ module DcmgrSpec::Netfilter::Matchers
     end
 
     def l3_address_translation_rules
-      metadata_server = @vnic.network && @vnic.network.metadata_server
-      metadata_server_port = @vnic.network && @vnic.network.metadata_server_port
-
       metadata_server.nil? ? [] : ["-d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{@vnic.network.metadata_server}:#{@vnic.network.metadata_server_port}"]
     end
 

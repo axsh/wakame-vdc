@@ -16,8 +16,8 @@ module Dcmgr::VNet::NetworkModes
         vnic_main_chain_jumps(vnic_map),
         vnic_main_drop_rules(vnic_map),
         # l2 standard rules
-        drop_ip_spoofing(vnic_map),
-        drop_mac_spoofing(vnic_map),
+        accept_outbound_arp(vnic_map),
+        accept_outbound_ipv4(vnic_map),
         accept_arp_from_gateway(vnic_map),
         accept_arp_from_dns(vnic_map),
         accept_garp_from_gateway(vnic_map),
