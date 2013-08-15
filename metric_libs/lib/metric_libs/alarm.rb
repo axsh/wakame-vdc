@@ -9,7 +9,7 @@ module MetricLibs
     include MetricLibs::Constants::Alarm
     include AlarmError
 
-    attr_reader :uuid, :resource_id, :metric_name
+    attr_reader :uuid, :resource_id, :metric_name, :last_evaluated_value, :last_evaluated_at
 
     def initialize(alm, manager)
       set_variable(alm)
