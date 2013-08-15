@@ -17,9 +17,10 @@ module Dcmgr::VNet::SGHandlerCommon
   end
 
   def commit_changes
-    pf.commit_changes.each { |host, cmds|
+    pf.pending_changes.each { |host, cmds|
       call_packetfilter_service(host, cmds)
     }
+    pf.flush_pending_changes
 
     nil # Return nil so nothing weird is returned over RPC calls
   end

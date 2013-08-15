@@ -7,18 +7,8 @@ module Dcmgr::VNet
     when "netfilter"
       Netfilter::NetfilterAgent.new
     when "off"
-      Class.new {
-        def init_security_group(*args); end
-        def destroy_security_group(*args); end
-        def update_isolation_group(*args); end
-        def init_vnic_on_host(*args); end
-        def destroy_vnic_on_host(*args); end
-        def set_vnic_security_groups(*args); end
-        def handle_referencees(*args); end
-        def refresh_referencers(*args); end
-        def update_secg_rules(*args); end
-        def commit_changes(*args); {}; end
-      }.new
+      # Return the abstract class so no code is executed
+      PacketfilterAgent.new
     end
   end
 
@@ -29,7 +19,7 @@ module Dcmgr::VNet
     class NetworkModeNotFoundError < StandardError
     end
 
-    def self.get_mode(mode_name, legacy = false)
+    def self.get_mode(mode_name)
       case mode_name
       when NM_SECURITYGROUP
         logger.debug "Selecting #{NM_SECURITYGROUP} network mode"

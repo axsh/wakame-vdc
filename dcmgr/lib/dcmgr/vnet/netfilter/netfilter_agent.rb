@@ -1,17 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::VNet::Netfilter
-  class NetfilterAgent
+  class NetfilterAgent < Dcmgr::VNet::PacketfilterAgent
     include Dcmgr::Logger
     include Dcmgr::VNet::Netfilter::Chains
     include Dcmgr::Helpers::NicHelper
     include Dcmgr::VNet::Netfilter::NetfilterTasks
-
-    attr_accessor :host_caller
-
-    def initialize
-      @pending_changes = {}
-    end
 
     def init_security_group(host, group)
       group_id = group.canonical_uuid
@@ -137,13 +131,6 @@ module Dcmgr::VNet::Netfilter
         parse_arp_for_rules(rules).map {|rule| l2chain.add_rule(rule)} +
         parse_rules(rules).map {|rule| l3chain.add_rule(rule)}
       )
-    end
-
-    def commit_changes
-      p = @pending_changes
-      @pending_changes = {}
-
-      p
     end
 
     private

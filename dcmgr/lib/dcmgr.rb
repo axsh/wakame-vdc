@@ -290,6 +290,7 @@ module Dcmgr
     autoload :VNicInitializer, 'dcmgr/vnet/vnic_initializer.rb'
     autoload :SGHandlerCommon, 'dcmgr/vnet/sg_handler_common.rb'
     autoload :CallIsonoPacketfilter, 'dcmgr/vnet/call_isono_packetfilter'
+    autoload :PacketfilterAgent, 'dcmgr/vnet/packetfilter_agent'
 
     module NetworkModes
       autoload :SecurityGroup, 'dcmgr/vnet/network_modes/security_group'
