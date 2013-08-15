@@ -5,10 +5,10 @@ module Dcmgr::VNet
   def self.packetfilter_service
     case Dcmgr.conf.sg_implementation
     when "netfilter"
-      Netfilter::NetfilterAgent.new
+      Netfilter::NetfilterService.new
     when "off"
       # Return the abstract class so no code is executed
-      PacketfilterAgent.new
+      PacketfilterService.new
     end
   end
 
