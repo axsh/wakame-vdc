@@ -27,11 +27,7 @@ module MetricLibs
 
     def feed(data)
       raise ArgumentError unless data.is_a?(Hash)
-      if data["timeout"]
-        @timeseries.push(nil, Time.at(data["time"].to_i))
-      else
-        @timeseries.push(data[@metric_name], Time.at(data["time"].to_i))
-      end
+      @timeseries.push(data[@metric_name], data["time"])
     end
 
     def evaluate
