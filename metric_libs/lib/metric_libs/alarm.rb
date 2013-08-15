@@ -12,6 +12,9 @@ module MetricLibs
     attr_reader :uuid, :resource_id, :metric_name, :last_evaluated_value, :last_evaluated_at
 
     def initialize(alm, manager)
+      alm.keys.each{|key|
+        self.class.__send__(:attr_accessor, key)
+      }
       set_variable(alm)
       @manager = manager
       @timeseries = MetricLibs::TimeSeries.new
