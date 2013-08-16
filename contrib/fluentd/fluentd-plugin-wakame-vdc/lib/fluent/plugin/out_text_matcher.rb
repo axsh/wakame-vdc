@@ -36,10 +36,21 @@ end
 
 class LogAlarmManager < MetricLibs::AlarmManager
   include MetricLibs::Constants::Alarm
-  def find_log_alarm(resource_id, tag)
-    alarms = @manager.values.select {|alm|
-      (alm[:alarm].resource_id == resource_id) && (alm[:alarm].tag == tag)
-    }
+  def find_log_alarm(resource_id=nil, tag=nil)
+    if resource_id.nil?
+      alarms = @manager.values
+    else
+      if tag.nil?
+        alarms = @manager.values.select {|alm|
+          (alm[:alarm].resource_id == resource_id)
+        }
+      else
+        alarms = @manager.values.select {|alm|
+          (alm[:alarm].resource_id == resource_id) && (alm[:alarm].tag == tag)
+        }
+      end
+    end
+
     return [] if alarms.empty?
     alarms.collect {|a| a[:alarm]}
   end
@@ -147,7 +158,7 @@ module Fluent
     def start
       $log.debug"text_matcher:start:#{Thread.current} :start"
 
-      @alarm_manager.find_alarm.each {|alarm|
+      @alarm_manager.find_log_alarm.each {|alarm|
         if alarm.enabled?
           user_notification_timer = TimerWatcher.new(alarm.to_hash["notification_periods"], true) {
           }
