@@ -62,6 +62,7 @@ module Fluent
       send_data[@prefix_key + 'instance_id'] = instance_id
       send_data[@prefix_key + 'account_id'] = account_id
       send_data[@prefix_key + 'label'] = label
+      send_data[@prefix_key + 'ipaddr'] = instance_ipv4
 
       # Merge data
       es = MessagePackEventStream.new(entries, @cached_unpacker)

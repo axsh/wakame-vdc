@@ -77,7 +77,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       if params['params'] && params['params'].is_a?(Hash)
         save_params = {}
         if CA::LOG_METRICS.include?(params[:metric_name])
-          save_params['label'] = params['params']['label']
+          save_params['tag'] = params['params']['tag']
           save_params['match_pattern'] = params['params']['match_pattern']
         elsif CA::RESOURCE_METRICS.include?(params[:metric_name])
           save_params['threshold'] = params['params']['threshold'].to_f
@@ -94,7 +94,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       if params[:ok_actions] || params[:alarm_actions] || params[:insufficient_data_actions]
         if CA::LOG_METRICS.include?(params[:metric_name])
           al.alarm_actions = params[:alarm_actions]
-          al.insufficient_data_actions = params[:insufficient_data_actions]
         elsif CA::RESOURCE_METRICS.include?(params[:metric_name])
           al.ok_actions = params[:ok_actions]
           al.alarm_actions = params[:alarm_actions]
@@ -107,9 +106,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
     on_after_commit do
       i = find_by_uuid(:Instance, params['resource_id'])
-      if i.state == 'running'
-        Dcmgr.messaging.submit(alarm_endpoint(alarm.metric_name, i.host_node.node_id), 'update_alarm', alarm.canonical_uuid)
-      end
+      Dcmgr.messaging.submit(alarm_endpoint(alarm.metric_name, i.host_node.node_id), 'update_alarm', alarm.canonical_uuid)
     end
 
     respond_with(R::Alarm.new(alarm).generate)
@@ -162,7 +159,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       if params['params'] && params['params'].is_a?(Hash)
         update_params = {}
         if al.is_log_alarm?
-          update_params['label'] = al.params['label']
+          update_params['tag'] = al.params['tag']
           if params['params']['match_pattern']
             update_params['match_pattern'] = params['params']['match_pattern']
           else
@@ -190,9 +187,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
     on_after_commit do
       i = find_by_uuid(:Instance, al.resource_id)
-      if i.state == 'running'
-        Dcmgr.messaging.submit(alarm_endpoint(al.metric_name, i.host_node.node_id), 'update_alarm', al.canonical_uuid)
-      end
+      Dcmgr.messaging.submit(alarm_endpoint(al.metric_name, i.host_node.node_id), 'update_alarm', al.canonical_uuid)
     end
 
     respond_with([al.canonical_uuid])
