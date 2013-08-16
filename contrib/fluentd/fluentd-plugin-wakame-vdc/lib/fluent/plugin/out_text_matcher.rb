@@ -28,8 +28,6 @@ MetricLibs::Alarm.class_eval do
         :logs => logs
       }
     }
-
-    $log.info(message)
     DolphinClient::Event.post(message)
   end
 end
@@ -113,7 +111,7 @@ module Fluent
           enabled = values[5] == 'true' ? true : false
           alarm_actions[:notification_id], alarm_actions[:message_type] = values[6].split(':')
 
-          @alarm_manager.update({
+          alarm = {
             :uuid => alarm_id,
             :resource_id => resource_id,
             :tag => tag,
@@ -123,7 +121,10 @@ module Fluent
             :enabled => enabled,
             :alarm_actions => alarm_actions,
             :metric_name => 'log'
-          })
+          }
+
+          @alarm_manager.update(alarm)
+          $log.info("Set alarm: #{alarm}")
         end
       }
 
@@ -197,25 +198,37 @@ module Fluent
       # evaluate
       alarms.each {|alm|
         alm.evaluate
-        $log.info("Evaluated alarm: #{alm.uuid}")
+        info_alarm_log("Evaluated alarm", alm)
       }
 
       # notification
       alarms.each {|alm|
         alm.send_alarm_notification
-        $log.info("Notify alarm: #{alm.uuid}")
+        info_alarm_log("Notify alarm", alm)
       }
 
       # clear alarm histories
       alarms.each {|alm|
         @alarm_manager.clear_histories(alm.uuid)
-        $log.info("Clear alarm: #{alm.uuid}")
+        $log.info("Clear alarm", alm.uuid)
       }
     end
 
     private
     def debug_mode?
       $log.level <= Fluent::Log::LEVEL_DEBUG
+    end
+
+    def info_alarm_log(message, alarm)
+      alarm_values = {
+        :uuid => alarm.uuid,
+        :resource_id => alarm.resource_id,
+        :tag => alarm.tag,
+        :alarm_actions => alarm.alarm_actions,
+        :ipaddr => alarm.ipaddr,
+        :match_value => alarm.match_value
+      }
+      $log.info("#{message}: #{alarm_values}")
     end
 
   end
