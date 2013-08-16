@@ -1,3 +1,5 @@
+require "csv"
+
 module Dcmgr
   module Drivers
     class Fluent
@@ -25,7 +27,7 @@ module Dcmgr
           values << a[:notification_periods]
           values << a[:enabled]
           values << a[:alarm_action]
-          @alarms << values.join(',')
+          @alarms << values.to_csv
         end
       end
 

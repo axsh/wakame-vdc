@@ -79,6 +79,7 @@ module Fluent
     def initialize
       super
       require 'dolphin_client'
+      require 'csv'
       @alarm_manager = LogAlarmManager.new
     end
 
@@ -100,7 +101,7 @@ module Fluent
       config.each {|k ,v|
         if k.match(alarm_pattern)
 
-          values = v.split(',', 8)
+          values = CSV.parse_line(v)
           alarm_actions = {}
 
           resource_id = values[0]
