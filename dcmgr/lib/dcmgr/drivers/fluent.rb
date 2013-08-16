@@ -11,18 +11,21 @@ module Dcmgr
       def initialize
         @template_file_name = 'fluent.conf'
         @output_file = Dcmgr.conf.logging_service_conf
+        @dolphin_server_uri = Dcmgr.conf.dolphin_server_uri
       end
 
-      def set_alarms(alarms)
+      def set_alarms(alm)
         @alarms = []
-        alarms.each do |alarm|
-          @alarms << {
-            :resource_id => alarm[:resource_id],
-            :alarm_id => alarm[:alarm_id],
-            :tag => alarm[:tag],
-            :match_pattern => alarm[:match_pattern],
-            :evaluation_periods => alarm[:evaluation_periods]
-          }
+        alm.each do |a|
+          values = []
+          values << a[:resource_id]
+          values << a[:alarm_id]
+          values << a[:tag]
+          values << a[:match_pattern]
+          values << a[:notification_periods]
+          values << a[:enabled]
+          values << a[:alarm_action]
+          @alarms << values.join(',')
         end
       end
 
