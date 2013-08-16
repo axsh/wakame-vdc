@@ -56,6 +56,6 @@ metric_libs_root=File.expand_path('../../metric_libs/', __FILE__)
 if File.exists?(metric_libs_root)
   gem 'metric_libs', :path=>metric_libs_root
 else
-  gem 'metric_libs', '0.0.4'
+  gem 'metric_libs', '0.0.5'
 end
 
