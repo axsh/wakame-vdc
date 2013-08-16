@@ -9,9 +9,12 @@ module MetricLibs
     include MetricLibs::Constants::Alarm
     include AlarmError
 
-    attr_reader :uuid, :resource_id, :metric_name
+    attr_reader :uuid, :resource_id, :metric_name, :last_evaluated_value, :last_evaluated_at
 
     def initialize(alm, manager)
+      alm.keys.each{|key|
+        self.class.__send__(:attr_accessor, key)
+      }
       set_variable(alm)
       @manager = manager
       @timeseries = MetricLibs::TimeSeries.new
@@ -24,11 +27,7 @@ module MetricLibs
 
     def feed(data)
       raise ArgumentError unless data.is_a?(Hash)
-      if data["timeout"]
-        @timeseries.push(nil, Time.at(data["time"].to_i))
-      else
-        @timeseries.push(data[@metric_name], Time.at(data["time"].to_i))
-      end
+      @timeseries.push(data[@metric_name], data["time"])
     end
 
     def evaluate
@@ -52,6 +51,37 @@ module MetricLibs
           raise EvaluationError if evaluated_value.empty?
 
           update_state(evaluated_value.to_f.method(SUPPORT_COMPARISON_OPERATOR[@params["comparison_operator"]]).call(@params["threshold"]) ? ALARM_STATE : OK_STATE)
+        when 'log'
+          tmp = []
+          match_count = 0
+          match_indexes = []
+          line_no = 0
+
+          @timeseries.find_all.reverse_each {|t|
+            tmp << t.value
+            if match_pattern =~ t.value
+              match_indexes << line_no
+              match_count += 1
+            end
+            line_no += 1
+          }
+
+          pre_read_size = 3
+          post_read_size = 3
+          evaluated_value = []
+          match_indexes.each {|matched_line|
+            m = {
+              :match_line => tmp[matched_line]
+            }
+
+            if 0 > (matched_line - pre_read_size)
+              m[:match_ranges] = tmp[0..(matched_line+post_read_size)]
+            else
+              m[:match_ranges] = tmp[(matched_line-pre_read_size)..(matched_line+post_read_size)]
+            end
+            evaluated_value << m
+          }
+          update_last_evaluated_value(evaluated_value)
         else
           raise "Unknown metric name: #{@metric_name}"
         end
