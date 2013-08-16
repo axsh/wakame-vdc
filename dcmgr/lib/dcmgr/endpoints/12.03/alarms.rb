@@ -61,7 +61,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       end
 
       if params[:enabled]
-        al.enabled = params[:enabled].to_i
+        if params[:enabled] == "true"
+          al.enabled = 1
+        else
+          al.enabled = 0
+        end
       else
         al.enabled = 1
       end
@@ -145,7 +149,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       end
 
       if params[:enabled]
-        al.enabled = params[:enabled].to_i
+        if params[:enabled] == "true"
+          al.enabled = 1
+        else
+          al.enabled = 0
+          al.state = "init"
+          al.state_timestamp = Time.now
+        end
       end
 
       if params[:evaluation_periods] && CA::RESOURCE_METRICS.include?(al.metric_name)
