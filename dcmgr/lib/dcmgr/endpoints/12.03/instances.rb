@@ -337,10 +337,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
           vol = M::Volume.entry_new(instance.account, vparam['size'].to_i, {})
         elsif vparam['size'].blank? && bo
           # create volume from the backup object.
-          vol = bo.create_volume(instance.account)          
+          vol = bo.create_volume(instance.account)
         else
           raise "Invalid volume sub parameters: backup_object_id=#{vparam['backup_object_id']}, size=#{vparam['size']}"
         end
+
+        # common parameters
+        ['guest_device_name', 'display_name', 'description'].each { |pname|
+          if !vparam[pname].blank?
+            vol.send("#{pname}=", vparam[pname])
+          end
+        }
+        vol.save_changes
 
         case vparam['volume_type']
         when 'local'
