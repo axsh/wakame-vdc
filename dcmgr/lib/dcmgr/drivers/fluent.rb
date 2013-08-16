@@ -27,7 +27,7 @@ module Dcmgr
           values << a[:notification_periods]
           values << a[:enabled]
           values << a[:alarm_action]
-          @alarms << values.to_csv
+          @alarms << values.to_csv.strip
         end
       end
 
