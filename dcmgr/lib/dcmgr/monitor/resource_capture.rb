@@ -33,14 +33,12 @@ module Dcmgr
               h["#{i[:uuid]}"] = parse_pidstat(metric_name, exec_pidstat(metric_name, kvmpid.to_i))
             end
             h["#{i[:uuid]}"]["time"] = Time.at(h["#{i[:uuid]}"]["time"].to_i)
-            logger.debug(h)
           rescue TimeoutError => e
             logger.debug("Caught Error. #{e} pidstat #{i[:uuid]}")
-            hash = {}
-            SUPPORT_METRIC_NAMES[metric_name].each {|m| hash[m] = nil}
-            h["#{i[:uuid]}"] = hash.merge({"time"=>Time.now})
+            h["#{i[:uuid]}"] = create_error_data(metric_name)
           rescue Exception => e
             logger.error("Error occured. [Instance ID: #{i[:uuid]}]: #{e}")
+            h["#{i[:uuid]}"] = create_error_data(metric_name)
           ensure
             unless i[:vif].blank?
               vif = i[:vif].first
@@ -89,6 +87,13 @@ module Dcmgr
         Hash[*initial_keys.zip(values.flatten.uniq).flatten]
       end
 
+      def create_error_data(metric_name)
+        raise ArgumentError unless metric_name.is_a?(String)
+
+        hash = {}
+        SUPPORT_METRIC_NAMES[metric_name].each {|m| hash[m] = nil}
+        hash.merge({"time" => Time.now})
+      end
     end
   end
 end
