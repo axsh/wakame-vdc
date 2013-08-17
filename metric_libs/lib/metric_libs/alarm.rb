@@ -34,23 +34,18 @@ module MetricLibs
       @before_state = @state
       begin
         case @metric_name
-        when 'cpu.usage'
+        when 'cpu.usage', 'memory_usage'
           end_time = Time.now.to_i
           start_time = end_time - @evaluation_periods
 
           values = @timeseries.find(Time.at(start_time), Time.at(end_time)).map {|v|
             v.value
           }
-
+          
           raise EvaluationError if values.empty? || values.size <= 1
 
           evaluated_value = update_last_evaluated_value(values.inject{|sum, n| sum.to_f + n.to_f} / values.size)
           update_state(evaluated_value.method(SUPPORT_COMPARISON_OPERATOR[@params["comparison_operator"]]).call(@params["threshold"]) ? ALARM_STATE : OK_STATE)
-        when 'memory.usage'
-          evaluated_value = update_last_evaluated_value(@timeseries.last.value)
-          raise EvaluationError if evaluated_value.empty?
-
-          update_state(evaluated_value.to_f.method(SUPPORT_COMPARISON_OPERATOR[@params["comparison_operator"]]).call(@params["threshold"]) ? ALARM_STATE : OK_STATE)
         when 'log'
           tmp = []
           match_count = 0
@@ -86,7 +81,7 @@ module MetricLibs
           raise "Unknown metric name: #{@metric_name}"
         end
         reset_error_count
-      rescue =>e
+      rescue Exception => e
         add_error_count
         update_state(INSUFFICIENT_DATA_STATE) if evaluation_error?
       ensure
@@ -98,15 +93,14 @@ module MetricLibs
 
     def evaluate?
       case @metric_name
-      when "cpu.usage"
+      when "cpu.usage", "memory.usage"
         return false if @timeseries.length <= 1
-      when "memory.usage"
       end
-      @timeseries.length >= @evaluation_count ? true : false
+      @timeseries.length >= @evaluation_trigger_count ? true : false
     end
 
     def changed_state?
-      return false if @before_state.empty?
+      return false if @before_state == "init" && @state == OK_STATE
       @state != @before_state
     end
 
@@ -116,11 +110,10 @@ module MetricLibs
 
     def to_hash
       h = {}
-      self.instance_variables.map {|v|
-       h[v.to_s.delete('@')] = instance_variable_get(v) 
+      self.instance_variables.each {|v|
+        next if [:@manager, :@timeseries].member?(v)
+        h[v.to_s.delete('@')] = instance_variable_get(v)
       }
-      h.delete("manager") if h.has_key?("manager")
-      h.delete("timeseries") if h.has_key?("timeseries")
       h
     end
 
@@ -128,7 +121,7 @@ module MetricLibs
     def set_variable(alm)
       raise ArgumentError unless alm.is_a?(Hash)
       alm.each {|k, v| instance_variable_set("@#{k}", v) }
-      @evaluation_count = @evaluation_periods.to_i / @capture_periods.to_i unless @capture_periods.nil?
+      @evaluation_trigger_count = @evaluation_periods.to_i / @capture_periods.to_i unless @capture_periods.nil?
     end
 
     def delete_resource

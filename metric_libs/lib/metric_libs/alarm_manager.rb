@@ -54,15 +54,22 @@ module MetricLibs
       get_alarm(uuid).evaluate
     end
 
-    def find_alarm(resource_id, resource)
-      raise ArgumentError unless resource.is_a?(Hash)
-
-      alarm = @manager.values.keep_if {|alm|
-        alm[:alarm].resource_id == resource_id &&
-        resource[alm[:alarm].metric_name]
-      }
-      return nil if alarm.empty?
-      alarm.first[:alarm]
+    def find_alarm(resource_id=nil, metric_name=nil)
+      if resource_id.nil?
+        return @manager.values.collect {|a| a[:alarm]}
+      end
+      
+      if metric_name.nil?
+        alarm = @manager.values.collect {|alm|
+          alm[:alarm].resource_id == resource_id
+        }
+      else
+        alarm = @manager.values.select {|alm|
+          alm[:alarm].resource_id == resource_id && alm[:alarm].metric_name == metric_name
+        }
+      end
+      return [] if alarm.empty?
+      alarm.collect { |a| a[:alarm]}
     end
 
     def get_alarm(uuid)
