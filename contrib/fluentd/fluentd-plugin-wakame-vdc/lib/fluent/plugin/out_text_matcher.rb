@@ -69,10 +69,13 @@ module Fluent
 
     config_param :dolphin_server_uri
     config_param :tag, :string, :default => 'textmatch'
+    config_param :max_read_message_bytes, :integer, :default => -1
     # config_param :alarm1, :string
 
     # Parserd name key on fluent of Guest VM
     MATCH_KEY = 'message'.freeze
+
+    class ReadMessageBytesError < Exception; end
 
     include MetricLibs::Constants::Alarm
 
@@ -85,6 +88,8 @@ module Fluent
 
     def configure(conf)
       $log.info("Load config: #{conf}")
+      $log.info("max_read_message_bytes=\"#{@max_read_message_bytes}\"")
+
       alarm_pattern = /^alarm([0-9]+)$/
       Fluent::TextMatcherOutput.module_eval do
         conf.each {|k ,v|
@@ -185,16 +190,28 @@ module Fluent
       ipaddr = sample['x_wakame_ipaddr']
       alarms = @alarm_manager.find_log_alarm(resource_id, instance_tag)
       messages = es.reverse_each.collect{|time, record| [time , record['message']]}
+      read_message_bytes = 0
 
-      alarms.each{|alm|
-        messages.each {|time, message|
-          alm.ipaddr = ipaddr
-          alm.feed({
-            'log' => message,
-            'time' => Time.at(time)
-          })
+      begin
+        alarms.each{|alm|
+          messages.each {|time, message|
+            read_message_bytes += message.bytesize
+
+            if @max_read_message_bytes > read_message_bytes
+              raise ReadMessageBytesError
+            end
+
+            alm.ipaddr = ipaddr
+            alm.feed({
+              'log' => message,
+              'time' => Time.at(time)
+            })
+          }
         }
-      }
+      rescue ReadMessageBytesError => e
+        # TODO: error message send to dolphin.
+        $log.warn "Can't read message bytes over #{@max_read_message_bytes}."
+      end
 
       # evaluate
       alarms.each {|alm|
