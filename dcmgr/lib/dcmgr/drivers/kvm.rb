@@ -113,11 +113,16 @@ module Dcmgr
           cmd << '-serial ' + (driver_configuration.serial_port_options.to_s % [serial_tcp_port])
         end
 
-        cmd << "-drive file=%s,media=disk,boot=on,index=0,cache=none,if=#{drive_model(hc)}"
-        args << hc.os_devpath
-        cmd << "-drive file=%s,media=disk,index=1,cache=none,if=#{drive_model(hc)}"
-        args << hc.metadata_img_path
-
+        inst[:volume].each { |vol_id, v|
+          cmd << "-drive file=%s,id=#{v[:uuid]}-drive,cache=none,aio=native,if=none"
+          args << hc.volume_path(v)
+          cmd << qemu_drive_options(hc, v)
+          # attach metadata drive
+          if inst[:boot_volume_id] == v[:uuid]
+            cmd << "-drive file=#{hc.metadata_img_path},media=disk,boot=off,index=1,cache=none,if=#{drive_model(hc)}"
+          end
+        }
+        
         vifs = inst[:vif]
         if !vifs.empty?
           vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
@@ -353,6 +358,48 @@ RUN_SH
 
       def nic_model(hc)
         hc.inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
+      end
+
+      LINUX_DEVICE_INDEX_MAP={}
+      ('a'..'z').to_a.each_with_index {|i, idx|
+        LINUX_DEVICE_INDEX_MAP[i]=idx
+      }
+      LINUX_DEVICE_INDEX_MAP.freeze
+
+      # calc drive index from guest drive device name.
+      def drive_index(device_name)
+        case device_name.downcase
+        when /sd([a-z]+)/, /vd([a-z]+)/, /xvd([a-z]+)/, /hd([a-z]+)/
+          $1.split('').inject(0) { |r,i| r + LINUX_DEVICE_INDEX_MAP[i] }.to_i
+        else
+          raise "Unsupported device name: #{device_name}"
+        end
+      end
+
+      def qemu_drive_options(hc, volume)
+        device_model = if hc.inst[:image][:features][:virtio]
+                         # provides virtio block disk.
+                         'virtio-blk-pci'
+                       else
+                         # attach as IDE disk. The qemu does not
+                         # have normal scsi controller.
+                         'ide-drive'
+                       end
+        drive_idx = drive_index(volume[:guest_device_name])
+        
+        option_str = "#{device_model},id=#{volume[:uuid]},drive=#{volume[:uuid]}-drive"
+        if hc.inst[:boot_volume_id] == volume[:uuid]
+          option_str += ',bootindex=0'
+        end
+        
+        case device_model
+        when 'virtio-blk-pci'
+          # virtio-blk consumes a pci address per device.
+          option_str += ",bus=pci.0,addr=#{'0x' + ('%x' % (drive_idx + 4))}"
+        when 'ide-drive'
+        end
+        
+        "-device #{option_str}"
       end
 
       Task::Tasklet.register(self) {

@@ -33,17 +33,24 @@ module Dcmgr
         
         boot_vol = inst[:volume][inst[:boot_volume_id]]
         raise "Unknown boot volume details: #{inst[:boot_volume_id]}" if boot_vol.nil?
-        
-        if boot_vol[:is_local_volume]
+
+        volume_path(boot_vol)
+      end
+
+      def volume_path(volume_hash)
+        case volume_hash[:volume_type]
+        when 'Dcmgr::Models::LocalVolume'
           # TODO: more supports for mount label names.
-          case boot_vol[:volume_device][:mount_label]
+          case volume_hash[:volume_device][:mount_label]
           when 'instance'
-            File.join(self.inst_data_dir, boot_vol[:volume_device][:path])
+            File.join(self.inst_data_dir, volume_hash[:volume_device][:path])
           else
-            raise "Unsupoorted mount label: #{boot_vol[:volume_device][:mount_label]}"
+            raise "Unsupoorted mount label: #{volume_hash[:volume_device][:mount_label]}"
           end
+        when 'Dcmgr::Models::IscsiVolume'
+          raise NotImplementedError
         else
-          boot_vol[:host_device_name]
+          raise "Unsupported volume type: #{volume_hash[:volume_type]}"
         end
       end
 
