@@ -513,7 +513,7 @@ module Dcmgr
         @hva_ctx.logger.info("Turning power off")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweroff_instance, [@hva_ctx])
-        update_instance_state({:state=>:halted}, [])
+        update_instance_state({:state=>:halted}, ['hva/instance_turnedoff'])
         destroy_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power off")
       }
@@ -543,12 +543,12 @@ module Dcmgr
         @hva_ctx.logger.info("Turning power on")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweron_instance, [@hva_ctx])
-        update_instance_state({:state=>:running}, [])
+        update_instance_state({:state=>:running}, ['hva/instance_turnedon'])
         create_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power on")
       }, proc {
         ignore_error {
-          update_instance_state({:state=>:halted}, [])
+          update_instance_state({:state=>:halted}, ['hva/instance_turnedoff'])
         }
       }
 
