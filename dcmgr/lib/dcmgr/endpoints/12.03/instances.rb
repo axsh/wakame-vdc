@@ -324,6 +324,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                M::BackupObject[vparam['backup_object_id']] || raise("Unknown backup object: #{vparam['backup_object_id']}")
              end
 
+        if !vparam['size'].blank?
+          begin
+            vparam['size'] = Dcmgr::Helpers::ByteUnit.convert_to(vparam['size'], Dcmgr::Helpers::ByteUnit::B).to_i
+          rescue => e
+            raise E::InvalidParameter, 'volumes.size'
+          end
+        end
+        
         if !vparam['size'].blank? && bo
           # create volume from the backup object and grow its size.
           # check size is larger or equal than backup object's size.
