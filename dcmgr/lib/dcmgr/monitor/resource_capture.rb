@@ -32,12 +32,13 @@ module Dcmgr
             tryagain(opts={:timeout=>Dcmgr.conf.capture.timeout_sec, :retry=>Dcmgr.conf.capture.retry_count}) do
               h["#{i[:uuid]}"] = parse_pidstat(metric_name, exec_pidstat(metric_name, kvmpid.to_i))
             end
+            h["#{i[:uuid]}"]["time"] = Time.at(h["#{i[:uuid]}"]["time"].to_i)
             logger.debug(h)
           rescue TimeoutError => e
             logger.debug("Caught Error. #{e} pidstat #{i[:uuid]}")
             hash = {}
-            SUPPORT_METRIC_NAMES[metric_name].each {|m| hash[m] = "error"}
-            h["#{i[:uuid]}"] = hash.merge({"timeout"=>"true", "time"=>Time.now})
+            SUPPORT_METRIC_NAMES[metric_name].each {|m| hash[m] = nil}
+            h["#{i[:uuid]}"] = hash.merge({"time"=>Time.now})
           rescue Exception => e
             logger.error("Error occured. [Instance ID: #{i[:uuid]}]: #{e}")
           ensure
