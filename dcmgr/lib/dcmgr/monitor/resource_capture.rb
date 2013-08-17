@@ -74,17 +74,15 @@ module Dcmgr
 
         initial_keys = SUPPORT_METRIC_NAMES[metric_name]
         raise "Unknown Metric type: #{metric_name}" if initial_keys.nil?
-
         values = []
-        metric.each {|m|
-          next if m.empty?
-          m.lstrip!
+        metric_value = metric.map {|m|  m.lstrip!}.compact
+        metric_value.each {|m|
           m = m.split(nil)
           m.pop
-          next if m.include?("#")
+          m.slice!(0,2) if m.size <= 5
           values << m
         }
-        Hash[*initial_keys.zip(values.flatten.uniq).flatten]
+        Hash[*initial_keys.zip(values.flatten).flatten]
       end
 
       def create_error_data(metric_name)
