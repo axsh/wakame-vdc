@@ -244,6 +244,7 @@ module Dcmgr
     autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
     autoload :Natbox, 'dcmgr/drivers/natbox'
     autoload :Fluent, 'dcmgr/drivers/fluent'
+    autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'

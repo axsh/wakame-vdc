@@ -43,12 +43,38 @@ module Dcmgr::Models
       end
     end
 
+    def self.find_candidate_device_name(device_names)
+      # sort %w(hdaz hdaa hdc hdz hdn) => ["hdc", "hdn", "hdz", "hdaa", "hdaz"]
+      device_names = device_names.sort{|a,b| a.size == b.size ? a <=> b :  a.size <=> b.size }
+      return nil if device_names.empty?
+      # find candidate device name from unused successor of device_names.
+      #   %w(hdaz hdaa hdc hdz hdn) => hdd (= "hdc".succ)
+      device_names.zip(device_names.dup.tap(&:shift)).inject(device_names.first) {|r,l|  r.succ == l.last ? l.last : r }.succ
+    end
+    
     def validate
       # do not run validation if the row is maked as deleted.
       return true if self.deleted_at
 
       errors.add(:size, "Invalid volume size.") if self.size == 0
 
+      if self.instance
+        # check if volume parameters are conformant for hypervisor.
+        hypervisor_class = Dcmgr::Drivers::Hypervisor.driver_class(self.instance.hypervisor.to_sym)
+        hypervisor_class.policy.validate_volume_model(self)
+
+        if self.guest_device_name.nil?
+          errors.add(:guest_device_name, "require to have device name")
+        end
+
+        # uniqueness check for device names per instance
+        names = self.instance.volumes_dataset.attached.all.map{|v| v.guest_device_name }
+        duplicate_names = (names - names.uniq)
+        unless duplicate_names.empty?
+          errors.add(:guest_device_nam, "found duplicate device name (#{duplicate_names.join(', ')}) for #{instance.caonnical_uuid}")
+        end
+      end
+      
       super
     end
 

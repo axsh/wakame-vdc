@@ -52,6 +52,12 @@ module Dcmgr
         poweroff_instance(hc)
       end
 
+      @@policy = HypervisorPolicy.new
+      def self.policy
+        @@policy
+      end
+
+      # deprecated
       def self.select_hypervisor(hypervisor)
         driver_class(hypervisor).new
       end

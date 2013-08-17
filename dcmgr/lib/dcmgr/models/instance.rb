@@ -9,10 +9,16 @@ module Dcmgr::Models
     accept_service_type
 
     include Dcmgr::Constants::Instance
-
+    
     many_to_one :image
     many_to_one :host_node
-    one_to_many :volumes
+    one_to_many :volumes, :before_add=>lambda { |instance, volume|
+     devnames = instance.volume_guest_device_names
+      if volume.guest_device_name.nil? && !devnames.empty?
+        volume.guest_device_name = Volume.find_candidate_device_name(devnames)
+      end
+      true
+    }
     alias :volume :volumes
     one_to_many :local_volumes, :class=>Volume, :read_only=>true do |ds|
       # SELECT volumes.* FROM volumes, l1 LEFT JOIN local_volumes ON self.pk = local_volumes.instance_id
@@ -497,6 +503,10 @@ module Dcmgr::Models
 
     def add_shared_volume(volume)
       self.add_volume(volume)
+    end
+
+    def volume_guest_device_names(state=Dcmgr::Constants::Volume::STATE_ATTACHED)
+      self.volumes_dataset.alives.all.map{|v| v.guest_device_name }
     end
   end
 end

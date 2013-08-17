@@ -9,6 +9,39 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
+      # API policy information for QEMU-KVM hypervisor.
+      class Policy < HypervisorPolicy
+        DEVNAME_REGEXP=[/sd([a-z]+)/,
+                        /hd([a-z]+)/,
+                        /vd([a-z]+)/
+                       ].freeze
+
+        def validate_instance_model(instance)
+        end
+        
+        def validate_volume_model(volume)
+          if volume.guest_device_name.nil?
+            if volume.boot_volume?
+              # set device name as boot drive.
+              volume.guest_device_name = 
+                if volume.instance.image.features[:virtio]
+                  'vda'
+                else
+                  'sda'
+                end
+            end
+          else
+            unless DEVNAME_REGEXP.find { |r| r =~ volume.guest_device_name.downcase }
+              raise "InvalidParameter: guest_device_name #{volume.guest_device_name}"
+            end
+          end
+        end
+      end
+
+      def self.policy
+        Policy.new
+      end
+
       def_configuration do
         param :qemu_path, :default=>proc { ||
           if File.exists?('/etc/debian_version')
