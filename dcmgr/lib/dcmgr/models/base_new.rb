@@ -40,6 +40,10 @@ module Dcmgr::Models
       !find(uuid).nil?
     end
 
+    def self.generate_uuid(length=8)
+      Array.new(length) do UUID_TABLE[rand(UUID_TABLE.size)]; end.join
+    end
+
     def self.configure(model)
       model.schema_builders << proc {
         unless has_column?(:uuid)
@@ -79,7 +83,7 @@ module Dcmgr::Models
       def after_initialize
         super
         # set random generated uuid value
-        self[:uuid] ||= Array.new(8) do UUID_TABLE[rand(UUID_TABLE.size)]; end.join
+        self[:uuid] ||= Taggable.generate_uuid
       end
 
       # model hook
