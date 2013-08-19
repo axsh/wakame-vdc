@@ -185,6 +185,7 @@ Requires: openvswitch
 Requires: kpartx
 Requires: libcgroup
 Requires: tunctl
+Requires: sysstat
 # Trema/racket gem binary dependency
 Requires: sqlite libpcap
 Requires: pv

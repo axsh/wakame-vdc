@@ -37,10 +37,11 @@ config.use_ipset       = false
 
 # logging service for inside instance.
 config.use_logging_service = false
+config.logging_service_ip = '169.254.169.253'
 config.logging_service_host_ip = '127.0.0.2'
-config.logging_service_dest_ip = '169.254.169.253'
 config.logging_service_port = 8888
-config.logging_service_tmp = '/var/lib/wakame-vdc/'
+config.logging_service_conf = '/var/lib/wakame-vdc/fluent.conf'
+config.logging_service_reload = '/etc/init.d/td-agent reload'
 
 # Path for brctl
 config.brctl_path = '/usr/sbin/brctl'
@@ -91,3 +92,13 @@ dc_network('management') {
 # Dolphin server connection uri
 config.dolphin_server_uri = "http://localhost:9004/"
 
+# Setup of a capture interval.
+# By the default, the capture interval is set 60. (cpu_time, memory_time)
+# The response timeout use timeout_sec.
+# also, the retry count is set to retry_count.
+capture {
+  cpu_time 60
+  memory_time 60
+  timeout_sec 10
+  retry_count 1
+}

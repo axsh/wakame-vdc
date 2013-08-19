@@ -1,9 +1,9 @@
-Wakame-VDC
+Wakame-vdc
 ==========
 
 [![Code Climate](https://codeclimate.com/github/axsh/wakame-vdc.png)](https://codeclimate.com/github/axsh/wakame-vdc)
 
-Wakame-VDC is the Data Center Level Hypervisor.
+Wakame-vdc is the Data Center Level Hypervisor.
 
 See details for http://wakame.jp/wiki/ (in English)
 

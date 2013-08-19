@@ -37,5 +37,25 @@ gem 'cucumber'
 
 gem 'thin'
 gem 'em-http-request'
-gem 'metric_libs', :path=>File.expand_path('../../metric_libs/', __FILE__)
-gem 'dolphin_client', :path=>File.expand_path('../../client/dolphin/', __FILE__)
+
+# required by dolphin_client.
+gem 'weary', '1.1.3'
+
+# we have client/dolphin directory in development environment.
+# so we use the local version of dolphin_client during development.
+dolphin_client_root=File.expand_path('../../client/dolphin/', __FILE__)
+if File.exists?(dolphin_client_root)
+  gem 'dolphin_client', :path=>dolphin_client_root
+else
+  gem 'dolphin_client', '0.0.1'
+end
+
+# we have metric_libs directory in development environment.
+# so we use the local version of metric_libs during development.
+metric_libs_root=File.expand_path('../../metric_libs/', __FILE__)
+if File.exists?(metric_libs_root)
+  gem 'metric_libs', :path=>metric_libs_root
+else
+  gem 'metric_libs', '0.0.5'
+end
+

@@ -62,6 +62,7 @@ module Fluent
       send_data[@prefix_key + 'instance_id'] = instance_id
       send_data[@prefix_key + 'account_id'] = account_id
       send_data[@prefix_key + 'label'] = label
+      send_data[@prefix_key + 'ipaddr'] = instance_ipv4
 
       # Merge data
       es = MessagePackEventStream.new(entries, @cached_unpacker)
@@ -128,7 +129,7 @@ module Fluent
         if File.exists? meta_data_file
           meta_data = YAML.load(File.read(meta_data_file, :encoding => Encoding::UTF_8))
         else
-          raise "No suche file #{meta_data_file}"
+          $log.warn "No suche file #{meta_data_file}"
         end
       rescue => e
         raise e

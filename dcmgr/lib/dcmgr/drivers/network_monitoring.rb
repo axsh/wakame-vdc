@@ -3,9 +3,15 @@
 module Dcmgr::Drivers
   class NetworkMonitoring
     def register_instance(instance)
+      raise NotImplementedError
     end
 
     def unregister_instance(instance)
+      raise NotImplementedError
+    end
+
+    def update_instance(instance)
+      raise NotImplementedError
     end
 
     def self.driver_class(key)

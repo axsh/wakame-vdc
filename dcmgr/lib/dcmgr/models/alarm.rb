@@ -15,8 +15,12 @@ module Dcmgr::Models
     def validate
       super
 
-      if evaluation_periods.nil? || evaluation_periods < 0
+      if (evaluation_periods.nil? || evaluation_periods < 0) && is_metric_alarm?
         errors.add(:evaluation_periods, "it must have digit more than zero")
+      end
+
+      if (notification_periods.nil? || notification_periods < 0) && is_log_alarm?
+        errors.add(:notiification_periods, "it must have digit more than zero")
       end
 
       if self.is_log_alarm?
@@ -32,8 +36,8 @@ module Dcmgr::Models
           errors.add(:match_pattern, "Invalid pattern")
         end
 
-        unless /^[0-9a-z.]+$/ =~ params['label']
-          errors.add(:label, "Invalid format")
+        unless /^[0-9a-z._]+$/ =~ params['tag']
+          errors.add(:tag, "Invalid format")
         end
 
       elsif self.is_metric_alarm?
@@ -43,7 +47,7 @@ module Dcmgr::Models
         end
 
         unless SUPPORT_COMPARISON_OPERATOR.include?(params['comparison_operator'])
-          errors.add(:comparison_operator, "it must have #{SUPPORT_COMPARISON_OPERATOR.join(',')}")
+          errors.add(:comparison_operator, "it must have #{SUPPORT_COMPARISON_OPERATOR.keys.join(',')}")
         end
       else
         errors.add(:metric_name, 'Unknown metric name')
@@ -52,9 +56,7 @@ module Dcmgr::Models
       notification_actions.each {|name|
         action_name = name + "_actions"
         values = self.__send__(action_name)
-        if values.blank?
-          errors.add(action_name.to_sym, "Invalid action")
-        else
+        unless values.blank?
           if SUPPORT_NOTIFICATION_TYPE.include?(values['notification_type'])
             unless values.has_key? 'notification_type'
               errors.add(:notification_type, 'Unknown value')

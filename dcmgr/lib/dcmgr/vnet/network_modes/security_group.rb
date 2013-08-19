@@ -68,14 +68,14 @@ module Dcmgr::VNet::NetworkModes
     def netfilter_logging_service_tasks(vnic)
       tasks = []
       logging_service_host_ip = Dcmgr.conf.logging_service_host_ip
-      logging_service_dest_ip = Dcmgr.conf.logging_service_dest_ip
+      logging_service_ip = Dcmgr.conf.logging_service_ip
       logging_service_enabled = Dcmgr.conf.use_logging_service
       logging_service_port = Dcmgr.conf.logging_service_port
 
       # Logging Service for inside instance.
       if logging_service_enabled
-        unless [logging_service_host_ip, logging_service_dest_ip, logging_service_port].any? {|v| v.nil? }
-          tasks << TranslateLoggingAddress.new(vnic[:uuid], logging_service_host_ip, logging_service_dest_ip, logging_service_port)
+        unless [logging_service_host_ip, logging_service_ip, logging_service_port].any? {|v| v.nil? }
+          tasks << TranslateLoggingAddress.new(vnic[:uuid], logging_service_host_ip, logging_service_ip, logging_service_port)
         end
       end
       tasks
