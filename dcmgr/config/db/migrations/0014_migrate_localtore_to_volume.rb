@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'dcmgr'
+
 Sequel.migration do
   up do
     # Volume and StorageNode are Class Table Inheritance models.
@@ -35,6 +37,7 @@ Sequel.migration do
     end
 
     # TODO: Data migration before drop columns.
+    DataMigration.migrate
 
     alter_table(:volumes) do
       drop_column :boot_dev
@@ -49,6 +52,57 @@ Sequel.migration do
   end
 
   down do
+  end
+
+  module DataMigration
+    include Dcmgr::Models
+    
+    def self.migrate
+      # add volumes for running instance with local store instance.
+      Instance.dataset.runnings.each { |instance|
+        next if instance.image.boot_dev_type != Dcmgr::Constants::Image::BOOT_DEV_LOCAL
+        
+        boot_vol = instance.image.backup_object.create_volume(instance.account) do |v|
+          v.state = Dcmgr::Constants::Volume::STATE_ATTACHED
+        end
+        boot_vol.save
+        if instance.image.boot_dev_type == Dcmgr::Constants::Image::BOOT_DEV_LOCAL
+          instance.add_local_volume(boot_vol).tap { |v|
+            v.volume_device.tap { |vd|
+              # old instances store the boot image as "{vm_data_dir}/i-xxxxx/i-xxxxx".
+              vd.path = instance.canonical_uuid
+              vd.mount_label = 'instance'
+              vd.instance_id = instance.pk
+              vd.save_changes
+            }
+          }
+        end
+        
+        instance.boot_volume_id = boot_vol.canonical_uuid
+        instance.save_changes
+      }
+      
+      Instance.dataset.runnings.each { |instance|
+        next if instance.image.boot_dev_type != Dcmgr::Constants::Image::BOOT_DEV_SAN
+        
+        instance.volumes_dataset.attached.each { |volume|
+          volume.volume_type = 'Dcmgr::Models::IscsiVolume'
+          volume.volume_device.tap { |vd|
+            vd.storage_node_id = volume.storage_node_id
+            vd.iqn = volume.transport_information[:iqn]
+            vd.lun = volume.transport_information[:lun]
+            vd.save_changes
+          }
+          volume.save_changes
+          
+          if volume.boot_dev == 1
+            instance.boot_volume_id = volume.canonical_uuid
+          end
+        }
+        
+        instance.save_changes
+      }
+    end
   end
 end
   
