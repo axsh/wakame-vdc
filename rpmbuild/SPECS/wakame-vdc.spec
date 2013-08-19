@@ -180,8 +180,10 @@ Requires: iscsi-initiator-utils scsi-target-utils
 Requires: ebtables iptables ethtool vconfig iproute
 Requires: bridge-utils
 Requires: dracut-kernel
-Requires: kmod-openvswitch >= 1.6.1, kmod-openvswitch < 1.6.2
-Requires: openvswitch      >= 1.6.1, openvswitch      < 1.6.2
+Requires: kmod-openvswitch >= 1.6.1
+Requires: kmod-openvswitch <  1.6.2
+Requires: openvswitch      >= 1.6.1
+Requires: openvswitch      <  1.6.2
 Requires: kpartx
 Requires: libcgroup
 Requires: tunctl
@@ -248,8 +250,10 @@ Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
 Requires: keepalived
 Requires: bridge-utils
-Requires: kmod-openvswitch
-Requires: openvswitch
+Requires: kmod-openvswitch >= 1.6.1
+Requires: kmod-openvswitch <  1.6.2
+Requires: openvswitch      >= 1.6.1
+Requires: openvswitch      <  1.6.2
 %description  natbox-vmapp-config
 <insert long description, indented with spaces>
 
