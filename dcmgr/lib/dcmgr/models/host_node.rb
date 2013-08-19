@@ -1,30 +1,20 @@
 # -*- coding: utf-8 -*-
 
-require 'isono/models/node_state'
+require 'isono'
 
 module Dcmgr::Models
   class HostNode < BaseNew
     taggable 'hn'
 
-    HYPERVISOR_XEN_34='xen-3.4'
-    HYPERVISOR_XEN_40='xen-4.0'
-    HYPERVISOR_DUMMY='dummy'
-    HYPERVISOR_KVM='kvm'
-    HYPERVISOR_LXC='lxc'
-    HYPERVISOR_ESXI='esxi'
-    HYPERVISOR_OPENVZ='openvz'
-
-    ARCH_X86=:x86.to_s
-    ARCH_X86_64=:x86_64.to_s
-
-    SUPPORTED_ARCH=[ARCH_X86, ARCH_X86_64]
-    SUPPORTED_HYPERVISOR=[HYPERVISOR_DUMMY, HYPERVISOR_KVM, HYPERVISOR_LXC, HYPERVISOR_ESXI, HYPERVISOR_OPENVZ]
+    include Dcmgr::Constants::HostNode
 
     one_to_many :instances
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
 
     one_to_many :host_node_vnet
     alias :vnet :host_node_vnet
+
+    one_to_many :local_volumes
 
     def_dataset_method(:online_nodes) do
       # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
@@ -73,7 +63,7 @@ module Dcmgr::Models
     end
 
     def status
-      node.nil? ? :offline : node.state
+      node.nil? ? STATUS_OFFLINE : node.state
     end
 
     # Returns true/false if the host node has enough capacity to run
@@ -116,6 +106,13 @@ module Dcmgr::Models
       instances_usage(:memory_size)
     end
 
+    # Calc all local volume size on this host node.
+    def disk_space_usage
+      instances_dataset.alives.map { |i|
+        i.local_volumes_dataset.sum(:size).to_i
+      }.inject{|r, i| r + i }.to_i
+    end
+
     # Returns a usage percentage to show admins in quick overviews
     def usage_percent
       cpu_percent = (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100
@@ -134,6 +131,11 @@ module Dcmgr::Models
       self.offering_memory_size - self.memory_size_usage
     end
 
+    # Returns available memory size.
+    def available_disk_space
+      (self.offering_disk_space_mb * 1024 * 1024) - self.disk_space_usage
+    end
+    
     # Check the free resource capacity across entire local VDC domain.
     def self.check_domain_capacity?(cpu_cores, memory_size, num=1)
       ds = Instance.dataset.lives.filter(:host_node => HostNode.online_nodes)

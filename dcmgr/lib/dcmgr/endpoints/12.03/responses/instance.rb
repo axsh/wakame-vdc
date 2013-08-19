@@ -72,11 +72,11 @@ module Dcmgr::Endpoints::V1203::Responses
           h[:vif] << ent
         }
 
-        self.volume.each { |v|
+        self.volumes_dataset.each { |v|
           h[:volume] << {
             :vol_id => v.canonical_uuid,
-            :guest_device_name=>v.guest_device_name,
-            :state=>v.state,
+            :guest_device_name => v.guest_device_name,
+            :state  => v.state,
           }
         }
 

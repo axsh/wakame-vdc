@@ -10,7 +10,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   LOAD_BALANCER_STATE_ALL=(LOAD_BALANCER_STATE + LOAD_BALANCER_META_STATE).freeze
 
   register Sinatra::InternalRequest
-  C = Dcmgr::Constants::LoadBalancer
 
   get do
     ds = M::LoadBalancer.dataset
@@ -140,12 +139,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                       'user_data' => user_data.join("\n"),
                       'vifs' => {
                         'eth0' => {
-                          'index' => C::PUBLIC_DEVICE_INDEX.to_s,
+                          'index' => C::LoadBalancer::PUBLIC_DEVICE_INDEX.to_s,
                           'network' => lb_conf.instances_network,
                           'security_groups' => firewall_security_group,
                         },
                         'eth1' =>{
-                          'index' => C::MANAGEMENT_DEVICE_INDEX.to_s,
+                          'index' => C::LoadBalancer::MANAGEMENT_DEVICE_INDEX.to_s,
                           'network' => lb_conf.management_network,
                           'security_groups' => ''
                         }
@@ -569,7 +568,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     http_status, headers, body = internal_request(uri,{
       'account_id' => @account.canonical_uuid,
       'rule' => rules.join("\n"),
-      'service_type' => C::SERVICE_TYPE,
+      'service_type' => C::LoadBalancer::SERVICE_TYPE,
       'description' => '',
       'display_name' => ''
     }, {

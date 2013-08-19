@@ -7,35 +7,59 @@ module Dcmgr::Cli
 class Storage < Base
   namespace :storage
   include Dcmgr::Models
+  include Dcmgr::Constants::StorageNode
 
-  desc "add NODE_ID [options]", "Register a new storage node"
-  method_option :uuid, :type => :string, :desc => "The uuid for the new storage node"
-  method_option :base_path, :type => :string, :required => true, :desc => "Base path to store volume files"
-  method_option :snapshot_base_path, :type => :string, :required => true, :desc => "Base path to store snapshot files"
-  method_option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
-  method_option :force, :type => :boolean, :default=>false, :desc => "Force new entry creation"
-  method_option :transport_type, :type => :string, :default=>'iscsi', :desc => "Transport type [iscsi]"
-  method_option :ipaddr, :type => :string, :required=>true, :desc => "IP address of transport target"
-  method_option :storage_type, :type => :string, :default=>'zfs', :desc => "Storage type [#{StorageNode::SUPPORTED_BACKINGSTORE.join(', ')}]"
-  method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
-  def add(node_id)
-    unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
-      abort("Node ID is not registered yet: #{node_id}")
+  class IscsiOperation < Base
+    namespace :iscsi
+    M = Dcmgr::Models
+
+    def self.basename
+      "#{super()} #{Storage.namespace} #{self.namespace}"
+    end
+    
+    desc "add <node id> [options]", "Register a new ISCSI storage node"
+    option :uuid, :type => :string, :desc => "The uuid for the new storage node"
+    option :base_path, :type => :string, :required => true, :desc => "Base path to store volume files"
+    option :snapshot_base_path, :type => :string, :required => true, :desc => "Base path to store snapshot files"
+    option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
+    option :ipaddr, :type => :string, :required => true, :desc => "IP address of transport target"
+    option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
+    def add(node_id)
+      fields = {
+        :node_id=>node_id,
+        :offering_disk_space_mb=>options[:disk_space],
+        :export_path=>options[:base_path],
+        :snapshot_base_path => options[:snapshot_base_path],
+        :ip_address=>options[:ipaddr],
+        :display_name=>options[:display_name],
+      }
+      fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
+      
+      say super(M::IscsiStorageNode,fields)
     end
 
-    fields = {:node_id=>node_id,
-              :offering_disk_space_mb=>options[:disk_space],
-              :transport_type=>options[:transport_type],
-              :storage_type=>options[:storage_type],
-              :export_path=>options[:base_path],
-              :snapshot_base_path => options[:snapshot_base_path],
-              :ipaddr=>options[:ipaddr],
-              :display_name=>options[:display_name],
-    }
-    fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
-
-    puts super(StorageNode,fields)
+    desc "modify <uuid> [options]", "Modify <uuid> of ISCSI storage node"
+    option :node_id, :type => :string, :desc => "The node ID for the storage node"
+    option :base_path, :type => :string, :desc => "Base path to store volume files"
+    option :snapshot_base_path, :type => :string, :desc => "Base path to store snapshot files"
+    option :disk_space, :type => :numeric, :desc => "Amount of disk size to be exported (in MB)"
+    option :ipaddr, :type => :string, :desc => "IP address of transport target"
+    option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
+    def modify(uuid)
+      fields = {
+        :node_id=>options[:node_id],
+        :offering_disk_space_mb=>options[:disk_space],
+        :export_path=>options[:base_path],
+        :snapshot_base_path => options[:snapshot_base_path],
+        :ip_address=>options[:ipaddr],
+        :display_name=>options[:display_name],
+      }
+      super(M::IscsiStorageNode,uuid,fields)
+    end
   end
+
+  desc "iscsi SUBCOMMAND [options]", "Operations for iscsi storage"
+  subcommand :iscsi, IscsiOperation
 
   desc "del UUID", "Deregister a storage node"
   def del(uuid)

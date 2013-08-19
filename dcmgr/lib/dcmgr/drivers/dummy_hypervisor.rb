@@ -7,6 +7,10 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
+      def self.local_store_class
+        DummyLocalStore
+      end
+
       def initialize
       end
 

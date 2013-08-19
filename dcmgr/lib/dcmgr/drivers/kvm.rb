@@ -9,6 +9,62 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
+      # API policy information for QEMU-KVM hypervisor.
+      class Policy < HypervisorPolicy
+        DEVNAME_REGEXP=[/sd([a-z]+)/,
+                        /hd([a-z]+)/,
+                        /vd([a-z]+)/
+                       ].freeze
+
+        def validate_instance_model(instance)
+        end
+        
+        def validate_volume_model(volume)
+          if !volume.guest_device_name.nil?
+            unless DEVNAME_REGEXP.find { |r| r =~ volume.guest_device_name.downcase }
+              raise ValidationError, "InvalidParameter: guest_device_name #{volume.guest_device_name}"
+            end
+          end
+        end
+
+        def on_associate_volume(instance, volume)
+          if instance.boot_volume_id == volume.canonical_uuid && volume.guest_device_name.nil?
+            # set device name as boot drive.
+            volume.guest_device_name = 
+              if instance.image.features[:virtio]
+                'vda'
+              else
+                'sda'
+              end
+          elsif volume.guest_device_name.nil?
+            volume.guest_device_name = find_candidate_device_name(instance.volume_guest_device_names)
+            # sdb,vdb,hdb are reserved for metadata drive. extra volumes
+            # should starts from third device number.
+            if volume.guest_device_name =~ /[shv]db/
+              volume.guest_device_name.succ!
+            end
+          end
+        end
+
+        private
+        def find_candidate_device_name(device_names)
+          # sort %w(hdaz hdaa hdc hdz hdn) => ["hdc", "hdn", "hdz", "hdaa", "hdaz"]
+          device_names = device_names.sort{|a,b| a.size == b.size ? a <=> b :  a.size <=> b.size }
+          return nil if device_names.empty?
+          # find candidate device name from unused successor of device_names.
+          #   %w(hdaz hdaa hdc hdz hdn) => hdd (= "hdc".succ)
+          device_names.zip(device_names.dup.tap(&:shift)).inject(device_names.first) {|r,l|  r.succ == l.last ? l.last : r }.succ
+        end
+      end
+
+      def self.policy
+        Policy.new
+      end
+
+      def self.local_store_class
+        KvmLocalStore
+      end
+
       def_configuration do
         param :qemu_path, :default=>proc { ||
           if File.exists?('/etc/debian_version')
@@ -80,11 +136,16 @@ module Dcmgr
           cmd << '-serial ' + (driver_configuration.serial_port_options.to_s % [serial_tcp_port])
         end
 
-        cmd << "-drive file=%s,media=disk,boot=on,index=0,cache=none,if=#{drive_model(hc)}"
-        args << hc.os_devpath
-        cmd << "-drive file=%s,media=disk,index=1,cache=none,if=#{drive_model(hc)}"
-        args << hc.metadata_img_path
-
+        inst[:volume].each { |vol_id, v|
+          cmd << "-drive file=%s,id=#{v[:uuid]}-drive,cache=none,aio=native,if=none"
+          args << hc.volume_path(v)
+          cmd << qemu_drive_options(hc, v)
+          # attach metadata drive
+          if inst[:boot_volume_id] == v[:uuid]
+            cmd << "-drive file=#{hc.metadata_img_path},media=disk,boot=off,index=1,cache=none,if=#{drive_model(hc)}"
+          end
+        }
+        
         vifs = inst[:vif]
         if !vifs.empty?
           vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
@@ -320,6 +381,48 @@ RUN_SH
 
       def nic_model(hc)
         hc.inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
+      end
+
+      LINUX_DEVICE_INDEX_MAP={}
+      ('a'..'z').to_a.each_with_index {|i, idx|
+        LINUX_DEVICE_INDEX_MAP[i]=idx
+      }
+      LINUX_DEVICE_INDEX_MAP.freeze
+
+      # calc drive index from guest drive device name.
+      def drive_index(device_name)
+        case device_name.downcase
+        when /sd([a-z]+)/, /vd([a-z]+)/, /xvd([a-z]+)/, /hd([a-z]+)/
+          $1.split('').inject(0) { |r,i| r + LINUX_DEVICE_INDEX_MAP[i] }.to_i
+        else
+          raise "Unsupported device name: #{device_name}"
+        end
+      end
+
+      def qemu_drive_options(hc, volume)
+        device_model = if hc.inst[:image][:features][:virtio]
+                         # provides virtio block disk.
+                         'virtio-blk-pci'
+                       else
+                         # attach as IDE disk. The qemu does not
+                         # have normal scsi controller.
+                         'ide-drive'
+                       end
+        drive_idx = drive_index(volume[:guest_device_name])
+        
+        option_str = "#{device_model},id=#{volume[:uuid]},drive=#{volume[:uuid]}-drive"
+        if hc.inst[:boot_volume_id] == volume[:uuid]
+          option_str += ',bootindex=0'
+        end
+        
+        case device_model
+        when 'virtio-blk-pci'
+          # virtio-blk consumes a pci address per device.
+          option_str += ",bus=pci.0,addr=#{'0x' + ('%x' % (drive_idx + 4))}"
+        when 'ide-drive'
+        end
+        
+        "-device #{option_str}"
       end
 
       Task::Tasklet.register(self) {

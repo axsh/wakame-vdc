@@ -15,6 +15,8 @@ module Dcmgr::Constants
     BOOT_DEV_SAN=1
     BOOT_DEV_LOCAL=2
 
+    BOOT_DEV_FLAGS = [BOOT_DEV_SAN, BOOT_DEV_LOCAL].freeze
+
     CLONED_FIELDS_AT_TRANSFER=[:account_id,
                                :display_name,
                                :service_type,
