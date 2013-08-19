@@ -13,10 +13,8 @@ module Dcmgr::Models
     many_to_one :image
     many_to_one :host_node
     one_to_many :volumes, :before_add=>lambda { |instance, volume|
-     devnames = instance.volume_guest_device_names
-      if volume.guest_device_name.nil? && !devnames.empty?
-        volume.guest_device_name = Volume.find_candidate_device_name(devnames)
-      end
+      hv_class = Dcmgr::Drivers::Hypervisor.driver_class(instance.hypervisor)
+      hv_class.policy.on_associate_volume(instance, volume)
       true
     }
     alias :volume :volumes
