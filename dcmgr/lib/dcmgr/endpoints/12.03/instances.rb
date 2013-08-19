@@ -308,7 +308,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         i.display_name = params[:display_name]
       end
     end
-    instance.save
 
     #
     unless params['labels'].blank?
@@ -317,6 +316,60 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
     end
 
+    if params['volumes'].is_a?(Hash)
+      params['volumes'].values.each { |vparam|
+        bo = if vparam['backup_object_id'].blank?
+               nil
+             else
+               M::BackupObject[vparam['backup_object_id']] || raise("Unknown backup object: #{vparam['backup_object_id']}")
+             end
+
+        if !vparam['size'].blank?
+          begin
+            vparam['size'] = Dcmgr::Helpers::ByteUnit.convert_to(vparam['size'], Dcmgr::Helpers::ByteUnit::B).to_i
+          rescue => e
+            raise E::InvalidParameter, 'volumes.size'
+          end
+        end
+        
+        if !vparam['size'].blank? && bo
+          # create volume from the backup object and grow its size.
+          # check size is larger or equal than backup object's size.
+          if bo.size > vparam['size'].to_i
+            raise "Shrink operation is not supported: size change request from #{bo.size} to #{vparam['size'].to_i}"
+          end
+          vol = bo.create_volume(instance.account)
+          vol.size = vparam['size'].to_i
+        elsif !vparam['size'].blank? && bo.nil?
+          # create empty volume.
+          vol = M::Volume.entry_new(instance.account, vparam['size'].to_i, {})
+        elsif vparam['size'].blank? && bo
+          # create volume from the backup object.
+          vol = bo.create_volume(instance.account)
+        else
+          raise "Invalid volume sub parameters: backup_object_id=#{vparam['backup_object_id']}, size=#{vparam['size']}"
+        end
+
+        # common parameters
+        ['guest_device_name', 'display_name', 'description'].each { |pname|
+          if !vparam[pname].blank?
+            vol.send("#{pname}=", vparam[pname])
+          end
+        }
+        vol.save_changes
+
+        case vparam['volume_type']
+        when 'local'
+          instance.add_local_volume(vol)
+        when 'shared'
+          # provisioned by storage scheduler.
+          instance.add_shared_volume(vol)
+        else
+          raise "Invalid volume_type parameter: #{vparam['volume_type']}"
+        end
+      }
+    end
+    
     #
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
@@ -334,6 +387,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       ## Assign the custom host node
       instance.host_node = host_node
+      instance.save_changes
     end
 
     if is_manual_ip_set
@@ -353,41 +407,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     insert_monitoring_items(instance)
     set_monitoring_parameters(instance)
 
-    instance.state = :scheduling
+    instance.state = C::Instance::STATE_SCHEDULING
     instance.save_changes
-
-    bo = M::BackupObject[wmi.backup_object_id] || raise("Unknown backup object: #{wmi.backup_object_id}")
-
-    case wmi.boot_dev_type
-    when M::Image::BOOT_DEV_SAN
-      # create new volume from backup object.
-
-      if !M::StorageNode.check_domain_capacity?(bo.size)
-        raise E::OutOfDiskSpace
-      end
-
-      vol = M::Volume.entry_new(@account, bo.size, params.to_hash) do |v|
-        v.backup_object_id = bo.canonical_uuid
-        v.boot_dev = 1
-      end
-      # assign instance -> volume
-      vol.instance = instance
-      vol.state = :scheduling
-      vol.save
-
-    when M::Image::BOOT_DEV_LOCAL
-    else
-      raise "Unknown boot type"
-    end
+    instance.volumes.each {|v|
+      v.state = C::Volume::STATE_SCHEDULING
+      v.save_changes
+    }
 
     on_after_commit do
       Dcmgr.messaging.submit("scheduler",
                              'schedule_instance', instance.canonical_uuid)
     end
-
-    # retrieve latest instance data.
-    # if not, security_groups value is empty.
-    instance = find_by_uuid(:Instance, instance.canonical_uuid)
 
     respond_with(R::Instance.new(instance).generate)
   end
@@ -397,10 +427,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     i = find_by_uuid(:Instance, params[:id])
 
     case i.state
-    when 'stopped'
+    when C::Instance::STATE_STOPPED
       # just destroy the record.
       i.destroy
-    when 'terminated', 'scheduling'
+    when C::Instance::STATE_TERMINATED, C::Instance::STATE_SCHEDULING
       raise E::InvalidInstanceState, i.state
     else
       on_after_commit do
@@ -541,7 +571,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   quota('backup_object.size_mb') do
     request_amount do
       instance = find_by_uuid(:Instance, params[:id])
-      return (instance.image.backup_object.size / (1024 * 1024)).to_i
+      return (instance.volumes_dataset.attached.sum(:size) / (1024 * 1024)).to_i
     end
   end
   put '/:id/backup' do
@@ -560,19 +590,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
              nil
            end
 
-    bo = instance.image.backup_object.entry_clone do |i|
-      [:display_name, :description].each { |k|
-        if params[k]
-          i[k] = params[k]
+    boot_bko = nil
+    bko_list = []
+    instance.volumes_dataset.attached.each { |v|
+      bo = v.create_backup_object(@account) do |b|
+        b.state = C::BackupObject::STATE_PENDING
+        if bkst
+          b.backup_storage = bkst
         end
-      }
-
-      i.state = :pending
-      i.account_id = @account.canonical_uuid
-      if bkst
-        i.backup_storage = bkst
       end
-    end
+
+      if instance.boot_volume_id == v.canonical_uuid
+        boot_bko = bo
+      end
+
+      bko_list << bo
+    }
+
     image = instance.image.entry_clone do |i|
       [:display_name, :description, :is_public, :is_cacheable].each { |k|
         if params[k]
@@ -581,8 +615,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       }
 
       i.account_id = @account.canonical_uuid
-      i.backup_object_id = bo.canonical_uuid
-      i.state = :pending
+      i.backup_object_id = boot_bko.canonical_uuid
+      i.state = C::Image::STATE_PENDING
     end
 
     on_after_commit do
@@ -705,6 +739,39 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
 
       respond_with(R::InstanceMonitorItem.new(@instance, params[:monitor_id]).generate)
+    end
+  end
+
+  namespace '/:instance_id/volumes' do
+    before do
+      @instance = find_by_uuid(:Instance, params[:instance_id])
+    end
+
+    # list attached volumes to the instance.
+    get '' do
+      ds = @instance.volumes_dataset
+      respond_with(R::VolumeCollection.new(ds))
+    end
+
+    # take a backup from the volume.
+    quota 'backup_object.count'
+    quota 'instance.backup_operations_per_hour'
+    quota('backup_object.size_mb') do
+      request_amount do
+        volume = find_by_uuid(:Volume, params[:id])
+        return (volume.size / (1024 * 1024)).to_i
+      end
+    end
+    put '/:id/backup' do
+      @volume = find_by_uuid(:Volume, params[:id])
+      if @volume.instance != @instance
+        raise E::UnknownVolume, @volume.canonical_uuid
+      end
+      bo = @volume.create_backup_object(@volume.account) do |b|
+      end
+
+      on_after_commit do
+      end
     end
   end
 end

@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
 
-require 'isono/models/node_state'
+require 'isono'
 
 module Dcmgr::Models
   class StorageNode < BaseNew
     taggable 'sn'
 
-    BACKINGSTORE_ZFS = 'zfs'
-    BACKINGSTORE_RAW = 'raw'
-    BACKINGSTORE_IFS = 'ifs'
+    include Dcmgr::Constants::StorageNode
 
-    SUPPORTED_BACKINGSTORE = [BACKINGSTORE_ZFS, BACKINGSTORE_RAW, BACKINGSTORE_IFS]
-
-    one_to_many :volumes
-    one_to_many :volume_snapshots
-
+    plugin :class_table_inheritance, :key=>:storage_type
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
 
     def_dataset_method(:online_nodes) do
@@ -31,14 +25,14 @@ module Dcmgr::Models
           errors.add(:node_id, "is invalid ID: #{self.node_id}")
         end
 
-        if (h = self.class.filter(:node_id=>self.node_id).first) && h.id != self.id
+        if (h = StorageNode.filter(:node_id=>self.node_id).first) && h.id != self.id
           errors.add(:node_id, "#{self.node_id} is already been associated to #{h.canonical_uuid} ")
         end
       end
 
-      unless SUPPORTED_BACKINGSTORE.member?(self.storage_type)
-        errors.add(:storage_type, "unknown storage type: #{self.storage_type}")
-      end
+      #unless self.storage_type
+      #  errors.add(:storage_type, "unknown storage type: #{self.storage_type}")
+      #end
 
       unless self.offering_disk_space_mb > 0
         errors.add(:offering_disk_space_mb, "it must have digit more than zero")
@@ -47,7 +41,7 @@ module Dcmgr::Models
 
     # Show status of the agent.
     def status
-      node.nil? ? :offline : node.state
+      node.nil? ? STATUS_OFFLINE : node.state
     end
 
     def to_hash
@@ -65,7 +59,7 @@ module Dcmgr::Models
 
     # Returns total disk usage of associated volumes.
     def disk_usage(byte_unit=B)
-      convert_byte(volumes_dataset.lives.sum(:size).to_i, byte_unit)
+      convert_byte(volumes_dataset.alives.sum(:size).to_i, byte_unit)
     end
 
     # Returns available space of the storage node.
@@ -76,7 +70,7 @@ module Dcmgr::Models
 
     # Check the free resource capacity across entire local VDC domain.
     def self.check_domain_capacity?(size, num=1)
-      alives_size = Volume.dataset.lives.filter.sum(:size).to_i
+      alives_size = Volume.dataset.alives.filter.sum(:size).to_i
       offer_size = self.online_nodes.sum(:offering_disk_space_mb).to_i * (1024 ** 2)
 
       (offer_size - alives_size >= size * num.to_i)

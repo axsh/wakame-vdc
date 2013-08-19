@@ -14,5 +14,6 @@ shlog ./bin/vdc-manage host add hva.${hva_id} \
   --uuid hn-${hva_id} \
   --cpu-cores 100 \
   --memory-size 400000 \
+  --disk-space  500000 \
   --hypervisor ${hypervisor} \
   --arch ${hva_arch}

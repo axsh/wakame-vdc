@@ -206,9 +206,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
     v = find_by_uuid(:Volume, params[:id])
     raise E::UnknownVolume if v.nil?
-    raise E::DetachVolumeFailure, "Volume is not attached to any instance." if v.instance.nil?
-    # the volume as the boot device can not be detached.
-    raise E::DetachVolumeFailure, "boot device can not be detached" if v.boot_dev == 1
+    if v.instance.nil?
+      raise E::DetachVolumeFailure, "Volume is not attached to any instance."
+    elsif v.boot_volume?
+      # the volume as the boot device can not be detached.
+      raise E::DetachVolumeFailure, "boot device can not be detached"
+    end
     i = v.instance
     raise E::InvalidInstanceState unless i.live? && i.state == 'running'
 

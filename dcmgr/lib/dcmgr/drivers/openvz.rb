@@ -8,6 +8,10 @@ module Dcmgr
       include Dcmgr::Logger
       include Dcmgr::Helpers::NicHelper
 
+      def self.local_store_class
+        LinuxLocalStore
+      end
+
       template_base_dir "openvz"
 
       def_configuration do

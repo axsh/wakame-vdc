@@ -8,9 +8,21 @@ module Dcmgr::Models
     taggable 'i'
     accept_service_type
 
+    include Dcmgr::Constants::Instance
+    
     many_to_one :image
     many_to_one :host_node
-    one_to_many :volume
+    one_to_many :volumes, :before_add=>lambda { |instance, volume|
+      hv_class = Dcmgr::Drivers::Hypervisor.driver_class(instance.hypervisor)
+      hv_class.policy.on_associate_volume(instance, volume)
+      true
+    }
+    alias :volume :volumes
+    one_to_many :local_volumes, :class=>Volume, :read_only=>true do |ds|
+      # SELECT volumes.* FROM volumes, l1 LEFT JOIN local_volumes ON self.pk = local_volumes.instance_id
+      #   WHERE volumes.id = l1.id
+      Volume.left_join(:local_volumes, :instance_id=>self.pk).filter(:local_volumes__id=>:volumes__id)
+    end
     one_to_many :network_vif
     alias :instance_nic :network_vif
     alias :nic :network_vif
@@ -23,8 +35,8 @@ module Dcmgr::Models
       
     subset(:lives, {:terminated_at => nil})
     subset(:alives, {:terminated_at => nil})
-    subset(:runnings, {:state => 'running'})
-    subset(:stops, {:state => 'stopped'})
+    subset(:runnings, {:state => STATE_RUNNING})
+    subset(:stops, {:state => STATE_STOPPED})
 
     # lists the instances which alives and died within
     # term_period sec.
@@ -127,25 +139,24 @@ module Dcmgr::Models
     def before_destroy
       HostnameLease.filter(:account_id=>self.account_id, :hostname=>self.hostname).destroy
       self.instance_nic.each { |o| o.destroy }
-      self.volume.each { |v|
-        v.instance_id = nil
-        v.state = :available
-        v.save
+      self.volumes_dataset.attached.each { |v|
+        v.detach_from_instance
       }
       super
     end
 
     # override Sequel::Model#delete not to delete rows but to set
     # delete flags.
-    def delete
+    def _destroy_delete
       self.terminated_at ||= Time.now
-      self.state = :terminated if self.state != :terminated
-      self.status = :offline if self.status != :offline
+      self.state = STATE_TERMINATED if self.state != STATE_TERMINATED
+      self.status = STATUS_OFFLINE if self.status != STATUS_OFFLINE
       self.ssh_key_pair_id = nil
-      self.save
+      self.save_changes
     end
 
     def after_destroy
+      super
       if self.service_type == Dcmgr::Constants::LoadBalancer::SERVICE_TYPE
         LoadBalancer.filter(:instance_id=> self.id).destroy
       end
@@ -161,12 +172,19 @@ module Dcmgr::Models
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :vif=>[],
+                 :volume=>{},
                  :ssh_key_data => self.ssh_key_pair ? self.ssh_key_pair.to_hash : nil,
               })
-      h[:volume]={}
       if self.volume
         self.volume.each { |v|
-          h[:volume][v.canonical_uuid] = v.to_hash
+          h[:volume][v.canonical_uuid] = v.to_hash.tap { |h|
+            if v.volume_device
+              h[:volume_device] = v.volume_device.to_hash
+            end
+            if v.backup_object
+              h[:backup_object] = v.backup_object.to_hash
+            end
+          }
         }
       end
       if self.instance_nic
@@ -363,12 +381,25 @@ module Dcmgr::Models
       # Mash is passed in some cases.
       raise ArgumentError, "The params parameter must be a Hash. Got '#{params.class}'" unless params.class == ::Hash
 
-      i = self.new &blk
-      i.account_id = account.canonical_uuid
-      i.image = image
-      i.request_params = params.dup
+      # Need to create boot volume first becase boot_volume_id is not
+      # null column.
+      boot_volume = image.create_volume(account)
+      
+      instance = self.new &blk
+      instance.account_id = account.canonical_uuid
+      instance.image = image
+      instance.request_params = params.dup
+      instance.service_type = image.service_type
+      instance.boot_volume_id = boot_volume.canonical_uuid
+      # Determine primary key number.
+      instance.save
 
-      i
+      # set boot volume.
+      instance.add_volume(boot_volume)
+      boot_volume.state = Dcmgr::Constants::Volume::STATE_SCHEDULING
+      boot_volume.save_changes
+      
+      instance
     end
 
     def on_changed_accounting_log(changed_column)
@@ -456,6 +487,24 @@ module Dcmgr::Models
 
       clear_labels("monitoring.items.#{uuid}.%")
       item
+    end
+
+    def boot_volume
+      Volume[self.boot_volume_id]
+    end
+
+    def add_local_volume(volume)
+      volume.volume_type = LocalVolume.to_s
+      volume.save_changes
+      self.add_volume(volume)
+    end
+
+    def add_shared_volume(volume)
+      self.add_volume(volume)
+    end
+
+    def volume_guest_device_names(state=Dcmgr::Constants::Volume::STATE_ATTACHED)
+      self.volumes_dataset.alives.all.map{|v| v.guest_device_name }
     end
   end
 end

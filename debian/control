@@ -14,12 +14,12 @@ Description: The wakame virtual data center.
 
 Package: wakame-vdc-dvd-config
 Architecture: any
-Depends: wakame-vdc, rabbitmq-server, mysql-server, tgt (>= 1:1.0.17), qemu-kvm, qemu-utils, dnsmasq, lxc (>= 0.7.5), nginx
+Depends: wakame-vdc, rabbitmq-server, mysql-server, tgt (>= 1:1.0.17), qemu-kvm, qemu-utils, dnsmasq, lxc (>= 0.7.5), apache2.2
 Description: Configuration set for DVD installation.
  <insert long description, indented with spaces>
 
 Package: wakame-vdc-dcmgr-vmapp-config
 Architecture: any
-Depends: wakame-vdc, rabbitmq-server, mysql-server, nginx
+Depends: wakame-vdc, rabbitmq-server, mysql-server, apache2.2
 Description: Configuration set for dcmgr VM appliance
  <insert long description, indented with spaces>
