@@ -12,11 +12,11 @@ module Dcmgr::VNet::NetworkModes
       # ***work-around***
       # TODO
       # - multi host nic
-      host_addr = begin
-                    Isono::Util.default_gw_ipaddr
-                  rescue => e
-                    nil
-                  end
+      host_addrs = begin
+                     [Dcmgr.conf.logging_service_ip, Dcmgr.conf.logging_service_host_ip].compact
+                   rescue => e
+                     []
+                   end
 
       enable_logging = Dcmgr.conf.packet_drop_log
       ipset_enabled = Dcmgr.conf.use_ipset
@@ -25,17 +25,17 @@ module Dcmgr::VNet::NetworkModes
       tasks += self.netfilter_drop_tasks(vnic,node)
 
       # General data link layer tasks
-      if host_addr
+      host_addrs.each {|host_addr|
         tasks << AcceptARPToHost.new(host_addr,vnic[:address],enable_logging,"A arp to_host #{vnic[:uuid]}: ")
-      end
+      }
       tasks << AcceptARPFromGateway.new(network[:ipv4_gw],vnic[:address],enable_logging,"A arp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
       tasks << AcceptARPFromDNS.new(network[:dns_server],vnic[:address],enable_logging,"A arp from_dns #{vnic[:uuid]}: ") unless network[:dns_server].nil?
       tasks << DropIpSpoofing.new(vnic[:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
       tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
       tasks << AcceptGARPFromGateway.new(network[:ipv4_gw],enable_logging,"A garp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
-      if host_addr
+      host_addrs.each {|host_addr|
         tasks << AcceptArpBroadcast.new(host_addr,enable_logging,"A arp bc #{vnic[:uuid]}: ")
-      end
+      }
 
       # General ip layer tasks
       tasks << AcceptIcmpRelatedEstablished.new
