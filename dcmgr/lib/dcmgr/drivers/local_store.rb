@@ -26,22 +26,8 @@ module Dcmgr
       end
 
       def self.driver_class(hypervisor_name)
-        case hypervisor_name.to_s
-        when "dummy"
-          Dcmgr::Drivers::DummyLocalStore
-        when "kvm"
-          Dcmgr::Drivers::LinuxLocalStore
-        when "lxc"
-          Dcmgr::Drivers::LinuxLocalStore
-        when "esxi"
-          Dcmgr::Drivers::ESXiLocalStore
-        when "openvz"
-          Dcmgr::Drivers::OpenvzLocalStore
-        else
-          raise "Unknown hypervisor type: #{hypervisor_name}"
-        end
+        Hypervisor.driver_class(hypervisor_name).local_store_class
       end
-
     end
   end
 end

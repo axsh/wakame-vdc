@@ -62,7 +62,7 @@ module Dcmgr
         return unless volume[:is_local_volume]
 
         update_volume_state(volume[:uuid], {:state=>:deleting}, [])
-        task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+        task_session.invoke(Drivers::Hypervisor.driver_class(@inst[:host_node][:hypervisor]).local_store_class,
                             :delete_volume, [@hva_ctx, volume])
         update_volume_state(volume[:uuid], {:state=>:deleted, :deleted_at=>Time.now.utc},
                             'hva/volume_deleted')

@@ -57,6 +57,10 @@ module Dcmgr
         @@policy
       end
 
+      def self.local_store_class
+        raise NotImplementedError
+      end
+
       # deprecated
       def self.select_hypervisor(hypervisor)
         driver_class(hypervisor).new

@@ -9,6 +9,10 @@ module Dcmgr
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
 
+      def self.local_store_class
+        EsxiLocalStore
+      end
+
       def_configuration
 
       def run_instance(ctx)

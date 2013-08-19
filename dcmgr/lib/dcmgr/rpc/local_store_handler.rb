@@ -19,6 +19,11 @@ module Dcmgr
           blk.call(v)
         }
       end
+
+      def local_store_driver_class
+        hv_klass = Drivers::Hypervisor.driver_class(@inst[:host_node][:hypervisor])
+        hv_klass.local_store_class
+      end
       
       def deploy_local_volume(volume_hash)
         v = volume_hash
@@ -27,11 +32,11 @@ module Dcmgr
           opts[:cache] = (@inst[:image][:backup_object_id] == v[:backup_object_id] && @inst[:image][:is_cacheable] == 1)
           @hva_ctx.logger.info("Creating volume #{v[:uuid]} from #{v[:backup_object_id]}.")
           # create volume from backup object.
-          task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+          task_session.invoke(local_store_driver_class,
                               :deploy_volume, [@hva_ctx, v, v[:backup_object], opts])
         else
           @hva_ctx.logger.info("Creating empty volume #{v[:uuid]}.")
-          task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+          task_session.invoke(local_store_driver_class,
                               :deploy_volume, [@hva_ctx, v])
         end
         
@@ -72,7 +77,7 @@ module Dcmgr
         end
         
         ignore_error {
-          task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+          task_session.invoke(local_store_driver_class,
                               :delete_volume, [@hva_ctx, @volume])
         }
         update_volume_state(@volume[:uuid], {:state=>:deleted, :deleted_at=>Time.now.utc},
@@ -101,7 +106,7 @@ module Dcmgr
           ignore_error {
             @hva_ctx.logger.info("Cleaning volume #{v[:uuid]}")
             # create volume from backup object.
-            task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+            task_session.invoke(local_store_driver_class,
                                 :delete_volume, [@hva_ctx, v])
           }
           ignore_error {
@@ -171,7 +176,7 @@ module Dcmgr
           }
 
           @hva_ctx.logger.info("Uploading #{snap_filename} (#{@backupobject_id})")
-          task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+          task_session.invoke(local_store_driver_class,
                               :upload_image, [@inst, @hva_ctx, @bo, ev_callback])
 
           @hva_ctx.logger.info("Uploaded #{snap_filename} (#{@backupobject_id}) successfully")

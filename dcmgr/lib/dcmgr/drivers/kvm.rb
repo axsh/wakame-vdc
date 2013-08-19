@@ -42,6 +42,10 @@ module Dcmgr
         Policy.new
       end
 
+      def self.local_store_class
+        LinuxLocalStore
+      end
+
       def_configuration do
         param :qemu_path, :default=>proc { ||
           if File.exists?('/etc/debian_version')

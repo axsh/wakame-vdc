@@ -7,6 +7,10 @@ module Dcmgr
     class Lxc < LinuxContainer
       include Dcmgr::Logger
 
+      def self.local_store_class
+        LinuxLocalStore
+      end
+
       template_base_dir 'lxc'
       
       def_configuration
