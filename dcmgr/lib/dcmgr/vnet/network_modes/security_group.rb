@@ -12,11 +12,7 @@ module Dcmgr::VNet::NetworkModes
       # ***work-around***
       # TODO
       # - multi host nic
-      host_addrs = begin
-                     [Dcmgr.conf.logging_service_ip, Dcmgr.conf.logging_service_host_ip].compact
-                   rescue => e
-                     []
-                   end
+      host_addrs = [Dcmgr.conf.logging_service_host_ip].compact
 
       enable_logging = Dcmgr.conf.packet_drop_log
       ipset_enabled = Dcmgr.conf.use_ipset
