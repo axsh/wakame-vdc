@@ -10,12 +10,16 @@ module Dcmgr
         raise NotImplementedError
       end
 
-      # download and setup single image file.
-      # it sets up empty image file when backup_object is set to nil.
-      def deploy_volume(hva_ctx, volume, backup_object=nil, opts={})
+      # download backup object and setup single image file.
+      def deploy_volume(hva_ctx, volume, backup_object, opts={})
         raise NotImplementedError
       end
 
+      # create blank image file.
+      def deploy_blank_volume(hva_ctx, volume, opts={})
+        raise NotImplementedError
+      end
+      
       # delete an image file.
       def delete_volume(hva_ctx, volume)
         raise NotImplementedError

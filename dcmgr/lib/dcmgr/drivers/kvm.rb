@@ -43,7 +43,7 @@ module Dcmgr
       end
 
       def self.local_store_class
-        LinuxLocalStore
+        KvmLocalStore
       end
 
       def_configuration do

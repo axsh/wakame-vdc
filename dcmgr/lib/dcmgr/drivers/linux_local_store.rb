@@ -22,17 +22,21 @@ module Dcmgr
         end
       end
 
-      def deploy_volume(hva_ctx, volume, backup_object=nil, opts={:cache=>false})
+      def deploy_blank_volume(hva_ctx, volume, opts={:cache=>false})
         @ctx = hva_ctx
         FileUtils.mkdir(@ctx.inst_data_dir) unless File.exists?(@ctx.inst_data_dir)
 
         volume_path = File.expand_path(volume[:volume_device][:path], @ctx.inst_data_dir)
 
-        if backup_object.nil?
-          # create empty image file.
-          sh("truncate --size=#{volume[:size]} '#{volume_path}'")
-          return
-        end
+        # create blank image file.
+        sh("truncate --size=#{volume[:size]} '#{volume_path}'")
+      end
+      
+      def deploy_volume(hva_ctx, volume, backup_object, opts={:cache=>false})
+        @ctx = hva_ctx
+        FileUtils.mkdir(@ctx.inst_data_dir) unless File.exists?(@ctx.inst_data_dir)
+
+        volume_path = File.expand_path(volume[:volume_device][:path], @ctx.inst_data_dir)
 
         Task::TaskSession.current[:backup_storage] = backup_object[:backup_storage]
         # setup vm data folder
@@ -111,7 +115,7 @@ module Dcmgr
         img_src_uri = inst[:image][:backup_object][:uri]
 
         @ctx.inst[:volume].each { |v|
-          if v[:device_index] == 0
+          if inst[:boot_volume_id] == v[:uuid]
             deploy_volume(@ctx, v, inst[:image][:backup_object], {:cache=>inst[:image][:is_cacheable]})
           else
             deploy_volume(@ctx, v, v[:backup_object])

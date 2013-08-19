@@ -245,6 +245,7 @@ module Dcmgr
     autoload :Natbox, 'dcmgr/drivers/natbox'
     autoload :Fluent, 'dcmgr/drivers/fluent'
     autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
+    autoload :KvmLocalStore, 'dcmgr/drivers/kvm_local_store'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'

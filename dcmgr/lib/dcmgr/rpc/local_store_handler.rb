@@ -35,9 +35,9 @@ module Dcmgr
           task_session.invoke(local_store_driver_class,
                               :deploy_volume, [@hva_ctx, v, v[:backup_object], opts])
         else
-          @hva_ctx.logger.info("Creating empty volume #{v[:uuid]}.")
+          @hva_ctx.logger.info("Creating blank volume #{v[:uuid]}.")
           task_session.invoke(local_store_driver_class,
-                              :deploy_volume, [@hva_ctx, v])
+                              :deploy_blank_volume, [@hva_ctx, v])
         end
         
         update_volume_state(v[:uuid], {:state=>C::Volume::STATE_AVAILABLE}, 'hva/volume_available')
