@@ -197,6 +197,9 @@ module Dcmgr
       # Dolphin server connection string
       param :dolphin_server_uri, :default=> 'http://127.0.0.1:9004/'
 
+      # Decides what resource monitor will be used.
+      param :enabled_feature_resource_monitor, :default=>false
+
       def validate(errors)
         if @config[:vm_data_dir].nil?
           errors << "vm_data_dir not set"
