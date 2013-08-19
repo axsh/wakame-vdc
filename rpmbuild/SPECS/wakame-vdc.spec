@@ -180,8 +180,8 @@ Requires: iscsi-initiator-utils scsi-target-utils
 Requires: ebtables iptables ethtool vconfig iproute
 Requires: bridge-utils
 Requires: dracut-kernel
-Requires: kmod-openvswitch
-Requires: openvswitch
+Requires: kmod-openvswitch >= 1.6.1, < 1.6.2
+Requires: openvswitch      >= 1.6.1, < 1.6.2
 Requires: kpartx
 Requires: libcgroup
 Requires: tunctl
