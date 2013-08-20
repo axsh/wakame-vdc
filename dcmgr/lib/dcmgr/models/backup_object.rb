@@ -29,8 +29,11 @@ module Dcmgr::Models
       end
 
       errors.add(:size, "Invalid size: #{self.size}") if self.size < 0
-      errors.add(:allocation_size, "Invalid size: #{self.allocation_size}") if self.allocation_size < 0
-
+      if !self.allocation_size.nil?
+        # allocation_size is NULL column. so check only if not null.
+        errors.add(:allocation_size, "Invalid size: #{self.allocation_size}") if self.allocation_size.to_i < 0
+      end
+      
       unless self.progress.to_f.between?(0.0, 100.0)
         errors.add(:progress, "Must be set between 0.0-100.0.")
       end
