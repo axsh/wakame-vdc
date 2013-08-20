@@ -56,7 +56,7 @@ module Dcmgr::Models
       # do not run validation if the row is maked as deleted.
       return true if self.deleted_at
 
-      errors.add(:size, "Invalid volume size.") if self.size == 0
+      errors.add(:size, "Invalid volume size: #{self.size}") if self.size < 0
 
       if self.instance
         # check if volume parameters are conformant for hypervisor.
