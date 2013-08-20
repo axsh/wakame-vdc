@@ -34,6 +34,7 @@ module Dcmgr
       
       def deploy_volume(hva_ctx, volume, backup_object, opts={:cache=>false})
         @ctx = hva_ctx
+        @volume = volume
         FileUtils.mkdir(@ctx.inst_data_dir) unless File.exists?(@ctx.inst_data_dir)
 
         volume_path = File.expand_path(volume[:volume_device][:path], @ctx.inst_data_dir)
@@ -48,23 +49,23 @@ module Dcmgr
         # cmd_tuple has ["", []] array.
         cmd_tuple = if Dcmgr.conf.local_store.enable_image_caching && opts[:cache]
                       FileUtils.mkdir_p(vmimg_cache_dir) unless File.exist?(vmimg_cache_dir)
-                      download_to_local_cache(backup_object)
-                      logger.debug("Copying #{vmimg_cache_path()} to #{volume_path}")
+                      download_to_local_cache(backup_object, volume)
+                      logger.debug("Copying #{vmimg_cache_path(@volume[:volume_device][:path])} to #{volume_path}")
                       
-                      ["cat %s", [vmimg_cache_path()]]
+                      ["cat %s", [vmimg_cache_path(@volume[:volume_device][:path])]]
                     else
                       if @bkst_drv_class.include?(BackupStorage::CommandAPI)
                         # download_command() returns cmd_tuple.
                         invoke_task(@bkst_drv_class,
                                     :download_command,
-                                    [backup_object, vmimg_tmp_path()])
+                                    [backup_object, vmimg_tmp_path(@volume[:volume_device][:path])])
                       else
                         logger.info("Downloading image file: #{volume_path}")
                         invoke_task(@bkst_drv_class,
-                                    :download, [backup_object, vmimg_tmp_path()])
-                        logger.debug("Copying #{vmimg_tmp_path()} to #{volume_path}")
+                                    :download, [backup_object, vmimg_tmp_path(@volume[:volume_device][:path])])
+                        logger.debug("Copying #{vmimg_tmp_path(@volume[:volume_device][:path])} to #{volume_path}")
                         
-                        ["cat %s", [vmimg_tmp_path()]]
+                        ["cat %s", [vmimg_tmp_path(@volume[:volume_device][:path])]]
                       end
                     end
       
@@ -105,7 +106,7 @@ module Dcmgr
 
         raise "Image file is not ready: #{volume_path}" unless File.exist?(volume_path)
       ensure
-        File.unlink(vmimg_tmp_path()) rescue nil
+        File.unlink(vmimg_tmp_path(@volume[:volume_device][:path])) rescue nil
       end
       
       def deploy_image(inst, ctx)
@@ -223,17 +224,11 @@ module Dcmgr
         Dcmgr.conf.local_store.work_dir || '/var/tmp'
       end
 
-      def vmimg_tmp_path(basename=nil)
-        basename ||= begin
-                       @ctx.inst[:image][:backup_object][:uuid] + (@suffix ? @suffix : "")
-                     end
+      def vmimg_tmp_path(basename)
         File.expand_path(basename, download_tmp_dir)
       end
 
-      def vmimg_cache_path(basename=nil)
-        basename ||= begin
-                       @ctx.inst[:image][:backup_object][:uuid] + (@suffix ? @suffix : "")
-                     end
+      def vmimg_cache_path(basename)
         if Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable]
           File.expand_path(basename, vmimg_cache_dir)
         else
@@ -256,47 +251,47 @@ module Dcmgr
         end
       end
 
-      def download_to_local_cache(bo)
+      def download_to_local_cache(bo, volume)
         delete_local_cache()
         begin
-          if File.mtime(vmimg_cache_path()) <= File.mtime("#{vmimg_cache_path()}.md5")
-            cached_chksum = File.read("#{vmimg_cache_path()}.md5").chomp
+          if File.mtime(vmimg_cache_path(volume[:volume_device][:path])) <= File.mtime("#{vmimg_cache_path(volume[:volume_device][:path])}.md5")
+            cached_chksum = File.read("#{vmimg_cache_path(volume[:volume_device][:path])}.md5").chomp
             if cached_chksum == bo[:checksum]
               # Here is the only case to be able to use valid cached
               # image file.
-              logger.info("Checksum verification passed: #{vmimg_cache_path()}. We will use this copy.")
+              logger.info("Checksum verification passed: #{vmimg_cache_path(volume[:volume_device][:path])}. We will use this copy.")
               return
             else
-              logger.warn("Checksum verification failed: #{vmimg_cache_path()}. #{cached_chksum} (calced) != #{bo[:checksum]} (expected)")
+              logger.warn("Checksum verification failed: #{vmimg_cache_path(volume[:volume_device][:path])}. #{cached_chksum} (calced) != #{bo[:checksum]} (expected)")
             end
           else
-            logger.warn("Checksum cache file is older than the image file: #{vmimg_cache_path()}")
+            logger.warn("Checksum cache file is older than the image file: #{vmimg_cache_path(volume[:volume_device][:path])}")
           end
         rescue SystemCallError => e
           # come here if it got failed with
           # File.mtime()/read(). Expected to catch ENOENT, EACCESS normally.
-          logger.error("Failed to check cached image or checksum file: #{e.message}: #{vmimg_cache_path()}")
+          logger.error("Failed to check cached image or checksum file: #{e.message}: #{vmimg_cache_path(volume[:volume_device][:path])}")
         end
 
         # Any failure cases will reach here to download image file.
 
-        File.unlink("#{vmimg_cache_path()}") rescue nil
-        File.unlink("#{vmimg_cache_path()}.md5") rescue nil
+        File.unlink("#{vmimg_cache_path(volume[:volume_device][:path])}") rescue nil
+        File.unlink("#{vmimg_cache_path(volume[:volume_device][:path])}.md5") rescue nil
 
-        logger.info("Downloading image file: #{vmimg_cache_path()}")
+        logger.info("Downloading image file: #{vmimg_cache_path(volume[:volume_device][:path])}")
         cmd_tuple = ["", []]
         if @bkst_drv_class.include?(BackupStorage::CommandAPI)
           cmd_tuple = invoke_task(@bkst_drv_class,
-                                  :download_command, [bo, vmimg_cache_path()])
+                                  :download_command, [bo, vmimg_cache_path(volume[:volume_device][:path])])
           cmd_tuple[0] << " | tee >( md5sum | awk '{print $1}' > '%s' ) > '%s'"
-          cmd_tuple[1] += ["#{vmimg_cache_path()}.md5", vmimg_cache_path()]
+          cmd_tuple[1] += ["#{vmimg_cache_path(volume[:volume_device][:path])}.md5", vmimg_cache_path(volume[:volume_device][:path])]
           shell.run!(*cmd_tuple)
         else
           invoke_task(@bkst_drv_class,
-                      :download, [bo, vmimg_cache_path()])
+                      :download, [bo, vmimg_cache_path(volume[:volume_device][:path])])
           if Dcmgr.conf.local_store.enable_cache_checksum
-            logger.debug("calculating checksum of #{vmimg_cache_path()}")
-            sh("md5sum #{vmimg_cache_path()} | awk '{print $1}' > #{vmimg_cache_path()}.md5")
+            logger.debug("calculating checksum of #{vmimg_cache_path(volume[:volume_device][:path])}")
+            sh("md5sum #{vmimg_cache_path(volume[:volume_device][:path])} | awk '{print $1}' > #{vmimg_cache_path(volume[:volume_device][:path])}.md5")
           end
         end
       end
