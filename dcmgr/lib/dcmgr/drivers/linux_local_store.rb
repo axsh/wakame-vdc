@@ -73,7 +73,7 @@ module Dcmgr
 
         case backup_object[:container_format].to_sym
         when :tgz
-          Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
+          Dir.mktmpdir(nil, @ctx.inst_data_dir) { |tmpdir|
             cmd_tuple[0] << "| #{pv_command} tar -zxS -C %s"
             cmd_tuple[1] += [tmpdir]
             shell.run!(*cmd_tuple)
@@ -88,7 +88,7 @@ module Dcmgr
                            volume_path]
           shell.run!(*cmd_tuple)
         when :tar
-          Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
+          Dir.mktmpdir(nil, @ctx.inst_data_dir) { |tmpdir|
             cmd_tuple[0] << "| #{pv_command} tar -xS -C %s"
             cmd_tuple[1] += [tmpdir]
             shell.run!(*cmd_tuple)
@@ -111,7 +111,7 @@ module Dcmgr
       def deploy_image(inst, ctx)
         @ctx = ctx
         # setup vm data folder
-        FileUtils.mkdir(ctx.inst_data_dir) unless File.exists?(ctx.inst_data_dir)
+        FileUtils.mkdir(@ctx.inst_data_dir) unless File.exists?(@ctx.inst_data_dir)
         img_src_uri = inst[:image][:backup_object][:uri]
 
         @ctx.inst[:volume].each { |v|
@@ -135,7 +135,7 @@ module Dcmgr
         
         # upload image file
         if @bkst_drv_class.include?(BackupStorage::CommandAPI)
-          archive_from_snapshot(ctx, @snapshot_path) do |cmd_tuple, chksum_path, size_path|
+          archive_from_snapshot(@ctx, @snapshot_path) do |cmd_tuple, chksum_path, size_path|
             cmd_tuple2 = invoke_task(@bkst_drv_class,
                                      :upload_command, [nil, bo])
 
@@ -168,7 +168,7 @@ module Dcmgr
             evcb.setattr(chksum, alloc_size.to_i)
           end
         else
-          archive_from_snapshot(ctx, @snapshot_path) do |cmd_tuple, chksum_path, size_path|
+          archive_from_snapshot(@ctx, @snapshot_path) do |cmd_tuple, chksum_path, size_path|
             bkup_tmp = Tempfile.new(inst[:uuid], download_tmp_dir)
             begin
               bkup_tmp.close(false)
