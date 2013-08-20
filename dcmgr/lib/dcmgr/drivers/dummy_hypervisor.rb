@@ -7,6 +7,16 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
+      class Policy < HypervisorPolicy
+        def on_associate_volume(instance, volume)
+          volume.guest_device_name = volume.canonical_uuid
+        end
+      end
+
+      def self.policy
+        Policy.new
+      end
+      
       def self.local_store_class
         DummyLocalStore
       end

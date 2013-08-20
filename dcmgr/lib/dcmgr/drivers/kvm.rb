@@ -37,12 +37,11 @@ module Dcmgr
                 'sda'
               end
           elsif volume.guest_device_name.nil?
-            volume.guest_device_name = find_candidate_device_name(instance.volume_guest_device_names)
+            devnames = instance.volume_guest_device_names
             # sdb,vdb,hdb are reserved for metadata drive. extra volumes
             # should starts from third device number.
-            if volume.guest_device_name =~ /[shv]db/
-              volume.guest_device_name.succ!
-            end
+            devnames.push( instance.boot_volume.guest_device_name.succ )
+            volume.guest_device_name = find_candidate_device_name(devnames)
           end
         end
 

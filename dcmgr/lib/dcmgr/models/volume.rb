@@ -56,7 +56,7 @@ module Dcmgr::Models
       # do not run validation if the row is maked as deleted.
       return true if self.deleted_at
 
-      errors.add(:size, "Invalid volume size.") if self.size == 0
+      errors.add(:size, "Invalid volume size: #{self.size}") if self.size < 0
 
       if self.instance
         # check if volume parameters are conformant for hypervisor.
@@ -68,10 +68,9 @@ module Dcmgr::Models
         end
 
         # uniqueness check for device names per instance
-        names = self.instance.volumes_dataset.attached.all.map{|v| v.guest_device_name }
-        duplicate_names = (names - names.uniq)
-        unless duplicate_names.empty?
-          errors.add(:guest_device_nam, "found duplicate device name (#{duplicate_names.join(', ')}) for #{instance.caonnical_uuid}")
+        names = self.instance.volumes_dataset.attached.all.map{|v| v.guest_device_name }.sort
+        unless names.size == names.uniq.size
+          errors.add(:guest_device_nam, "found duplicate device name (#{names.join(', ')}) for #{instance.caonnical_uuid}")
         end
       end
       
@@ -211,11 +210,6 @@ module Dcmgr::Models
       self.state = STATE_DELETED if self.state != STATE_DELETED
       self.status = STATUS_OFFLINE if self.status != STATUS_OFFLINE
       self.save_changes
-    end
-
-    def before_save
-      self.export_path ||= self.canonical_uuid
-      super
     end
   end
 end
