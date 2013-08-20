@@ -212,10 +212,5 @@ module Dcmgr::Models
       self.status = STATUS_OFFLINE if self.status != STATUS_OFFLINE
       self.save_changes
     end
-
-    def before_save
-      self.export_path ||= self.canonical_uuid
-      super
-    end
   end
 end

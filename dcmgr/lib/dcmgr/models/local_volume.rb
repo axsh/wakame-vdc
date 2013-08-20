@@ -10,5 +10,11 @@ module Dcmgr::Models
     def host_node
       self.instance.host_node
     end
+
+    private
+    def before_validation
+      self.path ||= self.volume.canonical_uuid
+      super
+    end
   end
 end
