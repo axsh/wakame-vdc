@@ -118,31 +118,25 @@ module Dcmgr
         }
       }
 
-      job :backup_image, proc {
+      job :backup_volume, proc {
         @inst_id = request.args[0]
-        @backupobject_id = request.args[1]
-        @image_id = request.args[2]
+        @volume_id = request.args[1]
+        @backupobject_id = request.args[2]
         @hva_ctx = HvaContext.new(self)
 
-        @hva_ctx.logger.info("Taking backup of the image: #{@image_id}, #{@backupobject_id}")
+        @hva_ctx.logger.info("Taking backup #{@backupobject_id} from the volume: #{@volume_id}")
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
-        @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
 
-        raise "Invalid instance state (expected running): #{@inst[:state]}" unless ['running', 'halted'].member?(@inst[:state].to_s)
-        #raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
-
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating}) do |req|
-          req.oneshot = true
-        end
-        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating}) do |req|
-          req.oneshot = true
+        @volume = @inst[:volume][@volume_id]
+        
+        raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
+        if @volume[:state].to_s == 'attached'
+          raise "Invalid instance state (expected running): #{@inst[:state]}" unless ['running', 'halted'].member?(@inst[:state].to_s)
         end
 
         begin
-          snap_filename = @hva_ctx.os_devpath
-
-          ev_callback = proc { |cmd, *value|
+          ev_callback = ProgressCallback.new { |cmd, *value|
             case cmd
             when :setattr
               # update checksum & allocation_size of the backup object
@@ -158,21 +152,83 @@ module Dcmgr
             else
               raise "Unknown callback command: #{cmd}"
             end
-          }.tap { |i|
-            i.instance_eval {
-              def setattr(checksum, alloc_size)
-                self.call(:setattr, checksum, alloc_size)
-              end
+          }
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating})
+        task_session.invoke(local_store_driver_class,
+                            :upload_volume, [@hva_ctx, @volume, @bo, ev_callback])
+        rescue => e
+          @hva_ctx.logger.error("Failed to upload image backup object: #{@backupobject_id}")
+          raise
+        end
+        
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
+        @hva_ctx.logger.info("Uploaded new backup object successfully: #{@backupobject_id}")
+      }, proc {
+        # TODO: need to clear generated temp files or remote files in remote snapshot repository.
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc}) do |req|
+          req.oneshot = true
+        end
+        @hva_ctx.logger.error("Failed to run backup_volume: #{@backupobject_id}")
+      }
 
-              def progress(percent)
-                if !(0.0 > percent.to_f)
-                  percent = 0
-                elsif 100.0 < percent.to_f
-                  percent = 100
-                end
-                self.call(:progress, percent)
+      class ProgressCallback
+        def initialize(&blk)
+          @callee = blk
+        end
+
+        def setattr(checksum, alloc_size)
+          @callee.call(:setattr, checksum, alloc_size)
+        end
+
+        def progress(percent)
+          if !(0.0 > percent.to_f)
+            percent = 0
+          elsif 100.0 < percent.to_f
+            percent = 100
+          end
+          @callee.call(:progress, percent)
+        end
+      end
+      
+      job :backup_image, proc {
+        @inst_id = request.args[0]
+        @backupobject_id = request.args[1]
+        @image_id = request.args[2]
+        @hva_ctx = HvaContext.new(self)
+
+        @hva_ctx.logger.info("Taking backup of the image: #{@image_id}, #{@backupobject_id}")
+        @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+        @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
+
+        raise "Invalid instance state (expected running): #{@inst[:state]}" unless ['running', 'halted'].member?(@inst[:state].to_s)
+        #raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
+
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating}) do |req|
+          req.oneshot = true
+        end
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating}) do |req|
+          req.oneshot = true
+        end
+
+        begin
+          snap_filename = @hva_ctx.os_devpath
+
+          ev_callback = ProgressCallback.new { |cmd, *value|
+            case cmd
+            when :setattr
+              # update checksum & allocation_size of the backup object
+              rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {
+                            :checksum=>value[0],
+                            :allocation_size => value[1],
+                          })
+            when :progress
+              # update upload progress of backup object
+              rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:progress=>value[0]}) do |req|
+                req.oneshot = true
               end
-            }
+            else
+              raise "Unknown callback command: #{cmd}"
+            end
           }
 
           @hva_ctx.logger.info("Uploading #{snap_filename} (#{@backupobject_id})")
