@@ -10,41 +10,46 @@ MetricLibs::Alarm.class_eval do
 
     $log.debug(notification_logs.dump)
 
+    message = {}
+    logs = []
+
     if notification_logs.length == 0
       $log.debug("Does now found notification logs")
-      return true
+    else
+      message[:notification_id] = @alarm_actions[:notification_id]
+      message[:message_type] = @alarm_actions[:message_type]
+
+      now = Time.now
+      start_time = now - @notification_periods
+      end_time = now
+
+      logs = notification_logs.find(start_time, end_time)
+
+      if logs.empty?
+        $log.debug("Does not found logs")
+        return true
+      end
+
+      logs = logs.collect {|l| l.value }
     end
 
-    now = Time.now
-    start_time = now - @notification_periods
-    end_time = now
-
-    logs = notification_logs.find(start_time, end_time)
-
-    if logs.empty?
-      $log.debug("Does not found logs")
-      return true
-    end
-
-    message = {
-      :notification_id => @alarm_actions[:notification_id],
-      :message_type => @alarm_actions[:message_type],
-      :params => {
-        :alert_engine => 'fluentd',
-        :state => 'alarm',
-        :alarm_id => @uuid,
-        :metric_name => @metric_name,
-        :resource_id => @resource_id,
-        :ipaddr => @ipaddr,
-        :match_value => @match_value,
-        :tag => @tag,
-        :logs => logs.collect {|l| l.value },
-        :display_name => @display_name
-      }
+    message[:params] = {
+      :alert_engine => 'fluentd',
+      :state => 'alarm',
+      :alarm_id => @uuid,
+      :metric_name => @metric_name,
+      :resource_id => @resource_id,
+      :ipaddr => @ipaddr,
+      :match_value => @match_value,
+      :tag => @tag,
+      :logs => logs,
+      :display_name => @display_name
     }
-
     DolphinClient::Event.post(message)
-    clear_notification_logs
+
+    if notification_logs.length > 0
+      clear_notification_logs
+    end
   end
 
   def add_notification_timer(timer)
