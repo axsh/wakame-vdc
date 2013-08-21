@@ -8,7 +8,9 @@ MetricLibs::Alarm.class_eval do
 
   def send_alarm_notification
 
-    if @notification_logs.nil?
+    $log.debug(notification_logs.dump)
+
+    if notification_logs.length == 0
       $log.debug("Does now found notification logs")
       return true
     end
@@ -17,10 +19,7 @@ MetricLibs::Alarm.class_eval do
     start_time = now - @notification_periods
     end_time = now
 
-    # for debug
-    @notification_logs.dump
-
-    logs = @notification_logs.find(start_time, end_time)
+    logs = notification_logs.find(start_time, end_time)
 
     if logs.empty?
       $log.debug("Does not found logs")
@@ -51,37 +50,26 @@ MetricLibs::Alarm.class_eval do
     @notification_timer = timer
   end
 
-  def update_to_repeating_timer(timer)
-    if @notification_timer.attached?
-      @notification_timer.detach
-    end
-    @notification_timer = timer
-  end
-
-  def clear_histories
-    if @timeseries.length > 0
-      $log.info("clear histories")
-      @timeseries = MetricLibs::TimeSeries.new
-    end
-  end
-
   def save_notification_logs
-
-    if @notification_logs.nil?
-      @notification_logs = MetricLibs::TimeSeries.new
-    end
-
     @last_evaluated_value.each.collect {|v|
-      @notification_logs.push({
+      notification_logs.push({
         :evaluated_value => v[:match_ranges].reverse.join("\n"),
         :evaluated_at => @last_evaluated_at
       })
     }
-    @timeseries = MetricLibs::TimeSeries.new
   end
 
   def clear_notification_logs
-    @notification_logs = nil
+    $log.info("clear notification logs #{uuid}")
+    @notification_logs.delete_all_since_at(Time.now)
+  end
+
+  def clear_alarm_logs
+    @timeseries = MetricLibs::TimeSeries.new
+  end
+
+  def notification_logs
+    @notification_logs ||= MetricLibs::TimeSeries.new
   end
 
 end
@@ -121,15 +109,17 @@ class LogAlarmManager < MetricLibs::AlarmManager
 
   def read_alarms
     alms = []
-    Dir.glob(File.join(@alarms_tmp_dir, '*')).each {|path|
-      data = File.read(File.join(path, ALARM_TMP_FILE))
-      alms << YAML.load(data)
+    Dir.glob(File.join(@alarms_tmp_dir, 'alm-*')).each {|path|
+      abs_path = File.join(path, ALARM_TMP_FILE)
+      if File.exists? abs_path
+        alms << YAML.load(File.read(abs_path))
+      end
     }
     alms
   end
 
   def create_alarm_file(uuid)
-    path = File.join(alarms_tmp_dir, uuid)
+    path = File.join(@alarms_tmp_dir, uuid)
     unless File.exists? path
       FileUtils.mkdir(path)
     end
@@ -143,22 +133,25 @@ class LogAlarmManager < MetricLibs::AlarmManager
   end
 
   def write_alarm_file(uuid)
-    path = File.join(alarms_tmp_dir, uuid, ALARM_TMP_FILE)
     alarm = get_alarm(uuid)
-    data = {
-      'alarm_id'  => alarm.uuid,
-    }.to_yaml
-    File.write(path, data)
+    $log.info("save alarm notification logs size #{alarm.notification_logs.length}")
+    if alarm.notification_logs.length > 0
+      notification_logs = alarm.notification_logs.find_all.collect{|log| log.value}
+      data = {
+        'alarm_id'  => alarm.uuid,
+        'notification_logs' => notification_logs,
+      }
+      $log.info(data)
+      File.write(File.join(alarms_tmp_dir, uuid, ALARM_TMP_FILE), data.to_yaml)
+    end
   end
 
   def delete_alarm_files
-    Dir.glob(File.join(@alarms_tmp_dir, '*')).each {|path|
-      File.rm(File.join(path, ALARM_TMP_FILE))
+    $log.info File.join(@alarms_tmp_dir, 'alm-*')
+    Dir.glob(File.join(@alarms_tmp_dir, 'alm-*')).each {|path|
+      $log.info(path)
+      FileUtils.rm_rf(path)
     }
-  end
-
-  def notify(uuid)
-    get_alarm(uuid).send_alarm_notification
   end
 
 end
@@ -183,26 +176,34 @@ module Fluent
       super
       require 'dolphin_client'
       require 'csv'
+      @monitor = Monitor.new
       @alarm_manager = LogAlarmManager.new
       @alarm_manager.alarms_tmp_dir = '/var/tmp/fluentd_alarms/'
+      @one_shot_signal = true
       set_signal_handlers
     end
 
+    def signal_hook(signal, &block)
+      @monitor.synchronize do
+        last_hook = Signal.trap(signal) do
+          if @one_shot_signal
+            block.call
+            last_hook.call if last_hook.respond_to?(:call)
+            @one_shot_signal = false
+          end
+        end
+      end
+    end
+
     def set_signal_handlers
-      Signal.trap(:HUP) {
-        $log.info('hup save alarms')
-        # @alarm_manager.save_alarms
+      signal_hook(:INT) {
+        $log.info('trap int signal handler')
+        @alarm_manager.save_alarms
       }
 
-      Signal.trap(:INT) {
-        $log.info('int save alarms')
-        exit!
-        # @alarm_manager.save_alarms
-      }
-
-      Signal.trap(:TERM) {
-        $log.info('term save alarms')
-        # @alarm_manager.save_alarms
+      signal_hook(:TERM) {
+        $log.info('trap term signal handler')
+        @alarm_manager.save_alarms
       }
     end
 
@@ -284,6 +285,19 @@ module Fluent
     def start
       $log.debug"text_matcher:start:#{Thread.current} :start"
 
+      # Load temporary alarms if fluentd has been terminated.
+      tmp_alarms = @alarm_manager.read_alarms
+      if tmp_alarms
+        tmp_alarms.each {|alm|
+          alarm = @alarm_manager.get_alarm(alm['alarm_id'])
+          alm['notification_logs'].each {|log|
+            alarm.notification_logs.push(log)
+          }
+          alarm.send_alarm_notification
+        }
+        @alarm_manager.delete_alarm_files
+      end
+
       @alarm_manager.find_log_alarm.each {|alarm|
         timer = watch_notification_timer({
           :interval => alarm.notification_periods,
@@ -312,9 +326,7 @@ module Fluent
     end
 
     def shutdown
-      if @loop.has_active_watchers?
-        @loop.stop
-      end
+      @loop.stop if @loop
       @thread.join
     end
 
@@ -352,6 +364,7 @@ module Fluent
         alm.evaluate
         info_alarm_log("Evaluated alarm", alm)
         alm.save_notification_logs
+        alm.clear_alarm_logs
       }
     end
 
