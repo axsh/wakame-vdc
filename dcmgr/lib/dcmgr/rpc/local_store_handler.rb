@@ -203,12 +203,8 @@ module Dcmgr
         raise "Invalid instance state (expected running): #{@inst[:state]}" unless ['running', 'halted'].member?(@inst[:state].to_s)
         #raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
 
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating}) do |req|
-          req.oneshot = true
-        end
-        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating}) do |req|
-          req.oneshot = true
-        end
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating})
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating})
 
         begin
           snap_filename = @hva_ctx.os_devpath
@@ -242,12 +238,8 @@ module Dcmgr
           raise
         end
 
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available}) do |req|
-          req.oneshot = true
-        end
-        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available}) do |req|
-          req.oneshot = true
-        end
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available})
         @hva_ctx.logger.info("Uploaded new image successfully: #{@image_id} #{@backupobject_id}")
 
       }, proc {
