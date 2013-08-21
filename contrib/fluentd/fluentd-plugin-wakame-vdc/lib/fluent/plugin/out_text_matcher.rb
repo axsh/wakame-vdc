@@ -265,21 +265,22 @@ module Fluent
           alarm_actions[:notification_id], alarm_actions[:message_type] = values[6].split(':')
           display_name = values[7]
 
-          alarm = {
-            :uuid => alarm_id,
-            :resource_id => resource_id,
-            :tag => tag,
-            :match_pattern => Regexp.new(match_pattern),
-            :match_value => match_pattern,
-            :notification_periods => notification_periods,
-            :enabled => enabled,
-            :alarm_actions => alarm_actions,
-            :metric_name => 'log',
-            :display_name => display_name
-          }
-
-          @alarm_manager.update(alarm)
-          $log.info("set alarm: #{alarm}")
+          if enabled
+            alarm = {
+              :uuid => alarm_id,
+              :resource_id => resource_id,
+              :tag => tag,
+              :match_pattern => Regexp.new(match_pattern),
+              :match_value => match_pattern,
+              :notification_periods => notification_periods,
+              :enabled => enabled,
+              :alarm_actions => alarm_actions,
+              :metric_name => 'log',
+              :display_name => display_name
+            }
+            @alarm_manager.update(alarm)
+            $log.info("set alarm: #{alarm}")
+          end
         end
       }
 
