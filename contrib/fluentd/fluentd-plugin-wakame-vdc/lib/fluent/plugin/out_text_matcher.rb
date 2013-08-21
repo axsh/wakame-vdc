@@ -4,6 +4,10 @@ require 'yaml'
 
 MetricLibs::Alarm.class_eval do
 
+  ALARM_ERRORS = {
+    1 => 'read alarm logs over the limit'
+  }.freeze
+
   attr_accessor :ipaddr, :notification_timer
 
   def send_alarm_notification
@@ -13,13 +17,11 @@ MetricLibs::Alarm.class_eval do
     message = {}
     logs = []
     match_count = 0
+    limit_log_size = 0
 
     if notification_logs.length == 0
       $log.debug("Does now found notification logs")
     else
-      message[:notification_id] = @alarm_actions[:notification_id]
-      message[:message_type] = @alarm_actions[:message_type]
-
       now = Time.now
       start_time = now - @notification_periods
       end_time = now
@@ -35,6 +37,15 @@ MetricLibs::Alarm.class_eval do
       match_count = logs.length
     end
 
+    if errors.count > 0 || notification_logs.length > 0
+      message[:notification_id] = @alarm_actions[:notification_id]
+      message[:message_type] = @alarm_actions[:message_type]
+    end
+
+    if @errors.has_key?(1)
+      limit_log_size = 1
+    end
+
     message[:params] = {
       :alert_engine => 'fluentd',
       :state => 'alarm',
@@ -46,13 +57,15 @@ MetricLibs::Alarm.class_eval do
       :tag => @tag,
       :logs => logs,
       :display_name => @display_name,
-      :match_count => match_count
+      :match_count => match_count,
+      :limit_log_size => limit_log_size
     }
     DolphinClient::Event.post(message)
 
     if notification_logs.length > 0
       clear_notification_logs
     end
+    reset_alarm
   end
 
   def add_notification_timer(timer)
@@ -79,6 +92,18 @@ MetricLibs::Alarm.class_eval do
 
   def notification_logs
     @notification_logs ||= MetricLibs::TimeSeries.new
+  end
+
+  def add_errors(no)
+    errors[no] = ALARM_ERRORS[no]
+  end
+
+  def errors
+    @errors ||= {}
+  end
+
+  def reset_alarm
+    @errors = {}
   end
 
 end
@@ -176,10 +201,6 @@ module Fluent
 
     # Parserd name key on fluent of Guest VM
     MATCH_KEY = 'message'.freeze
-
-    class ReadMessageBytesError < Exception; end
-
-    include MetricLibs::Constants::Alarm
 
     def initialize
       super
@@ -348,28 +369,25 @@ module Fluent
       ipaddr = sample['x_wakame_ipaddr']
       alarms = @alarm_manager.find_log_alarm(resource_id, instance_tag)
       messages = es.reverse_each.collect{|time, record| [time , record['message']]}
-      read_message_bytes = 0
 
-      begin
-        alarms.each{|alm|
-          messages.each {|time, message|
-            read_message_bytes += message.bytesize
-
-            if @max_read_message_bytes > read_message_bytes
-              raise ReadMessageBytesError
-            end
-
-            alm.ipaddr = ipaddr
+      alarms.each{|alm|
+        alm.ipaddr ||= ipaddr
+        read_message_bytes = 0
+        messages.each {|time, message|
+          read_message_bytes += message.bytesize
+          if (@max_read_message_bytes > read_message_bytes) || @max_read_message_bytes == -1
             alm.feed({
               'log' => message,
               'time' => Time.at(time)
             })
-          }
+          else
+            alm.add_errors(1)
+            $log.warn "can't read message bytes over #{@max_read_message_bytes} bytes for #{alm.uuid}"
+            break
+          end
         }
-      rescue ReadMessageBytesError => e
-        # TODO: error message send to dolphin.
-        $log.warn "Can't read message bytes over #{@max_read_message_bytes}."
-      end
+        $log.debug("read message #{read_message_bytes} bytes for #{alm.uuid}")
+      }
 
       alarms.each {|alm|
         alm.evaluate
