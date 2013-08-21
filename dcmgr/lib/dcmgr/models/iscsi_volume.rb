@@ -11,6 +11,10 @@ module Dcmgr::Models
       v = self.to_hash.merge(:storage_node=>iscsi_storage_node.to_hash)
     end
 
+    def storage_node
+      self.iscsi_storage_node
+    end
+
     private
     def before_validation
       self.path ||= self.volume.canonical_uuid

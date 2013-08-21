@@ -194,13 +194,25 @@ module Dcmgr::Models
     end
 
     def create_backup_object(account, &blk)
-      bo = BackupObject.create(:account_id => account.canonical_uuid,
-                               :service_type => self.service_type,
-                               :allocation_size=>self.size,
-                               :source_volume_id=>self.canonical_uuid,
-                               )
+      bo = BackupObject.new(:account_id => account.canonical_uuid,
+                            :service_type => self.service_type,
+                            :size=>self.size,
+                            :source_volume_id=>self.canonical_uuid,
+                            )
+      copy_attrs = proc { |src_bo|
+        bo.container_format = src_bo.container_format
+        bo.display_name = src_bo.display_name
+        bo.description = src_bo.description
+      }
+      
+      if self.backup_object
+        self.backup_object.tap(&copy_attrs)
+      elsif self.instance && self.instance.image.backup_object
+        self.instance.image.backup_object.tap(&copy_attrs)
+      end
+      
       blk.call(bo)
-      bo.save_changes
+      bo.save
       bo
     end
     

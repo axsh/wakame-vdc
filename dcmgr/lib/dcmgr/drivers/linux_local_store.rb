@@ -124,6 +124,96 @@ module Dcmgr
         }
       end
 
+      def upload_volume(ctx, volume, bo, evcb)
+        @ctx = ctx
+        @bo = bo
+
+        Task::TaskSession.current[:backup_storage] = bo[:backup_storage]
+        @bkst_drv_class = BackupStorage.driver_class(bo[:backup_storage][:storage_type])
+
+        @snapshot_path = take_snapshot_for_backup(@ctx.volume_path(volume))
+        logger.info("#{@snapshot_path}")
+        
+        # upload image file
+        if @bkst_drv_class.include?(BackupStorage::CommandAPI)
+          archive_from_snapshot(@ctx, @snapshot_path) do |cmd_tuple, chksum_path, size_path|
+            cmd_tuple2 = invoke_task(@bkst_drv_class,
+                                     :upload_command, [nil, bo])
+
+            cmd_tuple[0] << " | " + cmd_tuple2[0]
+            cmd_tuple[1] += cmd_tuple2[1]
+            logger.info("Executing command line: " + shell.format_tuple(*cmd_tuple))
+            stderr_buf=""
+            r = shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
+              sin.close
+
+              begin
+                while l = eout.readline
+                  if l =~ /(\d+)/
+                    evcb.progress($1.to_f)
+                  end
+                  stderr_buf << l
+                end
+              rescue EOFError
+                # ignore this error
+              end
+              
+            end
+            unless r.exitstatus == 0
+              raise "Failed to run archive & upload command: exitcode=#{r.exitstatus}\n#{stderr_buf}"
+            end
+
+            chksum = File.read(chksum_path).split(/\s+/).first
+            alloc_size = File.read(size_path).split(/\s+/).first
+
+            evcb.setattr(chksum, alloc_size.to_i)
+          end
+        else
+          archive_from_snapshot(@ctx, @snapshot_path) do |cmd_tuple, chksum_path, size_path|
+            bkup_tmp = Tempfile.new(volume[:uuid], download_tmp_dir)
+            begin
+              bkup_tmp.close(false)
+
+              cmd_tuple[0] << "> %s"
+              cmd_tuple[1] += [bkup_tmp.path]
+              logger.info("Executing command line: " + shell.format_tuple(*cmd_tuple))
+              stderr_buf=""
+              r = shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
+                sin.close
+
+                begin
+                  while l = eout.readline
+                    if l =~ /(\d+)/
+                      evcb.progress($1.to_f)
+                    end
+                    stderr_buf << l
+                  end
+                rescue EOFError
+                  # ignore this error
+                end
+              end
+              unless r.exitstatus == 0
+                raise "Failed to run archive command: exitcode=#{r.exitstatus}\n#{stderr_buf}"
+              end
+
+              alloc_size = File.size(bkup_tmp.path)
+              chksum = File.read(chksum_path).split(/\s+/).first
+
+              evcb.setattr(chksum, alloc_size.to_i)
+
+              invoke_task(@bkst_drv_class,
+                          :upload, [bkup_tmp.path, bo])
+            ensure
+              bkup_tmp.unlink rescue nil
+            end
+          end
+        end
+
+        evcb.progress(100)
+      ensure
+        clean_snapshot_for_backup()
+      end
+      
       def upload_image(inst, ctx, bo, evcb)
         @ctx = ctx
         @bo = bo
