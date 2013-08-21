@@ -175,15 +175,12 @@ class LogAlarmManager < MetricLibs::AlarmManager
         'alarm_id'  => alarm.uuid,
         'notification_logs' => notification_logs,
       }
-      $log.info(data)
       File.write(File.join(alarms_tmp_dir, uuid, ALARM_TMP_FILE), data.to_yaml)
     end
   end
 
   def delete_alarm_files
-    $log.info File.join(@alarms_tmp_dir, 'alm-*')
     Dir.glob(File.join(@alarms_tmp_dir, 'alm-*')).each {|path|
-      $log.info(path)
       FileUtils.rm_rf(path)
     }
   end
