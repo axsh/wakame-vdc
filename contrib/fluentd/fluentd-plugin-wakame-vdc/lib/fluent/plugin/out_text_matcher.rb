@@ -38,7 +38,8 @@ MetricLibs::Alarm.class_eval do
         :ipaddr => @ipaddr,
         :match_value => @match_value,
         :tag => @tag,
-        :logs => logs.collect {|l| l.value }
+        :logs => logs.collect {|l| l.value },
+        :display_name => @display_name
       }
     }
 
@@ -236,6 +237,7 @@ module Fluent
           notification_periods = values[4].to_i
           enabled = values[5] == 'true' ? true : false
           alarm_actions[:notification_id], alarm_actions[:message_type] = values[6].split(':')
+          display_name = values[7]
 
           alarm = {
             :uuid => alarm_id,
@@ -246,7 +248,8 @@ module Fluent
             :notification_periods => notification_periods,
             :enabled => enabled,
             :alarm_actions => alarm_actions,
-            :metric_name => 'log'
+            :metric_name => 'log',
+            :display_name => display_name
           }
 
           @alarm_manager.update(alarm)
