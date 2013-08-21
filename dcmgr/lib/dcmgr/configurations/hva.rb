@@ -157,6 +157,7 @@ module Dcmgr
       param :logging_service_reload, :default => '/etc/init.d/td-agent reload'
       param :enable_gre, :default=>false
       param :enable_subnet, :default=>false
+      param :netfilter_script_post_flush, :default=>nil
 
       param :brctl_path, :default => '/usr/sbin/brctl'
       param :ovs_run_dir, :default=>'/usr/var/run/openvswitch'
