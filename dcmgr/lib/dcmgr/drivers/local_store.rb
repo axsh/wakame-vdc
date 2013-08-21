@@ -29,6 +29,11 @@ module Dcmgr
         raise NotImplementedError
       end
 
+      # upload volume as backup object.
+      def upload_volume(ctx, bo, ev_callback)
+        raise NotImplementedError
+      end
+
       def self.driver_class(hypervisor_name)
         Hypervisor.driver_class(hypervisor_name).local_store_class
       end
