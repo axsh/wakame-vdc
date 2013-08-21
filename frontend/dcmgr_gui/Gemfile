@@ -7,7 +7,7 @@ gem 'oauth','0.4.7'
 gem 'nokogiri', '1.6.0'
 gem 'rake', '~> 10.1.0'
 gem 'thor'
-gem 'mysql2','0.3.11'
+gem 'mysql2','0.3.12'
 gem 'ripl'
 gem 'rack-cors', :require => 'rack/cors'
 
