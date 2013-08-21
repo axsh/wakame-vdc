@@ -12,6 +12,7 @@ MetricLibs::Alarm.class_eval do
 
     message = {}
     logs = []
+    match_count = 0
 
     if notification_logs.length == 0
       $log.debug("Does now found notification logs")
@@ -31,6 +32,7 @@ MetricLibs::Alarm.class_eval do
       end
 
       logs = logs.collect {|l| l.value }
+      match_count = logs.length
     end
 
     message[:params] = {
@@ -43,7 +45,8 @@ MetricLibs::Alarm.class_eval do
       :match_value => @match_value,
       :tag => @tag,
       :logs => logs,
-      :display_name => @display_name
+      :display_name => @display_name,
+      :match_count => match_count
     }
     DolphinClient::Event.post(message)
 
