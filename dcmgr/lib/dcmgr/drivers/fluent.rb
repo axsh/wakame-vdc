@@ -1,3 +1,5 @@
+require "csv"
+
 module Dcmgr
   module Drivers
     class Fluent
@@ -12,6 +14,7 @@ module Dcmgr
         @template_file_name = 'fluent.conf'
         @output_file = Dcmgr.conf.logging_service_conf
         @dolphin_server_uri = Dcmgr.conf.dolphin_server_uri
+        @max_read_message_bytes = Dcmgr.conf.logging_service_max_read_message_bytes
       end
 
       def set_alarms(alm)
@@ -25,7 +28,8 @@ module Dcmgr
           values << a[:notification_periods]
           values << a[:enabled]
           values << a[:alarm_action]
-          @alarms << values.join(',')
+          values << a[:display_name]
+          @alarms << values.to_csv.strip
         end
       end
 
