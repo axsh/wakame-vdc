@@ -30,7 +30,7 @@ build: build-stamp
 build-stamp: ruby-build bundle-install
 	touch $@
 ruby-build:
-	CURDIR=${CURDIR} make build
+	yum search wakame-vdc-ruby | egrep -q wakame-vdc-ruby && { yum install -y wakame-vdc-ruby; } || { CURDIR=${CURDIR} make build; }
 
 bundle-install: bundle-install-stamp
 bundle-install-stamp:
