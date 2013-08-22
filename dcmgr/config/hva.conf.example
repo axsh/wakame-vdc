@@ -105,3 +105,10 @@ capture {
   timeout_sec 10
   retry_count 1
 }
+
+# Add a parameter to be set to GuestOS startup.
+# For example, if you want to add a host name and ip address to etc hosts.
+#
+metadata {
+  path 'extra-hosts/fluent.local', '192.168.1.101'
+}
