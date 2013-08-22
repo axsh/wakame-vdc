@@ -46,7 +46,6 @@ module Dcmgr
       def update_volume_state_to_available
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:available,
-                      :host_device_name=>nil,
                       :instance_id=>nil,
                       :detached_at => Time.now.utc,
                     })
@@ -162,7 +161,6 @@ module Dcmgr
         @inst[:volume].values.each { |v|
           rpc.request('sta-collector', 'update_volume', v[:uuid], {
                         :state=>:deleted,
-                        :host_device_name=>nil,
                         :instance_id=>nil,
                         :detached_at => Time.now.utc,
                       })
