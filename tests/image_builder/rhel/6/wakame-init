@@ -203,6 +203,20 @@ _IFCFG
   ;;
 esac | logger
 
+# Setup etc hosts.
+host_path=${METADATA_DRIVE_MOUNTPOINT}/meta-data/extra-hosts
+if [ -d ${host_path} ]; then
+  for i in `ls ${host_path}/*`; do
+    hostname=`basename $i`
+    hostip=`cat $i`
+    egrep -q ^${hostname} /etc/hosts && {
+      sed -i "s,^${hostname}.*,${hostname} ${hostip}", /etc/hosts
+    } || {
+      echo "${hostname} ${hostip}" >> /etc/hosts
+    }
+  done
+fi
+
 #Add the metadata server to the routing table
 #for i in {1..1200}; do
 #  DEFAULT_GW=`ip route get 8.8.8.8 | head -n 1 | cut -d ' ' -f3`
