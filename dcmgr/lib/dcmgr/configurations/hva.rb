@@ -87,6 +87,23 @@ module Dcmgr
         end
       end
 
+      # Add a parameter to be set to GuestOS startup.
+      # For example, if you want to add a host name and ip address to etc hosts.
+      #
+      # metadata {
+      #   path 'extra-hosts/fluent.local', '192.168.1.101'
+      # }
+      class Metadata < Fuguta::Configuration
+        DSL do
+          def path(key,value)
+            @config[key] = value
+          end
+        end
+
+        def validate(errors)
+        end
+      end
+
       def hypervisor_driver(driver_class)
         if driver_class.is_a?(Class) && driver_class < (Drivers::Hypervisor)
           # TODO: do not create here. the configuration object needs to be attached in earlier phase.
@@ -120,6 +137,11 @@ module Dcmgr
           @config[:capture].parse_dsl(&blk)
         end
 
+        # metadata configuration section.
+        def metadata(&blk)
+          @config[:metadata].parse_dsl(&blk)
+        end
+
         # hypervisor_driver configuration section.
         def hypervisor_driver(driver_type, &blk)
           c = Drivers::Hypervisor.driver_class(driver_type)
@@ -135,6 +157,7 @@ module Dcmgr
         @config[:local_store] = LocalStore.new(self)
         @config[:backup_storage] = BackupStorage.new(self)
         @config[:capture] = Capture.new(self)
+        @config[:metadata] = Metadata.new(self)
         @config[:hypervisor_driver] = {}
       end
 
