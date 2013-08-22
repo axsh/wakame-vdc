@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
@@ -204,15 +205,15 @@ _IFCFG
 esac | logger
 
 # Setup etc hosts.
-host_path=${METADATA_DRIVE_MOUNTPOINT}/meta-data/extra-hosts
+host_path="${METADATA_DRIVE_MOUNTPOINT}/meta-data/extra-hosts"
 if [ -d ${host_path} ]; then
   for i in `ls ${host_path}/*`; do
     hostname=`basename $i`
     hostip=`cat $i`
-    egrep -q ^${hostname} /etc/hosts && {
-      sed -i "s,^${hostname}.*,${hostname} ${hostip}", /etc/hosts
+    egrep -w -q ^.*${hostname} /etc/hosts && {
+      sed -i "s,^.*${hostname},${hostip} ${hostname}", /etc/hosts
     } || {
-      echo "${hostname} ${hostip}" >> /etc/hosts
+      echo "${hostip} ${hostname}" >> /etc/hosts
     }
   done
 fi
