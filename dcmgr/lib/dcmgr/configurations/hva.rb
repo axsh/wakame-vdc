@@ -96,11 +96,15 @@ module Dcmgr
       class Metadata < Fuguta::Configuration
         DSL do
           def path(key,value)
-            @config[key] = value
+            @config[:path_list][key] = value
           end
         end
 
         def validate(errors)
+        end
+
+        def after_initialize
+          @config[:path_list] = {}
         end
       end
 

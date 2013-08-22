@@ -290,7 +290,7 @@ module Dcmgr
             "network/interfaces/macs/#{mac}/x-metric" => vnic[:ipv4][:network][:metric],
           })
         }
-        Dcmgr.conf.metadata.config.each {|k,v|
+        Dcmgr.conf.metadata.path_list.each {|k,v|
           metadata_items.merge!({"#{k}" => v})
         }
         if @inst[:ssh_key_data]
