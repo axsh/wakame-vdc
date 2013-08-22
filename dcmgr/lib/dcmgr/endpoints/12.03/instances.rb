@@ -564,6 +564,20 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     respond_with(R::Instance.new(instance).generate)
   end
 
+  def find_target_backup_storage(instance=@instance)
+    # backup storage can be chosen in the order of:
+    #   1. query string
+    #   2. service type section in dcmgr.conf
+    #   3. same location as original backup object.
+    bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[instance.service_type].backup_storage_id
+    if bkst_uuid
+      M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
+    else
+      # 3rd case.
+      nil
+    end
+  end
+  
   # Create image backup from the alive instance.
   quota 'backup_object.count'
   quota 'image.count'
@@ -575,37 +589,40 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
   end
   put '/:id/backup' do
-    instance = find_by_uuid(:Instance, params[:id])
-    raise E::InvalidInstanceState, instance.state unless ['halted'].member?(instance.state)
+    instance = @instance = find_by_uuid(:Instance, params[:id])
+    raise E::InvalidInstanceState, @instance.state unless ['halted'].member?(@instance.state)
 
-    # backup storage can be chosen in the order of:
-    #   1. query string
-    #   2. service type section in dcmgr.conf
-    #   3. same location as original backup object.
-    bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[instance.service_type].backup_storage_id
-    bkst = if bkst_uuid
-             bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
-           else
-             # 3rd case.
-             nil
-           end
+    bkst = find_target_backup_storage
 
     boot_bko = nil
     bko_list = []
-    instance.volumes_dataset.attached.each { |v|
-      bo = v.create_backup_object(@account) do |b|
+
+    if params[:all]
+      instance.volumes_dataset.attached.each { |v|
+        bo = v.create_backup_object(@account) do |b|
+          b.state = C::BackupObject::STATE_PENDING
+          if bkst
+            b.backup_storage = bkst
+          end
+        end
+        
+        if instance.boot_volume_id == v.canonical_uuid
+          boot_bko = bo
+        end
+        
+        bko_list << bo
+      }
+    else
+      # only takes backup for the boot volume. (default behavior)
+      bo = instance.boot_volume.create_backup_object(@account) do |b|
         b.state = C::BackupObject::STATE_PENDING
         if bkst
           b.backup_storage = bkst
         end
       end
-
-      if instance.boot_volume_id == v.canonical_uuid
-        boot_bko = bo
-      end
-
+      boot_bko = bo
       bko_list << bo
-    }
+    end
 
     image = instance.image.entry_clone do |i|
       [:display_name, :description, :is_public, :is_cacheable].each { |k|
@@ -767,11 +784,28 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       if @volume.instance != @instance
         raise E::UnknownVolume, @volume.canonical_uuid
       end
+
+      bkst = find_target_backup_storage
+      
       bo = @volume.create_backup_object(@volume.account) do |b|
+        b.state = C::BackupObject::STATE_PENDING
+        if bkst
+          b.backup_storage = bkst
+        end
       end
 
       on_after_commit do
+        if @volume.local_volume?
+          Dcmgr.messaging.submit("local-store-handle.#{@instance.host_node.node_id}", 'backup_volume',
+                                 @instance.canonical_uuid, @volume.canonical_uuid, bo.canonical_uuid)
+        else
+          Dcmgr.messaging.submit("sta-handle.#{@volume.volume_device.storage_node.node_id}", 'backup_volume',
+                                 @volume.canonical_uuid, bo.canonical_uuid)
+        end
       end
+      respond_with({:volume_id=>@volume.canonical_uuid,
+                     :backup_object_id => bo.canonical_uuid,
+                   })
     end
   end
 end
