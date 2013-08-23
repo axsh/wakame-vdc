@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'json'
+require 'yaml'
 require 'extlib/blank'
 
 require 'sinatra/respond_with'
@@ -43,12 +44,10 @@ module Sinatra
         rpi = request.path_info.sub(%r{\.([^\./]+)$}, '')
         ext = $1
         if ext
-          (settings.mime_types(ext) || []).each.each { |i|
-            request.accept.unshift(i)
-          }
+          self.content_type(settings.mime_types(".#{ext}").first || DEFAULT_OUTPUT_CONTENT_TYPE)
           request.path_info = rpi
         else
-          request.accept.unshift(DEFAULT_OUTPUT_CONTENT_TYPE)
+          self.content_type(DEFAULT_OUTPUT_CONTENT_TYPE)
         end
       end
 
