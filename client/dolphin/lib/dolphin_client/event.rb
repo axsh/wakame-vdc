@@ -6,8 +6,15 @@ module DolphinClient
     class << self
       def post(data)
         client = API.new
-        client.headers.update "X-Notification-Id" => data[:notification_id]
-        client.headers.update "X-Message-Type" => data[:message_type]
+
+        if data[:notification_id]
+          client.headers.update "X-Notification-Id" => data[:notification_id]
+        end
+
+        if data[:message_type]
+          client.headers.update "X-Message-Type" => data[:message_type]
+        end
+
         client.post_events {|request|
           request.uri = DolphinClient.domain + request.uri.to_s
           request.json data[:params]

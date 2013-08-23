@@ -1,39 +1,120 @@
 # -*- encoding: utf-8 -*-
 require 'metric_libs'
+require 'yaml'
 
 MetricLibs::Alarm.class_eval do
 
-  attr_accessor :ipaddr
+  ALARM_ERRORS = {
+    1 => 'read alarm logs over the limit'
+  }.freeze
+
+  attr_accessor :ipaddr, :notification_timer
 
   def send_alarm_notification
-    logs = @last_evaluated_value.collect {|v|
-      {
-        :evaluated_value => v[:match_ranges].reverse.join("\n"),
-        :evaluated_at => @last_evaluated_at
-      }
-    }
 
-    message = {
-      :notification_id => @alarm_actions[:notification_id],
-      :message_type => @alarm_actions[:message_type],
-      :params => {
-        :alert_engine => 'fluentd',
-        :state => 'alarm',
-        :alarm_id => @uuid,
-        :metric_name => @metric_name,
-        :resource_id => @resource_id,
-        :ipaddr => @ipaddr,
-        :match_value => @match_value,
-        :tag => @tag,
-        :logs => logs
-      }
+    $log.debug(notification_logs.dump)
+
+    message = {}
+    logs = []
+    match_count = 0
+    limit_log_size = 0
+
+    if notification_logs.length == 0
+      $log.debug("Does now found notification logs")
+    else
+      now = Time.now
+      start_time = now - @notification_periods
+      end_time = now
+
+      logs = notification_logs.find(start_time, end_time)
+
+      if logs.empty?
+        $log.debug("Does not found logs")
+        return true
+      end
+
+      logs = logs.collect {|l| l.value }
+      match_count = logs.length
+    end
+
+    if errors.count > 0 || notification_logs.length > 0
+      message[:notification_id] = @alarm_actions[:notification_id]
+      message[:message_type] = @alarm_actions[:message_type]
+    end
+
+    if @errors.has_key?(1)
+      limit_log_size = 1
+    end
+
+    message[:params] = {
+      :alert_engine => 'fluentd',
+      :state => 'alarm',
+      :alarm_id => @uuid,
+      :metric_name => @metric_name,
+      :resource_id => @resource_id,
+      :ipaddr => @ipaddr,
+      :match_value => @match_value,
+      :tag => @tag,
+      :logs => logs,
+      :display_name => @display_name,
+      :match_count => match_count,
+      :limit_log_size => limit_log_size
     }
     DolphinClient::Event.post(message)
+
+    if notification_logs.length > 0
+      clear_notification_logs
+    end
+    reset_alarm
   end
+
+  def add_notification_timer(timer)
+    @notification_timer = timer
+  end
+
+  def save_notification_logs
+    @last_evaluated_value.each.collect {|v|
+      notification_logs.push({
+        :evaluated_value => v[:match_ranges].reverse.join("\n"),
+        :evaluated_at => @last_evaluated_at
+      })
+    }
+  end
+
+  def clear_notification_logs
+    $log.info("clear notification logs #{uuid}")
+    @notification_logs.delete_all_since_at(Time.now)
+  end
+
+  def clear_alarm_logs
+    @timeseries = MetricLibs::TimeSeries.new
+  end
+
+  def notification_logs
+    @notification_logs ||= MetricLibs::TimeSeries.new
+  end
+
+  def add_errors(no)
+    errors[no] = ALARM_ERRORS[no]
+  end
+
+  def errors
+    @errors ||= {}
+  end
+
+  def reset_alarm
+    @errors = {}
+  end
+
 end
 
 class LogAlarmManager < MetricLibs::AlarmManager
   include MetricLibs::Constants::Alarm
+
+  attr_reader :alarms_tmp_dir
+
+  ALARM_TMP_FILE = 'tmp.yaml'.freeze
+
   def find_log_alarm(resource_id=nil, tag=nil)
     if resource_id.nil?
       alarms = @manager.values
@@ -53,12 +134,55 @@ class LogAlarmManager < MetricLibs::AlarmManager
     alarms.collect {|a| a[:alarm]}
   end
 
-  def clear_histories(uuid)
-    get_alarm(uuid).instance_variable_set(:@timeseries, MetricLibs::TimeSeries.new)
+  def save_alarms
+    @manager.values.each {|v|
+      create_alarm_file(v[:alarm].uuid)
+      write_alarm_file(v[:alarm].uuid)
+    }
   end
 
-  def get_alarm_hitories(uuid)
-    get_alarm(uuid).instance_variable_get(:@timeseries)
+  def read_alarms
+    alms = []
+    Dir.glob(File.join(@alarms_tmp_dir, 'alm-*')).each {|path|
+      abs_path = File.join(path, ALARM_TMP_FILE)
+      if File.exists? abs_path
+        alms << YAML.load(File.read(abs_path))
+      end
+    }
+    alms
+  end
+
+  def create_alarm_file(uuid)
+    path = File.join(@alarms_tmp_dir, uuid)
+    unless File.exists? path
+      FileUtils.mkdir(path)
+    end
+  end
+
+  def alarms_tmp_dir=(path)
+    @alarms_tmp_dir = path
+    unless File.exists? path
+      FileUtils.mkdir(path)
+    end
+  end
+
+  def write_alarm_file(uuid)
+    alarm = get_alarm(uuid)
+    $log.info("save alarm notification logs size #{alarm.notification_logs.length}")
+    if alarm.notification_logs.length > 0
+      notification_logs = alarm.notification_logs.find_all.collect{|log| log.value}
+      data = {
+        'alarm_id'  => alarm.uuid,
+        'notification_logs' => notification_logs,
+      }
+      File.write(File.join(alarms_tmp_dir, uuid, ALARM_TMP_FILE), data.to_yaml)
+    end
+  end
+
+  def delete_alarm_files
+    Dir.glob(File.join(@alarms_tmp_dir, 'alm-*')).each {|path|
+      FileUtils.rm_rf(path)
+    }
   end
 
 end
@@ -69,21 +193,51 @@ module Fluent
 
     config_param :dolphin_server_uri
     config_param :tag, :string, :default => 'textmatch'
+    config_param :max_read_message_bytes, :integer, :default => -1
     # config_param :alarm1, :string
 
     # Parserd name key on fluent of Guest VM
     MATCH_KEY = 'message'.freeze
 
-    include MetricLibs::Constants::Alarm
-
     def initialize
       super
       require 'dolphin_client'
+      require 'csv'
+      @monitor = Monitor.new
       @alarm_manager = LogAlarmManager.new
+      @alarm_manager.alarms_tmp_dir = '/var/tmp/fluentd_alarms/'
+      @one_shot_signal = true
+      set_signal_handlers
+    end
+
+    def signal_hook(signal, &block)
+      @monitor.synchronize do
+        last_hook = Signal.trap(signal) do
+          if @one_shot_signal
+            block.call
+            last_hook.call if last_hook.respond_to?(:call)
+            @one_shot_signal = false
+          end
+        end
+      end
+    end
+
+    def set_signal_handlers
+      signal_hook(:INT) {
+        $log.info('trap int signal handler')
+        @alarm_manager.save_alarms
+      }
+
+      signal_hook(:TERM) {
+        $log.info('trap term signal handler')
+        @alarm_manager.save_alarms
+      }
     end
 
     def configure(conf)
       $log.info("Load config: #{conf}")
+      $log.info("max_read_message_bytes=\"#{@max_read_message_bytes}\"")
+
       alarm_pattern = /^alarm([0-9]+)$/
       Fluent::TextMatcherOutput.module_eval do
         conf.each {|k ,v|
@@ -100,9 +254,8 @@ module Fluent
       config.each {|k ,v|
         if k.match(alarm_pattern)
 
-          values = v.split(',', 8)
+          values = CSV.parse_line(v)
           alarm_actions = {}
-
           resource_id = values[0]
           alarm_id = values[1]
           tag = values[2]
@@ -110,21 +263,24 @@ module Fluent
           notification_periods = values[4].to_i
           enabled = values[5] == 'true' ? true : false
           alarm_actions[:notification_id], alarm_actions[:message_type] = values[6].split(':')
+          display_name = values[7]
 
-          alarm = {
-            :uuid => alarm_id,
-            :resource_id => resource_id,
-            :tag => tag,
-            :match_pattern => Regexp.new(match_pattern),
-            :match_value => match_pattern,
-            :notification_periods => notification_periods,
-            :enabled => enabled,
-            :alarm_actions => alarm_actions,
-            :metric_name => 'log'
-          }
-
-          @alarm_manager.update(alarm)
-          $log.info("Set alarm: #{alarm}")
+          if enabled
+            alarm = {
+              :uuid => alarm_id,
+              :resource_id => resource_id,
+              :tag => tag,
+              :match_pattern => Regexp.new(match_pattern),
+              :match_value => match_pattern,
+              :notification_periods => notification_periods,
+              :enabled => enabled,
+              :alarm_actions => alarm_actions,
+              :metric_name => 'log',
+              :display_name => display_name
+            }
+            @alarm_manager.update(alarm)
+            $log.info("set alarm: #{alarm}")
+          end
         end
       }
 
@@ -159,21 +315,48 @@ module Fluent
     def start
       $log.debug"text_matcher:start:#{Thread.current} :start"
 
-      @alarm_manager.find_log_alarm.each {|alarm|
-        if alarm.enabled?
-          user_notification_timer = TimerWatcher.new(alarm.to_hash["notification_periods"], true) {
+      # Load temporary alarms if fluentd has been terminated.
+      tmp_alarms = @alarm_manager.read_alarms
+      if tmp_alarms
+        tmp_alarms.each {|alm|
+          alarm = @alarm_manager.get_alarm(alm['alarm_id'])
+          alm['notification_logs'].each {|log|
+            alarm.notification_logs.push(log)
           }
-          @loop.attach(user_notification_timer)
-        end
+          alarm.send_alarm_notification
+        }
+        @alarm_manager.delete_alarm_files
+      end
+
+      @alarm_manager.find_log_alarm.each {|alarm|
+        timer = watch_notification_timer({
+          :interval => alarm.notification_periods,
+          :repeating => true,
+          :alarm => alarm
+        })
+        alarm.add_notification_timer(timer)
       }
 
+      init_timer = TimerWatcher.new(1, false) {
+        $log.info('init timer')
+      }
+
+      @loop.attach(init_timer)
       @thread = Thread.new(&method(:run))
     end
 
+    def watch_notification_timer(data)
+      $log.debug("set notification timer interval(#{data[:interval]}), repeating(#{data[:repeating]}), alarm(#{data[:alarm_id]})")
+      timer = TimerWatcher.new(data[:interval], data[:repeating]) {
+        $log.debug("call notification timer on #{data[:alarm_id]}")
+        data[:alarm].send_alarm_notification
+      }
+      @loop.attach(timer)
+      timer
+    end
+
     def shutdown
-      if @loop.has_active_watchers?
-        @loop.stop
-      end
+      @loop.stop if @loop
       @thread.join
     end
 
@@ -186,31 +369,29 @@ module Fluent
       messages = es.reverse_each.collect{|time, record| [time , record['message']]}
 
       alarms.each{|alm|
+        alm.ipaddr ||= ipaddr
+        read_message_bytes = 0
         messages.each {|time, message|
-          alm.ipaddr = ipaddr
-          alm.feed({
-            'log' => message,
-            'time' => Time.at(time)
-          })
+          read_message_bytes += message.bytesize
+          if (@max_read_message_bytes > read_message_bytes) || @max_read_message_bytes == -1
+            alm.feed({
+              'log' => message,
+              'time' => Time.at(time)
+            })
+          else
+            alm.add_errors(1)
+            $log.warn "can't read message bytes over #{@max_read_message_bytes} bytes for #{alm.uuid}"
+            break
+          end
         }
+        $log.debug("read message #{read_message_bytes} bytes for #{alm.uuid}")
       }
 
-      # evaluate
       alarms.each {|alm|
         alm.evaluate
         info_alarm_log("Evaluated alarm", alm)
-      }
-
-      # notification
-      alarms.each {|alm|
-        alm.send_alarm_notification
-        info_alarm_log("Notify alarm", alm)
-      }
-
-      # clear alarm histories
-      alarms.each {|alm|
-        @alarm_manager.clear_histories(alm.uuid)
-        $log.info("Clear alarm", alm.uuid)
+        alm.save_notification_logs
+        alm.clear_alarm_logs
       }
     end
 
@@ -226,7 +407,8 @@ module Fluent
         :tag => alarm.tag,
         :alarm_actions => alarm.alarm_actions,
         :ipaddr => alarm.ipaddr,
-        :match_value => alarm.match_value
+        :match_value => alarm.match_value,
+        :last_evaluated_at => alarm.last_evaluated_at
       }
       $log.info("#{message}: #{alarm_values}")
     end
