@@ -206,14 +206,17 @@ esac | logger
 # Setup etc hosts.
 host_path="${METADATA_DRIVE_MOUNTPOINT}/meta-data/extra-hosts"
 if [ -d ${host_path} ]; then
+  comment="# wakame may rewrite after this line. Please do not add after this line."
+  egrep -w -q "${comment}" /etc/hosts && {
+    cat /etc/hosts | sed -n "1,/^${comment}$/p" > /tmp/hosts
+    mv /tmp/hosts /etc/hosts
+  } || {
+    echo ${comment} >> /etc/hosts
+  }
   for i in `ls ${host_path}/*`; do
     hostname=`basename $i`
     hostip=`cat $i`
-    egrep -w -q ^.*${hostname} /etc/hosts && {
-      sed -i "s,^.*${hostname},${hostip} ${hostname}", /etc/hosts
-    } || {
-      echo "${hostip} ${hostname}" >> /etc/hosts
-    }
+    echo "${hostip} ${hostname}" >> /etc/hosts
   done
 fi
 
