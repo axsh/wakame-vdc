@@ -207,7 +207,7 @@ esac | logger
 host_path="${METADATA_DRIVE_MOUNTPOINT}/meta-data/extra-hosts"
 if [ -d ${host_path} ]; then
   comment="# Please do not modify lines from here by your hand since wakame-init will place entries from metadata."
-  egrep -w -q "^${comment}" /etc/hosts && {
+  egrep -w -q "^${comment}$" /etc/hosts && {
     sed -n "1,/^${comment}$/p" /etc/hosts > /tmp/hosts
     mv /tmp/hosts /etc/hosts
   } || {
