@@ -206,7 +206,7 @@ esac | logger
 # Setup etc hosts.
 host_path="${METADATA_DRIVE_MOUNTPOINT}/meta-data/extra-hosts"
 if [ -d ${host_path} ]; then
-  comment="# wakame may rewrite after this line. Please do not add after this line."
+  comment="# Please do not modify lines from here by your hand since wakame-init will place entries from metadata."
   egrep -w -q "${comment}" /etc/hosts && {
     sed -n "1,/^${comment}$/p" /etc/hosts > /tmp/hosts
     mv /tmp/hosts /etc/hosts
