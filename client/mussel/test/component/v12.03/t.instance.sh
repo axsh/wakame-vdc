@@ -344,6 +344,22 @@ function test_instance_poweroff() {
                "curl -X PUT $(urlencode_data ${params}) $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
+### show-volumes
+
+function test_instance_show_volumes() {
+  assertEquals "curl -X GET $(base_uri)/${namespace}s/${uuid}/volumes.$(suffix)" \
+               "$(cli_wrapper ${namespace} 'show_volumes' ${uuid})"
+               
+}
+
+### backup-volumes
+
+function test_instance_backup_volume() {
+  assertEquals "curl -X PUT $(base_uri)/${namespace}s/${uuid}/volumes/vol-xxxxx/backup.$(suffix)" \
+               "$(cli_wrapper ${namespace} 'backup_volume' ${uuid} vol-xxxxx)"
+               
+}
+
 ## shunit2
 
 . ${shunit2_file}
