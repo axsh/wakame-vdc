@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/instance'
+require 'dcmgr/endpoints/12.03/responses/volume'
 require 'multi_json'
 
 # To validate ip address syntax in the vifs parameter
@@ -767,7 +768,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # list attached volumes to the instance.
     get '' do
       ds = @instance.volumes_dataset
-      respond_with(R::VolumeCollection.new(ds))
+      respond_with(R::VolumeCollection.new(ds).generate)
     end
 
     # take a backup from the volume.
