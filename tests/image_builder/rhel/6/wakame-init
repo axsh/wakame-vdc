@@ -203,6 +203,24 @@ _IFCFG
   ;;
 esac | logger
 
+# Setup etc hosts.
+host_path="${METADATA_DRIVE_MOUNTPOINT}/meta-data/extra-hosts"
+if [ -d ${host_path} ]; then
+  comment="# Please do not modify lines from here by your hand since wakame-init will place entries from metadata."
+  egrep -w -q "^${comment}$" /etc/hosts && {
+    tmpfile=`mktemp`
+    sed -n "1,/^${comment}$/p" /etc/hosts > ${tmpfile}
+    mv ${tmpfile} /etc/hosts
+  } || {
+    echo ${comment} >> /etc/hosts
+  }
+  for i in `ls ${host_path}/*`; do
+    hostname=`basename $i`
+    hostip=`cat $i`
+    echo "${hostip} ${hostname}" >> /etc/hosts
+  done
+fi
+
 #Add the metadata server to the routing table
 #for i in {1..1200}; do
 #  DEFAULT_GW=`ip route get 8.8.8.8 | head -n 1 | cut -d ' ' -f3`
