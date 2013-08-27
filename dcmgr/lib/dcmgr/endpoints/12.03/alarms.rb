@@ -122,9 +122,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
     on_after_commit do
       i = find_by_uuid(:Instance, al.resource_id)
-      if i.state == 'running'
-        Dcmgr.messaging.submit(alarm_endpoint(al.metric_name, i.host_node.node_id), 'delete_alarm', al.canonical_uuid)
-      end
+      Dcmgr.messaging.submit(alarm_endpoint(al.metric_name, i.host_node.node_id), 'delete_alarm', al.canonical_uuid)
     end
 
     respond_with([al.canonical_uuid])
