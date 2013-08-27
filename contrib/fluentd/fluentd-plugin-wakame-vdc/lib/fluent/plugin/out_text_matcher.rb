@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 require 'metric_libs'
 require 'yaml'
+require 'time'
 
 MetricLibs::Alarm.class_eval do
 
@@ -17,7 +18,10 @@ MetricLibs::Alarm.class_eval do
     message = {}
     logs = []
     match_count = 0
-    limit_log_size = 0
+    limit_log = {
+      :exceeded => 0,
+      :errors_at => []
+    }
 
     if notification_logs.length == 0
       $log.debug("Does now found notification logs")
@@ -33,7 +37,12 @@ MetricLibs::Alarm.class_eval do
         return true
       end
 
-      logs = logs.collect {|l| l.value }
+      logs = logs.collect {|l|
+        {
+          :evaluated_value => l.value[:evaluated_value],
+          :evaluated_at => l.value[:evaluated_at].iso8601
+        }
+      }
       match_count = logs.length
     end
 
@@ -42,8 +51,10 @@ MetricLibs::Alarm.class_eval do
       message[:message_type] = @alarm_actions[:message_type]
     end
 
-    if @errors.has_key?(1)
-      limit_log_size = 1
+    error_no = 1
+    if @errors.has_key?(error_no)
+      limit_log[:exceeded] = error_no
+      limit_log[:errors_at] = @errors[error_no].collect {|e| e[:at].iso8601}
     end
 
     message[:params] = {
@@ -58,7 +69,9 @@ MetricLibs::Alarm.class_eval do
       :logs => logs,
       :display_name => @display_name,
       :match_count => match_count,
-      :limit_log_size => limit_log_size
+      :limit_log => limit_log,
+      :notification_periods => @notification_periods,
+      :notified_at => Time.now.iso8601
     }
     DolphinClient::Event.post(message)
 
@@ -95,7 +108,11 @@ MetricLibs::Alarm.class_eval do
   end
 
   def add_errors(no)
-    errors[no] = ALARM_ERRORS[no]
+    errors[no] ||= []
+    errors[no] << {
+      :message => ALARM_ERRORS[no],
+      :at => Time.now
+    }
   end
 
   def errors
