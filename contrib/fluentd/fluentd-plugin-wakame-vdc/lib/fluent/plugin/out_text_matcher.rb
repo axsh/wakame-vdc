@@ -9,12 +9,9 @@ MetricLibs::Alarm.class_eval do
     1 => 'read alarm logs over the limit'
   }.freeze
 
-  attr_accessor :ipaddr, :notification_timer
+  attr_accessor :ipaddr, :notification_timer, :next_timer
 
   def send_alarm_notification
-
-    $log.debug(notification_logs.dump)
-
     message = {}
     logs = []
     match_count = 0
@@ -24,19 +21,9 @@ MetricLibs::Alarm.class_eval do
     }
 
     if notification_logs.length == 0
-      $log.debug("Does now found notification logs")
+      $log.info ("[#{uuid}] does not found notification logs")
     else
-      now = Time.now
-      start_time = now - @notification_periods
-      end_time = now
-
-      logs = notification_logs.find(start_time, end_time)
-
-      if logs.empty?
-        $log.debug("Does not found logs")
-        return true
-      end
-
+      logs = notification_logs.find_all.to_a
       logs = logs.collect {|l|
         {
           :evaluated_value => l.value[:evaluated_value],
@@ -57,6 +44,7 @@ MetricLibs::Alarm.class_eval do
       limit_log[:errors_at] = @errors[error_no].collect {|e| e[:at].iso8601}
     end
 
+    notified_at = Time.now
     message[:params] = {
       :alert_engine => 'fluentd',
       :state => 'alarm',
@@ -71,18 +59,22 @@ MetricLibs::Alarm.class_eval do
       :match_count => match_count,
       :limit_log => limit_log,
       :notification_periods => @notification_periods,
-      :notified_at => Time.now.iso8601
+      :notified_at => notified_at.iso8601
     }
     DolphinClient::Event.post(message)
+    $log.info("[#{uuid}] send message to dolphin.")
 
-    if notification_logs.length > 0
-      clear_notification_logs
-    end
+    @last_notified_at = notified_at
     reset_alarm
+    clear_notification_logs
   end
 
   def add_notification_timer(timer)
     @notification_timer = timer
+  end
+
+  def get_notification_timer
+    @notification_timer
   end
 
   def save_notification_logs
@@ -95,7 +87,7 @@ MetricLibs::Alarm.class_eval do
   end
 
   def clear_notification_logs
-    $log.info("clear notification logs #{uuid}")
+    $log.info("[#{uuid}] clear notification logs")
     @notification_logs.delete_all_since_at(Time.now)
   end
 
@@ -172,28 +164,29 @@ class LogAlarmManager < MetricLibs::AlarmManager
   def create_alarm_file(uuid)
     path = File.join(@alarms_tmp_dir, uuid)
     unless File.exists? path
-      FileUtils.mkdir(path)
+      FileUtils.mkdir_p(path)
     end
   end
 
   def alarms_tmp_dir=(path)
     @alarms_tmp_dir = path
     unless File.exists? path
-      FileUtils.mkdir(path)
+      FileUtils.mkdir_p(path)
     end
   end
 
   def write_alarm_file(uuid)
     alarm = get_alarm(uuid)
-    $log.info("save alarm notification logs size #{alarm.notification_logs.length}")
-    if alarm.notification_logs.length > 0
-      notification_logs = alarm.notification_logs.find_all.collect{|log| log.value}
-      data = {
-        'alarm_id'  => alarm.uuid,
-        'notification_logs' => notification_logs,
-      }
-      File.write(File.join(alarms_tmp_dir, uuid, ALARM_TMP_FILE), data.to_yaml)
-    end
+    notification_logs = alarm.notification_logs.find_all.collect{|log| log.value}
+    data = {
+      'alarm_id'  => alarm.uuid,
+      'notification_logs' => notification_logs,
+      'elpapsed_time' => alarm.get_notification_timer.elpapsed_time,
+      'notification_periods' => alarm.notification_periods,
+      'write_time' => Time.now
+    }
+    $log.info("[#{uuid}] write alarm temporary file")
+    File.write(File.join(alarms_tmp_dir, uuid, ALARM_TMP_FILE), data.to_yaml)
   end
 
   def delete_alarm_files
@@ -211,7 +204,6 @@ module Fluent
     config_param :dolphin_server_uri
     config_param :tag, :string, :default => 'textmatch'
     config_param :max_read_message_bytes, :integer, :default => -1
-    # config_param :alarm1, :string
 
     # Parserd name key on fluent of Guest VM
     MATCH_KEY = 'message'.freeze
@@ -220,35 +212,9 @@ module Fluent
       super
       require 'dolphin_client'
       require 'csv'
-      @monitor = Monitor.new
+
       @alarm_manager = LogAlarmManager.new
       @alarm_manager.alarms_tmp_dir = '/var/tmp/fluentd_alarms/'
-      @one_shot_signal = true
-      set_signal_handlers
-    end
-
-    def signal_hook(signal, &block)
-      @monitor.synchronize do
-        last_hook = Signal.trap(signal) do
-          if @one_shot_signal
-            block.call
-            last_hook.call if last_hook.respond_to?(:call)
-            @one_shot_signal = false
-          end
-        end
-      end
-    end
-
-    def set_signal_handlers
-      signal_hook(:INT) {
-        $log.info('trap int signal handler')
-        @alarm_manager.save_alarms
-      }
-
-      signal_hook(:TERM) {
-        $log.info('trap term signal handler')
-        @alarm_manager.save_alarms
-      }
     end
 
     def configure(conf)
@@ -265,8 +231,6 @@ module Fluent
       end
 
       super
-
-      # TODO: Flush messages when fluentd reloaded
 
       config.each {|k ,v|
         if k.match(alarm_pattern)
@@ -309,14 +273,24 @@ module Fluent
     class TimerWatcher < Coolio::TimerWatcher
       def initialize(interval, repeat, &callback)
         @callback = callback
+        reset_elpapsed_time
         super(interval, repeat)
       end
 
       def on_timer
         @callback.call
+        reset_elpapsed_time
       rescue
         $log.error $!.to_s
         $log.error_backtrace
+      end
+
+      def elpapsed_time
+        Time.now - @elpapsed_time
+      end
+
+      def reset_elpapsed_time
+        @elpapsed_time = Time.now
       end
     end
 
@@ -330,54 +304,105 @@ module Fluent
     end
 
     def start
-      $log.debug"text_matcher:start:#{Thread.current} :start"
-
       # Load temporary alarms if fluentd has been terminated.
       tmp_alarms = @alarm_manager.read_alarms
-      if tmp_alarms
+      if tmp_alarms.length > 0
         tmp_alarms.each {|alm|
           alarm = @alarm_manager.get_alarm(alm['alarm_id'])
           alm['notification_logs'].each {|log|
             alarm.notification_logs.push(log)
           }
-          alarm.send_alarm_notification
+
+          stop_time = Time.now - alm['write_time']
+          next_notification_time = alarm.notification_periods - alm['elpapsed_time']
+
+          $log.info "[#{alm['alarm_id']}] write time #{alm['write_time']} on temporary file"
+          $log.info "[#{alm['alarm_id']}] system stop time #{stop_time}"
+          $log.info "[#{alm['alarm_id']}] notification periods #{alm['notification_periods']}"
+          $log.info "[#{alm['alarm_id']}] elpapsed_time #{alm['elpapsed_time']}"
+          $log.info "[#{alm['alarm_id']}] next notification time #{next_notification_time}"
+
+          if alm['notification_periods'] < stop_time
+            $log.info("[#{alm['alarm_id']}] directry send alarm notification")
+            alarm.send_alarm_notification
+          else
+            $log.info("[#{alm['alarm_id']}] wait next notification")
+            alarm.next_timer = Proc.new {
+              timer = watch_notification_timer({
+                :interval => alarm.notification_periods,
+                :repeating => true,
+                :alarm => alarm
+              })
+              alarm.add_notification_timer(timer)
+            }
+
+            timer = watch_notification_timer({
+              :interval => next_notification_time,
+              :repeating => false,
+              :alarm => alarm
+            })
+            alarm.add_notification_timer(timer)
+          end
         }
         @alarm_manager.delete_alarm_files
       end
 
       @alarm_manager.find_log_alarm.each {|alarm|
-        timer = watch_notification_timer({
-          :interval => alarm.notification_periods,
-          :repeating => true,
-          :alarm => alarm
-        })
-        alarm.add_notification_timer(timer)
+        unless alarm.next_timer
+          timer = watch_notification_timer({
+            :interval => alarm.notification_periods,
+            :repeating => true,
+            :alarm => alarm
+          })
+          alarm.add_notification_timer(timer)
+        else
+          $log.info("[#{alarm.uuid}] skip setup alarm timer ")
+        end
       }
 
-      init_timer = TimerWatcher.new(1, false) {
-        $log.info('init timer')
-      }
+      if debug_mode?
+        init_timer = TimerWatcher.new(1, true) {
+          @alarm_manager.find_log_alarm.each{|alarm|
+            $log.debug("[#{alarm.uuid}] #{alarm.get_notification_timer.elpapsed_time}")
+          }
+        }
+      else
+        init_timer = TimerWatcher.new(1, false) {
+        }
+      end
 
       @loop.attach(init_timer)
       @thread = Thread.new(&method(:run))
     end
 
     def watch_notification_timer(data)
-      $log.debug("set notification timer interval(#{data[:interval]}), repeating(#{data[:repeating]}), alarm(#{data[:alarm_id]})")
+      $log.debug("set notification timer interval(#{data[:interval]}), repeating(#{data[:repeating]}), alarm(#{data[:alarm].uuid})")
       timer = TimerWatcher.new(data[:interval], data[:repeating]) {
         $log.debug("call notification timer on #{data[:alarm_id]}")
         data[:alarm].send_alarm_notification
+
+        if data[:alarm].next_timer.is_a? Proc
+          $log.info("[#{data[:alarm].uuid}] call next timer")
+          data[:alarm].next_timer.call
+
+          $log.info("[#{data[:alarm].uuid}] remove next timer")
+          data[:alarm].next_timer = nil
+        end
       }
       @loop.attach(timer)
       timer
     end
 
     def shutdown
+      $log.info('starting shutdown')
       @loop.stop if @loop
       @thread.join
+      @alarm_manager.save_alarms
+      $log.info('end shutdown')
     end
 
     def emit(tag, es, chain)
+      $log.info("starting emit process")
       sample = es.first[1]
       instance_tag = sample['x_wakame_label']
       resource_id = sample['x_wakame_instance_id']
@@ -389,6 +414,7 @@ module Fluent
         alm.ipaddr ||= ipaddr
         read_message_bytes = 0
         messages.each {|time, message|
+          $log.info "#{alm.uuid} #{message}"
           read_message_bytes += message.bytesize
           if (@max_read_message_bytes > read_message_bytes) || @max_read_message_bytes == -1
             alm.feed({
@@ -410,6 +436,7 @@ module Fluent
         alm.save_notification_logs
         alm.clear_alarm_logs
       }
+      $log.info("end emit process")
     end
 
     private
