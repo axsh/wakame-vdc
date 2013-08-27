@@ -62,7 +62,8 @@ end
 include Isono::Runner::RpcServer
 
 Dcmgr.load_conf(Dcmgr::Configurations::Nwmongw,
-                ['/etc/wakame-vdc/nwmongw.conf',
+                [ENV['CONF_PATH'].to_s,
+                 '/etc/wakame-vdc/nwmongw.conf',
                  File.expand_path('config/nwmongw.conf', Dcmgr::DCMGR_ROOT)
                 ])
 

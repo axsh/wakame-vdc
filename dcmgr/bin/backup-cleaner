@@ -8,7 +8,7 @@ require 'dcmgr'
 require 'isono'
 require 'fuguta'
 
-path = ['/etc/wakame-vdc/dcmgr.conf', File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)].find { |i| File.exists?(i) }
+path = [ENV['CONF_PATH'].to_s, '/etc/wakame-vdc/dcmgr.conf', File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)].find { |i| File.exists?(i) }
 abort("ERROR: Failed to load dcmgr.conf") if path.nil?
 
 begin
