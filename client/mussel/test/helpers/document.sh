@@ -23,3 +23,13 @@ function document_pair?() {
   #
   [[ "$(run_cmd ${namespace} show ${uuid} | egrep -w "^:${key}:" | awk '{print $2}')" == "${val}" ]]
 }
+
+function yaml_find_first() {
+  local key="$1"
+  awk '$0 ~ key_pattern { print $(NF); exit; }' key_pattern=":$key:"
+}
+
+function yaml_find_last() {
+  local key="$1"
+  awk '$0 ~ key_pattern { last_item=$(NF) } END { print $last_item }' key_pattern=":$key:"
+}

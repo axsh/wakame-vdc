@@ -25,7 +25,7 @@ function setUp() {
 function test_instance_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 ${namespace} [help|backup|create|destroy|index|poweroff|poweron|reboot|show|start|stop|xcreate]"
+  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|destroy|index|poweroff|poweron|reboot|show|show_volumes|start|stop|xcreate]" "${res}"
 }
 
 ### index

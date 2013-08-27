@@ -116,6 +116,8 @@ Sequel.migration do
       case hypervisor.to_s
       when 'kvm'
         'vda'
+      when 'openvz', 'lxc'
+        '/'
       else
         raise "Unsupported hypervisor: #{hypervisor}"
       end
