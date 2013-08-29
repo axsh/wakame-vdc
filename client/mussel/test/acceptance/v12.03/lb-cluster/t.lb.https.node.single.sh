@@ -19,7 +19,7 @@ load_balancer_private_key=$(ssl_output_dir)/${common_name}.key.pem
 load_balancer_public_key=$(ssl_output_dir)/${common_name}.crt.pem
 
 target_instance_num=${target_instance_num:-1}
-client_ipaddr=$(for i in $(ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)
+client_ipaddr=$(for i in $(/sbin/ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)
 
 ## functions
 
