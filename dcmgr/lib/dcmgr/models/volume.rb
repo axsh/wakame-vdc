@@ -194,7 +194,7 @@ module Dcmgr::Models
     end
 
     def create_backup_object(account, &blk)
-      bo = BackupObject.new(:account_id => account.canonical_uuid,
+      bo = BackupObject.new(:account_id => (account.nil? ? self.account_id : account.canonical_uuid),
                             :service_type => self.service_type,
                             :size=>self.size,
                             :source_volume_id=>self.canonical_uuid,
