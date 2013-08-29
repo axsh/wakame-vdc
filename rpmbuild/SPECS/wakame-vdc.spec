@@ -12,7 +12,7 @@
 %{?repo_uri:%define _vdc_git_uri %{repo_uri}}
 
 Name: %{oname}
-Version: 13.06
+Version: 13.08
 Release: %{release_id}%{?dist}
 Summary: The wakame virtual data center.
 Group: Development/Languages
