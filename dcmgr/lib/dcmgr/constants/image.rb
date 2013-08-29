@@ -5,8 +5,10 @@ module Dcmgr::Constants
     STATE_CREATING = "creating".freeze
     STATE_PENDING = "pending".freeze
     STATE_AVAILABLE = "available".freeze
+    STATE_DELETED = "deleted".freeze
     
-    STATES=[STATE_CREATING, STATE_PENDING, STATE_AVAILABLE].freeze
+    STATES=[STATE_CREATING, STATE_PENDING, STATE_AVAILABLE,
+            STATE_DELETED].freeze
 
     FEATURE_VIRTIO='virtio'.freeze
     FEATURE_ACPI='acpi'.freeze
