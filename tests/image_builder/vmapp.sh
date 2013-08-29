@@ -11,7 +11,7 @@ base_distro_number="10.04"
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../.."
 tmp_dir="${wakame_dir}/tmp/vmapp_builder"
-wakame_version="13.06"
+wakame_version="13.08"
 arch="amd64"
 wakame_debs="wakame-vdc_${wakame_version}_${arch}.deb wakame-vdc-dcmgr-vmapp-config_${wakame_version}_${arch}.deb"
 
