@@ -565,20 +565,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     respond_with(R::Instance.new(instance).generate)
   end
 
-  def find_target_backup_storage(instance=@instance)
-    # backup storage can be chosen in the order of:
-    #   1. query string
-    #   2. service type section in dcmgr.conf
-    #   3. same location as original backup object.
-    bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[instance.service_type].backup_storage_id
-    if bkst_uuid
-      M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
-    else
-      # 3rd case.
-      nil
-    end
-  end
-  
   # Create image backup from the alive instance.
   quota 'backup_object.count'
   quota 'image.count'
@@ -593,7 +579,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance = @instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, @instance.state unless ['halted'].member?(@instance.state)
 
-    bkst = find_target_backup_storage
+    bkst = find_target_backup_storage(@instance.service_type)
 
     boot_bko = nil
     bko_list = []
@@ -786,7 +772,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         raise E::UnknownVolume, @volume.canonical_uuid
       end
 
-      bkst = find_target_backup_storage
+      bkst = find_target_backup_storage(@instance.service_type)
       
       bo = @volume.create_backup_object(@volume.account) do |b|
         b.state = C::BackupObject::STATE_PENDING
