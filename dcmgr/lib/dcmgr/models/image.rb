@@ -25,15 +25,9 @@ module Dcmgr::Models
 
     def after_initialize
       super
-      unless self.features.is_a?(Hash)
-        self.features = {}
-      end
-      unless self.volumes.is_a?(Array)
-        self.volumes = []
-      end
-      unless self.vifs.is_a?(Array)
-        self.vifs = []
-      end
+      self.features ||= {}
+      self.volumes ||= []
+      self.vifs ||= []
     end
 
     def validate
@@ -101,6 +95,12 @@ module Dcmgr::Models
         i.delete(:uuid)
       }
       self.class.new(src) do |i|
+        # copy serializable fields
+        i.features = self.features
+        i.volumes = self.volumes
+        i.vifs = self.vifs
+
+        # fields slightly modified.
         i.description = "#{self.description} (copy of #{self.canonical_uuid})"
         i.parent_image_id = self.canonical_uuid
         blk.call(i) if blk
