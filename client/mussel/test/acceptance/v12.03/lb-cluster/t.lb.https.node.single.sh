@@ -19,7 +19,6 @@ load_balancer_private_key=$(ssl_output_dir)/${common_name}.key.pem
 load_balancer_public_key=$(ssl_output_dir)/${common_name}.crt.pem
 
 target_instance_num=${target_instance_num:-1}
-api_client_addr=${DCMGR_CLIENT_ADDR:-$(for i in $(/sbin/ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)}
 
 ## functions
 
@@ -43,7 +42,7 @@ function test_https_get_for_registerd_lb() {
 
 function test_http_header() {
   local lbnode_env=$(curl -fsSkL https://${load_balancer_ipaddr}/cgi-bin/env.cgi)
-  assertEquals ${api_client_addr} $(echo "${lbnode_env}" | grep HTTP_X_FORWARDED_FOR | cut -d "=" -f 2)
+  assertEquals ${DCMGR_CLIENT_ADDR} $(echo "${lbnode_env}" | grep HTTP_X_FORWARDED_FOR | cut -d "=" -f 2)
   assertEquals "https" $(echo "${lbnode_env}" | grep HTTP_X_FORWARDED_PROTO | cut -d "=" -f 2)
 }
 
