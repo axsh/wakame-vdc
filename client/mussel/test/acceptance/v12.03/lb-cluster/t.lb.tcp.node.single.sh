@@ -18,7 +18,6 @@ protocol="tcp"
 instance_protocol="tcp"
 
 target_instance_num=${target_instance_num:-1}
-api_client_addr=$(for i in $(/sbin/ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)
 repeat_count=5
 
 ## functions
