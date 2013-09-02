@@ -14,7 +14,7 @@
 ## variables
 
 target_instance_num=${target_instance_num:-1}
-api_client_addr=$(for i in $(/sbin/ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)
+api_client_addr=${DCMGR_CLIENT_ADDR:-$(for i in $(/sbin/ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)}
 
 ## functions
 

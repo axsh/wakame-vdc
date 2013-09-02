@@ -18,7 +18,7 @@ ssh_user=${ssh_user:-root}
 image_id=${image_id_lbnode:-wmi-lbnode}
 vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
 
-api_client_addr=$(for i in $(/sbin/ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)
+api_client_addr=${DCMGR_CLIENT_ADDR:-$(for i in $(/sbin/ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)}
 
 ## functions
 
