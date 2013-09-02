@@ -185,16 +185,18 @@ class LogAlarmManager < MetricLibs::AlarmManager
 
   def write_alarm_file(uuid)
     alarm = get_alarm(uuid)
-    notification_logs = alarm.notification_logs.find_all.collect{|log| log.value}
-    data = {
-      'alarm_id'  => alarm.uuid,
-      'notification_logs' => notification_logs,
-      'elpapsed_time' => alarm.get_notification_timer.elpapsed_time,
-      'notification_periods' => alarm.notification_periods,
-      'write_time' => Time.now
-    }
-    $log.info("[#{uuid}] write alarm to temporary file")
-    File.write(File.join(alarms_tmp_dir, uuid, ALARM_TMP_FILE), data.to_yaml)
+    unless alarm.nil?
+      notification_logs = alarm.notification_logs.find_all.collect{|log| log.value}
+      data = {
+        'alarm_id'  => alarm.uuid,
+        'notification_logs' => notification_logs,
+        'elpapsed_time' => alarm.get_notification_timer.elpapsed_time,
+        'notification_periods' => alarm.notification_periods,
+        'write_time' => Time.now
+      }
+      $log.info("[#{uuid}] write alarm to temporary file")
+      File.write(File.join(alarms_tmp_dir, uuid, ALARM_TMP_FILE), data.to_yaml)
+    end
   end
 
   def delete_alarm_files
@@ -317,6 +319,7 @@ module Fluent
       if tmp_alarms.length > 0
         tmp_alarms.each {|alm|
           alarm = @alarm_manager.get_alarm(alm['alarm_id'])
+          next if alarm.nil?
           alm['notification_logs'].each {|log|
             alarm.notification_logs.push(log)
           }
