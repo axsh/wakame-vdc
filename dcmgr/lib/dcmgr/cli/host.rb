@@ -7,18 +7,20 @@ module Dcmgr::Cli
 class Host < Base
   namespace :host
   include Dcmgr::Models
-
+  include Dcmgr::Constants::HostNode
+  
   desc "add NODE_ID [options]", "Register a new host node"
   method_option :uuid, :type => :string, :desc => "The UUID for the new host node"
   method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new host node"
   method_option :force, :type => :boolean, :default=>false, :desc => "Force new entry creation"
   method_option :cpu_cores, :type => :numeric, :default=>1, :desc => "Number of cpu cores to be offered"
   method_option :memory_size, :type => :numeric, :default=>1024, :desc => "Amount of memory to be offered (in MB)"
-  method_option :hypervisor, :type => :string, :default=>'kvm', :desc => "The hypervisor name. [#{HostNode::SUPPORTED_HYPERVISOR.join(', ')}]"
-  method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{HostNode::SUPPORTED_ARCH.join(', ')}]"
+  method_option :hypervisor, :type => :string, :default=>'kvm', :desc => "The hypervisor name. [#{SUPPORTED_HYPERVISOR.join(', ')}]"
+  method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{SUPPORTED_ARCH.join(', ')}]"
+  option :disk_space, :type => :numeric, :required => false, :default=>0, :desc => "Amount of disk space to store instances local volumes (MB)"
   def add(node_id)
-    UnsupportedArchError.raise(options[:arch]) unless HostNode::SUPPORTED_ARCH.member?(options[:arch])
-    UnsupportedHypervisorError.raise(options[:hypervisor]) unless HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
+    UnsupportedArchError.raise(options[:arch]) unless SUPPORTED_ARCH.member?(options[:arch])
+    UnsupportedHypervisorError.raise(options[:hypervisor]) unless SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
 
     unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
       abort("Node ID is not registered yet: #{node_id}")
@@ -31,6 +33,7 @@ class Host < Base
               :offering_memory_size=>options[:memory_size],
               :hypervisor=>options[:hypervisor],
               :arch=>options[:arch],
+              :offering_disk_space_mb=>options[:disk_space],
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     puts super(HostNode,fields)
@@ -42,15 +45,19 @@ class Host < Base
   method_option :memory_size, :type => :numeric, :desc => "Amount of memory to be offered (in MB)"
   method_option :hypervisor, :type => :string, :desc => "The hypervisor name. [#{HostNode::SUPPORTED_HYPERVISOR.join(', ')}]"
   method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{HostNode::SUPPORTED_ARCH.join(', ')}]"
+  method_option :node_id, :type => :string, :size => 255, :desc => "The node ID for the host node"
+  option :disk_space, :type => :numeric, :desc => "Amount of disk space to store instances local volumes (MB)"
   def modify(uuid)
-    UnsupportedArchError.raise(options[:arch]) unless HostNode::SUPPORTED_ARCH.member?(options[:arch])
-    UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
+    UnsupportedArchError.raise(options[:arch]) unless SUPPORTED_ARCH.member?(options[:arch])
+    UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
     fields = {
               :display_name=>options[:display_name],
               :offering_memory_size=>options[:memory_size],
               :offering_cpu_cores=>options[:cpu_cores],
               :hypervisor=>options[:hypervisor],
               :arch=>options[:arch],
+              :node_id=>options[:node_id],
+              :offering_disk_space_mb=>options[:disk_space],
     }
     super(HostNode,uuid,fields)
   end
@@ -69,6 +76,7 @@ Host UUID: <%= host.canonical_uuid %>
 Node ID: <%= host.node_id %>
 CPU Cores (usage / offering): <%= host.cpu_core_usage %> / <%= host.offering_cpu_cores %>
 Memory (usage / offering): <%= host.memory_size_usage%>MB / <%= host.offering_memory_size %>MB
+Disk Space (usage / offering): <%= host.disk_space_usage %>MB / <%= host.offering_disk_space_mb %>MB
 Hypervisor: <%= host.hypervisor %>
 Architecture: <%= host.arch %>
 Status: <%= host.status %>

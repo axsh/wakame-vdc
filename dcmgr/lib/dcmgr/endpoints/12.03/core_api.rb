@@ -23,6 +23,7 @@ module Dcmgr::Endpoints::V1203
     M = Dcmgr::Models
     E = Dcmgr::Endpoints::Errors
     R = Dcmgr::Endpoints::V1203::Responses
+    C = Dcmgr::Constants
 
     SYSTEM_ACCOUNT_ID = 'a-00000000'.freeze
 
@@ -191,6 +192,20 @@ module Dcmgr::Endpoints::V1203
                         :limit => limit,
                         :results=> blk.call(ds)
                       }])
+      end
+
+      def find_target_backup_storage(resource_service_type)
+        # backup storage can be chosen in the order of:
+        #   1. query string
+        #   2. service type section in dcmgr.conf
+        #   3. same location as original backup object.
+        bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[resource_service_type].backup_storage_id
+        if bkst_uuid
+          M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
+        else
+          # 3rd case.
+          nil
+        end
       end
     end
 

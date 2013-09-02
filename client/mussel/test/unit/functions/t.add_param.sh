@@ -55,6 +55,17 @@ function test_add_param_key_strplain() {
   assertEquals "$(add_param name strplain)" "${name}"
 }
 
+function test_add_param_key_hash() {
+  local name="inst_id=i-xxx"
+  assertEquals "$(add_param name hash)" "name[inst_id]=i-xxx"
+}
+
+function test_add_param_key_hash_multi() {
+  local name="inst_id=i-xxx addr=bar"
+  assertEquals "$(add_param name hash)" "name[inst_id]=i-xxx
+name[addr]=bar"
+}
+
 ## shunit2
 
 . ${shunit2_file}

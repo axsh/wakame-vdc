@@ -175,10 +175,19 @@ module Dcmgr
         begin
           invoke_hook! :before
           # method must be public.
-          self.send(method, *@args)
-        ensure
+          ret = self.method(@method).call(*@args)
+        rescue ::Exception => e
+          exception_message = "#{e.class.to_s} #{e.message} from #{e.backtrace.first}"
+          if respond_to?(:logger) && self.logger
+            self.logger.error(exception_message)
+          else
+            STDERR.puts exeception_message
+          end
+          raise e
+        else
           invoke_hook! :after
         end
+        ret
       end
 
       def invoke_hook!(type, base=self.class)

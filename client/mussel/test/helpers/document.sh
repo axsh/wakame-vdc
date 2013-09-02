@@ -16,5 +16,20 @@ function hash_value() {
 
 function document_pair?() {
   local namespace=$1 uuid=$2 key=$3 val=$4
-  [[ "$(run_cmd ${namespace} show ${uuid} | hash_value ${key})" == "${val}" ]]
+  # make sure to get value of first level key.
+  #
+  # [OK] ':state: running'
+  # [NG] '  :state: attached'
+  #
+  [[ "$(run_cmd ${namespace} show ${uuid} | egrep -w "^:${key}:" | awk '{print $2}')" == "${val}" ]]
+}
+
+function yaml_find_first() {
+  local key="$1"
+  awk '$0 ~ key_pattern { print $(NF); exit; }' key_pattern=":$key:"
+}
+
+function yaml_find_last() {
+  local key="$1"
+  awk '$0 ~ key_pattern { last_item=$(NF) } END { print $last_item }' key_pattern=":$key:"
 }

@@ -14,7 +14,7 @@
 ## variables
 
 target_instance_num=${target_instance_num:-1}
-client_ipaddr=$(for i in $(ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)
+api_client_addr=$(for i in $(/sbin/ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)
 
 ## functions
 
@@ -37,7 +37,7 @@ function test_http_get_for_registerd_lb() {
 
 function test_http_header() {
   local lbnode_env=$(curl -fsSkL http://${load_balancer_ipaddr}/cgi-bin/env.cgi)
-  assertEquals ${client_ipaddr} $(echo "${lbnode_env}" | grep HTTP_X_FORWARDED_FOR | cut -d "=" -f 2)
+  assertEquals ${api_client_addr} $(echo "${lbnode_env}" | grep HTTP_X_FORWARDED_FOR | cut -d "=" -f 2)
   assertEquals "http" $(echo "${lbnode_env}" | grep HTTP_X_FORWARDED_PROTO | cut -d "=" -f 2)
 }
 

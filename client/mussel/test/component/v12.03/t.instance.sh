@@ -301,7 +301,7 @@ function test_instance_reboot() {
 
 ### stop
 
-function test_instance_stop() {
+function _test_instance_stop() {
   local cmd=stop
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
@@ -310,7 +310,7 @@ function test_instance_stop() {
 
 ### start
 
-function test_instance_start() {
+function _test_instance_start() {
   local cmd=start
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
@@ -342,6 +342,22 @@ function test_instance_poweroff() {
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${opts})" \
                "curl -X PUT $(urlencode_data ${params}) $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
+}
+
+### show-volumes
+
+function test_instance_show_volumes() {
+  assertEquals "curl -X GET $(base_uri)/${namespace}s/${uuid}/volumes.$(suffix)" \
+               "$(cli_wrapper ${namespace} 'show_volumes' ${uuid})"
+               
+}
+
+### backup-volumes
+
+function test_instance_backup_volume() {
+  assertEquals "curl -X PUT $(base_uri)/${namespace}s/${uuid}/volumes/vol-xxxxx/backup.$(suffix)" \
+               "$(cli_wrapper ${namespace} 'backup_volume' ${uuid} vol-xxxxx)"
+               
 }
 
 ## shunit2

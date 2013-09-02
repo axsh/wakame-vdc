@@ -19,38 +19,21 @@ module Dcmgr::Models
     }
 
     plugin :serialization
-    serialize_attributes :yaml, :features
+    serialize_attributes :yaml, :features, :volumes, :vifs
 
     plugin ArchiveChangedColumn, :histories
 
     def after_initialize
       super
-      unless self.features.is_a?(Hash)
-        self.features = {}
-      end
-    end
-
-    def before_destroy
-      if !Instance.lives.filter(:image_id=>self.canonical_uuid).empty?
-        raise "There are one or more running instances refers this record."
-      end
-
-      super
-    end
-
-    def before_validation
-      # symbolize feature's key
-      self.features.keys.each { |k|
-        if k.is_a?(String) && FEATURES.member?(k.to_s)
-          self.features[k.to_sym] = self.features.delete(k)
-        end
-      }
+      self.features ||= {}
+      self.volumes ||= []
+      self.vifs ||= []
     end
 
     def validate
       super
 
-      unless [BOOT_DEV_SAN, BOOT_DEV_LOCAL].member?(self.boot_dev_type)
+      unless BOOT_DEV_FLAGS.member?(self.boot_dev_type)
         errors.add(:boot_dev_type, "Invalid boot dev type: #{self.boot_dev_type}")
       end
 
@@ -96,14 +79,6 @@ module Dcmgr::Models
       self.features[key]
     end
 
-    # override Sequel::Model#delete not to delete rows but to set
-    # delete flags.
-    def delete
-      self.state = :deleted if self.state != :deleted
-      self.deleted_at ||= Time.now
-      self.save
-    end
-
     def self.entry_new(account, arch, boot_dev_type, file_format, &blk)
       img = self.new
       img.account_id = account.canonical_uuid
@@ -115,17 +90,64 @@ module Dcmgr::Models
     end
 
     def entry_clone(&blk)
-      self.class.entry_new(self.account, self.arch, self.boot_dev_type, self.file_format) do |i|
-        i.display_name = self.display_name
-        i.description = "#{self.description} (copy of #{self.canonical_uuid})"
+      src = self.values.dup.tap { |i|
+        i.delete(:id)
+        i.delete(:uuid)
+      }
+      self.class.new(src) do |i|
+        # copy serializable fields
         i.features = self.features
-        i.root_device = self.root_device
-        i.service_type = self.service_type
-        i.instance_model_name = self.instance_model_name unless self.instance_model_name.nil?
+        i.volumes = self.volumes
+        i.vifs = self.vifs
+
+        # fields slightly modified.
+        i.description = "#{self.description} (copy of #{self.canonical_uuid})"
         i.parent_image_id = self.canonical_uuid
         blk.call(i) if blk
-      end
+      end.save
     end
 
+    def create_volume(account=nil)
+      bo = self.backup_object || raise("Unknown backup object: #{self.backup_object_id}")
+
+      account ||= self.account
+
+      vol = bo.create_volume(account)
+      vol.volume_type = case self.boot_dev_type
+                        when BOOT_DEV_LOCAL
+                          LocalVolume.to_s
+                        when BOOT_DEV_SAN
+                          nil
+                        else
+                          raise "unknown boot device type: #{self.boot_dev_type}"
+                        end
+      vol.save
+
+      vol
+    end
+
+    private
+    def before_destroy
+      if !Instance.alives.filter(:image_id=>self.canonical_uuid).empty?
+        raise "There are one or more running instances refers this record."
+      end
+
+      super
+    end
+
+    def before_validation
+      # symbolize feature's key
+      self.features.keys.each { |k|
+        if k.is_a?(String) && FEATURES.member?(k.to_s)
+          self.features[k.to_sym] = self.features.delete(k)
+        end
+      }
+    end
+
+    def _destroy_delete
+      self.deleted_at ||= Time.now
+      self.state = STATE_DELETED if self.state != STATE_DELETED
+      self.save_changes
+    end
   end
 end

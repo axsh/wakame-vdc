@@ -29,6 +29,9 @@ module Dcmgr
     autoload :LoadBalancer, 'dcmgr/constants/load_balancer'
     autoload :Image, 'dcmgr/constants/image'
     autoload :BackupObject, 'dcmgr/constants/backup_object'
+    autoload :Volume, 'dcmgr/constants/volume'
+    autoload :HostNode, 'dcmgr/constants/host_node'
+    autoload :StorageNode, 'dcmgr/constants/storage_node'
     autoload :Alarm, 'dcmgr/constants/alarm'
   end
   Const = Constants
@@ -99,6 +102,9 @@ module Dcmgr
     end
 
     autoload :ResourceLabel, 'dcmgr/models/resource_label'
+    autoload :LocalVolume, 'dcmgr/models/local_volume'
+    autoload :IscsiVolume, 'dcmgr/models/iscsi_volume'
+    autoload :IscsiStorageNode, 'dcmgr/models/iscsi_storage_node'
   end
 
   module Endpoints
@@ -238,6 +244,8 @@ module Dcmgr
     autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
     autoload :Natbox, 'dcmgr/drivers/natbox'
     autoload :Fluent, 'dcmgr/drivers/fluent'
+    autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
+    autoload :KvmLocalStore, 'dcmgr/drivers/kvm_local_store'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'

@@ -37,6 +37,7 @@ module Dcmgr::Endpoints::V1203::Responses
             :items => {},
           },
           :labels=>resource_labels.map{ |l| ResourceLabel.new(l).generate },
+          :boot_volume_id => self.boot_volume_id,
         }
 
         h[:monitoring][:items] = self.monitor_items
@@ -72,11 +73,11 @@ module Dcmgr::Endpoints::V1203::Responses
           h[:vif] << ent
         }
 
-        self.volume.each { |v|
+        self.volumes_dataset.each { |v|
           h[:volume] << {
             :vol_id => v.canonical_uuid,
-            :guest_device_name=>v.guest_device_name,
-            :state=>v.state,
+            :guest_device_name => v.guest_device_name,
+            :state  => v.state,
           }
         }
 

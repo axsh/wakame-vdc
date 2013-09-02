@@ -1,9 +1,9 @@
-Wakame-VDC
+Wakame-vdc
 ==========
 
 [![Code Climate](https://codeclimate.com/github/axsh/wakame-vdc.png)](https://codeclimate.com/github/axsh/wakame-vdc)
 
-Wakame-VDC is the Data Center Level Hypervisor.
+Wakame-vdc is the Data Center Level Hypervisor.
 
 See details for http://wakame.jp/wiki/ (in English)
 
@@ -23,12 +23,21 @@ Features:
  * Security Group (L3)
  * Distributed Firewall
  * Distributed NAT
+ * Global IP Address
  * Open vSwitch (OpenFlow) + Trema Based Controller
 
 * Storage
- * Solaris ZFS + iSCSI
- * Indelible FS
- * Tired snapshot management
+ * Local Disk Drive Management
+ * Virtual SAN (Indelible FS)
+ * Tired Snapshot Management
+ * Machine Image Transferring between Data Centers
+
+* Monitoring
+ * Instance Monitor (Zabbix)
+ * Performance Monitor
+ * Message Monitor (fluentd)
+
+* Notification (Dolphin)
 
 * Management
  * Per Account Quota
