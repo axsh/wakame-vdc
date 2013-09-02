@@ -67,7 +67,7 @@ module Fluent
       # Merge data
       es = MessagePackEventStream.new(entries, @cached_unpacker)
       mes = MultiEventStream.new
-      es.entries.each{|e| mes.add(Time.now.to_f, e[1].merge(send_data)) }
+      es.entries.each{|e| mes.add(e[0], e[1].merge(send_data)) }
       es = mes
       Engine.emit_stream(tag, es)
     end

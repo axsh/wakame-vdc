@@ -74,7 +74,7 @@ module MetricLibs
 
     def get_alarm(uuid)
       raise ArgumentError unless uuid.is_a?(String)
-      @manager[uuid][:alarm]
+      @manager[uuid][:alarm] if @manager.has_key? uuid
     end
 
     def update_alarm(alm)
