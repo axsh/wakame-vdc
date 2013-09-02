@@ -13,4 +13,5 @@ function setup_vars() {
   DCMGR_BASE_URI=http://${DCMGR_HOST}:${DCMGR_PORT}/api/${DCMGR_API_VERSION}
   account_id=a-shpoolxx
   DCMGR_RESPONSE_FORMAT=yml
+  DCMGR_CLIENT_ADDR=127.0.0.1
 }

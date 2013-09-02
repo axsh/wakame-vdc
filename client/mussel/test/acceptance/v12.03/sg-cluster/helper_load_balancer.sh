@@ -19,8 +19,8 @@ declare common_name=example.com
 
 function render_secg_rule() {
   cat <<-EOS
-	icmp:-1,-1,ip4:${api_client_addr}/32
-	tcp:22,22,ip4:${api_client_addr}/32
+	icmp:-1,-1,ip4:${DCMGR_CLIENT_ADDR}/32
+	tcp:22,22,ip4:${DCMGR_CLIENT_ADDR}/32
 	tcp:80,80,ip4:0.0.0.0/0
 	EOS
 }
