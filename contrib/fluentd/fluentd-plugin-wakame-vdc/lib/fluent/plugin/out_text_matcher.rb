@@ -19,23 +19,25 @@ MetricLibs::Alarm.class_eval do
       :exceeded => 0,
       :errors_at => []
     }
+    state = 'ok'
 
     if notification_logs.length == 0
       $log.info ("[#{uuid}] does not found notification logs")
     else
       logs = notification_logs.find_all.to_a
       logs = logs.collect {|l|
+        match_count += 1 unless l.value[:evaluated_value].empty?
         {
           :evaluated_value => l.value[:evaluated_value],
           :evaluated_at => l.value[:evaluated_at].iso8601
         }
       }
-      match_count = logs.length
     end
 
-    if errors.count > 0 || notification_logs.length > 0
+    if errors.count > 0 || match_count > 0
       message[:notification_id] = @alarm_actions[:notification_id]
       message[:message_type] = @alarm_actions[:message_type]
+      state = 'alarm'
     end
 
     error_no = 1
@@ -47,7 +49,7 @@ MetricLibs::Alarm.class_eval do
     notified_at = Time.now
     message[:params] = {
       :alert_engine => 'fluentd',
-      :state => 'alarm',
+      :state => state,
       :alarm_id => @uuid,
       :metric_name => @metric_name,
       :resource_id => @resource_id,
@@ -78,12 +80,19 @@ MetricLibs::Alarm.class_eval do
   end
 
   def save_notification_logs
-    @last_evaluated_value.each.collect {|v|
+    if @last_evaluated_value.length > 0
+      @last_evaluated_value.each.collect {|v|
+        notification_logs.push({
+          :evaluated_value => v[:match_ranges].reverse.join("\n"),
+          :evaluated_at => @last_evaluated_at
+        })
+      }
+    else
       notification_logs.push({
-        :evaluated_value => v[:match_ranges].reverse.join("\n"),
+        :evaluated_value => "",
         :evaluated_at => @last_evaluated_at
       })
-    }
+    end
   end
 
   def clear_notification_logs
