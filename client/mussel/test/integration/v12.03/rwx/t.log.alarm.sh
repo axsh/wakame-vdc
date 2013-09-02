@@ -20,7 +20,7 @@ function test_create_alarm() {
 }
 
 function test_update_alarm() {
-  local enabled=0
+  local enabled=false
   local notification_periods=180
   local params="tag=var.log.httpd.access_log match_pattern=access"
   enabled=${enabled} notification_periods=${notification_periods} params=${params} run_cmd alarm update ${alarm_uuid} >/dev/null
