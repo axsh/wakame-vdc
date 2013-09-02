@@ -87,7 +87,6 @@ MetricLibs::Alarm.class_eval do
   end
 
   def clear_notification_logs
-    $log.info("[#{uuid}] clear notification logs")
     @notification_logs.delete_all_since_at(Time.now)
   end
 
@@ -185,7 +184,7 @@ class LogAlarmManager < MetricLibs::AlarmManager
       'notification_periods' => alarm.notification_periods,
       'write_time' => Time.now
     }
-    $log.info("[#{uuid}] write alarm temporary file")
+    $log.info("[#{uuid}] write alarm to temporary file")
     File.write(File.join(alarms_tmp_dir, uuid, ALARM_TMP_FILE), data.to_yaml)
   end
 
@@ -314,19 +313,19 @@ module Fluent
           }
 
           stop_time = Time.now - alm['write_time']
-          next_notification_time = alarm.notification_periods - alm['elpapsed_time']
 
           $log.info "[#{alm['alarm_id']}] write time #{alm['write_time']} on temporary file"
           $log.info "[#{alm['alarm_id']}] system stop time #{stop_time}"
-          $log.info "[#{alm['alarm_id']}] notification periods #{alm['notification_periods']}"
-          $log.info "[#{alm['alarm_id']}] elpapsed_time #{alm['elpapsed_time']}"
-          $log.info "[#{alm['alarm_id']}] next notification time #{next_notification_time}"
+          $log.info "[#{alm['alarm_id']}] elpapsed time #{alm['elpapsed_time']}"
 
           if alm['notification_periods'] < stop_time
             $log.info("[#{alm['alarm_id']}] directry send alarm notification")
             alarm.send_alarm_notification
           else
-            $log.info("[#{alm['alarm_id']}] wait next notification")
+            next_notification_time = alarm.notification_periods - alm['elpapsed_time']
+
+            $log.info "[#{alm['alarm_id']}] wait notifcation. next time #{next_notification_time}"
+
             alarm.next_timer = Proc.new {
               timer = watch_notification_timer({
                 :interval => alarm.notification_periods,
@@ -356,7 +355,7 @@ module Fluent
           })
           alarm.add_notification_timer(timer)
         else
-          $log.info("[#{alarm.uuid}] skip setup alarm timer ")
+          $log.info("[#{alarm.uuid}] skip notification timer ")
         end
       }
 
