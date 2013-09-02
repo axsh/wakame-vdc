@@ -81,7 +81,7 @@ function test_log_alarm_update_no_opts() {
   local cmd=update
   local uuid=alm-demo
 
-  local enabled=1
+  local enabled=false
   local notification_periods=60
   local params="tag=var.log.messages match_pattern=error"
 
@@ -91,18 +91,20 @@ function test_log_alarm_update_no_opts() {
     enabled=${enabled}
     notification_periods=${notification_periods}
     params=${params}
-
   "
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${opts})" \
-               "curl -X PUT $(urlencode_data ${parameters}) $(base_uri)/${namespace}s/${uuid}.$(suffix)"
-  
+               "curl -X PUT $(urlencode_data \
+                  $(add_param enabled              string) \
+                  $(add_param notification_periods string) \
+                  $(add_param params                 hash) \
+                ) $(base_uri)/${namespace}s/${uuid}.$(suffix)"
 }
 
 function test_resource_alarm_update_no_opts() {
   local cmd=update
   local uuid=alm-demo
 
-  local enabled=1
+  local enabled=false
   local evaluation_periods=60
   local params="threshold=60 comparison_operator=ge"
 
@@ -115,8 +117,11 @@ function test_resource_alarm_update_no_opts() {
 
   "
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${opts})" \
-               "curl -X PUT $(urlencode_data ${parameters}) $(base_uri)/${namespace}s/${uuid}.$(suffix)"
-  
+               "curl -X PUT $(urlencode_data \
+                  $(add_param enabled              string) \
+                  $(add_param evaluation_periods   string) \
+                  $(add_param params                 hash) \
+                ) $(base_uri)/${namespace}s/${uuid}.$(suffix)"
 }
 
 ## shunit2
