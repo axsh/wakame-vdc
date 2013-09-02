@@ -18,6 +18,7 @@ readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 . ${BASH_SOURCE[0]%/*}/../../helpers/ssl.sh
 . ${BASH_SOURCE[0]%/*}/../../helpers/load_balancer.sh
 . ${BASH_SOURCE[0]%/*}/../../helpers/external_ip.sh
+. ${BASH_SOURCE[0]%/*}/../../helpers/alarm.sh
 
 ## environment-specific configuration
 
