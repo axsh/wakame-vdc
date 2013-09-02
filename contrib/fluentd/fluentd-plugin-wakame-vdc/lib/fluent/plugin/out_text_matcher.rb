@@ -425,7 +425,7 @@ module Fluent
         alm.ipaddr ||= ipaddr
         read_message_bytes = 0
         messages.each {|time, message|
-          $log.info "#{alm.uuid} #{message}"
+
           read_message_bytes += message.bytesize
           if (@max_read_message_bytes > read_message_bytes) || @max_read_message_bytes == -1
             alm.feed({
