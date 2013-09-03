@@ -54,7 +54,7 @@ module MetricLibs
 
           @timeseries.find_all.reverse_each {|t|
             tmp << t.value
-            if match_pattern =~ t.value
+            if (t.value.is_a? String) && t.value.index(match_pattern)
               match_indexes << line_no
               match_count += 1
             end
