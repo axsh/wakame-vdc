@@ -42,7 +42,7 @@ module Dcmgr
 
       def reload
         if Dcmgr.conf.logging_service_reload
-          sh("#{Dcmgr.conf.logging_service_reload} reload")
+          sh("#{Dcmgr.conf.logging_service_reload}")
           logger.info("Reload fluent with #{@output_file}")
         else
           logger.error("Failed to reload fluent. Not found #{Dcmgr.conf.logging_service_reload}")
