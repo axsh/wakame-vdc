@@ -5,6 +5,7 @@ require 'dcmgr/endpoints/12.03/responses/alarm'
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
   CA = Dcmgr::Constants::Alarm
+  CI = Dcmgr::Constants::Instance
 
   get do
 
@@ -32,36 +33,45 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
   end
 
   post do
-    unless params[:resource_id]
-      raise E::UnknownResourceID, "#{params[:resource_id]}"
+    if params['resource_id'].blank?
+      raise E::UnknownResourceID, "#{params['resource_id']}"
     end
 
-    unless params['params']
-      raise E::UnknownParams, params["params"]
+    # TODO: add volume and network vif
+    instance = find_by_uuid(:Instance, params['resource_id'])
+    raise E::InvalidInstanceState, instance.state if [CI::STATE_SHUTTING_DOWN, CI::STATE_TERMINATED].member?(instance.state)
+
+    if params['metric_name'].blank?
+      raise E::UnknownMetricName, "#{params['metric_name']}"
     end
 
-    if CA::RESOURCE_METRICS.include?(params[:metric_name]) && !params[:evaluation_periods]
-      raise E::UnknownEvaluationPeriods, "#{params[:evaluation_periods]}"
+    if params['params'].blank? || params['params'].is_a?(String)
+      raise E::UnknownParams, "#{params['params']}"
     end
 
-    if CA::LOG_METRICS.include?(params[:metric_name]) && !params[:notification_periods]
-      raise E::UnknownNotificationPeriods, "#{params[:notification_periods]}"
+    if CA::RESOURCE_METRICS.include?(params['metric_name']) && params['evaluation_periods'].blank?
+      raise E::UnknownEvaluationPeriods, "#{params['evaluation_periods']}"
+    end
+
+    if CA::LOG_METRICS.include?(params['metric_name']) && params['notification_periods'].blank?
+      raise E::UnknownNotificationPeriods, "#{params['notification_periods']}"
     end
 
     alarm = M::Alarm.entry_new(@account) {|al|
 
-      al.resource_id = params[:resource_id]
+      al.resource_id = params['resource_id']
+      al.metric_name = params['metric_name']
 
-      if params[:display_name]
-        al.display_name = params[:display_name]
+      if params['display_name']
+        al.display_name = params['display_name']
       end
 
-      if params[:description]
-        al.description = params[:description]
+      if params['description']
+        al.description = params['description']
       end
 
-      if params[:enabled]
-        if params[:enabled] == "true"
+      if params['enabled']
+        if params['enabled'] == "true"
           al.enabled = 1
         else
           al.enabled = 0
@@ -70,27 +80,25 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.enabled = 1
       end
 
-      if CA::RESOURCE_METRICS.include?(params[:metric_name]) && params[:evaluation_periods]
-        al.evaluation_periods = params[:evaluation_periods].to_i
+      if CA::RESOURCE_METRICS.include?(params['metric_name']) && params['evaluation_periods']
+        al.evaluation_periods = params['evaluation_periods'].to_i
       end
 
-      if CA::LOG_METRICS.include?(params[:metric_name]) && params[:notification_periods]
-        al.notification_periods = params[:notification_periods]
+      if CA::LOG_METRICS.include?(params['metric_name']) && params['notification_periods']
+        al.notification_periods = params['notification_periods']
       end
 
       if params['params'] && params['params'].is_a?(Hash)
         save_params = {}
-        if CA::LOG_METRICS.include?(params[:metric_name])
+        if CA::LOG_METRICS.include?(params['metric_name'])
           save_params['tag'] = params['params']['tag']
           save_params['match_pattern'] = params['params']['match_pattern']
-        elsif CA::RESOURCE_METRICS.include?(params[:metric_name])
+        elsif CA::RESOURCE_METRICS.include?(params['metric_name'])
           save_params['threshold'] = params['params']['threshold'].to_f
           save_params['comparison_operator'] = params['params']['comparison_operator']
         else
           raise E::UnknownMetricName, "#{params['metric_name']}"
         end
-
-        al.metric_name = params[:metric_name]
 
         al.params = save_params
       end
