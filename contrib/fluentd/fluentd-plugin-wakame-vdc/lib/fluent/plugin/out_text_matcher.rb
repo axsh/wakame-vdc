@@ -267,7 +267,7 @@ module Fluent
               :uuid => alarm_id,
               :resource_id => resource_id,
               :tag => tag,
-              :match_pattern => Regexp.new(match_pattern),
+              :match_pattern => match_pattern,
               :match_value => match_pattern,
               :notification_periods => notification_periods,
               :enabled => enabled,
