@@ -63,10 +63,16 @@ MetricLibs::Alarm.class_eval do
       :notification_periods => @notification_periods,
       :notified_at => notified_at.iso8601
     }
-    DolphinClient::Event.post(message)
-    $log.info("[#{uuid}] send message to dolphin.")
 
-    @last_notified_at = notified_at
+    if errors.count > 0 || match_count > 0
+      DolphinClient::Event.post(message)
+      $log.info("[#{uuid}] send message to dolphin.")
+      @last_notified_at = notified_at
+    else
+      # Doesn't send notification to dolphin.
+      $log.debug(message)
+    end
+
     reset_alarm
     clear_notification_logs
   end
