@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{plugin for wakame-vdc}
   spec.licenses      = ['LGPL 3.0']
   spec.homepage      = %q{http://wakame.jp/}
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.0.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 1.9.3")
   spec.rubygems_version = %q{1.8.23}
   spec.files         = `git ls-files`.split($\)
   spec.require_paths = ["lib"]
