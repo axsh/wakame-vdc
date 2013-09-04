@@ -11,6 +11,8 @@ task_create() {
     $(add_param metric_name                string) \
     $(add_param evaluation_periods         string) \
     $(add_param notification_periods       string) \
+    $(add_param display_name               string) \
+    $(add_param description                string) \
     $(add_param params                       hash) \
     $(add_param ok_actions                   hash) \
     $(add_param alarm_actions                hash) \
@@ -29,6 +31,8 @@ task_update() {
     $(add_param enabled               string) \
     $(add_param evaluation_periods    string) \
     $(add_param notification_periods  string) \
+    $(add_param display_name          string) \
+    $(add_param description           string) \
     $(add_param params                  hash) \
   ) \
   $(base_uri)/${namespace}s/${uuid}.$(suffix)
