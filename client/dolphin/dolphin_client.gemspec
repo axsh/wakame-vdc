@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
 
   s.homepage = %q{http://wakame.jp/}
   s.require_paths = [%q{lib}]
-  s.required_ruby_version = Gem::Requirement.new(">= 2.0.0")
+  s.required_ruby_version = Gem::Requirement.new(">= 1.9.3")
   s.rubygems_version = %q{1.8.23}
   s.summary = %q{Dolphin: client library}
 
