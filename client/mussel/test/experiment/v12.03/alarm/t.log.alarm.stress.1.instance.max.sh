@@ -18,10 +18,10 @@ function test_create_alarm() {
     local params="tag=${tag} match_pattern=error"
     for i in {0..2}; do
       alarm_uuid=$(run_cmd alarm create | hash_value uuid)
-      assertEquals $? 0
+      assertEquals 0 $?
 
       display_name=${alarm_uuid} run_cmd alarm update ${alarm_uuid}
-      assertEquals $? 0
+      assertEquals 0 $?
     done
   done
 }

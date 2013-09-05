@@ -10,6 +10,7 @@
 
 ## variables
 resource_id=${resource_id:-}
+resource_ids=${resource_ids:-}
 metric_name=${metric_name:-log}
 notification_periods=${notification_periods:-180}
 
