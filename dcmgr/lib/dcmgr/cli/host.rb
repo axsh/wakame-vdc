@@ -67,6 +67,10 @@ class Host < Base
     super(HostNode,uuid)
   end
 
+  no_tasks {
+    include Dcmgr::Helpers
+  }
+  
   desc "show [UUID]", "Show list of host nodes and details"
   def show(uuid=nil)
     if uuid
@@ -74,9 +78,9 @@ class Host < Base
       puts ERB.new(<<__END, nil, '-').result(binding)
 Host UUID: <%= host.canonical_uuid %>
 Node ID: <%= host.node_id %>
-CPU Cores (usage / offering): <%= host.cpu_core_usage %> / <%= host.offering_cpu_cores %>
-Memory (usage / offering): <%= host.memory_size_usage%>MB / <%= host.offering_memory_size %>MB
-Disk Space (usage / offering): <%= host.disk_space_usage %>MB / <%= host.offering_disk_space_mb %>MB
+CPU Cores (usage / offering): <%= host.cpu_core_usage %> / <%= host.offering_cpu_cores %> (<%= host.cpu_core_usage_percent.round(1) %>%)
+Memory (usage / offering): <%= host.memory_size_usage %>MB / <%= host.offering_memory_size %>MB (<%= host.memory_size_usage_percent.round(1) %>%)
+Disk Space (usage / offering): <%= ByteUnit.convert_to(host.disk_space_usage, ByteUnit::MB).round %>MB / <%= host.offering_disk_space_mb %>MB (<%= host.disk_space_usage_percent.round(1) %>%)
 Hypervisor: <%= host.hypervisor %>
 Architecture: <%= host.arch %>
 Status: <%= host.status %>

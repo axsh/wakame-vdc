@@ -38,20 +38,40 @@ function test_get_volume() {
   assertEquals $? 0
 }
 
-# PUT $base_uri/instances/i-xxxxx/volumes/vol-xxxxxx
-function test_backup_volume() {
-  run_cmd instance show_volumes "${instance_uuid}" > $last_result_path
+# PUT $base_uri/instances/i-xxxxx/volumes/vol-xxxxxx/backup
+#function test_put_/instances/i-xxxxx/volumes/vol-xxxxxx/backup() {
+function test_volume_backup_under_instances() {
+  run_cmd instance show_volumes "${instance_uuid}"| ydump > $last_result_path
   assertEquals $? 0
   
-  local boot_volume_uuid=$(yaml_find_first 'uuid' < $last_result_path)
+  local boot_volume_uuid=$(yfind '/0/:uuid:' < $last_result_path)
   test -n "$boot_volume_uuid"
   assertEquals $? 0
 
-  run_cmd instance backup_volume ${instance_uuid} $boot_volume_uuid > $last_result_path
+  run_cmd instance backup_volume ${instance_uuid} $boot_volume_uuid | ydump > $last_result_path
   assertEquals $? 0
 
 
-  local backup_obj_uuid=$(yaml_find_first 'backup_object_id' < $last_result_path)
+  local backup_obj_uuid=$(yfind '/:backup_object_id:' < $last_result_path)
+  test -n "$backup_obj_uuid"
+  assertEquals $? 0
+
+  retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
+}
+
+# PUT $base_uri/volumes/vol-xxxxxx/backup
+function test_volume_backup_under_volumes() {
+  run_cmd instance show_volumes "${instance_uuid}" | ydump > $last_result_path
+  assertEquals $? 0
+
+  local boot_volume_uuid=$(yfind '/0/:uuid:' < $last_result_path)
+  test -n "$boot_volume_uuid"
+  assertEquals $? 0
+
+  run_cmd volume backup $boot_volume_uuid | ydump > $last_result_path
+  assertEquals $? 0
+
+  local backup_obj_uuid=$(yfind '/:backup_object_id:' < $last_result_path)
   test -n "$backup_obj_uuid"
   assertEquals $? 0
 

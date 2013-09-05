@@ -89,10 +89,18 @@ module Dcmgr::Models
       img.save
     end
 
+    NOT_CLONED_COLUMNS=[:id,
+                        :uuid,
+                        :created_at,
+                        :updated_at,
+                        :deleted_at,
+                       ].freeze
+
     def entry_clone(&blk)
       src = self.values.dup.tap { |i|
-        i.delete(:id)
-        i.delete(:uuid)
+        NOT_CLONED_COLUMNS.each { |k|
+          i.delete(k)
+        }
       }
       self.class.new(src) do |i|
         # copy serializable fields
@@ -101,7 +109,6 @@ module Dcmgr::Models
         i.vifs = self.vifs
 
         # fields slightly modified.
-        i.description = "#{self.description} (copy of #{self.canonical_uuid})"
         i.parent_image_id = self.canonical_uuid
         blk.call(i) if blk
       end.save
