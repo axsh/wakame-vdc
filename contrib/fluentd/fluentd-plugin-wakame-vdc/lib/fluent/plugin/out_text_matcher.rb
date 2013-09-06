@@ -2,6 +2,7 @@
 require 'metric_libs'
 require 'yaml'
 require 'time'
+require 'uri'
 
 MetricLibs::Alarm.class_eval do
 
@@ -251,7 +252,7 @@ module Fluent
       config.each {|k ,v|
         if k.match(alarm_pattern)
 
-          values = CSV.parse_line(v)
+          values = CSV.parse_line(URI.decode(v))
           alarm_actions = {}
           resource_id = values[0]
           alarm_id = values[1]
