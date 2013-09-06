@@ -420,7 +420,6 @@ module Fluent
     end
 
     def emit(tag, es, chain)
-      $log.info("starting emit process")
       sample = es.first[1]
       instance_tag = sample['x_wakame_label']
       resource_id = sample['x_wakame_instance_id']
@@ -428,6 +427,7 @@ module Fluent
       alarms = @alarm_manager.find_log_alarm(resource_id, instance_tag)
       messages = es.reverse_each.collect{|time, record| [time , record['message']]}
 
+      $log.info("[#{resource_id}] [#{instance_tag}] starting emit process")
       alarms.each{|alm|
         alm.ipaddr ||= ipaddr
         read_message_bytes = 0
@@ -450,30 +450,16 @@ module Fluent
 
       alarms.each {|alm|
         alm.evaluate
-        info_alarm_log("Evaluated alarm", alm)
+        $log.info("[#{resource_id}] [#{instance_tag}] [#{alm.uuid}] evaluated")
         alm.save_notification_logs
         alm.clear_alarm_logs
       }
-      $log.info("end emit process")
+      $log.info("[#{resource_id}] [#{instance_tag}] end emit process")
     end
 
     private
     def debug_mode?
       $log.level <= Fluent::Log::LEVEL_DEBUG
     end
-
-    def info_alarm_log(message, alarm)
-      alarm_values = {
-        :uuid => alarm.uuid,
-        :resource_id => alarm.resource_id,
-        :tag => alarm.tag,
-        :alarm_actions => alarm.alarm_actions,
-        :ipaddr => alarm.ipaddr,
-        :match_value => alarm.match_value,
-        :last_evaluated_at => alarm.last_evaluated_at
-      }
-      $log.info("#{message}: #{alarm_values}")
-    end
-
   end
 end
