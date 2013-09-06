@@ -1,4 +1,5 @@
 require "csv"
+require "uri"
 
 module Dcmgr
   module Drivers
