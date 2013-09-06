@@ -6,6 +6,7 @@
 MUSSEL_PROMPT='$'
 MUSSEL_ARGS=
 MUSSEL_FRONTEND=${MUSSEL_FRONTEND:-noninteractive} # [ interactive | noninteractive ]
+CURL_OPTS_EX=
 
 function extract_args() {
   MUSSEL_ARGS=
@@ -13,6 +14,10 @@ function extract_args() {
   while [[ $# != 0 ]]; do
     arg="$1" key= value=
     case "${arg}" in
+    --curl-opts)
+      CURL_OPTS_EX="${CURL_OPTS_EX} $2"
+      shift
+      ;;
     --*=*)
       key=${arg%%=*}; key=${key##--}; key=${key//-/_}
       value="${value} ${arg##--*=}"
@@ -65,7 +70,7 @@ function shlog() {
 }
 
 function curl_opts() {
-  echo -fsSkL $(request_header)
+  echo -fsSkL $(request_header) ${CURL_OPTS_EX}
 }
 
 function request_header() {
