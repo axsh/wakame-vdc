@@ -29,6 +29,7 @@ task_create() {
     $(add_param user_data          strfile) \
     $(add_param vifs               strfile) \
    ) \
+   $(add_args_param volumes) \
    $(base_uri)/${namespace}s.$(suffix)
 }
 
