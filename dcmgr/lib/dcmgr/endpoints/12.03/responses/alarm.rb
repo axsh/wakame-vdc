@@ -10,8 +10,9 @@ module Dcmgr::Endpoints::V1203::Responses
     end
 
     def generate()
-      api_hash = @object.to_hash
-      api_hash
+      @object.instance_exec {
+        to_hash.merge(:id=>canonical_uuid)
+      }
     end
   end
 
