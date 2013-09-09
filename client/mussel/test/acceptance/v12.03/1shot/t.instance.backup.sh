@@ -8,7 +8,6 @@
 ## include files
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
-. ${BASH_SOURCE[0]%/*}/helper_instance.sh
 
 ## variables
 
@@ -17,18 +16,87 @@ display_name=${display_name:-}
 is_cacheable=${is_cacheable:-}
 is_public=${is_public:-}
 
-## functions
+## hook functions
 
-function after_create_instance() {
-  run_cmd instance poweroff ${instance_uuid} >/dev/null
-  retry_until "document_pair? instance ${instance_uuid} state halted"
+last_result_path=""
+
+function setUp() {
+  last_result_path=$(mktemp --tmpdir=${SHUNIT_TMPDIR})
 }
 
 ### step
 
-function test_backup_instance() {
-  run_cmd instance backup ${instance_uuid}
-  assertEquals $? 0
+# boot instance with second blank volume.
+# poweroff the instance.
+# backup the second volume.
+# shutdown everything.
+function test_backup_second_blank_volume() {
+  # boot instance with second blank volume.
+  volumes_args="volumes[0][size]=1G volumes[0][volume_type]=local"
+  create_instance
+
+  run_cmd instance poweroff ${instance_uuid} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid} state halted"
+
+  run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
+  assertEquals 0 $?
+
+  local ex_volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
+  test -n "$ex_volume_uuid"
+  assertEquals 0 $?
+
+  run_cmd instance backup_volume ${instance_uuid} $ex_volume_uuid | ydump > $last_result_path
+  assertEquals 0 $?
+
+  local backup_obj_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+  test -n "$backup_obj_uuid"
+  assertEquals 0 $?
+
+  retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
+
+  run_cmd backup_object destroy ${backup_obj_uuid}
+  assertEquals 0 $?
+
+  run_cmd instance destroy ${instance_uuid} >/dev/null
+  assertEquals 0 $?
+}
+
+# boot instance with second volume from backup.
+# poweroff the instance.
+# backup the second volume.
+# shutdown everything.
+function test_backup_second_volume_from_backup() {
+  run_cmd image show ${image_id} | ydump > $last_result_path
+  local backup_obj_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+
+  # boot instance with second blank volume.
+  volumes_args="volumes[0][backup_object_id]=${backup_obj_uuid} volumes[0][volume_type]=local"
+  create_instance
+
+  run_cmd instance poweroff ${instance_uuid} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid} state halted"
+
+  run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
+  assertEquals 0 $?
+
+  local ex_volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
+  test -n "$ex_volume_uuid"
+  assertEquals 0 $?
+
+  run_cmd instance backup_volume ${instance_uuid} $ex_volume_uuid | ydump > $last_result_path
+  assertEquals 0 $?
+
+  backup_obj_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+  test -n "$backup_obj_uuid"
+  assertEquals 0 $?
+
+  retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
+
+  run_cmd backup_object destroy ${backup_obj_uuid}
+  assertEquals 0 $?
+
+  run_cmd instance destroy ${instance_uuid} >/dev/null
+  assertEquals 0 $?
 }
 
 
