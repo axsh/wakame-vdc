@@ -156,7 +156,7 @@ function teardown_vif() {
 # expose $volumes_args global variable for "instance create"
 # overwrite in calling test scripts.
 function setup_volumes() {
-  volumes_args=
+  volumes_args=${volumes_args:-}
 }
 
 ### secg
