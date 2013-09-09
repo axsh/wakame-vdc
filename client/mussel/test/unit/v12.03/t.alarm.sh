@@ -19,7 +19,7 @@ declare namespace=alarm
 function test_alarm_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 ${namespace} [help|create|destroy|index|show|update|xcreate]"
+  assertEquals "$0 ${namespace} [help|create|destroy|index|show|update|xcreate]" "${res}"
 }
 
 ### create
@@ -27,7 +27,7 @@ function test_alarm_help_stderr_to_stdout_success() {
 function test_alarm_create() {
   extract_args ${namespace} create
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### update
@@ -35,13 +35,13 @@ function test_alarm_create() {
 function test_alarm_update_no_uuid() {
   extract_args ${namespace} update
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_alarm_update_uuid() {
   extract_args ${namespace} update i-demo0001
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2
