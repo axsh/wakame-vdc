@@ -56,18 +56,29 @@ function ydump() {
   # cidt: current indent depth
   # lidt: last indent depth
   # ac: array counter
-  awk -v lv=1 -v ac=0 -v cidt=1 -v lidt=1 'BEGIN{ }
-function path_join(ary, _i,_r,_s) { _r = ary[1]; for(_i = 2; _i <= length(ary); _i++){ _r = _r "/" ary[_i];}; return _r; }
-{ match($0, /[^ ]+/); cidt=RSTART; }
+  awk -v lv=1 -v ac=0 -v cidt=1 -v lidt=1 'BEGIN{ nm[1]=""; }
+function path_join(ary, _i,_r,_s) { _r=""; for(_i = 1; _i <= lv; _i++){ _r = _r "/" ary[_i];}; sub("/$", "", _r); sub("^/+", "", _r); return _r; }
+# get the current indent depth.
+{ match($0, /[^ ]+/); cidt=RSTART;}
 $1 == "-" { cidt = cidt + 2; }
-cidt < lidt { delete nm[lv]; lv--; }
-cidt > lidt { lv++; ac=0; }
-$1 ~ /^:?[[:alnum:]_]+:/ && NF == 1 { nm[lv]=$1; }
-$1 ~ /^:?[[:alnum:]_]+:/ && NF == 2 { print path_join(nm) "/" $1 "=" $2; }
+# indent level calculation for level down case.
+cidt < lidt {
+  for(_i=1; _i <= ((lidt - cidt) / 2); _i++){
+    lv--;
+    if ( nm[lv] ~ /^[[:digit:]]+$/ ){ lv--; ac=nm[lv]; }
+  }
+}
+# indent level calculation for level up case.
+cidt > lidt { lv++; }
+cidt > lidt && $1 == "-" { ac=0; nm[lv]=ac; lv++; }
+cidt == lidt && $1 == "-" { ac++; nm[lv-1]=ac; }
+$1 ~ /^:?[[:alnum:]_]+:/ { nm[lv]=$1; }
+$1 ~ /^:?[[:alnum:]_]+:/ && NF == 1 { print path_join(nm) "="; }
+$1 ~ /^:?[[:alnum:]_]+:/ && NF == 2 { print path_join(nm) "=" $2; }
 # 
-$1 == "-" { nm[lv]=ac++; }
-$1 == "-" && NF == 2 { print path_join(nm) "=" $2; }
-$1 == "-" && $2 ~ /^:?[[:alnum:]_]+:/ && NF == 3 { print path_join(nm) "/" $2 "=" $3; }
+$1 == "-" && $2 ~ /^:?[[:alnum:]_]+:/ { nm[lv]=$2; }
+$1 == "-" && $2 !~ /^:?[[:alnum:]_]+:/ && NF == 2 { print path_join(nm) "=" $2; }
+$1 == "-" && $2 ~ /^:?[[:alnum:]_]+:/ && NF == 3 { print path_join(nm) "=" $3; }
 { lidt=cidt; }'
 }
 
