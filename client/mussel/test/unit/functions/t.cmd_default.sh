@@ -33,7 +33,7 @@ function test_cmd_default_namespace() {
   local namespace=instance
 
   cmd_default ${namespace} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_cmd_default_namespace_cmd() {

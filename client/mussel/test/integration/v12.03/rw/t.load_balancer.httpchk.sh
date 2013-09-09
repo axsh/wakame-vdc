@@ -38,12 +38,12 @@ function test_create_load_balancer_httpchk() {
   local httpchk_path="/index.html"
 
   create_output="$(run_cmd load_balancer create)"
-  assertEquals $? 0
+  assertEquals 0 $?
   assertEquals ${httpchk_path} $(echo "${create_output}" | hash_value httpchk_path)
 
   load_balancer_uuid=$(echo "${create_output}" | hash_value id)
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

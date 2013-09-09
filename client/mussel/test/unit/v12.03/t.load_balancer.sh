@@ -52,7 +52,7 @@ function test_load_balancer_poweroff_no_uuid() {
 function test_load_balancer_poweroff_uuid() {
   extract_args ${namespace} poweroff i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### poweron
@@ -66,7 +66,7 @@ function test_load_balancer_poweron_no_uuid() {
 function test_load_balancer_poweron_uuid() {
   extract_args ${namespace} poweron i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### register
@@ -80,7 +80,7 @@ function test_load_balancer_register_no_uuid() {
 function test_load_balancer_register_uuid() {
   extract_args ${namespace} register i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### unregister
@@ -94,7 +94,7 @@ function test_load_balancer_unregister_no_uuid() {
 function test_load_balancer_unregister_uuid() {
   extract_args ${namespace} unregister i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### update
@@ -108,7 +108,7 @@ function test_load_balancer_update_no_uuid() {
 function test_load_balancer_update_uuid() {
   extract_args ${namespace} update i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

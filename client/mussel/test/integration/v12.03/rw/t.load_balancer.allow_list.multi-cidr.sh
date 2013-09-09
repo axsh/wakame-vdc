@@ -35,10 +35,10 @@ function tearDown() {
 
 function test_create_load_balancer_allow_list_multi_cidr() {
   load_balancer_uuid="$(allow_list="192.0.2.0/24 192.168.0.0/24" run_cmd load_balancer create | hash_value id)"
-  assertEquals $? 0
+  assertEquals 0 $?
 
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -35,7 +35,7 @@ function test_drop_tcp22() {
   run_cmd security_group update ${security_group_uuid}
 
   wait_for_sshd_not_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_accept_tcp22() {
@@ -43,7 +43,7 @@ function test_accept_tcp22() {
   run_cmd security_group update ${security_group_uuid}
 
   wait_for_sshd_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -40,7 +40,7 @@ function test_instance_index_state() {
 function test_instance_create() {
   extract_args ${namespace} create
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### backup
@@ -54,7 +54,7 @@ function test_instance_backup_no_uuid() {
 function test_instance_backup_uuid() {
   extract_args ${namespace} backup i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### reboot
@@ -68,7 +68,7 @@ function test_instance_reboot_no_uuid() {
 function test_instance_reboot_uuid() {
   extract_args ${namespace} reboot i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### stop
@@ -82,7 +82,7 @@ function _test_instance_stop_no_uuid() {
 function _test_instance_stop_uuid() {
   extract_args ${namespace} stop i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### start
@@ -96,7 +96,7 @@ function _test_instance_start_no_uuid() {
 function _test_instance_start_uuid() {
   extract_args ${namespace} start i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### poweroff
@@ -109,7 +109,7 @@ function _test_instance_poweroff_no_uuid() {
 function _test_instance_poweroff_uuid() {
   extract_args ${namespace} poweroff i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_instance_poweroff_force() {
@@ -128,7 +128,7 @@ function test_instance_poweron_no_uuid() {
 function test_instance_poweron_uuid() {
   extract_args ${namespace} poweron i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -26,13 +26,13 @@ function test_create_nested_sg() {
 	icmp:-1,-1,ip4:0.0.0.0/0
 	EOS
   core_sg=$(run_cmd security_group create | hash_value id)
-  assertEquals $? 0
+  assertEquals 0 $?
 
   cat <<-EOS > ${rule_path}
 	icmp:-1,-1,${core_sg}
 	EOS
   shell_sg=$(run_cmd security_group create | hash_value id)
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_destroy_core_sg_before_destroying_shell_sg() {
@@ -42,10 +42,10 @@ function test_destroy_core_sg_before_destroying_shell_sg() {
 
 function test_destroy_nested_sg() {
   run_cmd security_group destroy ${shell_sg}
-  assertEquals $? 0
+  assertEquals 0 $?
 
   run_cmd security_group destroy ${core_sg}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

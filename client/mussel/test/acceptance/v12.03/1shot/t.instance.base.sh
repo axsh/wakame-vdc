@@ -26,17 +26,17 @@ function render_secg_rule() {
 
 function test_get_instance_ipaddr() {
   instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_network_to_be_ready() {
   wait_for_network_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_sshd_to_be_ready() {
   wait_for_sshd_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_compare_instance_hostname() {

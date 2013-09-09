@@ -38,7 +38,7 @@ function test_invoke_task_undefined_task() {
 
 function test_invoke_task_defined_task() {
   invoke_task shunit2 test
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

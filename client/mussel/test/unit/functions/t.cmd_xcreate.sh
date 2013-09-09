@@ -34,7 +34,7 @@ function test_cmd_xcreate_namespace() {
   local namespace=instance
 
   cmd_xcreate ${namespace} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

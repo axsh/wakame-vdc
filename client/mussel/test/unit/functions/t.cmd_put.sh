@@ -52,7 +52,7 @@ function test_cmd_put_namespace_cmd_uuid() {
   local uuid=asdf
 
   cmd_put ${namespace} ${cmd} ${uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -23,7 +23,7 @@ repeat_count=5
 function test_sticky_session() {
   for instance_uuid in $(cat ${instance_uuids_path}); do
     retry_until [[ '"$(curl -fsSkL http://${load_balancer_ipaddr}/)"' == "${instance_uuid}" ]]
-    assertEquals $? 0
+    assertEquals 0 $?
   done
 
   local expected_instance_uuid=$(curl -fsSkL -c ${cookie_path} http://${load_balancer_ipaddr}/)

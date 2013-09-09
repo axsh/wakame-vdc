@@ -28,7 +28,7 @@ function after_create_instance() {
 
 function test_backup_instance() {
   run_cmd instance backup ${instance_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 
