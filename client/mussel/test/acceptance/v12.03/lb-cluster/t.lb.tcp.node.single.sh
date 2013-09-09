@@ -26,10 +26,10 @@ repeat_count=5
 
 function test_register_instances_to_load_balancer() {
   vifs="$(cat ${instance_vifs_path})" run_cmd load_balancer register ${load_balancer_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 
   retry_until "curl -fsSkL http://${load_balancer_ipaddr}:${port}/"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_tcp_for_registerd_lb() {
@@ -48,16 +48,16 @@ function test_http_header() {
 
 function test_unregister_instances_from_load_balancer() {
   vifs="$(cat ${instance_vifs_path})" run_cmd load_balancer unregister ${load_balancer_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 
   retry_while "curl -fsSkL http://${load_balancer_ipaddr}:${port}/"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_tcp_for_unregisterd_lb() {
   for instance_uuid in $(cat ${instance_uuids_path}); do
     retry_while [[ '"$(curl -fsSkL http://${load_balancer_ipaddr}:${port}/)"' == "${instance_uuid}" ]]
-    assertEquals $? 0
+    assertEquals 0 $?
   done
 }
 

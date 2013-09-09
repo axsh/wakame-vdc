@@ -17,24 +17,24 @@ function test_poweroff_load_balancer() {
   # :state: halting
   # :status: online
   run_cmd load_balancer poweroff ${load_balancer_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 
   # :state: halted
   # :status: online
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state halted"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_poweron_load_balancer() {
   # :state: starting
   # :status: online
   run_cmd load_balancer poweron ${load_balancer_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 
   # :state: running
   # :status: online
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -36,7 +36,7 @@ function test_ping_to_known_instances() {
     for known_ipaddr in ${known_ipaddrs}; do
       [[ ${instance_ipaddr} == ${known_ipaddr} ]] && continue
       ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} "ping -c 1 -W 3 ${known_ipaddr}"
-      assertEquals $? 0
+      assertEquals 0 $?
     done
   done
 }

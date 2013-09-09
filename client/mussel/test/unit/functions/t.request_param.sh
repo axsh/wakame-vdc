@@ -18,7 +18,7 @@ function setUp() {
 
 function test_request_param_no_opts() {
   request_param >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_request_param_defined_http() {

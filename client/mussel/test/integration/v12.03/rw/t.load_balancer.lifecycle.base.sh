@@ -27,7 +27,7 @@ function test_create_load_balancer() {
   # :state: scheduling
   # :status: init
   load_balancer_uuid=$(run_cmd load_balancer create | hash_value id)
-  assertEquals $? 0
+  assertEquals 0 $?
 
   # :state: running
   # :status: init
@@ -35,19 +35,19 @@ function test_create_load_balancer() {
   # :state: running
   # :status: online
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_destroy_load_balancer() {
   # :state: shuttingdown
   # :status: online
   run_cmd load_balancer destroy ${load_balancer_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 
   # :state: terminated
   # :status: offline
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state terminated"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

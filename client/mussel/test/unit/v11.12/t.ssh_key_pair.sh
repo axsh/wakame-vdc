@@ -33,7 +33,7 @@ function test_ssh_key_pair_create_no_uuid() {
 function test_ssh_key_pair_create_uuid() {
   extract_args ${namespace} create asdf
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

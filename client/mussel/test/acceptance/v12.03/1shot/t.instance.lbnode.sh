@@ -32,7 +32,7 @@ function test_get_instance_ipaddr() {
 
 function test_wait_for_httpd_to_be_ready() {
   wait_for_httpd_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_compare_instance_uuid_using_http_get() {
