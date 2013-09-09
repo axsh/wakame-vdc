@@ -17,12 +17,12 @@ function test_reboot_instance() {
   # :state: running
   # :status: online
   run_cmd instance reboot ${instance_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 
   # :state: running
   # :status: online
   retry_until "document_pair? instance ${instance_uuid} status online"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

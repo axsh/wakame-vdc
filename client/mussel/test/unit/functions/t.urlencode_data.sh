@@ -18,7 +18,7 @@ function setUp() {
 
 function test_urlencode_data_no_opts() {
   urlencode_data >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_urlencode_data_opts_single() {

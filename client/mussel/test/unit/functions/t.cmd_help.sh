@@ -37,7 +37,7 @@ function test_cmd_help_namespace_cmd() {
   local cmd=show
 
   cmd_help ${namespace} ${cmd} 2>/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

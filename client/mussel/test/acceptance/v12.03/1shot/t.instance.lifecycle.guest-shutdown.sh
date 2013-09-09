@@ -39,7 +39,7 @@ function test_wait_for_network_to_be_ready() {
 
 function test_wait_for_sshd_to_be_ready() {
   wait_for_sshd_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## guest shutdown

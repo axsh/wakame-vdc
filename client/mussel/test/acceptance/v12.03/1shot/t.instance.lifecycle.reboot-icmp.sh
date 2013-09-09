@@ -28,14 +28,14 @@ function render_secg_rule() {
 
 function test_get_instance_ipaddr() {
   instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## reboot
 
 function test_reboot_instance() {
   run_cmd instance reboot ${instance_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_network_not_to_be_ready_after_rebooting() {
@@ -43,7 +43,7 @@ function test_wait_for_network_not_to_be_ready_after_rebooting() {
   [[ "${hypervisor}" = "lxc" ]] && return 0
 
   wait_for_network_not_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_sshd_not_to_be_ready_after_rebooting() {
@@ -51,17 +51,17 @@ function test_wait_for_sshd_not_to_be_ready_after_rebooting() {
   [[ "${hypervisor}" = "lxc" ]] && return 0
 
   wait_for_sshd_not_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_network_to_be_ready_after_rebooting() {
   wait_for_network_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_sshd_to_be_ready_after_rebooting() {
   wait_for_sshd_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

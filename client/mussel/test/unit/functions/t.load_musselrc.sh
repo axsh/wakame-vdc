@@ -34,7 +34,7 @@ function tearDown() {
 
 function test_load_musselrc() {
   load_musselrc
-  assertEquals $? 0
+  assertEquals 0 $?
 
   assertEquals "${DCMGR_HOST}" ""
   assertEquals "${DCMGR_PORT}" ""
@@ -44,7 +44,7 @@ function test_load_musselrc_defined_rcfile_path() {
   MUSSEL_RC=${musselrc_path}
 
   load_musselrc
-  assertEquals $? 0
+  assertEquals 0 $?
 
   assertEquals "${DCMGR_HOST}" "${dcmgr_host}"
   assertEquals "${DCMGR_PORT}" "${dcmgr_port}"

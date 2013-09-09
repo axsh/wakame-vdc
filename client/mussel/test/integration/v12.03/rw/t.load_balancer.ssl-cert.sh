@@ -41,19 +41,19 @@ function tearDown() {
 function test_create_load_balancer_https() {
   load_balancer_uuid="$(port=443 protocol=https instance_protocol=http private_key=${private_key} public_key=${public_key} \
    run_cmd load_balancer create | hash_value id)"
-  assertEquals $? 0
+  assertEquals 0 $?
 
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_create_load_balancer_ssl() {
   load_balancer_uuid="$(port=443 protocol=ssl instance_protocol=tcp private_key=${private_key} public_key=${public_key} \
    run_cmd load_balancer create | hash_value id)"
-  assertEquals $? 0
+  assertEquals 0 $?
 
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -44,7 +44,7 @@ function test_force_poweroff_halting_instance() {
   assertEquals 0 $?
 
   wait_for_sshd_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 
   # stop acpid
   remove_ssh_known_host_entry ${instance_ipaddr}

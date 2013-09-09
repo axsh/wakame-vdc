@@ -43,7 +43,7 @@ function test_create_load_balancer_multiple_protocol_port() {
   assertNotNull "load_balancer_uuid should not be null" "${load_balancer_uuid}"
 
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

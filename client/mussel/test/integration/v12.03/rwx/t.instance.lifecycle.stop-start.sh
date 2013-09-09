@@ -17,24 +17,24 @@ function _test_stop_instance() {
   # :state: stopping
   # :status: online
   run_cmd instance stop ${instance_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 
   # :state: stopped
   # :status: online
   retry_until "document_pair? instance ${instance_uuid} state stopped"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function _test_start_instance() {
   # :state: initializing
   # :status: online
   run_cmd instance start ${instance_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 
   # :state: running
   # :status: online
   retry_until "document_pair? instance ${instance_uuid} state running"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

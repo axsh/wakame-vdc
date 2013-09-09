@@ -32,7 +32,7 @@ function test_instance_help_stderr_to_stdout_success() {
 function test_instance_create_no_opts() {
   extract_args ${namespace} create
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_instance_create_opts() {
@@ -41,7 +41,7 @@ function test_instance_create_opts() {
 
   extract_args ${namespace} create
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### reboot
@@ -49,7 +49,7 @@ function test_instance_create_opts() {
 function test_instance_reboot_uuid() {
   extract_args ${namespace} reboot i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_instance_reboot_no_uuid() {
@@ -63,7 +63,7 @@ function test_instance_reboot_no_uuid() {
 function test_instance_stop_uuid() {
   extract_args ${namespace} stop i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_instance_stop_no_uuid() {
@@ -77,7 +77,7 @@ function test_instance_stop_no_uuid() {
 function test_instance_start_uuid() {
   extract_args ${namespace} start i-xxx
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_instance_start_no_uuid() {
