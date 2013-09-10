@@ -68,7 +68,7 @@ function step_base_show_uuids() {
   while read uuid; do
     run_cmd ${namespace} show ${uuid} >/dev/null
     assertEquals 0 $?
-  done < <(base_index_uuids)
+  done < <(base_index_uuids | head)
 }
 
 function step_base_show_invalid_uuid_syntax() {
