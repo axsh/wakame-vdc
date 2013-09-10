@@ -16,20 +16,28 @@ task :environment do
 end
 
 namespace :db do
-  desc 'Create all database tables'
-  task :init => [ :environment ] do
+  desc 'Up all database migrations'
+  task :up => [ :environment ] do
     Dcmgr.run_initializers('logger', 'sequel')
 
     Sequel.extension :migration
     Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 9999)
   end
 
-  desc 'Drop all database tables'
-  task :drop => [ :environment ] do
+  desc 'Down all database migrations'
+  task :down => [ :environment ] do
     Dcmgr.run_initializers('logger', 'sequel')
 
     Sequel.extension :migration
     Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 0)
+  end
+
+  task :init => [:up] do
+    STDERR.puts "WARN: deprecated task. Please use db:up."
+  end
+
+  task :drop => [:down] do
+    STDERR.puts "WARN: deprecated task. Please use db:down."
   end
 end
 
