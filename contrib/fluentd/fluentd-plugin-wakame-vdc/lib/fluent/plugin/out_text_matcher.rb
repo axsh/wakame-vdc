@@ -94,11 +94,6 @@ MetricLibs::Alarm.class_eval do
           :evaluated_at => @last_evaluated_at
         })
       }
-    else
-      notification_logs.push({
-        :evaluated_value => "",
-        :evaluated_at => @last_evaluated_at
-      })
     end
   end
 
