@@ -29,7 +29,7 @@ MetricLibs::Alarm.class_eval do
       logs = logs.collect {|l|
         match_count += 1 unless l.value[:evaluated_value].empty?
         {
-          :evaluated_value => l.value[:evaluated_value],
+          :evaluated_value => encode_str(l.value[:evaluated_value]),
           :evaluated_at => l.value[:evaluated_at].iso8601
         }
       }
@@ -55,10 +55,10 @@ MetricLibs::Alarm.class_eval do
       :metric_name => @metric_name,
       :resource_id => @resource_id,
       :ipaddr => @ipaddr,
-      :match_value => @match_value,
+      :match_value => encode_str(@match_value),
       :tag => @tag,
       :logs => logs,
-      :display_name => @display_name,
+      :display_name => encode_str(@display_name),
       :match_count => match_count,
       :limit_log => limit_log,
       :notification_periods => @notification_periods,
@@ -130,6 +130,10 @@ MetricLibs::Alarm.class_eval do
     @errors = {}
   end
 
+  private
+  def encode_str(text)
+    URI.encode(text)
+  end
 end
 
 class LogAlarmManager < MetricLibs::AlarmManager
@@ -252,7 +256,7 @@ module Fluent
       config.each {|k ,v|
         if k.match(alarm_pattern)
 
-          values = CSV.parse_line(URI.decode(v))
+          values = CSV.parse_line(decode_str(v))
           alarm_actions = {}
           resource_id = values[0]
           alarm_id = values[1]
@@ -458,6 +462,11 @@ module Fluent
     end
 
     private
+
+      def decode_str(text)
+        URI.decode(text)
+      end
+
     def debug_mode?
       $log.level <= Fluent::Log::LEVEL_DEBUG
     end
