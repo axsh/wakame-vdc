@@ -205,3 +205,15 @@ function destroy_instance() {
         _destroy_instance
    after_destroy_instance
 }
+
+# help to switch test scinarios for container type $hypervisor.
+function is_container_hypervisor() {
+  case "${hypervisor}" in
+  openvz|lxc)
+    return 0
+    ;;
+  *)
+    return 1
+    ;;
+  esac
+}

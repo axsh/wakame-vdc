@@ -32,7 +32,11 @@ function setUp() {
 # shutdown everything.
 function test_backup_second_blank_volume() {
   # boot instance with second blank volume.
-  volumes_args="volumes[0][size]=1G volumes[0][volume_type]=local"
+  if is_container_hypervisor; then
+    volumes_args="volumes[0][size]=1G volumes[0][volume_type]=local volumes[0][guest_device_name]=/mnt/tmp"
+  else
+    volumes_args="volumes[0][size]=1G volumes[0][volume_type]=local"
+  fi
   create_instance
 
   run_cmd instance poweroff ${instance_uuid} >/dev/null
@@ -70,7 +74,11 @@ function test_backup_second_volume_from_backup() {
   local backup_obj_uuid=$(yfind ':backup_object_id:' < $last_result_path)
 
   # boot instance with second blank volume.
-  volumes_args="volumes[0][backup_object_id]=${backup_obj_uuid} volumes[0][volume_type]=local"
+  if is_container_hypervisor; then
+    volumes_args="volumes[0][backup_object_id]=${backup_obj_uuid} volumes[0][volume_type]=local volumes[0][guest_device_name]=/mnt/tmp"
+  else
+    volumes_args="volumes[0][backup_object_id]=${backup_obj_uuid} volumes[0][volume_type]=local"
+  fi
   create_instance
 
   run_cmd instance poweroff ${instance_uuid} >/dev/null
