@@ -16,6 +16,7 @@ module Dcmgr
         @output_file = Dcmgr.conf.logging_service_conf
         @dolphin_server_uri = Dcmgr.conf.dolphin_server_uri
         @max_read_message_bytes = Dcmgr.conf.logging_service_max_read_message_bytes
+        @max_match_count = Dcmgr.conf.logging_service_max_match_count
       end
 
       def set_alarms(alm)
