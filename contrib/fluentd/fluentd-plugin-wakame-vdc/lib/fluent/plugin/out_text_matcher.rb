@@ -90,7 +90,7 @@ MetricLibs::Alarm.class_eval do
     if @last_evaluated_value.length > 0
       @last_evaluated_value.each.collect {|v|
         notification_logs.push({
-          :evaluated_value => v[:match_ranges].reverse.join("\n"),
+          :evaluated_value => v[:match_ranges].join("\n"),
           :evaluated_at => @last_evaluated_at
         })
       }
