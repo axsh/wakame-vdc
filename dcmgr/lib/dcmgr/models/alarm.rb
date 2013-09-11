@@ -65,6 +65,10 @@ module Dcmgr::Models
             unless values.has_key? 'notification_id'
               errors.add(:notification_id, 'Unknown value')
             end
+
+            unless values.has_key? 'notification_message_type'
+              errors.add(:notification_message_type, 'Unknown value')
+            end
           else
             errors.add(action_name.to_sym, "Invalid notification type")
           end
