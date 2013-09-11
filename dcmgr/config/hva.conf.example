@@ -43,6 +43,7 @@ config.logging_service_port = 8888
 config.logging_service_conf = '/var/lib/wakame-vdc/fluent.conf'
 config.logging_service_reload = '/etc/init.d/td-agent reload'
 config.logging_service_max_read_message_bytes = -1
+config.logging_service_max_match_count = -1
 
 # Path for brctl
 config.brctl_path = '/usr/sbin/brctl'

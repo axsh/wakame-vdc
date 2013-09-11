@@ -10,12 +10,12 @@ MetricLibs::Alarm.class_eval do
     1 => 'read alarm logs over the limit'
   }.freeze
 
-  attr_accessor :ipaddr, :notification_timer, :next_timer
+  attr_accessor :ipaddr, :notification_timer, :next_timer, :match_count
 
   def send_alarm_notification
     message = {}
     logs = []
-    match_count = 0
+    total_match_count = 0
     limit_log = {
       :exceeded => 0,
       :errors_at => []
@@ -27,7 +27,7 @@ MetricLibs::Alarm.class_eval do
     else
       logs = notification_logs.find_all.to_a
       logs = logs.collect {|l|
-        match_count += 1 unless l.value[:evaluated_value].empty?
+        total_match_count += 1 unless l.value[:evaluated_value].empty?
         {
           :evaluated_value => encode_str(l.value[:evaluated_value]),
           :evaluated_at => l.value[:evaluated_at].iso8601
@@ -35,7 +35,7 @@ MetricLibs::Alarm.class_eval do
       }
     end
 
-    if errors.count > 0 || match_count > 0
+    if errors.count > 0 || total_match_count > 0
       message[:notification_id] = @alarm_actions[:notification_id]
       message[:message_type] = @alarm_actions[:message_type]
       state = 'alarm'
@@ -59,13 +59,13 @@ MetricLibs::Alarm.class_eval do
       :tag => @tag,
       :logs => logs,
       :display_name => encode_str(@display_name),
-      :match_count => match_count,
+      :match_count => total_match_count,
       :limit_log => limit_log,
       :notification_periods => @notification_periods,
       :notified_at => notified_at.iso8601
     }
 
-    if errors.count > 0 || match_count > 0
+    if errors.count > 0 || total_match_count > 0
       DolphinClient::Event.post(message)
       $log.info("[#{uuid}] send message to dolphin.")
       @last_notified_at = notified_at
@@ -220,6 +220,7 @@ module Fluent
     config_param :dolphin_server_uri
     config_param :tag, :string, :default => 'textmatch'
     config_param :max_read_message_bytes, :integer, :default => -1
+    config_param :max_match_count, :integer, :default => -1
 
     # Parserd name key on fluent of Guest VM
     MATCH_KEY = 'message'.freeze
@@ -236,6 +237,7 @@ module Fluent
     def configure(conf)
       $log.info("Load config: #{conf}")
       $log.info("max_read_message_bytes=\"#{@max_read_message_bytes}\"")
+      $log.info("max_match_count=\"#{@max_match_count}\"")
 
       alarm_pattern = /^alarm([0-9]+)$/
       Fluent::TextMatcherOutput.module_eval do
@@ -273,7 +275,8 @@ module Fluent
               :enabled => enabled,
               :alarm_actions => alarm_actions,
               :metric_name => 'log',
-              :display_name => display_name
+              :display_name => display_name,
+              :max_match_count => @max_match_count
             }
             @alarm_manager.update(alarm)
             $log.info("set alarm: #{alarm}")
@@ -449,6 +452,9 @@ module Fluent
 
       alarms.each {|alm|
         alm.evaluate
+        if @max_match_count != -1 && alm.max_match_count < alm.match_count
+          $log.warn "[#{alm.uuid}] max_match_count over #{@max_match_count}."
+        end
         $log.info("[#{resource_id}] [#{instance_tag}] [#{alm.uuid}] evaluated")
         alm.save_notification_logs
         alm.clear_alarm_logs

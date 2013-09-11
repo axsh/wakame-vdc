@@ -48,15 +48,17 @@ module MetricLibs
           update_state(evaluated_value.method(SUPPORT_COMPARISON_OPERATOR[@params["comparison_operator"]]).call(@params["threshold"]) ? ALARM_STATE : OK_STATE)
         when 'log'
           tmp = []
-          match_count = 0
+          @match_count = 0
           match_indexes = []
           line_no = 0
 
           @timeseries.find_all.reverse_each {|t|
             tmp << t.value
             if (t.value.is_a? String) && t.value.index(match_pattern)
-              match_indexes << line_no
-              match_count += 1
+              @match_count += 1
+              if @max_match_count >= @match_count || @max_match_count == -1
+                match_indexes << line_no
+              end
             end
             line_no += 1
           }
