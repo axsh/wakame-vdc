@@ -127,7 +127,7 @@ MetricLibs::Alarm.class_eval do
 
   private
   def encode_str(text)
-    URI.encode(text)
+    URI.encode_www_form_component(text)
   end
 end
 
@@ -459,7 +459,7 @@ module Fluent
     private
 
       def decode_str(text)
-        URI.decode(text)
+        URI.decode_www_form_component(text)
       end
 
     def debug_mode?
