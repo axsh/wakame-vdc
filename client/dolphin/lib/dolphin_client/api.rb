@@ -3,6 +3,8 @@ require 'weary'
 
 module DolphinClient
   class API < Weary::Client
+
+    use Weary::Middleware::ContentType, 'application/json'
     use Rack::Lint
 
     get :get_events, "events" do |resource|
