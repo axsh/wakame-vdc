@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_strfile_type_no_opts() {
   strfile_type 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_strfile_type_opts_str() {

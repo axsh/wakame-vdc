@@ -18,7 +18,7 @@ function setUp() {
 
 function test_vmbuilder_path() {
   vmbuilder_path
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

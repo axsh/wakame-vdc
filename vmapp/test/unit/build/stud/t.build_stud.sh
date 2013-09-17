@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_build_stud() {
   build_stud ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

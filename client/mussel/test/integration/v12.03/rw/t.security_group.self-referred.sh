@@ -39,7 +39,7 @@ function test_allow_self_sg() {
 
 function test_destroy_self_referred_sg() {
   run_cmd security_group destroy ${sg_uuid}
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_flush_sg() {

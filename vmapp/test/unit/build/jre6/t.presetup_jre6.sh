@@ -25,7 +25,7 @@ function tearDown() {
 
 function test_presetup_jre6() {
   presetup_jre6 ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

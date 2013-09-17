@@ -30,7 +30,7 @@ function tearDown() {
 
 function test_presetup_lb() {
   presetup_lb ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

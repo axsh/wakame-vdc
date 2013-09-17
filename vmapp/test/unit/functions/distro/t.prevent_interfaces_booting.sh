@@ -33,28 +33,28 @@ function test_prevent_interfaces_booting_no_opts() {
   local nics=
 
   prevent_interfaces_booting ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_prevent_interfaces_booting_single() {
   local nics=eth0
 
   prevent_interfaces_booting ${chroot_dir} ${nics}
-  assertEquals $? 0
+  assertEquals 0 $?
 
   egrep -q -w "^ONBOOT=no" ${chroot_dir}/etc/sysconfig/network-scripts/ifcfg-eth0
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_prevent_interfaces_booting_multi() {
   local nics="eth0 eth1"
   prevent_interfaces_booting ${chroot_dir} ${nics}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_prevent_interfaces_booting_wildcard() {
   prevent_interfaces_booting ${chroot_dir} eth*
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 

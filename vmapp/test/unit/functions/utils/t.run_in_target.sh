@@ -28,7 +28,7 @@ function tearDown() {
 
 function test_run_in_target() {
  run_in_target ${chroot_dir} date | egrep -q "chroot ${chroot_dir} bash -e -c date"
- assertEquals $? 0
+ assertEquals 0 $?
 }
 
 ## shunit2

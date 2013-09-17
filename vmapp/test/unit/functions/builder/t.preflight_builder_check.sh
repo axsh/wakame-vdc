@@ -24,21 +24,21 @@ function tearDown() {
 
 function test_preflight_builder_check() {
   preflight_builder_check
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_preflight_builder_check_execscript_not_found() {
   rm ${suite_path}/execscript.sh
 
   preflight_builder_check
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_preflight_builder_check_imageini_not_found() {
   rm ${suite_path}/image.ini
 
   preflight_builder_check
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 ## shunit2

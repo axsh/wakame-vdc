@@ -41,7 +41,7 @@ function test_volume_create_uuid() {
 function test_volume_attach_no_uuid() {
   extract_args ${namespace} attach
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_volume_attach_uuid() {
@@ -55,7 +55,7 @@ function test_volume_attach_uuid() {
 function test_volume_detach_no_uuid() {
   extract_args ${namespace} detach
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_volume_detach_uuid() {

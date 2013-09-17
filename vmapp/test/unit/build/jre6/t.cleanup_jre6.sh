@@ -26,7 +26,7 @@ function tearDown() {
 
 function test_cleanup_jre6() {
   cleanup_jre6 ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

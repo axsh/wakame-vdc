@@ -70,7 +70,7 @@ function tearDown() {
 
 function test_flush_etc_sysctl() {
   flush_etc_sysctl ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 
   assertEquals "$(cat ${chroot_dir}/etc/sysctl.conf)" ""
 }

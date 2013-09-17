@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_unprevent_nginx_starting() {
   unprevent_nginx_starting ${chroot_dir} | egrep -q -w "^chroot ${chroot_dir} bash -e -c chkconfig nginx on"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

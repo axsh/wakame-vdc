@@ -29,7 +29,7 @@ function tearDown() {
 
 function test_build_vm() {
   build_vm ${suite_path}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

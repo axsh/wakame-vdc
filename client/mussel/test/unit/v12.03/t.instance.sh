@@ -48,7 +48,7 @@ function test_instance_create() {
 function test_instance_backup_no_uuid() {
   extract_args ${namespace} backup
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_instance_backup_uuid() {
@@ -62,7 +62,7 @@ function test_instance_backup_uuid() {
 function test_instance_reboot_no_uuid() {
   extract_args ${namespace} reboot
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_instance_reboot_uuid() {
@@ -76,7 +76,7 @@ function test_instance_reboot_uuid() {
 function _test_instance_stop_no_uuid() {
   extract_args ${namespace} stop
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function _test_instance_stop_uuid() {
@@ -90,7 +90,7 @@ function _test_instance_stop_uuid() {
 function _test_instance_start_no_uuid() {
   extract_args ${namespace} start
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function _test_instance_start_uuid() {
@@ -103,7 +103,7 @@ function _test_instance_start_uuid() {
 function _test_instance_poweroff_no_uuid() {
   extract_args ${namespace} poweroff
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function _test_instance_poweroff_uuid() {
@@ -122,7 +122,7 @@ function test_instance_poweroff_force() {
 function test_instance_poweron_no_uuid() {
   extract_args ${namespace} poweron
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_instance_poweron_uuid() {

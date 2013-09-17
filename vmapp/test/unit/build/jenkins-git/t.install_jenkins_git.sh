@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_install_jenkins_git() {
   install_jenkins_git ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_configure_ntp() {
   configure_ntp ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

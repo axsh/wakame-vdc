@@ -14,7 +14,7 @@
 
 function test_render_datastax_repo() {
   render_datastax_repo
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

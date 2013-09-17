@@ -40,7 +40,7 @@ function test_base_index() {
 function test_base_show_no_uuid() {
   extract_args ${namespace} show
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_base_show_uuid() {
@@ -54,7 +54,7 @@ function test_base_show_uuid() {
 function test_base_destroy_no_uuid() {
   extract_args ${namespace} destroy
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_base_destroy_uuid() {
