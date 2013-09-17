@@ -19,7 +19,7 @@ declare namespace=undefined
 function test_undefined_help() {
   extract_args ${namespace} help
   run_cmd  ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 ## shunit2

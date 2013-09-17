@@ -68,7 +68,7 @@ test_shlog_MUSSEL_LOGLEVEL_empty_fail() {
 #
 test_shlog_command_not_found_success() {
   `shlog typo hello 2>/dev/null`
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 #

@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_deploy_rabbitmq_c() {
   deploy_rabbitmq_c ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

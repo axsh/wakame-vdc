@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_install_ntp_rpm() {
   install_ntp_rpm ${chroot_dir} | egrep -q -w "^chroot ${chroot_dir} bash -e -c yum install -y ntp"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

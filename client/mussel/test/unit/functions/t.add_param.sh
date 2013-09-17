@@ -18,7 +18,7 @@ function setUp() {
 
 function test_add_param_no_opts() {
   add_param >/dev/null 2>&1
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_add_param_key_z() {

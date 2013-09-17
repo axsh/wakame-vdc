@@ -30,7 +30,7 @@ function test_prevent_daemons_starting_single() {
   local svcs=sshd
 
   prevent_daemons_starting ${chroot_dir} ${svcs} | egrep "chkconfig ${svcs} off$"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_prevent_daemons_starting_multi() {

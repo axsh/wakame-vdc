@@ -28,7 +28,7 @@ function tearDown() {
 
 function test_prepare_fcgiwrap() {
   prepare_fcgiwrap ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

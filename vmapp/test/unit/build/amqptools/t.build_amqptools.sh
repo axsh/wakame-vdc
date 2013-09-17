@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_build_amqptools() {
   build_amqptools ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

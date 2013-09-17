@@ -14,7 +14,7 @@
 
 function test_ini_section_no_opts() {
   mycnf | ini_section
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_ini_section_known_section() {

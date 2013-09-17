@@ -22,7 +22,7 @@ function tearDown() {
 
 function test_install_datastax_repo() {
   install_datastax_repo ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

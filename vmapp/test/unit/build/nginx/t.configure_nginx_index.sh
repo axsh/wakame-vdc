@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_configure_nginx_index() {
   configure_nginx_index ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

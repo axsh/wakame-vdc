@@ -37,7 +37,7 @@ function test_create_nested_sg() {
 
 function test_destroy_core_sg_before_destroying_shell_sg() {
   run_cmd security_group destroy ${core_sg}
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_destroy_nested_sg() {
