@@ -25,7 +25,7 @@ function tearDown() {
 
 function test_configure_fcgiwrap_nginx() {
   configure_fcgiwrap_nginx ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_prepare_chromedriver() {
   prepare_chromedriver ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

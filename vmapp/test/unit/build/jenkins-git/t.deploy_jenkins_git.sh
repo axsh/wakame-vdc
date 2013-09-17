@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_deploy_jenkins_git() {
   deploy_jenkins_git ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

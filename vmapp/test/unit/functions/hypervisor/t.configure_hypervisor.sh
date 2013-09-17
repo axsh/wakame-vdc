@@ -29,19 +29,19 @@ function tearDown() {
 function test_configure_hypervisor() {
   VDC_HYPERVISOR=
   configure_hypervisor ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_configure_hypervisor_lxc() {
   VDC_HYPERVISOR=lxc
   configure_hypervisor ${chroot_dir} | egrep -q -w "flush_etc_sysctl ${chroot_dir}"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_configure_hypervisor_unknown() {
   VDC_HYPERVISOR=unknown
   configure_hypervisor ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_presetup_libev() {
   presetup_libev ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

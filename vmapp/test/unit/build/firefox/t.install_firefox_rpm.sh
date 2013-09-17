@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_install_firefox_rpm() {
   install_firefox ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

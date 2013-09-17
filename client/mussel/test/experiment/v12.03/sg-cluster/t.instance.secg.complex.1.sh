@@ -117,11 +117,11 @@ function test_complex_security_group() {
 
   # from aaa_1
   ssh ${ssh_user}@${ipaddr_aaa_1} -i ${ssh_key_pair_path} "ping -c 1 -W 3 ${ipaddr_aaa_2}"
-  assertNotEquals "aaa_1 -> aaa_2" $? 0
+  assertNotEquals "aaa_1 -> aaa_2" 0 $?
 
   # from aaa_2
   ssh ${ssh_user}@${ipaddr_aaa_2} -i ${ssh_key_pair_path} "ping -c 1 -W 3 ${ipaddr_aaa_1}"
-  assertNotEquals "aaa_2 -> aaa_1" $? 0
+  assertNotEquals "aaa_2 -> aaa_1" 0 $?
 }
 
 ## shunit2

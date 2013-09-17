@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_presetup_jenkins_git() {
   presetup_jenkins_git ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

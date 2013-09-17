@@ -14,7 +14,7 @@
 
 function test_render_fcgiwrap_nginx() {
   render_fcgiwrap_nginx
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

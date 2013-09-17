@@ -14,7 +14,7 @@
 
 function test_render_fcgiwrap_spawn_fcgi() {
   render_fcgiwrap_spawn_fcgi
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

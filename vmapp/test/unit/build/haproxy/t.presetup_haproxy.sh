@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_presetup_haproxy() {
   presetup_haproxy ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

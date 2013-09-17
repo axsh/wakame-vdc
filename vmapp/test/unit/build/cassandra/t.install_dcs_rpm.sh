@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_install_dsc_rpm() {
   install_dsc_rpm ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -25,7 +25,7 @@ function tearDown() {
 
 function test_verify_cassandra() {
   verify_cassandra ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

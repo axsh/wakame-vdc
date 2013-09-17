@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_install_jenkins() {
   install_jenkins ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

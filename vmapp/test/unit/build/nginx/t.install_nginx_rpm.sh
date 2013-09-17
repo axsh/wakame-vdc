@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_install_nginx_rpm() {
   install_nginx_rpm ${chroot_dir} | egrep -q -w "^chroot ${chroot_dir} bash -e -c yum install -y nginx"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2
