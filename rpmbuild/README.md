@@ -25,7 +25,7 @@ For OpenVZ container support, add another repository.
 
 Install epel-release.
 
-    # yum install -y http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release
+    # rpm -Uvh http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release
 
 ### Dcmgr installation
 
