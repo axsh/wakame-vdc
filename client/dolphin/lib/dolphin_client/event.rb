@@ -15,10 +15,11 @@ module DolphinClient
           client.headers.update "X-Message-Type" => data[:message_type]
         end
 
-        client.post_events {|request|
+        response = client.post_events {|request|
           request.uri = DolphinClient.domain + request.uri.to_s
           request.json data[:params]
         }.perform
+        client.finish(response)
       end
 
       def get
@@ -26,7 +27,7 @@ module DolphinClient
         response = client.get_events{|request|
           request.uri = DolphinClient.domain + request.uri.to_s
         }.perform
-        MultiJson.load(response.body) if response.success?
+        client.finish(response)
       end
     end
   end

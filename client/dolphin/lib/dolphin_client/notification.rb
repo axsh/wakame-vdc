@@ -10,7 +10,7 @@ module DolphinClient
         response = client.get_notifications{|request|
           request.uri = DolphinClient.domain + request.uri.to_s
         }.perform
-        MultiJson.load(response.body) if response.success?
+        client.finish(response)
       end
     end
   end
