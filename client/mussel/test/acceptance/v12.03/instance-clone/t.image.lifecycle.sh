@@ -20,7 +20,7 @@ backup_object_uuid=
 new_image_uuid=
 
 hostname_txt=hostname.txt
-ssh_user=root
+ssh_user=${ssh_user:-root}
 
 ## functions
 

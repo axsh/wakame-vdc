@@ -12,6 +12,8 @@
 
 ## variables
 
+ssh_user=${ssh_user:-root}
+
 ## functions
 
 function render_secg_rule() {
@@ -42,7 +44,7 @@ function test_wait_for_sshd_to_be_ready() {
 function test_compare_instance_hostname() {
   assertEquals \
     "$(run_cmd instance show ${instance_uuid} | hash_value hostname)" \
-    "$(ssh root@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)"
+    "$(ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)"
 }
 
 ## shunit2
