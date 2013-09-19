@@ -56,6 +56,13 @@ function test_volume_backup_under_instances() {
   assertEquals 0 $?
 
   retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
+  assertEquals 0 $?
+
+  run_cmd backup_object destroy ${backup_obj_uuid}
+  assertEquals 0 $?
+
+  document_pair? backup_object ${backup_obj_uuid} state deleted
+  assertEquals 0 $?
 }
 
 # PUT $base_uri/volumes/vol-xxxxxx/backup
@@ -75,6 +82,13 @@ function test_volume_backup_under_volumes() {
   assertEquals 0 $?
 
   retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
+  assertEquals 0 $?
+
+  run_cmd backup_object destroy ${backup_obj_uuid}
+  assertEquals 0 $?
+
+  document_pair? backup_object ${backup_obj_uuid} state deleted
+  assertEquals 0 $?
 }
 
 ## shunit2
