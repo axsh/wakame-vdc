@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+require 'dolphin_client'
 require 'metric_libs'
 require 'yaml'
 require 'time'
@@ -66,9 +67,20 @@ MetricLibs::Alarm.class_eval do
     }
 
     if errors.count > 0 || total_match_count > 0
-      DolphinClient::Event.post(message)
-      $log.info("[#{uuid}] send message to dolphin.")
-      @last_notified_at = notified_at
+      begin
+        response = DolphinClient::Event.post(message)
+        status = response[0]
+        if status == 200
+          $log.info("[#{uuid}] send message to dolphin.")
+        else
+          raise response[1]
+        end
+      rescue => e
+        $log.error("[#{uuid}] failed to send message to dolphin.")
+        $log.error("[#{uuid}] #{e.message}")
+      ensure
+        @last_notified_at = notified_at
+      end
     else
       # Doesn't send notification to dolphin.
       $log.debug(message)
@@ -227,7 +239,6 @@ module Fluent
 
     def initialize
       super
-      require 'dolphin_client'
       require 'csv'
 
       @alarm_manager = LogAlarmManager.new
