@@ -26,10 +26,12 @@ function setUp() {
 
 ### step
 
-# boot instance with second blank volume.
-# poweroff the instance.
-# backup the second volume.
-# shutdown everything.
+# API test for second volume backup.
+#
+# 1. boot instance with second blank volume.
+# 2. poweroff the instance.
+# 3. backup the second volume.
+# 4. shutdown everything.
 function test_backup_second_blank_volume() {
   # boot instance with second blank volume.
   if is_container_hypervisor; then
@@ -65,10 +67,12 @@ function test_backup_second_blank_volume() {
   assertEquals 0 $?
 }
 
-# boot instance with second volume from backup.
-# poweroff the instance.
-# backup the second volume.
-# shutdown everything.
+# API test for second volume backup.
+#
+# 1. boot instance with second volume from backup.
+# 2. poweroff the instance.
+# 3. backup the second volume.
+# 4. shutdown everything.
 function test_backup_second_volume_from_backup() {
   run_cmd image show ${image_id} | ydump > $last_result_path
   local backup_obj_uuid=$(yfind ':backup_object_id:' < $last_result_path)
