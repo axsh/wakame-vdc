@@ -83,7 +83,9 @@ function curl_opts() {
 }
 
 function request_header() {
-  echo -H X_VDC_ACCOUNT_UUID:${account_id}
+  if [[ -n "${account_id}" ]]; then
+    echo -H X_VDC_ACCOUNT_UUID:${account_id}
+  fi
 }
 
 function request_param() {

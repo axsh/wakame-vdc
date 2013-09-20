@@ -19,7 +19,11 @@ function setUp() {
 ### opts
 
 function test_request_header() {
-  assertEquals "$(request_header)" "-H X_VDC_ACCOUNT_UUID:${account_id}"
+  assertEquals "-H X_VDC_ACCOUNT_UUID:${account_id}" "$(request_header)"
+}
+
+function test_request_header_empty_id() {
+  assertEquals "" "$(account_id= request_header)"
 }
 
 ## shunit2
