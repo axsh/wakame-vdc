@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'wakame-dolphin', '0.0.4'
+gem 'wakame-dolphin', '0.0.5'
 
 # 1. vdc-dolphin requires gem packages
 # 2. *should be* same version of wakame-dolphin/Gemfile

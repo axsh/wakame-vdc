@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+require 'dolphin_client'
 require 'metric_libs'
 require 'yaml'
 require 'time'
@@ -7,7 +8,8 @@ require 'uri'
 MetricLibs::Alarm.class_eval do
 
   ALARM_ERRORS = {
-    1 => 'read alarm logs over the limit'
+    100 => 'read alarm logs over the limit',
+    101 => 'text match count over the limit'
   }.freeze
 
   attr_accessor :ipaddr, :notification_timer, :next_timer, :match_count
@@ -20,6 +22,12 @@ MetricLibs::Alarm.class_eval do
       :exceeded => 0,
       :errors_at => []
     }
+
+    limit_match_count = {
+      :exceeded => 0,
+      :errors_at => []
+    }
+
     state = 'ok'
 
     if notification_logs.length == 0
@@ -41,10 +49,17 @@ MetricLibs::Alarm.class_eval do
       state = 'alarm'
     end
 
-    error_no = 1
-    if @errors.has_key?(error_no)
-      limit_log[:exceeded] = error_no
-      limit_log[:errors_at] = @errors[error_no].collect {|e| e[:at].iso8601}
+
+    limit_log_errno = 100
+    if @errors.has_key?(limit_log_errno)
+      limit_log[:exceeded] = 1
+      limit_log[:errors_at] = @errors[limit_log_errno].collect {|e| e[:at].iso8601}
+    end
+
+    limit_match_count_errno = 101
+    if @errors.has_key?(limit_match_count_errno)
+      limit_match_count[:exceeded] = 1
+      limit_match_count[:errors_at] = @errors[limit_match_count_errno].collect {|e| e[:at].iso8601}
     end
 
     notified_at = Time.now
@@ -61,14 +76,26 @@ MetricLibs::Alarm.class_eval do
       :display_name => encode_str(@display_name),
       :match_count => total_match_count,
       :limit_log => limit_log,
+      :limit_match_count => limit_match_count,
       :notification_periods => @notification_periods,
       :notified_at => notified_at.iso8601
     }
 
     if errors.count > 0 || total_match_count > 0
-      DolphinClient::Event.post(message)
-      $log.info("[#{uuid}] send message to dolphin.")
-      @last_notified_at = notified_at
+      begin
+        response = DolphinClient::Event.post(message)
+        status = response[0]
+        if status == 200
+          $log.info("[#{uuid}] send message to dolphin.")
+        else
+          raise response[1]
+        end
+      rescue => e
+        $log.error("[#{uuid}] failed to send message to dolphin.")
+        $log.error("[#{uuid}] #{e.message}")
+      ensure
+        @last_notified_at = notified_at
+      end
     else
       # Doesn't send notification to dolphin.
       $log.debug(message)
@@ -227,7 +254,6 @@ module Fluent
 
     def initialize
       super
-      require 'dolphin_client'
       require 'csv'
 
       @alarm_manager = LogAlarmManager.new
@@ -442,7 +468,7 @@ module Fluent
               'time' => Time.at(time)
             })
           else
-            alm.add_errors(1)
+            alm.add_errors(100)
             $log.warn "can't read message bytes over #{@max_read_message_bytes} bytes for #{alm.uuid}"
             break
           end
@@ -453,6 +479,7 @@ module Fluent
       alarms.each {|alm|
         alm.evaluate
         if @max_match_count != -1 && alm.max_match_count < alm.match_count
+          alm.add_errors(101)
           $log.warn "[#{alm.uuid}] max_match_count over #{@max_match_count}."
         end
         $log.info("[#{resource_id}] [#{instance_tag}] [#{alm.uuid}] evaluated")
