@@ -8,7 +8,7 @@ require 'uri'
 MetricLibs::Alarm.class_eval do
 
   ALARM_ERRORS = {
-    1 => 'read alarm logs over the limit'
+    100 => 'read alarm logs over the limit',
   }.freeze
 
   attr_accessor :ipaddr, :notification_timer, :next_timer, :match_count
@@ -42,10 +42,11 @@ MetricLibs::Alarm.class_eval do
       state = 'alarm'
     end
 
-    error_no = 1
-    if @errors.has_key?(error_no)
-      limit_log[:exceeded] = error_no
-      limit_log[:errors_at] = @errors[error_no].collect {|e| e[:at].iso8601}
+
+    limit_log_errno = 100
+    if @errors.has_key?(limit_log_errno)
+      limit_log[:exceeded] = 1
+      limit_log[:errors_at] = @errors[limit_log_errno].collect {|e| e[:at].iso8601}
     end
 
     notified_at = Time.now
@@ -453,7 +454,7 @@ module Fluent
               'time' => Time.at(time)
             })
           else
-            alm.add_errors(1)
+            alm.add_errors(100)
             $log.warn "can't read message bytes over #{@max_read_message_bytes} bytes for #{alm.uuid}"
             break
           end
