@@ -34,7 +34,7 @@ function test_mount_local_volume() {
 	# mount
 	${sudo} mount ${dev_path} /mnt
 	# disk-usage
-	df -h
+	df -P -h
 	EOS
   assertEquals 0 $?
 

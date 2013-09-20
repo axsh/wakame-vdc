@@ -34,12 +34,12 @@ function test_local_volume_disk_full() {
 	# mount
 	${sudo} mount ${dev_path} /mnt
 	# disk-usage
-	df -h
+	df -P -h
 	echo ... use disk usage 100%
 	time ${sudo} dd if=/dev/urandom of=/mnt/test.data
 	echo $?
 	# disk-usage
-	df -h
+	df -P -h
 	EOS
   assertEquals 0 $?
 

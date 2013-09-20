@@ -19,7 +19,7 @@
 function test_show_local_volume_info() {
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
 	# for debug
-	df -h
+	df -P -h
 	lsblk
 	EOS
   assertEquals 0 $?
