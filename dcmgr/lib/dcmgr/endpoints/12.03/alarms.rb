@@ -138,7 +138,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
   get '/:id' do
     al = find_by_uuid(:Alarm, params[:id])
-    raise E::UnknownAlarm, params[:id] if al.nil?
 
     respond_with(R::Alarm.new(al).generate)
   end
