@@ -26,14 +26,8 @@ module Dcmgr::Models
       if self.is_log_alarm?
         notification_actions = LOG_NOTIFICATION_ACTIONS
 
-        begin
-          if params["match_pattern"].blank?
-            errors.add(:match_pattern, "Unknown value")
-          else
-            Regexp.compile(Regexp.escape(params["match_pattern"]))
-          end
-        rescue => e
-          errors.add(:match_pattern, "Invalid pattern")
+        if params["match_pattern"].blank?
+          errors.add(:match_pattern, "Unknown value")
         end
 
         unless /^[0-9a-z._]+$/ =~ params['tag']
@@ -109,9 +103,6 @@ module Dcmgr::Models
 
     def before_save
       super
-      if is_log_alarm?
-        match_pattern = Regexp.escape(params['match_pattern'])
-      end
     end
   end
 end
