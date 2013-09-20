@@ -57,6 +57,18 @@ function test_local_volume_disk_full() {
 	EOS
   assertEquals 0 $?
 
+  # umount
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} umount /mnt
+	EOS
+  assertEquals 0 $?
+
+  # disk-usage
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	df -P -h
+	EOS
+  assertEquals 0 $?
+
   # debug
   echo "> ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path}"
   interactive_suspend_test
