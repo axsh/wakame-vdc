@@ -46,7 +46,7 @@ function test_local_volume_disk_full() {
   # disk-full
   # dd command will be failed after filling random data
   echo ... use disk usage 100%
-  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
 	time ${remote_sudo} dd if=/dev/urandom of=/mnt/test.data
 	EOS
   assertNotEquals 0 $?
