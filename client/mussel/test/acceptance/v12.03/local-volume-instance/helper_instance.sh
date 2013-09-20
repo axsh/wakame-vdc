@@ -15,7 +15,7 @@ function needs_secg() { true; }
 
 vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
 ssh_user=${ssh_user:-root}
-blank_volume_size=${blank_volume_size:-1G}
+blank_volume_size=${blank_volume_size:-10M}
 
 ## functions
 
