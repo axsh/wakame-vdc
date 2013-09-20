@@ -17,10 +17,12 @@
 ### step
 
 function test_mount_local_volume() {
-  # should be root
-  [[ "${ssh_user}" == "root" ]] || return 0
-
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
+	case "${UID}" in
+	0) sudo=     ;;
+	*) sudo=sudo ;;
+	esac
+	#
 	dev_path=
 	[[ -b /dev/vdc ]] && dev_path=/dev/vdc || :
 	[[ -b /dev/sdc ]] && dev_path=/dev/sdc || :
@@ -28,9 +30,9 @@ function test_mount_local_volume() {
 	# mounted?
 	mount ${dev_path} || { :; }  && { ! :; }
 	# format
-	mkfs.ext3 -F -I 128 ${dev_path}
+	${sudo} mkfs.ext3 -F -I 128 ${dev_path}
 	# mount
-	mount ${dev_path} /mnt
+	${sudo} mount ${dev_path} /mnt
 	# disk-usage
 	df -h
 	EOS
