@@ -19,6 +19,22 @@ blank_volume_size=${blank_volume_size:-1G}
 
 ## functions
 
+function remote_sudo() {
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
+	case "${UID}" in
+	0) ;;
+	*) echo sudo ;;
+	esac
+	EOS
+}
+
+function blank_dev_path() {
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
+	[[ -b /dev/vdc ]] && echo /dev/vdc
+	[[ -b /dev/sdc ]] && echo /dev/sdc
+	EOS
+}
+
 ### instance
 
 function render_vif_table() {

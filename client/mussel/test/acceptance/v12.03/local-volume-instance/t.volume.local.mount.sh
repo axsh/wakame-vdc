@@ -17,27 +17,39 @@
 ### step
 
 function test_mount_local_volume() {
-  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
-	case "${UID}" in
-	0) sudo=     ;;
-	*) sudo=sudo ;;
-	esac
-	#
-	dev_path=
-	[[ -b /dev/vdc ]] && dev_path=/dev/vdc || :
-	[[ -b /dev/sdc ]] && dev_path=/dev/sdc || :
-	[[ -n "${dev_path}" ]] || exit 1
-	# mounted?
-	mount ${dev_path} || { :; }  && { ! :; }
-	# format
-	${sudo} mkfs.ext3 -F -I 128 ${dev_path}
-	# mount
-	${sudo} mount ${dev_path} /mnt
-	# disk-usage
+  remote_sudo=$(remote_sudo)
+
+  # blank device path
+  blank_dev_path=$(blank_dev_path)
+  [[ -n "${blank_dev_path}" ]]
+  assertEquals 0 $?
+  [[ -n "${blank_dev_path}" ]] || return
+
+  # format
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} mkfs.ext3 -F -I 128 ${blank_dev_path}
+	EOS
+  assertEquals 0 $?
+
+  # mount
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} mount ${blank_dev_path} /mnt
+	EOS
+  assertEquals 0 $?
+
+  # disk-usage
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
 	df -P -h
 	EOS
   assertEquals 0 $?
 
+  # umount
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} umount /mnt
+	EOS
+  assertEquals 0 $?
+
+  # debug
   echo "> ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path}"
   interactive_suspend_test
 }
