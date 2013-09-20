@@ -9,6 +9,7 @@ MetricLibs::Alarm.class_eval do
 
   ALARM_ERRORS = {
     100 => 'read alarm logs over the limit',
+    101 => 'text match count over the limit'
   }.freeze
 
   attr_accessor :ipaddr, :notification_timer, :next_timer, :match_count
@@ -21,6 +22,12 @@ MetricLibs::Alarm.class_eval do
       :exceeded => 0,
       :errors_at => []
     }
+
+    limit_match_count = {
+      :exceeded => 0,
+      :errors_at => []
+    }
+
     state = 'ok'
 
     if notification_logs.length == 0
@@ -49,6 +56,12 @@ MetricLibs::Alarm.class_eval do
       limit_log[:errors_at] = @errors[limit_log_errno].collect {|e| e[:at].iso8601}
     end
 
+    limit_match_count_errno = 101
+    if @errors.has_key?(limit_match_count_errno)
+      limit_match_count[:exceeded] = 1
+      limit_match_count[:errors_at] = @errors[limit_match_count_errno].collect {|e| e[:at].iso8601}
+    end
+
     notified_at = Time.now
     message[:params] = {
       :alert_engine => 'fluentd',
@@ -63,6 +76,7 @@ MetricLibs::Alarm.class_eval do
       :display_name => encode_str(@display_name),
       :match_count => total_match_count,
       :limit_log => limit_log,
+      :limit_match_count => limit_match_count,
       :notification_periods => @notification_periods,
       :notified_at => notified_at.iso8601
     }
@@ -465,6 +479,7 @@ module Fluent
       alarms.each {|alm|
         alm.evaluate
         if @max_match_count != -1 && alm.max_match_count < alm.match_count
+          alm.add_errors(101)
           $log.warn "[#{alm.uuid}] max_match_count over #{@max_match_count}."
         end
         $log.info("[#{resource_id}] [#{instance_tag}] [#{alm.uuid}] evaluated")
