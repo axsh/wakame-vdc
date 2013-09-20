@@ -1,6 +1,6 @@
 all: test
 
-test: 1shot lb-cluster instance-clone sg-cluster alarm
+test: 1shot lb-cluster instance-clone sg-cluster alarm local-volume-instance
 
 1shot:
 	(cd $@ && make)
@@ -12,5 +12,7 @@ sg-cluster:
 	(cd $@ && make)
 alarm:
 	(cd $@ && make)
+local-volume-instance:
+	(cd $@ && make)
 
-.PHONY: 1shot lb-cluster instance-clone sg-cluster alarm
+.PHONY: 1shot lb-cluster instance-clone sg-cluster alarm local-volume-instance
