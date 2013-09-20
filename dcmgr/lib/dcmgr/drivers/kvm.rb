@@ -141,7 +141,9 @@ module Dcmgr
           cmd << qemu_drive_options(hc, v)
           # attach metadata drive
           if inst[:boot_volume_id] == v[:uuid]
-            cmd << "-drive file=#{hc.metadata_img_path},media=disk,boot=off,index=1,cache=none,if=#{drive_model(hc)}"
+            cmd << "-drive file=#{hc.metadata_img_path},id=metadata-drive,cache=none,aio=native,if=none"
+            # guess secondary drive device name for metadata drive.
+            cmd << qemu_drive_options(hc, {guest_device_name: v[:guest_device_name].succ, uuid: 'metadata'})
           end
         }
         
