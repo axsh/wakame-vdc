@@ -14,23 +14,21 @@ alarm_actions="notification_type=dolphin notification_id=1 notification_message_
 
 ## functions
 
-### step
+## step
 
-function test_destroy_alarm_after_instance_terminated() {
+function test_create_alarm_after_instance_terminated() {
   create_instance
   assertEquals 0 $?
 
-  alarm_uuid=$(resource_id=${instance_uuid} run_cmd alarm create | hash_value uuid)
-  assertEquals 0 $?
+  local resource_id=${instance_uuid}
 
   destroy_instance
   assertEquals 0 $?
 
-  alarm_deleted_at=$(run_cmd alarm show ${alarm_uuid} | yaml_find_first deleted_at)
-  assertNotNull "alarm_deleted_at should not be null" "${alarm_deleted_at}"
+  resource_id=${resource_id} run_cmd alarm create
+  assertNotEquals 0 $?
 }
 
 ## shunit2
 
 . ${shunit2_file}
-
