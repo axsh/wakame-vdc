@@ -15,12 +15,12 @@ module Dcmgr::Models
     def validate
       super
 
-      if (evaluation_periods.nil? || evaluation_periods < 0) && is_metric_alarm?
-        errors.add(:evaluation_periods, "it must have digit more than zero")
+      if (evaluation_periods.nil? || evaluation_periods < 1) && is_metric_alarm?
+        errors.add(:evaluation_periods, "it must have digit more than 1")
       end
 
-      if (notification_periods.nil? || notification_periods < 0) && is_log_alarm?
-        errors.add(:notiification_periods, "it must have digit more than zero")
+      if (notification_periods.nil? || notification_periods < 1) && is_log_alarm?
+        errors.add(:notiification_periods, "it must have digit more than 1")
       end
 
       if self.is_log_alarm?
