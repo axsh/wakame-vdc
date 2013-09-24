@@ -137,6 +137,11 @@ module Dcmgr::Models
     end
 
     def before_destroy
+      # cancel destroy while backup object is being created.
+      unless self.volumes.all? { |v| v.derived_backup_objects_dataset.exclude(:state=>Dcmgr::Const::BackupObject::ALLOW_INSTANCE_DESTROY_STATES).empty? }
+        return false
+      end
+      
       HostnameLease.filter(:account_id=>self.account_id, :hostname=>self.hostname).destroy
       self.instance_nic.each { |o| o.destroy }
       self.volumes_dataset.attached.each { |v|
