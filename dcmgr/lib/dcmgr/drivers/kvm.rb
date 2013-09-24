@@ -11,9 +11,9 @@ module Dcmgr
 
       # API policy information for QEMU-KVM hypervisor.
       class Policy < HypervisorPolicy
-        DEVNAME_REGEXP=[/sd([a-z]+)/,
-                        /hd([a-z]+)/,
-                        /vd([a-z]+)/
+        DEVNAME_REGEXP=[/^sd([a-z]+)$/,
+                        /^hd([a-z]+)$/,
+                        /^vd([a-z]+)$/
                        ].freeze
 
         def validate_instance_model(instance)

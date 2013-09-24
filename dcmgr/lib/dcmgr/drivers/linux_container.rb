@@ -9,7 +9,7 @@ module Dcmgr
 
       class Policy < HypervisorPolicy
         def validate_volume_model(volume)
-          if !volume.guest_device_name.nil? && volume.guest_device_name !~ /\//
+          if !volume.guest_device_name.nil? && volume.guest_device_name !~ /^\//
             raise ValidataionError, "InvalidParameter: guest_device_name #{volume.guest_device_name}"
           end
         end
