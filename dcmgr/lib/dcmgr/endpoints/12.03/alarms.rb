@@ -11,6 +11,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
     ds = M::Alarm.dataset
 
+    if params[:account_id]
+      ds = ds.filter(:account_id=>params[:account_id])
+    end
+
     if params[:resource_id]
       ds = ds.filter(:resource_id=>params[:resource_id])
     end
