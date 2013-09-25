@@ -12,11 +12,17 @@
 
 ## variables
 
+last_result_path=""
+
+## hook functions
+
+function setUp() {
+  last_result_path=$(mktemp --tmpdir=${SHUNIT_TMPDIR})
+}
+
 ## functions
 
-### step
-
-function test_local_volume_disk_full() {
+function create_local_volume_disk_full() {
   remote_sudo=$(remote_sudo)
 
   # blank device path
@@ -74,13 +80,10 @@ function test_local_volume_disk_full() {
   interactive_suspend_test
 }
 
-last_result_path=""
+function backup_disk_full_volume() {
+  create_local_volume_disk_full
 
-function setUp() {
-  last_result_path=$(mktemp --tmpdir=${SHUNIT_TMPDIR})
-}
-
-function test_backup_disk_full_volume() {
+  ### additional assertions
   run_cmd instance poweroff ${instance_uuid}
   retry_until "document_pair? instance ${instance_uuid} state halted"
 
@@ -106,6 +109,12 @@ function test_backup_disk_full_volume() {
 
   document_pair? backup_object ${backup_obj_uuid} state deleted
   assertEquals 0 $?
+}
+
+### step
+
+function test_backup_disk_full_volume() {
+  backup_disk_full_volume
 }
 
 ## shunit2
