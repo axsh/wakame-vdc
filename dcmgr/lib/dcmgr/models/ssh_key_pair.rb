@@ -14,16 +14,6 @@ module Dcmgr::Models
 
     subset(:alives, {:deleted_at => nil})
 
-
-    def before_destroy
-
-      instance_count = instances_dataset.count
-      if(!force && instance_count > 0)
-        raise "#{instance_count} instance references."
-      end
-      super
-    end
-
     attr_accessor :private_key
     attr_accessor :force
 
@@ -65,6 +55,14 @@ module Dcmgr::Models
       ssh.account_id = account.canonical_uuid
 
       ssh
+    end
+
+    private
+    def before_destroy
+      if(!force && instances_dataset.alives.count > 0)
+        raise "Number of instance reference is not zero: #{instances_dataset.alives.count}."
+      end
+      super
     end
 
     def _destroy_delete

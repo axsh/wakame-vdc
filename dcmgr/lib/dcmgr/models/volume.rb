@@ -28,7 +28,10 @@ module Dcmgr::Models
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
     }
 
+    # source backup object that is the parent of this volume.
     many_to_one :backup_object, :class=>BackupObject, :dataset=> lambda { BackupObject.filter(:uuid=>self.backup_object_id[BackupObject.uuid_prefix.size + 1, 255]) }
+    # backup objects which were created from the volume.
+    one_to_many :derived_backup_objects, :class=>BackupObject, :dataset=> lambda {BackupObject.filter(:source_volume_id=>self.canonical_uuid)}
 
     # serialization plugin must be defined at the bottom of all class
     # method calls.

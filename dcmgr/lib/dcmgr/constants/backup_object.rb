@@ -8,6 +8,7 @@ module Dcmgr::Constants
     STATE_DELETED = "deleted".freeze
     
     STATES=[STATE_CREATING, STATE_PENDING, STATE_AVAILABLE, STATE_DELETED].freeze
+    ALLOW_INSTANCE_DESTROY_STATES=[STATE_AVAILABLE, STATE_DELETED].freeze
 
     CONTAINER_FORMAT={:tgz=>['tar.gz', 'tgz'], :tar=>['tar'], :gz=>['gz'], :none=>[]}.freeze
     CONTAINER_FORMAT_NAMES=CONTAINER_FORMAT.keys.freeze
