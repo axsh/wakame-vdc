@@ -267,6 +267,8 @@ module Dcmgr
       # default instance poweroff behavior
       param :default_force_poweroff_instance, :default => true
 
+      param :enable_instance_poweron_readiness_validation, :default => true
+
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]
         errors << "amqp_server_uri is undefined." unless @config[:amqp_server_uri]
