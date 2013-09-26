@@ -52,7 +52,7 @@ module MetricLibs
           match_indexes = []
           line_no = 0
 
-          @timeseries.find_all.reverse_each {|t|
+          @timeseries.find_all {|t|
             tmp << t.value
             if (t.value.is_a? String) && t.value.index(match_pattern)
               @match_count += 1
