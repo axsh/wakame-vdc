@@ -456,13 +456,16 @@ module Fluent
       ipaddr = sample['x_wakame_ipaddr']
       alarms = @alarm_manager.find_log_alarm(resource_id, instance_tag)
       messages = es.collect{|time, record| [time , record['message']]}
-
+      new_line_count = messages.size
       $log.info("[#{resource_id}] [#{instance_tag}] starting emit process")
+
       alarms.each{|alm|
         alm.ipaddr ||= ipaddr
         read_message_bytes = 0
-        messages.each {|time, message|
 
+        # Include increment byte size of new line code.
+        read_message_bytes += new_line_count
+        messages.each {|time, message|
           read_message_bytes += message.bytesize
           if (@max_read_message_bytes > read_message_bytes) || @max_read_message_bytes == -1
             alm.feed({
@@ -471,11 +474,11 @@ module Fluent
             })
           else
             alm.add_errors(100)
-            $log.warn "can't read message bytes over #{@max_read_message_bytes} bytes for #{alm.uuid}"
+            $log.warn "[#{alm.uuid}] tried to read #{read_message_bytes} bytes but can't read over #{@max_read_message_bytes} bytes."
             break
           end
         }
-        $log.debug("read message #{read_message_bytes} bytes for #{alm.uuid}")
+        $log.debug("[#{alm.uuid}] read message #{read_message_bytes} bytes.")
       }
 
       alarms.each {|alm|
