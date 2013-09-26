@@ -62,6 +62,10 @@ function test_volume_backup_second_blank_volume() {
   test -n "$backup_obj_uuid"
   assertEquals 0 $?
 
+  # assert that poweron should fail until backup task completes.
+  run_cmd instance poweron ${instance_uuid} >/dev/null
+  assertNotEquals 0 $?
+
   retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
   assertEquals 0 $?
 
@@ -107,6 +111,10 @@ function test_volume_backup_second_volume_from_backup() {
   backup_obj_uuid=$(yfind ':backup_object_id:' < $last_result_path)
   test -n "$backup_obj_uuid"
   assertEquals 0 $?
+
+  # assert that poweron should fail until backup task completes.
+  run_cmd instance poweron ${instance_uuid} >/dev/null
+  assertNotEquals 0 $?
 
   retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
   assertEquals 0 $?
@@ -154,6 +162,10 @@ function test_image_backup_second_blank_volume() {
   local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
   test -n "$backup_object_uuid"
   assertEquals 0 $?
+
+  # assert that poweron should fail until backup task completes.
+  run_cmd instance poweron ${instance_uuid} >/dev/null
+  assertNotEquals 0 $?
 
   retry_until "document_pair? image ${image_uuid} state available"
   assertEquals 0 $?
@@ -207,6 +219,10 @@ function test_image_backup_and_verify_new_image() {
   local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
   test -n "$backup_object_uuid"
   assertEquals 0 $?
+
+  # assert that poweron should fail until backup task completes.
+  run_cmd instance poweron ${instance_uuid} >/dev/null
+  assertNotEquals 0 $?
 
   retry_until "document_pair? image ${image_uuid} state available"
   assertEquals 0 $?
