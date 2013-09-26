@@ -453,7 +453,7 @@ module Fluent
       resource_id = sample['x_wakame_instance_id']
       ipaddr = sample['x_wakame_ipaddr']
       alarms = @alarm_manager.find_log_alarm(resource_id, instance_tag)
-      messages = es.reverse_each.collect{|time, record| [time , record['message']]}
+      messages = es.collect{|time, record| [time , record['message']]}
 
       $log.info("[#{resource_id}] [#{instance_tag}] starting emit process")
       alarms.each{|alm|
