@@ -225,7 +225,8 @@ class LogAlarmManager < MetricLibs::AlarmManager
         'notification_logs' => notification_logs,
         'elpapsed_time' => alarm.get_notification_timer.elpapsed_time,
         'notification_periods' => alarm.notification_periods,
-        'write_time' => Time.now
+        'write_time' => Time.now,
+        'ipaddr' => alarm.ipaddr
       }
       $log.info("[#{uuid}] write alarm to temporary file")
       File.write(File.join(alarms_tmp_dir, uuid, ALARM_TMP_FILE), data.to_yaml)
@@ -355,6 +356,7 @@ module Fluent
         tmp_alarms.each {|alm|
           alarm = @alarm_manager.get_alarm(alm['alarm_id'])
           next if alarm.nil?
+          alarm.ipaddr = alm['ipaddr'] if alm['ipaddr']
           alm['notification_logs'].each {|log|
             alarm.notification_logs.push(log)
           }
