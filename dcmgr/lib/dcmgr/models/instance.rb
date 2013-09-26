@@ -510,5 +510,16 @@ module Dcmgr::Models
     def volume_guest_device_names(state=Dcmgr::Constants::Volume::STATE_ATTACHED)
       self.volumes_dataset.alives.all.map{|v| v.guest_device_name }
     end
+
+    def ready_poweron?
+      # the poweron operation should only be performed to the instance
+      # with backup objects don't have working state.
+      unless volumes_dataset.alives.all.all? { |v|
+          v.derived_backup_objects_dataset.exclude(:state=>Dcmgr::Constants::BackupObject::ALLOW_INSTANCE_POWERON_STATES).empty?
+        }
+        return false
+      end
+      true
+    end
   end
 end

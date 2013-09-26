@@ -663,10 +663,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   # Restart the instance from halted state.
   put '/:id/poweron' do
     instance = find_by_uuid(:Instance, params[:id])
-    raise E::InvalidInstanceState, instance.state unless ['halted'].member?(instance.state)
-
-    instance.state = :starting
-    instance.save
+    raise E::InvalidInstanceState, instance.state unless [C::Instance::STATE_HALTED].member?(instance.state)
+    if Dcmgr.conf.enable_instance_poweron_readiness_validation
+      unless instance.ready_poweron?
+        raise E::InvalidInstanceState, "not ready for poweron operation"
+      end
+    end
+    
+    instance.state = C::Instance::STATE_STARTING
+    instance.save_changes
 
     on_after_commit do
       Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'poweron',
