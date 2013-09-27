@@ -208,9 +208,7 @@ host_path="${METADATA_DRIVE_MOUNTPOINT}/meta-data/extra-hosts"
 if [ -d ${host_path} ]; then
   comment="# Please do not modify lines from here by your hand since wakame-init will place entries from metadata."
   egrep -w -q "^${comment}$" /etc/hosts && {
-    tmpfile=`mktemp`
-    sed -n "1,/^${comment}$/p" /etc/hosts > ${tmpfile}
-    mv ${tmpfile} /etc/hosts
+    sed -i -n "1,/^${comment}$/p" /etc/hosts
   } || {
     echo ${comment} >> /etc/hosts
   }
@@ -219,6 +217,7 @@ if [ -d ${host_path} ]; then
     hostip=`cat $i`
     echo "${hostip} ${hostname}" >> /etc/hosts
   done
+  chmod 0644 /etc/hosts
 fi
 
 #Add the metadata server to the routing table
