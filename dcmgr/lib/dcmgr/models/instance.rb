@@ -521,5 +521,14 @@ module Dcmgr::Models
       end
       true
     end
+
+    def ready_destroy?
+      unless volumes_dataset.alives.all.all? { |v|
+          v.derived_backup_objects_dataset.exclude(:state=>Dcmgr::Constants::BackupObject::ALLOW_INSTANCE_POWERON_STATES).empty?
+        }
+        return false
+      end
+      true
+    end
   end
 end

@@ -426,7 +426,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   delete '/:id' do
     # description 'Shutdown the instance'
     i = find_by_uuid(:Instance, params[:id])
-
+    unless i.ready_destroy?
+      raise E::InvalidInstanceState, i.state
+    end
+    
     case i.state
     when C::Instance::STATE_STOPPED
       # just destroy the record.
