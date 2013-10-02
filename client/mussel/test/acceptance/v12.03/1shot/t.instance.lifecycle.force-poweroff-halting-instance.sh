@@ -57,7 +57,6 @@ function test_force_poweroff_halting_instance() {
   assertEquals 0 $?
 
   # stop acpid
-  remove_ssh_known_host_entry ${instance_ipaddr}
   remote_sudo=$(remote_sudo)
   ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} "${remote_sudo} /etc/init.d/acpid stop"
   assertEquals 0 $?
