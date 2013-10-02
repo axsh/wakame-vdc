@@ -91,6 +91,8 @@ module Dcmgr::Models
 
     NOT_CLONED_COLUMNS=[:id,
                         :uuid,
+                        :is_public,
+                        :is_cacheable,
                         :created_at,
                         :updated_at,
                         :deleted_at,
