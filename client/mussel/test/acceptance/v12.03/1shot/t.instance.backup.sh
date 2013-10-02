@@ -248,6 +248,43 @@ function test_image_backup_and_verify_new_image() {
   assertEquals 0 $?
 }
 
+# DELETE '/instances/i-xxxx' is rejected following cases:
+#
+#   1. backup task is in-progress.
+function test_expect_failure_at_instance_terminate() {
+  create_instance
+
+  run_cmd instance poweroff ${instance_uuid} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid} state halted"
+  
+  run_cmd instance backup ${instance_uuid} | ydump > $last_result_path
+  assertEquals 0 $?
+
+  # expect to fail here.
+  run_cmd instance destroy ${instance_uuid} >/dev/null
+  assertNotEquals 0 $?
+
+  local image_uuid=$(yfind ':image_id:' < $last_result_path)
+  test -n "$image_uuid"
+  assertEquals 0 $?
+
+  local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+  test -n "$backup_object_uuid"
+  assertEquals 0 $?
+
+  retry_until "document_pair? backup_object ${backup_object_uuid} state available"
+  assertEquals 0 $?
+
+  # expect to success here.
+  run_cmd instance destroy ${instance_uuid} >/dev/null
+  assertEquals 0 $?
+
+  run_cmd image destroy ${image_uuid}
+  assertEquals 0 $?
+
+  run_cmd backup_object destroy ${backup_object_uuid}
+  assertEquals 0 $?
+}
 
 ## shunit2
 
