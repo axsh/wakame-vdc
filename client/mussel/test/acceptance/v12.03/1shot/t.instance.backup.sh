@@ -130,9 +130,9 @@ function test_volume_backup_second_volume_from_backup() {
 #
 # 1. boot instance with second blank volume.
 # 2. poweroff the instance.
-# 3. take backup of OS image.
+# 3. take backup of OS image. confirms that the second volume is ignored.
 # 4. shutdown everything.
-function test_image_backup_second_blank_volume() {
+function test_image_backup_just_for_boot_volume() {
   # boot instance with second blank volume.
   if is_container_hypervisor; then
     volumes_args="volumes[0][size]=1G volumes[0][volume_type]=local volumes[0][guest_device_name]=/mnt/tmp"
@@ -229,6 +229,11 @@ function test_image_backup_and_verify_new_image() {
 
   run_cmd instance destroy ${instance_uuid} >/dev/null
   assertEquals 0 $?
+
+  # assert image flags for backed up image.
+  run_cmd image show ${image_uuid} | ydump > $last_result_path
+  assertEquals "false" $(yfind ':is_public:' < $last_result_path)
+  assertEquals "false" $(yfind ':is_cacheable:' < $last_result_path)
 
   # reset parameters for booting new instance.
   volumes_args=
