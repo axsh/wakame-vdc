@@ -73,6 +73,7 @@ Sequel.migration do
                               :state => Dcmgr::Constants::Volume::STATE_ATTACHED,
                               :size  => backup_object[:size],
                               :guest_device_name => boot_device_name(instance[:hypervisor]),
+                              :instance_id => instance[:id],
                               :request_params => '--- {}',
                               :deleted_at => nil,
                               :attached_at => instance[:updated_at],
@@ -80,6 +81,7 @@ Sequel.migration do
                               :created_at => instance[:created_at],
                               :updated_at => instance[:updated_at],
                               :service_type => instance[:service_type],
+                              :display_name => "i-#{instance[:uuid]}'s boot volume",
                               :backup_object_id => "bo-#{backup_object[:uuid]}",
                               :volume_type => 'Dcmgr::Models::LocalVolume',
                               )
