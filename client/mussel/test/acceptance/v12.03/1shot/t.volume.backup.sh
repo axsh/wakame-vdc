@@ -91,6 +91,48 @@ function test_volume_backup_under_volumes() {
   assertEquals 0 $?
 }
 
+# backup tasks are expected to work solely without any conflictions. this scenario
+# can be confirmed by the following steps:
+#
+#  1. issues two backup tasks at almost same time.
+#  2. waits for two of their accomplishments. it can be judged by state having available
+#     otherwise the test fails.
+function test_multiple_backup_tasks_without_confliction() {
+  run_cmd instance show_volumes "${instance_uuid}" | ydump > $last_result_path
+  assertEquals 0 $?
+
+  local boot_volume_uuid=$(yfind '0/:uuid:' < $last_result_path)
+  test -n "$boot_volume_uuid"
+  assertEquals 0 $?
+
+  run_cmd volume backup $boot_volume_uuid | ydump > $last_result_path
+  assertEquals 0 $?
+  local backup_obj_uuid1=$(yfind ':backup_object_id:' < $last_result_path)
+  test -n "$backup_obj_uuid1"
+  assertEquals 0 $?
+
+  run_cmd volume backup $boot_volume_uuid | ydump > $last_result_path
+  assertEquals 0 $?
+  local backup_obj_uuid2=$(yfind ':backup_object_id:' < $last_result_path)
+  test -n "$backup_obj_uuid2"
+  assertEquals 0 $?
+
+  retry_until "document_pair? backup_object ${backup_obj_uuid1} state available"
+  assertEquals 0 $?
+  retry_until "document_pair? backup_object ${backup_obj_uuid2} state available"
+  assertEquals 0 $?
+
+  run_cmd backup_object destroy ${backup_obj_uuid1}
+  assertEquals 0 $?
+  run_cmd backup_object destroy ${backup_obj_uuid2}
+  assertEquals 0 $?
+
+  document_pair? backup_object ${backup_obj_uuid1} state deleted
+  assertEquals 0 $?
+  document_pair? backup_object ${backup_obj_uuid2} state deleted
+  assertEquals 0 $?
+}
+
 ## shunit2
 
 . ${shunit2_file}
