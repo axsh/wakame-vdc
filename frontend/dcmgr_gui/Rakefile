@@ -39,7 +39,6 @@ task :gem do
     s.add_dependency 'sequel','3.47.0'
     s.add_dependency 'json'
     s.add_dependency 'oauth', '0.4.7'
-    s.add_dependency 'nokogiri', '1.6.0'
     s.add_dependency 'thor'
   end
   

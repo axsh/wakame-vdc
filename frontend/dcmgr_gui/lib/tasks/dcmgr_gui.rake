@@ -13,35 +13,32 @@ namespace :db do
 end
 
 namespace :admin do
-  desc 'Create information'
+  desc 'Import RSS to information table'
   task :create_information,[:url] => :environment do |t, args|
-    require 'nokogiri'
-    require 'open-uri'
-    
-    if args[:url].nil?
-      puts 'Please set the url.'
-      exit(0)
+    require 'net/http'
+    require 'uri'
+    require 'rexml/document'
+
+    if args[:url].nil? || args[:url] == ''
+      STDERR.puts 'Please set the url.'
+      exit(1)
     end
 
-    xml = args[:url]
-    doc = Nokogiri::XML(open(xml))
+    begin
+      rss_uri = URI.parse(args[:url])
+    rescue => e
+      STDERR.puts "Invalid URL input: #{args[:url]}"
+      exit 1
+    end
 
-    @links = doc.xpath('//item').map do |i|
-      {'title' => i.xpath('title'), 
-       'link' => i.xpath('link'), 
-       'description' => i.xpath('description'),
-       'created_at' => i.xpath('pubDate')
-      }
-    end 
-
-    #Rest information table
     Information.truncate
 
-    @links.each do |item|
-      Information.create(:title => item['title'].text,
-                         :description => item['description'].text,
-                         :link => item['link'].text,
-                         :created_at => DateTime.parse(item['created_at'].text))
+    doc = REXML::Document.new(Net::HTTP.get(rss_uri))
+    REXML::XPath.each(doc, '//item') do |i|
+      Information.create(:title => REXML::XPath.first(i, 'title').text,
+                         :description => REXML::XPath.first(i, 'description').text,
+                         :link => REXML::XPath.first(i, 'link').text,
+                         :created_at => DateTime.parse(REXML::XPath.first(i, 'pubDate').text))
     end
   end
 
