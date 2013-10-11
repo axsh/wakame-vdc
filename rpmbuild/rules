@@ -54,7 +54,7 @@ bundle-install-stamp:
 
 	# in order to build rpm, metric_libs/ is no need.
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/metric_libs $(CURDIR)/metric_libs.saved
-	(cd $(CURDIR)/dcmgr              && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs    ../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/dcmgr              && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs    ../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle --without with_esxi)
 	(cd $(CURDIR)/frontend/dcmgr_gui && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs ../../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
 	(cd $(CURDIR)/frontend/admin     && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs ../../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
 	(cd $(CURDIR)/dolphin            && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs    ../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
