@@ -5,7 +5,7 @@ gem 'extlib', '0.9.16'
 gem 'ruby-hmac'
 gem 'ipaddress', '0.8.0'
 gem 'thor', '0.18.1'
-gem 'rbvmomi', '1.5.1'
+gem 'rbvmomi', '1.5.1', :group => :with_esxi
 gem 'unicorn', '4.6.3'
 gem "sequel", "3.47.0"
 gem "mysql2", "0.3.12"
