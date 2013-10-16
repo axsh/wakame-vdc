@@ -29,6 +29,16 @@ function render_secg_rule() {
 	EOS
 }
 
+# from ../local-volume-instance/helper_instance.sh
+function remote_sudo() {
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
+	case "${UID}" in
+	0) ;;
+	*) echo sudo ;;
+	esac
+	EOS
+}
+
 ### step
 
 function test_force_poweroff_halting_instance() {
@@ -47,8 +57,8 @@ function test_force_poweroff_halting_instance() {
   assertEquals 0 $?
 
   # stop acpid
-  remove_ssh_known_host_entry ${instance_ipaddr}
-  ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} "/etc/init.d/acpid stop"
+  remote_sudo=$(remote_sudo)
+  ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} "${remote_sudo} /etc/init.d/acpid stop"
   assertEquals 0 $?
 
   # soft poweroff
