@@ -7,4 +7,5 @@
 
 ## wrapper
 
-target_instance_num=${target_instance_num:-3} ${BASH_SOURCE[0]%/*}/t.lb.tcp.node.single.sh
+target_instance_num=${target_instance_num:-3}
+. ${BASH_SOURCE[0]%/*}/t.lb.tcp.node.single.sh
