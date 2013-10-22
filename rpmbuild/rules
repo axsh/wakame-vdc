@@ -40,10 +40,14 @@ bundle-install-stamp:
 	(cd $(CURDIR)/frontend/dcmgr_gui && rm -rf vendor/cache && mkdir -p vendor && ln -fs ../../../vendor/cache vendor/)
 
 	# Use dolphin_client gem in local since the local version is the latest.
-	(cd $(CURDIR)/client/dolphin && gem build ./dolphin_client.gemspec && mv dolphin_client-*.gem $(CURDIR)/dcmgr/vendor/cache)
+	(cd $(CURDIR)/client/dolphin && gem build ./dolphin_client.gemspec && cp dolphin_client-*.gem $(CURDIR)/dcmgr/vendor/cache)
 
 	# Use metric_libs gem in local since the local version is the latest.
-	(cd $(CURDIR)/metric_libs && gem build ./metric_libs.gemspec && mv metric_libs-*.gem $(CURDIR)/dcmgr/vendor/cache)
+	(cd $(CURDIR)/metric_libs && gem build ./metric_libs.gemspec && cp metric_libs-*.gem $(CURDIR)/dcmgr/vendor/cache)
+
+	mkdir -p $(CURDIR)/vdc-fluentd/vendor/cache
+	(cp $(CURDIR)/client/dolphin/dolphin_client-*.gem $(CURDIR)/vdc-fluentd/vendor/cache)
+	(cp $(CURDIR)/metric_libs/metric_libs-*.gem $(CURDIR)/vdc-fluentd/vendor/cache)
 
 	mkdir -p $(CURDIR)/vendor/bundle/ruby
 	# in order to build rpm, client(ruby-hijiki)/ is no need.
@@ -58,6 +62,7 @@ bundle-install-stamp:
 	(cd $(CURDIR)/frontend/dcmgr_gui && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs ../../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
 	(cd $(CURDIR)/frontend/admin     && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs ../../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
 	(cd $(CURDIR)/dolphin            && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs    ../../../vendor/bundle/ruby vendor/bundle/ && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/vdc-fluentd        && rm -rf vendor/bundle && mkdir -p vendor/bundle && ln -fs    ../../../vendor/bundle/ruby vendor/bundle/ && PKGBUILD=1 bundle install --standalone --path vendor/bundle)
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki.saved $(CURDIR)/client/ruby-hijiki
 
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/dolphin.saved $(CURDIR)/client/dolphin

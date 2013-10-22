@@ -366,6 +366,7 @@ components="
  dolphin
  contrib
  vendor
+ vdc-fluentd
 "
 for component in ${components}; do
   rsync -aHA --exclude=".git/*" --exclude="*~" --exclude="*/cache/*.gem" --exclude="*/cache/bundler/git/*" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
@@ -557,6 +558,8 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config(noreplace) /etc/default/vdc-hva
 %config /etc/init/vdc-hva.conf
 %config /etc/init/vdc-hva-worker.conf
+%config(noreplace) /etc/default/vdc-fluentd
+%config /etc/init/vdc-fluentd.conf
 %config /etc/sysctl.d/30-bridge-if.conf
 %dir /var/lib/%{oname}/instances
 %dir /var/lib/%{oname}/instances/tmp
