@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+
+version = ">= 0"
+
+if ARGV.first
+  str = ARGV.first
+  str = str.dup.force_encoding("BINARY") if str.respond_to? :force_encoding
+  if str =~ /\A_(.*)_\z/
+    version = $1
+    ARGV.shift
+  end
+end
+
+if !defined?(::Bundler)
+  require 'bundler/setup'
+end
+
+# Force append plugin directory.
+ARGV.push "--plugin", File.expand_path('../../lib/fluent/plugin', __FILE__)
+
+gem 'fluentd', version
+load Gem.bin_path('fluentd', 'fluentd', version)

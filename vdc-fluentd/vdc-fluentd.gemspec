@@ -2,19 +2,19 @@
 $:.push File.expand_path('../lib', __FILE__)
 
 Gem::Specification.new do |spec|
-  spec.name          = "fluent-plugin-wakame-vdc"
+  spec.name          = "vdc-fluentd"
   spec.version       = "0.0.1"
   spec.authors       = [%q{axsh Ltd.}]
-  spec.date          = %q{2013-08-06}
-  spec.description   = %q{fluent plugin for wakame-vdc}
   spec.email         = ['dev@axsh.net']
-  spec.summary       = %q{plugin for wakame-vdc}
+  spec.summary       = %q{fluentd for Wakame-vdc}
   spec.licenses      = ['LGPL 3.0']
   spec.homepage      = %q{http://wakame.jp/}
   spec.required_ruby_version = Gem::Requirement.new(">= 1.9.3")
-  spec.rubygems_version = %q{1.8.23}
   spec.files         = `git ls-files`.split($\)
   spec.require_paths = ["lib"]
   spec.has_rdoc = false
-  spec.add_runtime_dependency "fluentd"
+  spec.add_runtime_dependency 'fluentd', '0.10.39'
+  spec.add_runtime_dependency 'cassandra'
+  spec.add_runtime_dependency 'metric_libs'
+  spec.add_runtime_dependency 'dolphin_client'
 end
