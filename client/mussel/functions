@@ -132,7 +132,7 @@ function add_args_param() {
   eval "
    [[ -n "\${${param_key}_args}" ]] || return 0
 
-   local i; for i in \${${param_key}_args}; do echo \"--data-urlencode '\$i'\"; done
+   local i; for i in \${${param_key}_args}; do echo $(urlencode_data \$i); done
   "
 }
 

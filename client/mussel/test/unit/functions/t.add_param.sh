@@ -66,6 +66,12 @@ function test_add_param_key_hash_multi() {
 name[addr]=bar"
 }
 
+function test_add_param_key_extended_hash_multi() {
+  local name="volumes[0][type]=xxxx volumes[0][size]=50G"
+  assertEquals "name[volumes[0][type]]=xxxx
+name[volumes[0][size]]=50G" "$(add_param name hash)"
+}
+
 ## shunit2
 
 . ${shunit2_file}
