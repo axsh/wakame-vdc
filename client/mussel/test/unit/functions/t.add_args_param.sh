@@ -30,8 +30,8 @@ function test_add_args_param_empty_value() {
 
 function test_add_args_param_defined_value() {
   local name_args="foo bar"
-  assertEquals "--data-urlencode 'foo'
---data-urlencode 'bar'" "$(add_args_param name)"
+  assertEquals "--data-urlencode foo
+--data-urlencode bar" "$(add_args_param name)"
 }
 
 ## shunit2
