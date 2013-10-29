@@ -13,7 +13,7 @@
 ip_pool_id=
 dc_networks="public"
 display_name="shunit2"
-network_id=nw-demo1
+network_id=${vifs_eth0_network_id:-nw-demo1} # `POST /ip_pool/` required parameter
 ip_handle_id=
 
 ## functions
