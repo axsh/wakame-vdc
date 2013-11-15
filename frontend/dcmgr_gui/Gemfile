@@ -6,7 +6,7 @@ gem 'json'
 gem 'oauth','0.4.7'
 gem 'rake', '~> 10.1.0'
 gem 'thor'
-gem 'mysql2','0.3.12'
+gem 'mysql2','~> 0.3.14'
 gem 'ripl'
 gem 'rack-cors', :require => 'rack/cors'
 
@@ -20,5 +20,5 @@ else
 end
 
 group :production do
-  gem 'unicorn', '4.6.3'
+  gem 'unicorn', '4.7.0'
 end
