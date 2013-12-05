@@ -146,6 +146,29 @@ module Dcmgr
         end
       end
 
+      def iscsi_target_dev_path(volume_hash)
+        # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
+        "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{volume_hash[:volume_device][:iscsi_storage_node][:ip_address]}:3260",
+                                                     volume_hash[:volume_device][:iqn],
+                                                     volume_hash[:volume_device][:lun]]
+      end
+
+      def attach_volume_to_host(ctx, volume_id)
+        vol = ctx.inst[:volume][volume_id]
+        tryagain do
+          next true if File.exist?(iscsi_target_dev_path(vol))
+
+          #sh("iscsiadm --mode discovery -t sendtargets --portal '%s'",
+          #   [vol[:volume_device][:iscsi_storage_node][:ip_address]])
+          sh("iscsiadm --mode node --op new --targetname '%s' --portal '%s'",
+             [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
+          sh("iscsiadm --mode node --targetname '%s' --portal '%s' --login",
+             [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
+          # wait udev queue
+          sh("/sbin/udevadm settle")
+        end
+      end
+      
       protected
 
       # cgroup_set('blkio', "0") do

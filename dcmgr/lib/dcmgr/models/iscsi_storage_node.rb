@@ -4,8 +4,15 @@ module Dcmgr::Models
   class IscsiStorageNode < StorageNode
     include Dcmgr::Constants::StorageNode
 
-    one_to_many :volumes, :class=>:IscsiVolume
-    
+    def_dataset_method(:volumes) do
+      # TODO: better SQL....
+      Volume.filter(:id=>IscsiVolume.filter(:iscsi_storage_node_id=>self.select(:id)).select(:id))
+    end
+
+    def volumes_dataset
+      self.class.filter(:id=>self.pk).volumes
+    end
+ 
     def associate_volume(volume, &blk)
       raise ArgumentError, "Invalid class: #{volume.class}" unless volume.class == Volume
       raise ArgumentError, "#{volume.canonical_uuid} has already been associated." unless volume.volume_type.nil?

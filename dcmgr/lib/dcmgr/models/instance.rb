@@ -504,6 +504,8 @@ module Dcmgr::Models
     end
 
     def add_shared_volume(volume)
+      # Do not set value to volumes.volume_type.
+      # the values can be set by either scheduler or API.
       self.add_volume(volume)
     end
 

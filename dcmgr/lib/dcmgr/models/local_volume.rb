@@ -10,6 +10,7 @@ module Dcmgr::Models
     def host_node
       self.instance.host_node
     end
+    alias storage_node host_node
 
     private
     def before_validation

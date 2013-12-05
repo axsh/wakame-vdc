@@ -87,5 +87,9 @@ module Dcmgr::Models
     def associate_volume(volume)
       raise NotImplementedError
     end
+
+    def volumes_dataset
+      raise NotImplementedError
+    end
   end
 end

@@ -7,7 +7,7 @@ module Dcmgr; module Scheduler; module StorageNode
     def schedule_node(volume)
       params = volume.request_params
 
-      volume.storage_node = Models::StorageNode.first
+      Models::StorageNode.first.associate_volume(volume)
     end
   end
 end; end; end

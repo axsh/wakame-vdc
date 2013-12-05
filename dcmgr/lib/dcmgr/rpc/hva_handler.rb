@@ -12,26 +12,12 @@ module Dcmgr
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::Helpers::BlockDeviceHelper
 
-      def attach_volume_to_host
-        # check under until the dev file is created.
-        # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-        get_linux_dev_path
-
-        tryagain do
-          next true if File.exist?(@os_devpath)
-
-          sh("iscsiadm -m discovery -t sendtargets -p %s", [@vol[:storage_node][:ipaddr]])
-          sh("iscsiadm -m node -l -T '%s' --portal '%s'",
-             [@vol[:transport_information][:iqn], @vol[:storage_node][:ipaddr]])
-          # wait udev queue
-          sh("/sbin/udevadm settle")
-        end
-
-        rpc.request('sta-collector', 'update_volume', @vol_id, {
+      def attach_volume_to_host(volume_id)
+        rpc.request('sta-collector', 'update_volume', volume_id, {
                       :state=>:attaching,
                       :attached_at => nil,
                       :instance_id => @inst[:id], # needed after cleanup
-                      :host_device_name => @os_devpath})
+                    })
       end
 
       def detach_volume_from_host(volume)
@@ -338,7 +324,6 @@ module Dcmgr
       end
 
       job :wait_volumes_available, proc {
-        # create hva context
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
@@ -347,7 +332,6 @@ module Dcmgr
       }
 
       job :run_local_store, proc {
-        # create hva context
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
 
@@ -355,7 +339,7 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless %w(initializing).member?(@inst[:state].to_s)
         if !@inst[:volume].values.all? {|v| v[:state].to_s == 'available' }
-          @hva_ctx.logger.error("Could not boot the instance. some volumes are not available yet: #{@inst[:volume].map{|volid, v| volid + ": " + v[:state] }.join(', ')}")
+          @hva_ctx.logger.error("Could not boot the instance. some volumes are not available yet: #{@inst[:volume].map{|volid, v| volid + "=" + v[:state] }.join(', ')}")
           return
         end
 
@@ -393,40 +377,45 @@ module Dcmgr
         # create hva context
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
-        @vol_id = request.args[1]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
-        @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
         @hva_ctx.logger.info("Booting #{@inst_id}")
         raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
-
-        update_instance_state({:state=>:starting})
-
+        if !@inst[:volume].values.all? {|v| v[:state].to_s == 'available' }
+          @hva_ctx.logger.info("Wait for all volumes available. #{@inst[:volume].map{|volid, v| volid + "=" + v[:state] }.join(', ')}")
+          return
+        end
+        
         # setup vm data folder
-        inst_data_dir = @hva_ctx.inst_data_dir
-        FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
+        FileUtils.mkdir(@hva_ctx.inst_data_dir) unless File.exists?(@hva_ctx.inst_data_dir)
 
-        # reload volume info
-        @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
+        # volume: available -> attaching
+        @inst[:volume].each {|volume_id, v|
+          unless @hva_ctx.inst[:volume][volume_id]
+            raise "Unknown volume ID for #{@hva_ctx.inst_id}: #{volume_id}"
+          end
 
-        rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:attaching, :attached_at=>nil})
-        @hva_ctx.logger.info("Attaching #{@vol_id} on #{@inst_id}")
-        # check under until the dev file is created.
-        # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-        get_linux_dev_path
+          rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:attaching, :attached_at=>nil})
+          @hva_ctx.logger.info("Attaching #{volume_id} to #{@inst_id}")
 
-        # attach disk
-        attach_volume_to_host
-
-        setup_metadata_drive
+          unless @hva_ctx.inst[:volume][volume_id][:is_local_volume]
+            task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                                :attach_volume_to_host, [@hva_ctx, volume_id])
+          end
+        }
 
         # run vm
+        setup_metadata_drive
+
         check_interface
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :run_instance, [@hva_ctx])
         # Node specific instance_started event for netfilter and general instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started'])
 
-        update_volume_state(@vol_id, {:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
+        # volume: attaching -> attached
+        @inst[:volume].values.each { |v|
+          update_volume_state(v[:uuid], {:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
+        }
 
         # Security group vnic joined events for vnet netfilter
         create_instance_vnics(@inst)
