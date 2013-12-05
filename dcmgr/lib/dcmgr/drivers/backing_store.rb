@@ -1,8 +1,29 @@
 # -*- coding: utf-8 -*-
+require 'fuguta'
 
 module Dcmgr
   module Drivers
     class BackingStore
+      extend Fuguta::Configuration::ConfigurationMethods::ClassMethods
+
+      def_configuration do
+        # backup storage UUID exists locally.
+        param :local_backup_storage_id, :default=>nil
+      end
+
+      # Retrive configuration section for this or child class.
+      def self.driver_configuration
+        Dcmgr.conf.backing_store
+      end
+
+      def driver_configuration
+        Dcmgr.conf.backing_store
+      end
+
+      def local_backup_object?(backup_object_hash)
+        driver_configuration.local_backup_storage_id &&
+          driver_configuration.local_backup_storage_id == backup_object_hash[:backup_storage][:uuid]
+      end
 
       def create_volume(ctx, snapshot_file=nil)
         raise NotImplementedError
@@ -23,26 +44,33 @@ module Dcmgr
         raise NotImplementedError
       end
 
-      # Generate a snapshot path using seed info.
-      # It has to reproduce same result when the same parameters are given.
+      # Returns snapshot path string. It has to be called after create_snapshot().
+      # and also be expected to return same value until create_snapshot() called again.
       # @param StaContext ctx
-      # @return String absolute path to the snapshot
-      def snapshot_path(ctx)
-        raise NotImplemented
+      # @return String path to the snapshot created by create_snapshot().
+      #
+      # create_snapshot(ctx)
+      # puts snapshot_path_created(ctx)
+      def snapshot_path_created(ctx)
+        raise NotImplementedError
       end
 
+      # deprecated
       def self.select_backing_store(backing_store)
-        case backing_store
+        driver_class(backing_store).new
+      end
+
+      def self.driver_class(backing_store)
+        case backing_store.to_s
         when "raw"
-          bs = Dcmgr::Drivers::Raw.new
+          Dcmgr::Drivers::Raw
         when "zfs"
-          bs = Dcmgr::Drivers::Zfs.new
+          Dcmgr::Drivers::Zfs
         when "ifs"
-          bs = Dcmgr::Drivers::Ifs.new
+          Dcmgr::Drivers::Ifs
         else
           raise "Unknown backing_store type: #{backing_store}"
         end
-        bs
       end
     end
   end

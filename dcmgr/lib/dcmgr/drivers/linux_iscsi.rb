@@ -6,7 +6,20 @@ module Dcmgr
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
 
-      IQN_PREFIX="iqn.2010-09.jp.wakame".freeze
+      def_configuration do
+        param :tgtadm_path, :default=>'/usr/sbin/tgtadm'
+
+        # Require to set in sta.conf
+        param :export_path
+
+        def validate(errors)
+          if config[:export_path].nil?
+            errors.add("export_path is unset.")
+          elsif !File.exists?(config[:export_path])
+            errors.add("The export_path does not exist or have access issue: #{config[:export_path]}")
+          end
+        end
+      end
 
       def create(ctx)
         @volume    = ctx.volume

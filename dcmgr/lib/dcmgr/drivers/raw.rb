@@ -7,6 +7,17 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::ByteUnit
 
+      def_configuration do
+        param :snapshot_tmp_dir, :default=>'/var/tmp'
+
+        def validate(errors)
+          super
+          unless File.directory?(@config[:snapshot_tmp_dir])
+            errors << "Could not find the snapshot_tmp_dir: #{@config[:snapshot_tmp_dir]}"
+          end
+        end
+      end
+
       def create_volume(ctx, snap_file = nil)
         @volume_id   = ctx.volume_id
         @volume      = ctx.volume
@@ -49,7 +60,7 @@ module Dcmgr
       end
 
       def snapshot_path(ctx)
-        File.expand_path("#{ctx.volume[:uuid]}.tmp", Dcmgr.conf.raw_backing_store.snapshot_tmp_dir)
+        File.expand_path("#{ctx.volume[:uuid]}.tmp", driver_configuration.snapshot_tmp_dir)
       end
 
       private
