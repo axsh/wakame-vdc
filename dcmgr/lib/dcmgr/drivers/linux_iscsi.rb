@@ -24,46 +24,68 @@ module Dcmgr
       def create(ctx)
         @volume    = ctx.volume
         @volume_id = ctx.volume_id
-        @node      = ctx.node
 
-        vol_path = File.join(@volume[:storage_node][:export_path], @volume[:uuid])
+        # iscsi_storage_nodes table entries.
+        iscsi = {
+          :iqn => iqn_from_ctx,
+          :lun => 1, # 0 is reserved by tgt.
+        }
+        tid = pick_next_tid
 
-        @volume[:transport_information] = iscsi = {}
-        iscsi[:iqn] = "#{IQN_PREFIX}:#{@volume[:uuid]}"
-        iscsi[:tid] = pick_next_tid
-        iscsi[:lun] = 1
-        iscsi[:backing_store] = vol_path
+        register(tid, iscsi[:iqn], iscsi[:lun], volume_path)
 
-        register(@volume)
-
-        opt = { :iqn => iscsi[:iqn], :lun => iscsi[:lun], :tid => iscsi[:tid], :backing_store => iscsi[:backing_store] }
+        iscsi
       end
 
       def delete(ctx)
         @volume = ctx.volume
-        sh("/usr/sbin/tgt-admin --delete #{@volume[:transport_information][:iqn]}")
+        @volume_id = ctx.volume_id
+        
+        sh("/usr/sbin/tgt-admin --delete '%s'", [iqn_from_ctx])
       end
 
       def register(volume)
         tinfo = volume[:transport_information]
 
+      def register(tid, iqn, lun, bs_path)
         # register target
-        sh("/usr/sbin/tgtadm --lld iscsi --op new --mode=target --tid=%s --targetname %s", [tinfo[:tid], tinfo[:iqn]])
+        tgtadm("--op new --mode=target --tid=%s --targetname %s", [tid, iqn])
         # register logical unit
-        sh("/usr/sbin/tgtadm --lld iscsi --op new --mode=logicalunit --tid=%s --lun=%s -b %s",
-           [tinfo[:tid], tinfo[:lun], tinfo[:backing_store]])
-        # bind target
-        sh("/usr/sbin/tgtadm --lld iscsi --op bind --mode=target --tid=%s --initiator-address=%s",
-           [tinfo[:tid], Dcmgr.conf.initiator_address])
+        tgtadm("--op new --mode=logicalunit --tid=%s --lun=%s --backing-store %s",
+               [tid, lun, bs_path])
+        tgtadm("--op bind --mode=target --tid=%s --initiator-address=ALL",
+               [tid])
       end
 
-      private
       def pick_next_tid
         # $ sudo /usr/sbin/tgtadm --lld iscsi --op show --mode target | grep '^Target '
-        # Target 1: iqn.2010-09.jp.wakame:a-shpoolxx.vol-dw55bba8
-        lst = `/usr/sbin/tgtadm --lld iscsi --op show --mode target | grep ^Target`.split("\n")
+        # Target 1: iqn.2010-09.jp.wakame:vol-xxxxxxx
+        lst = `#{driver_configuration.tgtadm_path} --lld iscsi --op show --mode target | grep ^Target`.split("\n")
         max_tid = lst.map { |a| a =~ /^Target\s+(\d+):.*/; $1.to_i; }.max || 0
         max_tid + 1
+      end
+
+      def tgtadm(cmd, args=[])
+        sh("#{driver_configuration.tgtadm_path} --lld iscsi " + cmd, args)
+      end
+
+      def iqn_from_ctx
+        raise "Call after set @volume." if @volume.nil?
+        "#{driver_configuration.iqn_prefix}:#{@volume[:uuid]}"
+      end
+
+      def volume_path
+        raise "Call after set @volume." if @volume.nil?
+        File.join(driver_configuration.export_path, @volume[:volume_device][:path])        
+      end
+      
+      def find_tid(iqn)
+        lst = `#{driver_configuration.tgtadm_path} --lld iscsi --op show --mode target`.split("\n")
+        if lst.find { |l| l =~ /^Target\s+(\d+): #{iqn}/ }
+          $1.to_i
+        else
+          nil
+        end
       end
     end
   end

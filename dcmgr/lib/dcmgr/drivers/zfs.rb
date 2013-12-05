@@ -7,70 +7,107 @@ module Dcmgr
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
 
-      def create_volume(ctx, zsnap_file)
-        @volume_id   = ctx.volume_id
-        @volume      = ctx.volume
-        @snapshot    = ctx.snapshot
-        @destination = ctx.destination
+      def_configuration do
+        param :zfs_path, :default=>'/sbin/zfs'
 
-        ### sta_handler :create_volume
-        vol_path = "#{@volume[:storage_node][:export_path]}/#{@volume[:uuid]}"
-        sh("/usr/sbin/zfs list %s", [File.dirname(vol_path)])
-        if $?.exitstatus != 0
-          # create parent filesystem
-          sh("/usr/sbin/zfs create -p %s", [File.dirname(vol_path)])
-          logger.info("create parent filesystem: #{File.dirname(vol_path)}")
-        end
+        # Requires to set in sta.conf.
+        param :zpool_base_path
 
-        if @snapshot
-          # create volume from snapshot
-          if File.exists?(zsnap_file)
-            sh("/usr/sbin/zfs receive %s < %s", [vol_path, zsnap_file])
-            if $?.exitstatus != 0
-              raise "volume already exists: #{@volume_id}"
-            end
+        def validate(errors)
+          super
+          
+          if config[:zpool_base_path].nil?
+            errors.add("zpool_base_path is unset.")
+          elsif config[:zpool_base_path] =~ %r{^/}
+            errors.add("zpool_base_path can not start with '/'.")
           else
-            raise "snapshot file isn't exists: #{zsnap_file}"
+            system("#{config[:zfs_path]} list #{config[:zpool_base_path]} > /dev/null")
+            if $?.exitstatus != 0
+              errors.add("zpool_base_path does not exist: #{config[:zpool_base_path]}")
+            end
+          end
+        end
+      end
+
+      module BackupAsSnapshot
+        def create_volume(ctx, snap_path=nil)
+          @volume      = ctx.volume
+          if snap_path
+            `#{driver_configuration.zfs_path} list '#{zsnap_path(snap_path)}'`
+            if $?.exitstatus != 0
+              raise "snapshot does not exist: #{ctx.volume_id}: #{zsnap_path(snap_path)}"
+            end
+
+            # create full copy volume from snapshot
+            sh("#{driver_configuration.zfs_path} send %s | #{driver_configuration.zfs_path} recv %s", [zsnap_path(snap_path), volume_path()])
+            
+            zfs("rollback  %s@%s", [volume_path(), snap_path.split('@').last])
+            zfs("destroy  %s@%s", [volume_path(), snap_path.split('@').last])
+          else
+            # create blank volume
+            #sh("/usr/sbin/zfs create -p -V %s %s", ["#{@volume[:size]}", volume_path()])
+            # thin provisioning
+            zfs("create -p -s -V %s %s", ["#{@volume[:size]}", volume_path()])
           end
 
-          sh("/usr/sbin/zfs destroy %s@%s", [vol_path, @snapshot[:uuid]])
-          if $?.exitstatus != 0
-            raise "volume snapshot has not deleted: #{@volume_id}@#{@snapshot[:uuid]}"
-          end
-        else
-          # create volume
-          #sh("/usr/sbin/zfs create -p -V %s %s", ["#{@volume[:size]}", vol_path])
-          # thin provisioning
-          sh("/usr/sbin/zfs create -p -s -V %s %s", ["#{@volume[:size]}", vol_path])
-          if $?.exitstatus != 0
-            raise "volume already exists: #{@volume_id}"
+          sh("udevadm settle")
+          logger.info("created new volume #{ctx.volume_id} at #{volume_path()}")
+        end
+
+        def delete_volume(ctx)
+          @volume = ctx.volume
+          begin
+            zfs("destroy %s", [volume_path()])
+          rescue => e
+            logger.warn("Failed to destroy #{ctx.volume_id} at #{volume_path()}. seems to have child snapshots/clones. " +
+                        "Falls back to set wakame:delete user attribute.")
+            # can be failed. mark as logical removed.
+            zfs("set wakame:deleted=true %s", [volume_path()])
           end
         end
 
-        sh("/usr/sbin/zfs list %s", [vol_path])
-        if $?.exitstatus != 0
-          raise "volume has not be created: #{@volume_id}"
+        def create_snapshot(ctx)
+          @volume = ctx.volume
+          zfs("snapshot %s@%s", [volume_path(), ctx.backup_object_id])
         end
 
-        logger.info("created new volume: #{@volume_id}")
-        ### sta_handler :create_volume
+        def snapshot_path_created(ctx)
+          "#{ctx.volume_id}@#{ctx.backup_object_id}"
+        end
+
+        def delete_snapshot(ctx)
+          zfs("destroy %s", [zsnap_path(ctx.backup_object[:object_key])])
+
+          base_vol_path = zsnap_path(ctx.backup_object[:object_key]).split('@').first
+          if zfs("get wakame:deleted %s", [base_vol_path])[:stdout].split("\n").last.split(/\s+/)[2] == 'true'
+            # can be failed. ignore error.
+            shell.run("zfs destroy %s", [base_vol_path])
+          end
+        end
+
+        private
+        # Caluculate zfs snapshot path.
+        # Due to zfs snapshot naming convention, it is difficult to
+        # guess absolute path from backup object UUID only.
+        #   zpool/vol-xxxx@bo-xxxx
+        #
+        
+        def zsnap_path(snap_path)
+          File.join(driver_configuration.zpool_base_path, snap_path)
+        end
       end
 
-      def delete_volume(ctx)
-        @volume = ctx.volume
-        sh("/usr/sbin/zfs destroy %s", ["#{@volume[:storage_node][:export_path]}/#{@volume[:uuid]}"])
+      include BackupAsSnapshot
+      
       end
 
-      def create_snapshot(ctx, zsnap_file)
-        @snapshot_id = ctx.snapshot_id
-        @destination = ctx.destination
-        @snapshot    = ctx.snapshot
-        @volume      = ctx.volume
+      private
+      def volume_path
+        File.join(driver_configuration.zpool_base_path, @volume[:uuid])
+      end
 
-        vol_path = "#{@volume[:storage_node][:export_path]}/#{@volume[:uuid]}"
-        sh("/usr/sbin/zfs snapshot %s@%s", [vol_path, @snapshot[:uuid]])
-        sh("/usr/sbin/zfs send %s@%s > %s", [vol_path, @snapshot[:uuid], zsnap_file])
-        sh("/usr/sbin/zfs destroy %s@%s", [vol_path, @snapshot[:uuid]])
+      def zfs(cmd, args=[])
+        sh("#{driver_configuration.zfs_path} " + cmd, args)
       end
     end
   end
