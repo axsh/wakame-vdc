@@ -133,7 +133,7 @@ module Dcmgr::Models
 
     def to_hash
       super().merge(:is_local_volume=>local_volume?,
-                    :volume_device=>(self.volume_device.nil? ? nil : self.volume_device.to_hash)
+                    :volume_device=>(self.volume_device.nil? ? nil : self.volume_device.values)
                     )
     end
 
@@ -173,9 +173,15 @@ module Dcmgr::Models
     end
 
     def volume_device
-      self.volume_class.find(:id=>self.id.to_i)
+      self.volume_class.with_pk(self.pk)
     end
 
+    # Shortcut to get StorageNode from volume device.
+    def storage_node
+      volume_device && volume_device.respond_to?(:storage_node) ? \
+        volume_device.storage_node : nil
+    end
+    
     def boot_volume?
       self.instance && self.instance.boot_volume_id == self.canonical_uuid
     end

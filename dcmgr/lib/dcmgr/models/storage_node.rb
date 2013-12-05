@@ -14,7 +14,8 @@ module Dcmgr::Models
     def_dataset_method(:online_nodes) do
       # SELECT * FROM `storage_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
-      filter(:node_id => r)
+      # Needs to specify storage_nodes table as this is CTI model.
+      StorageNode.filter(:node_id => r)
     end
 
     def validate
@@ -45,7 +46,14 @@ module Dcmgr::Models
     end
 
     def to_hash
-      super.merge({:status=>self.status})
+      v = super().merge({:status=>self.status})
+      # merge descendant classes attributes.
+      self.class.cti_columns.each { |tblname, columns|
+        (columns - [self.class.cti_base_model.primary_key]).each { |colname|
+          v.merge!({colname.to_sym => self.send(colname)})
+        }
+      }
+      v
     end
 
     def to_api_document
@@ -76,5 +84,8 @@ module Dcmgr::Models
       (offer_size - alives_size >= size * num.to_i)
     end
 
+    def associate_volume(volume)
+      raise NotImplementedError
+    end
   end
 end

@@ -81,9 +81,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
   post do
     sp = vs = vol = nil
     # input parameter validation
-    if params[:backup_object_id]
+    if !params[:backup_object_id].blank?
       bo = vs = find_by_uuid(:BackupObject, params[:backup_object_id])
-    elsif params[:volume_size]
+    elsif !params[:volume_size].blank?
       if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
           !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
         raise E::InvalidVolumeSize, params[:volume_size]
@@ -93,7 +93,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     end
 
     # TODO: storage node group assignment
-    if params[:storage_node_id]
+    if !params[:storage_node_id].blank?
       sp = find_by_uuid(:StorageNode, params[:storage_node_id])
       raise E::UnknownStorageNode, params[:storage_node_id] if sp.nil?
     end
@@ -112,12 +112,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
         v.backup_object_id = vs.canonical_uuid
       end
 
-      if params[:service_type]
+      if !params[:service_type].blank?
         validate_service_type(params[:service_type])
         v.service_type = params[:service_type]
       end
 
-      if params[:display_name]
+      if !params[:display_name].blank?
         v.display_name = params[:display_name]
       end
     end
@@ -126,27 +126,25 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     if sp.nil?
       # going to storage node scheduling mode.
       vol.state = :scheduling
-      vol.save
 
       on_after_commit do
         Dcmgr.messaging.submit("scheduler", 'schedule_volume', vol.canonical_uuid)
       end
     else
       begin
-        vol.storage_node = sp
-        vol.save
+        sp.associate_volume(vol)
       rescue M::Volume::CapacityError => e
         logger.error(e)
         raise E::OutOfDiskSpace
       end
 
       vol.state = :pending
-      vol.save
 
       on_after_commit do
         Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid)
       end
     end
+    vol.save_changes
 
     respond_with(R::Volume.new(vol).generate)
   end
