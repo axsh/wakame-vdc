@@ -439,9 +439,10 @@ module Dcmgr
       job :terminate do
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
+        @force   = request.args[1]
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
-        unless ['running', 'halted'].member?(@inst[:state].to_s)
+        if @force != true && !['running', 'halted'].member?(@inst[:state].to_s)
           raise "Invalid instance state: #{@inst[:state]}"
         end
 
