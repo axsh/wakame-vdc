@@ -7,7 +7,7 @@ gem 'wakame-dolphin', '0.0.5'
 
 group :mysql do
   gem 'sequel', '3.48.0'
-  gem 'mysql2', '0.3.11'
+  gem 'mysql2', '~> 0.3.14'
 end
 
 group :cassandra do
