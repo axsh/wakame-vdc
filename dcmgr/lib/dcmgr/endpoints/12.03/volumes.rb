@@ -176,8 +176,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     # description 'Attachd the volume'
     # params id, string, required
     # params instance_id, string, required
-    raise E::UndefinedInstanceID if params[:instance_id].nil?
-    raise E::UndefinedVolumeID if params[:id].nil?
+    raise E::UndefinedInstanceID if params[:instance_id].blank?
+    raise E::UndefinedVolumeID if params[:id].blank?
 
     i = find_by_uuid(:Instance, params[:instance_id])
     raise E::UnknownInstance, params[:instance_id] if i.nil?
@@ -185,10 +185,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
     v = find_by_uuid(:Volume, params[:id])
     raise E::UnknownVolume, params[:id] if v.nil?
-    raise E::AttachVolumeFailure, "Volume is attached to running instance." if v.instance
+    if v.instance && v.state == C::Volume::STATE_ATTACHED
+      raise E::AttachVolumeFailure, "Volume is attached to running instance."
+    end
 
-    v.instance = i
-    v.save
+    guest_device_name = nil
+    if !params['guest_device_name'].blank?
+      guest_device_name = params['guest_device_name']
+    end
+
+    v.attach_to_instance(i, guest_device_name)
 
     on_after_commit do
       Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
