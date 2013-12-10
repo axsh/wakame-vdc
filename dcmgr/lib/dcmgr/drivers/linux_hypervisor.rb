@@ -155,15 +155,36 @@ module Dcmgr
 
       def attach_volume_to_host(ctx, volume_id)
         vol = ctx.inst[:volume][volume_id]
-        tryagain do
-          next true if File.exist?(iscsi_target_dev_path(vol))
 
-          #sh("iscsiadm --mode discovery -t sendtargets --portal '%s'",
-          #   [vol[:volume_device][:iscsi_storage_node][:ip_address]])
-          sh("iscsiadm --mode node --op new --targetname '%s' --portal '%s'",
-             [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
-          sh("iscsiadm --mode node --targetname '%s' --portal '%s' --login",
-             [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
+        if vol[:volume_type] == 'Dcmgr::Models::IscsiVolume'
+          tryagain do
+            next true if File.exist?(iscsi_target_dev_path(vol))
+
+            #sh("iscsiadm --mode discovery -t sendtargets --portal '%s'",
+            #   [vol[:volume_device][:iscsi_storage_node][:ip_address]])
+            sh("iscsiadm --mode node --op new --targetname '%s' --portal '%s'",
+               [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
+            sh("iscsiadm --mode node --targetname '%s' --portal '%s' --login",
+               [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
+          end
+          # wait udev queue
+          sh("/sbin/udevadm settle")
+        end
+      end
+
+      def detach_volume_from_host(ctx)
+        vol = ctx.vol
+
+        if vol[:volume_type] == 'Dcmgr::Models::IscsiVolume'
+          tryagain do
+            next true unless File.exist?(iscsi_target_dev_path(vol))
+
+            # iscsi logout
+            sh("iscsiadm --mode node --targetname '%s' --portal '%s' --logout",
+               [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
+            sh("iscsiadm --mode node --op delete --target '%s' --portal '%s'",
+               [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
+          end
           # wait udev queue
           sh("/sbin/udevadm settle")
         end

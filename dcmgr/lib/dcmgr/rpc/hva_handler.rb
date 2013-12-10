@@ -12,13 +12,6 @@ module Dcmgr
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::Helpers::BlockDeviceHelper
 
-      def attach_volume_to_host(volume_id)
-        rpc.request('sta-collector', 'update_volume', volume_id, {
-                      :state=>:attaching,
-                      :attached_at => nil,
-                      :instance_id => @inst[:id], # needed after cleanup
-                    })
-      end
 
       def detach_volume_from_host(volume)
         if volume[:volume_type] == 'Dcmgr::Models::IscsiVolume'
@@ -486,31 +479,29 @@ module Dcmgr
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
-        @hva_ctx.logger.info("Attaching #{@vol_id}")
         raise "Invalid volume state: #{@vol[:state]}" unless @vol[:state].to_s == 'available'
 
-        rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:attaching, :attached_at=>nil})
-        # check under until the dev file is created.
-        # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-        get_linux_dev_path
-
-        # attach disk on host os
-        attach_volume_to_host
-
         @hva_ctx.logger.info("Attaching #{@vol_id} on #{@inst_id}")
+        rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:attaching, :attached_at=>nil})
 
-        # attach disk on guest os
-        pci_devaddr=nil
+
         tryagain do
-          pci_devaddr = task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                                            :attach_volume_to_guest, [@hva_ctx])
+          unless @hva_ctx.inst[:volume][@vol_id][:is_local_volume]
+            task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                                :attach_volume_to_host, [@hva_ctx, @vol_id])
+          end
+          true
         end
-        raise "Can't attach #{@vol_id} on #{@inst_id}" if pci_devaddr.nil?
+
+        tryagain do
+          task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                              :attach_volume_to_guest, [@hva_ctx])
+        end
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:attached,
                       :attached_at=>Time.now.utc,
-                      :guest_device_name=>pci_devaddr})
+                    })
         event.publish('hva/volume_attached', :args=>[@inst_id, @vol_id])
         @hva_ctx.logger.info("Attached #{@vol_id} on #{@inst_id}")
       }, proc {
@@ -538,7 +529,12 @@ module Dcmgr
         end
 
         # detach disk on host os
-        ignore_error { detach_volume_from_host }
+        ignore_error {
+          tryagain do
+            task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                                :detach_volume_from_host, [@hva_ctx])
+          end
+        }
         update_volume_state_to_available
       end
 
