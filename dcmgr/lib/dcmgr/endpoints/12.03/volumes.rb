@@ -181,7 +181,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
     i = find_by_uuid(:Instance, params[:instance_id])
     raise E::UnknownInstance, params[:instance_id] if i.nil?
-    raise E::InvalidInstanceState unless i.live? && i.state == 'running'
+    raise E::InvalidInstanceState unless i.live? && ['running', 'halted'].member?(i.state)
 
     v = find_by_uuid(:Volume, params[:id])
     raise E::UnknownVolume, params[:id] if v.nil?
@@ -196,8 +196,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
     v.attach_to_instance(i, guest_device_name)
 
-    on_after_commit do
-      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
+    if i.state == 'running'
+      # hot add/attach
+      on_after_commit do
+        Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
+      end
     end
 
     respond_with(R::Volume.new(v).generate)
@@ -217,11 +220,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       raise E::DetachVolumeFailure, "boot device can not be detached"
     end
     i = v.instance
-    raise E::InvalidInstanceState unless i.live? && i.state == 'running'
+    raise E::InvalidInstanceState unless i.live? && ['running', 'halted'].member?(i.state)
 
-    on_after_commit do
-      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
+    if i.state == 'running'
+      # hot remove/detach
+      on_after_commit do
+        Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
+      end
     end
+
     respond_with(R::Volume.new(v).generate)
   end
 
