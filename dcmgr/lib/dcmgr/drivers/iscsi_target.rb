@@ -38,8 +38,8 @@ module Dcmgr
 
       def self.driver_class(iscsi_target)
         case iscsi_target
-        when "linux_iscsi"
-          Dcmgr::Drivers::LinuxIscsi
+        when 'tgt', "linux_iscsi"
+          Dcmgr::Drivers::Tgt
         when "sun_iscsi"
           Dcmgr::Drivers::SunIscsi
         when "comstar"

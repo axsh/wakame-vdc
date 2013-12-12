@@ -2,7 +2,7 @@
 
 module Dcmgr
   module Drivers
-    class LinuxIscsi < IscsiTarget
+    class Tgt < IscsiTarget
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
 
@@ -40,13 +40,10 @@ module Dcmgr
       def delete(ctx)
         @volume = ctx.volume
         @volume_id = ctx.volume_id
-        
         sh("/usr/sbin/tgt-admin --delete '%s'", [iqn_from_ctx])
       end
 
-      def register(volume)
-        tinfo = volume[:transport_information]
-
+      private
       def register(tid, iqn, lun, bs_path)
         # register target
         tgtadm("--op new --mode=target --tid=%s --targetname %s", [tid, iqn])
@@ -76,9 +73,9 @@ module Dcmgr
 
       def volume_path
         raise "Call after set @volume." if @volume.nil?
-        File.join(driver_configuration.export_path, @volume[:volume_device][:path])        
+        File.join(driver_configuration.export_path, @volume[:volume_device][:path])
       end
-      
+
       def find_tid(iqn)
         lst = `#{driver_configuration.tgtadm_path} --lld iscsi --op show --mode target`.split("\n")
         if lst.find { |l| l =~ /^Target\s+(\d+): #{iqn}/ }
