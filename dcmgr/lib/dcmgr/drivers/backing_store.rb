@@ -33,26 +33,52 @@ module Dcmgr
         raise NotImplementedError
       end
 
-      # Take a snapshot where snapshot_path() addresses.
-      # @param StaContext ctx
-      def create_snapshot(ctx)
-        raise NotImplementedError
+      # The backing store class includes this interface
+      # if it is capable to perform as a backup storage.
+      #  i.e. if you want to deals with taken snapshot
+      #       on the storage device as backup object.
+      module ProvideBackupVolume
+        # Create local backup from volume.
+        # @param StaContext ctx
+        def backup_volume(ctx)
+          raise NotImplementedError
+        end
+
+        def delete_backup(ctx)
+          raise NotImplementedError
+        end
+
+        # @return String path to the backup object key by backup_volume().
+        #
+        # backup_volume(ctx)
+        # puts backup_object_key_created(ctx)
+        def backup_object_key_created(ctx)
+          raise NotImplementedError
+        end
       end
 
-      # Delete a snapshot where snapshot_path() addresses.
-      def delete_snapshot(ctx)
-        raise NotImplementedError
-      end
+      module ProvidePointInTimeSnapshot
+        # Take a snapshot where snapshot_path() addresses.
+        # @param StaContext ctx
+        def create_snapshot(ctx)
+          raise NotImplementedError
+        end
 
-      # Returns snapshot path string. It has to be called after create_snapshot().
-      # and also be expected to return same value until create_snapshot() called again.
-      # @param StaContext ctx
-      # @return String path to the snapshot created by create_snapshot().
-      #
-      # create_snapshot(ctx)
-      # puts snapshot_path_created(ctx)
-      def snapshot_path_created(ctx)
-        raise NotImplementedError
+        # Delete a snapshot where snapshot_path() addresses.
+        def delete_snapshot(ctx)
+          raise NotImplementedError
+        end
+
+        # Returns snapshot path string. It has to be called after create_snapshot().
+        # and also be expected to return same value until create_snapshot() called again.
+        # @param StaContext ctx
+        # @return String path to the snapshot created by create_snapshot().
+        #
+        # create_snapshot(ctx)
+        # puts snapshot_path_created(ctx)
+        def snapshot_path_created(ctx)
+          raise NotImplementedError
+        end
       end
 
       # deprecated

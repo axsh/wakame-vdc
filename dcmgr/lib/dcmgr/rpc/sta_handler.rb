@@ -120,7 +120,7 @@ module Dcmgr
 
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleting})
 
-        # deregisterd iscsi target
+        # deregister iscsi target
         begin
           iscsi_target.delete(StaContext.new(self))
         rescue => e
@@ -145,6 +145,30 @@ module Dcmgr
           logger.info("#{@volume_id}: Deleted volume successfully.")
         end
       end
+
+      job :backup_volume, proc {
+        @volume_id = request.args[0]
+        @backup_object_id = request.args[1]
+        @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
+        @backup_object = rpc.request('sta-collector', 'get_backup_object', @backup_object_id) unless @backup_object_id.nil?
+        @sta_ctx = StaContext.new(self)
+
+        # backup volume
+        if backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvideBackupVolume)
+          backing_store.backup_volume(@sta_ctx)
+          new_object_key = backing_store.backup_object_key_created(@sta_ctx)
+        elsif backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvidePointInTimeSnapshot)
+          # take one generation snapshot -> copy data -> delete snapshot.
+          new_object_key = nil
+          raise NotImplementedError
+        else
+          raise "None of backup operation types are supported by #{backing_store.class}."
+        end
+
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
+                    {:state=>:available, :object_key=>new_object_key})
+        logger.info("created new backup: #{@backup_object_id}")
+      }
 
       job :create_snapshot, proc {
         @volume_id = request.args[0]

@@ -13,6 +13,14 @@ module Dcmgr
         # Requires to set in sta.conf.
         param :zpool_base_path
 
+        param :snapshot_export_base, :default=>nil
+
+        def snapshot_export_path
+          # snapshot_export_base can have nil.
+          @config[:snapshot_export_base].nil? ?
+             @config[:zpool_base_path] : File.join(@config[:zpool_base_path], @config[:snapshot_export_base].to_s)
+        end
+
         def validate(errors)
           super
           
@@ -24,12 +32,19 @@ module Dcmgr
             system("#{config[:zfs_path]} list #{config[:zpool_base_path]} > /dev/null")
             if $?.exitstatus != 0
               errors.add("zpool_base_path does not exist: #{config[:zpool_base_path]}")
+            else
+              system("#{config[:zfs_path]} list #{self.snapshot_export_path()} > /dev/null")
+              if $?.exitstatus != 0
+                errors.add("snapshot_export_base does not exist or is invalid: #{self.snapshot_export_path()}")
+              end
             end
           end
         end
       end
 
       module BackupAsSnapshot
+        include Drivers::BackingStore::ProvideBackupVolume
+
         def create_volume(ctx, snap_path=nil)
           @volume      = ctx.volume
           if snap_path
@@ -41,8 +56,8 @@ module Dcmgr
             # create full copy volume from snapshot
             sh("#{driver_configuration.zfs_path} send %s | #{driver_configuration.zfs_path} recv %s", [zsnap_path(snap_path), volume_path()])
             
-            zfs("rollback  %s@%s", [volume_path(), snap_path.split('@').last])
-            zfs("destroy  %s@%s", [volume_path(), snap_path.split('@').last])
+            zfs("rollback -r %s@%s", [volume_path(), snap_path.split('@').last])
+            zfs("destroy %s@%s", [volume_path(), snap_path.split('@').last])
           else
             # create blank volume
             #sh("/usr/sbin/zfs create -p -V %s %s", ["#{@volume[:size]}", volume_path()])
@@ -56,32 +71,37 @@ module Dcmgr
 
         def delete_volume(ctx)
           @volume = ctx.volume
+          # mark as logical remove.
+          zfs("set wakame:deleted=true %s", [volume_path()])
           begin
+            # This may fail.
             zfs("destroy %s", [volume_path()])
           rescue => e
-            logger.warn("Failed to destroy #{ctx.volume_id} at #{volume_path()}. seems to have child snapshots/clones. " +
-                        "Falls back to set wakame:delete user attribute.")
-            # can be failed. mark as logical removed.
-            zfs("set wakame:deleted=true %s", [volume_path()])
+            logger.warn("Skip to immediate destroy #{ctx.volume_id} at #{volume_path()}. child snapshots/clones still exist.")
           end
         end
 
-        def create_snapshot(ctx)
-          @volume = ctx.volume
-          zfs("snapshot %s@%s", [volume_path(), ctx.backup_object_id])
-        end
-
-        def snapshot_path_created(ctx)
+        def backup_object_key_created(ctx)
           "#{ctx.volume_id}@#{ctx.backup_object_id}"
         end
 
-        def delete_snapshot(ctx)
-          zfs("destroy %s", [zsnap_path(ctx.backup_object[:object_key])])
+        def backup_volume(ctx)
+          @volume = ctx.volume
+          zfs("snapshot %s@%s", [volume_path(), ctx.backup_object_id])
+          # create clone of the snapshot to expose the raw dev under /dev/zvol/<zsnap_clone_path>/bo-xxxx
+          zfs("clone -o readonly=on %s@%s %s", [volume_path(), ctx.backup_object_id, zsnap_clone_path(ctx.backup_object_id)])
+        end
 
-          base_vol_path = zsnap_path(ctx.backup_object[:object_key]).split('@').first
-          if zfs("get wakame:deleted %s", [base_vol_path])[:stdout].split("\n").last.split(/\s+/)[2] == 'true'
-            # can be failed. ignore error.
-            shell.run("zfs destroy %s", [base_vol_path])
+        # zfs snapshot can fail to remove if it has children or
+        # dependants. it mainly marks deleted flag as user zfs
+        # property then tries zfs destroy once.
+        def delete_backup(ctx)
+          zfs("set wakame:deleted=true %s", [zsnap_clone_path(ctx.backup_object_id)])
+          begin
+            # This may fail.
+            zfs("destroy -r %s", [zsnap_clone_path(ctx.backup_object_id)])
+          rescue => e
+            logger.warn("Skip to immediate destroy snapshot #{ctx.backup_object_id} at #{zsnap_clone_path(ctx.backup_object_id)}. child snapshots/clones still exist.")
           end
         end
 
