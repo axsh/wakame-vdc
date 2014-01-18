@@ -28,6 +28,9 @@ function rpmspec_depends() {
     egrep -v '^wakame-vdc'
 }
 
+# disable SELinux
+setenforce 0
+
 # Setup private Ruby binary using rvm
 
 RUBYVER=${RUBYVER:-2.1.0}
