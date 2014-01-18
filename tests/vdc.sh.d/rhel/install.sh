@@ -31,6 +31,8 @@ function rpmspec_depends() {
 # disable SELinux
 setenforce 0
 
+yum install -y curl yum-plugin-versionlock
+
 # Setup private Ruby binary using rvm
 
 RUBYVER=${RUBYVER:-2.1.0}
