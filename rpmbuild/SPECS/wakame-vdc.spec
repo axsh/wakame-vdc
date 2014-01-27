@@ -26,7 +26,8 @@ License: see https://github.com/axsh/wakame-vdc/blob/master/README.md
 AutoReqProv: no
 
 # * build
-BuildRequires: rpm-build
+# rpm-build and etc...
+BuildRequires: rpmdevtools
 BuildRequires: createrepo
 BuildRequires: make
 BuildRequires: gcc-c++ gcc

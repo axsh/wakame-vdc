@@ -24,7 +24,6 @@ VDC_INSTALL_ROOT ?= /opt/axsh/wakame-vdc
 
 PATH := $(RUBYDIR)/bin:${PATH}
 export PATH
-unexport GEM_HOME GEM_PATH
 
 build: build-stamp
 build-stamp: ruby-build bundle-install
