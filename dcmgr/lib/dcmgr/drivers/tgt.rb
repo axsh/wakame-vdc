@@ -14,9 +14,9 @@ module Dcmgr
 
         def validate(errors)
           if config[:export_path].nil?
-            errors.add("export_path is unset.")
+            errors << "export_path is unset."
           elsif !File.exists?(config[:export_path])
-            errors.add("The export_path does not exist or have access issue: #{config[:export_path]}")
+            errors << "The export_path does not exist or have access issue: #{config[:export_path]}"
           end
         end
       end
