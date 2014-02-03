@@ -5,7 +5,16 @@ Wakame-VDC DCMGR API Client with bash
 ## Usage
 
 ```
-$ ./mussel.sh [namespace] [task]
+$ ./mussel.sh [filename] [function]
+```
+
+the first parameter is matched with filenames under ./v12.03.d/ directory without extension ".sh".
+
+the second parameter is a function name without the prefix "task_" of inside of the file at the first parameter.
+
+Example:
+```
+$ ./mussel.sh instance create {other params}
 ```
 
 ## Configure musselrc file

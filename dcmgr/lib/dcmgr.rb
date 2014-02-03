@@ -241,6 +241,7 @@ module Dcmgr
     autoload :Stud, 'dcmgr/drivers/stud'
     autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
     autoload :Zabbix, 'dcmgr/drivers/zabbix'
+    autoload :PublicZabbix, 'dcmgr/drivers/public_zabbix'
     autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
     autoload :Natbox, 'dcmgr/drivers/natbox'
     autoload :Fluent, 'dcmgr/drivers/fluent'

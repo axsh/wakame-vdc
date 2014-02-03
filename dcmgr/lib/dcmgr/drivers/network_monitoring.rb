@@ -18,6 +18,8 @@ module Dcmgr::Drivers
       case key.to_s
       when 'zabbix'
         Zabbix
+      when 'public_zabbix'
+        PublicZabbix
       else
         raise "Unknown network monitoring driver: #{key}"
       end
