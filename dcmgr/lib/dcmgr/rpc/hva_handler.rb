@@ -149,7 +149,7 @@ module Dcmgr
 
       def create_instance_vnics(inst)
         inst[:vif].each { |vnic|
-          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
+          event.publish("#{inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
 
           vnic[:security_groups].each { |secg|
             event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
@@ -333,7 +333,7 @@ module Dcmgr
         raise "Invalid instance state: #{@inst[:state]}" unless %w(initializing).member?(@inst[:state].to_s)
         if !@inst[:volume].values.all? {|v| v[:state].to_s == 'available' }
           @hva_ctx.logger.error("Could not boot the instance. some volumes are not available yet: #{@inst[:volume].map{|volid, v| volid + "=" + v[:state] }.join(', ')}")
-          return
+          next
         end
 
         setup_metadata_drive
@@ -341,7 +341,7 @@ module Dcmgr
         check_interface
 
         @inst[:volume].keys.each { |vol_uuid|
-          update_volume_state(vol_uuid, {:state=>:attaching}, 'hva/volume_attached')
+          update_volume_state(vol_uuid, {:state=>:attaching})
         }
 
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -354,13 +354,7 @@ module Dcmgr
           update_volume_state(v[:uuid], {:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
         }
 
-        # Security group vnic joined events for vnet netfilter
-        @inst[:vif].each { |vnic|
-          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
-          vnic[:security_groups].each { |secg|
-            event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
-          }
-        }
+        create_instance_vnics(@inst)
       }, proc {
         ignore_error { terminate_instance(false) }
         ignore_error { finalize_instance() }
@@ -375,7 +369,7 @@ module Dcmgr
         raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
         if !@inst[:volume].values.all? {|v| v[:state].to_s == 'available' }
           @hva_ctx.logger.info("Wait for all volumes available. #{@inst[:volume].map{|volid, v| volid + "=" + v[:state] }.join(', ')}")
-          return
+          next
         end
         
         # setup vm data folder
@@ -410,7 +404,6 @@ module Dcmgr
           update_volume_state(v[:uuid], {:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
         }
 
-        # Security group vnic joined events for vnet netfilter
         create_instance_vnics(@inst)
       }, proc {
         # TODO: Run detach & destroy volume
@@ -439,16 +432,20 @@ module Dcmgr
       # state on any resources.
       # called from HA at which the faluty instance get cleaned properly.
       job :cleanup do
+        @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
-        raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
+        raise "Invalid instance state: #{@inst[:state]}" if @inst[:state].to_s == 'terminated'
 
         begin
           ignore_error { terminate_instance(false) }
         ensure
-          # just publish "hva/instance_terminated" to update security group rules once
-          finalize_instance
+          # just publish "hva/instance_terminated" to update security
+          # group rules once
+          ['hva/instance_terminated',"#{@node.node_id}/instance_terminated"].each { |e|
+            event.publish(e, :args=>[@inst_id])
+          }
         end
       end
 
