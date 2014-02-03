@@ -5,9 +5,26 @@ require "fuguta"
 module Dcmgr
   module Drivers
     class Hypervisor < Task::Tasklet
-      extend Fuguta::Configuration::ConfigurationMethods::ClassMethods
+      include Fuguta::Configuration::ConfigurationMethods
 
-      def_configuration
+      def_configuration do
+        # get Dcmgr::Drivers::Hypervisor class constant.
+        @@configuration_source_class = ::Module.nesting.first
+        def self.configuration_source_class
+          @@configuration_source_class
+        end
+
+        DSL do
+          def local_store(&blk)
+            @config[:local_store].parse_dsl(&blk)
+          end
+        end
+
+        def after_initialize
+          super
+          @config[:local_store] = Fuguta::Configuration::ConfigurationMethods.find_configuration_class(self.class.configuration_source_class.local_store_class).new(self)
+        end
+      end
 
       # Retrive configuration section for this or child class.
       def self.driver_configuration
@@ -64,7 +81,7 @@ module Dcmgr
       end
 
       def self.local_store_class
-        raise NotImplementedError
+        LocalStore
       end
 
       # deprecated

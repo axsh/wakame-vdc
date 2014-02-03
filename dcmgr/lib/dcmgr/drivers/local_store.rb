@@ -4,6 +4,9 @@ module Dcmgr
   module Drivers
     class LocalStore < Task::Tasklet
       helpers Task::LoggerHelper
+      include Fuguta::Configuration::ConfigurationMethods
+
+      def_configuration
 
       # download and prepare image files to ctx.os_devpath.
       def deploy_image(inst,ctx)

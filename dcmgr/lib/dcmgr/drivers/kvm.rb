@@ -65,6 +65,9 @@ module Dcmgr
       end
 
       def_configuration do
+        # set Dcmgr::Drivers::Kvm constant.
+        @@configuration_source_class = ::Module.nesting.first
+
         param :qemu_path, :default=>proc { ||
           if File.exists?('/etc/debian_version')
             '/usr/bin/kvm'
@@ -136,12 +139,12 @@ module Dcmgr
         end
 
         inst[:volume].each { |vol_id, v|
-          cmd << "-drive file=%s,id=#{v[:uuid]}-drive,cache=none,aio=native,if=none"
+          cmd << with_drive_extra_opts("-drive file=%s,id=#{v[:uuid]}-drive,if=none")
           args << hc.volume_path(v)
           cmd << "-device " + qemu_drive_device_options(hc, v)
           # attach metadata drive
           if inst[:boot_volume_id] == v[:uuid]
-            cmd << "-drive file=#{hc.metadata_img_path},id=metadata-drive,cache=none,aio=native,if=none"
+            cmd << with_drive_extra_opts("-drive file=#{hc.metadata_img_path},id=metadata-drive,if=none")
             # guess secondary drive device name for metadata drive.
             cmd << "-device " + qemu_drive_device_options(hc, {guest_device_name: v[:guest_device_name].succ, uuid: 'metadata'})
           end
@@ -276,7 +279,8 @@ RUN_SH
       module RHEL6
         def attach_volume_to_guest(hc)
           connect_monitor(hc) { |t|
-            t.cmd("__com.redhat_drive_add file=#{hc.volume_path(hc.vol)},id=#{hc.vol[:uuid]}-drive,cache=none,aio=native")
+            drive_opts = with_drive_extra_opts("file=#{hc.volume_path(hc.vol)},id=#{hc.vol[:uuid]}-drive")
+            t.cmd("__com.redhat_drive_add #{drive_opts}")
             t.cmd("device_add " + qemu_drive_device_options(hc, hc.vol))
           }
         end
@@ -453,6 +457,12 @@ RUN_SH
       Task::Tasklet.register(self) {
         self.new
       }
+    end
+
+    # Add extra options to -drive parameter.
+    # mainly for none=cache does not work some filesystems without O_DIRECT.
+    def with_drive_extra_opts(base)
+      [base, driver_configuration.local_host.drive_extra_options].compact.join(',')
     end
   end
 end
