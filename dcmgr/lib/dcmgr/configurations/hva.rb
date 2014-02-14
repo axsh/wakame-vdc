@@ -237,7 +237,7 @@ module Dcmgr
           errors << "vm_data_dir does not exist: #{@config[:vm_data_dir]}"
         end
 
-        unless ['netfilter', 'legacy_netfilter', 'openflow', 'off'].member?(@config[:edge_networking])
+        unless ['netfilter', 'legacy_netfilter', 'openflow', 'openvnet', 'off'].member?(@config[:edge_networking])
           errors << "Unknown value for edge_networking: #{@config[:edge_networking]}"
         end
       end

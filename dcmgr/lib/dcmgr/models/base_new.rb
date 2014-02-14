@@ -77,6 +77,13 @@ module Dcmgr::Models
         if !uuid_model_class.find(:uuid=>self.uuid).nil?
           raise "Duplicate UUID: #{self.canonical_uuid} already exists"
         end
+
+        super
+      end
+
+      def after_create
+        #TODO refactor
+        DCell::Node['vnmgr']['event_handler'].async.test_method(self.to_hash)
         super
       end
 
