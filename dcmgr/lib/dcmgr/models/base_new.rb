@@ -83,7 +83,7 @@ module Dcmgr::Models
 
       def after_create
         #TODO refactor
-        DCell::Node['vnmgr']['event_handler'].async.test_method(self.to_hash)
+        DCell::Node['vnmgr']['database_mediator'].async.create_entry(self.class.name.demodulize.to_sym, self.to_hash)
         super
       end
 
