@@ -684,6 +684,26 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                  })
   end
 
+  put '/:id/move' do
+    instance = find_by_uuid(:Instance, params[:id])
+    raise E::InvalidInstanceState, instance.state unless [C::Instance::STATE_RUNNING, C::Instance::STATE_HALTED].member?(instance.state)
+    if Dcmgr.conf.enable_instance_poweron_readiness_validation
+      unless instance.ready_poweron?
+        raise E::InvalidInstanceState, "not ready for poweron operation"
+      end
+    end
+    
+    instance.state = 'migrating'
+    instance.save_changes
+
+    on_after_commit do
+      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'migrate_start',
+                             instance.canonical_uuid)
+    end
+    respond_with({:instance_id=>instance.canonical_uuid,
+                 })
+  end
+
   namespace '/:instance_id/monitoring' do
     def single_insert
       @instance.add_monitor_item(params[:title], params[:enabled]=='true', params[:params])
