@@ -23,3 +23,11 @@ task_create() {
   ) \
   $(base_uri)/${namespace}s
 }
+
+task_destroy() {
+
+  # usage:
+  #   ./mussel.sh network destroy ${uuid}
+  local namespace=$1 uuid=$3
+  call_api -X DELETE $(base_uri)/${namespace}s/${uuid}
+}
