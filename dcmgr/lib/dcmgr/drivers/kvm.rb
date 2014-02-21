@@ -457,12 +457,12 @@ RUN_SH
       Task::Tasklet.register(self) {
         self.new
       }
-    end
 
-    # Add extra options to -drive parameter.
-    # mainly for none=cache does not work some filesystems without O_DIRECT.
-    def with_drive_extra_opts(base)
-      [base, driver_configuration.local_host.drive_extra_options].compact.join(',')
+      # Add extra options to -drive parameter.
+      # mainly for none=cache does not work some filesystems without O_DIRECT.
+      def with_drive_extra_opts(base)
+        [base, driver_configuration.local_store.drive_extra_options].compact.join(',')
+      end
     end
   end
 end
