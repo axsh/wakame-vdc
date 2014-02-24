@@ -28,6 +28,7 @@ module Dcmgr::Models
 
     def before_save
       self[:description] = "begin:#{self.range_begin}/end:#{self.range_end}"
+      super
     end
 
     def range_begin

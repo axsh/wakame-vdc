@@ -289,6 +289,7 @@ module Dcmgr::Models
       }
     end
 
+    private
     def before_destroy
       #Make sure no other networks are natted to this one
       Network.filter(:nat_network_id => self[:id]).each { |n|
@@ -304,7 +305,6 @@ module Dcmgr::Models
       super
     end
 
-    private
     def validate_range_args(range_begin, range_end)
       if range_begin.is_a?(IPAddress::IPv4)
         raise "Different prefix length: range_begin" if range_begin.prefix != self.prefix
