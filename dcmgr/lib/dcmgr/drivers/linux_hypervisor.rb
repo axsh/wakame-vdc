@@ -160,9 +160,14 @@ module Dcmgr
           tryagain do
             next true if File.exist?(iscsi_target_dev_path(vol))
 
+            # Auto discovery
             #sh("iscsiadm --mode discovery -t sendtargets --portal '%s'",
             #   [vol[:volume_device][:iscsi_storage_node][:ip_address]])
+            # Manual discovery
             sh("iscsiadm --mode node --op new --targetname '%s' --portal '%s'",
+               [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
+            # disable auto mount after unexpected system reboot.
+            sh("iscsiadm --mode node --op update --targetname '%s' --portal '%s' -n node.startup -v manual",
                [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
             sh("iscsiadm --mode node --targetname '%s' --portal '%s' --login",
                [vol[:volume_device][:iqn], vol[:volume_device][:iscsi_storage_node][:ip_address]])
