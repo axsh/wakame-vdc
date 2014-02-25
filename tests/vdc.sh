@@ -14,6 +14,7 @@ screenrc_path=${tmp_path}/screenrc
 screen_mode=${screen_mode:-'screen'}
 
 host_node_id=${host_node_id:-'demo1'}
+MODULES_FILE=${MODULES_FILE:-'Modulesfile'}
 
 PATH="${VDC_ROOT}/ruby/bin:$PATH"
 export PATH VDC_ROOT
@@ -23,6 +24,37 @@ export PATH VDC_ROOT
 
 [[ $UID = 0 ]] || abort "Need to run with root privilege"
 trap 'echo $BASH_COMMAND "(line ${LINENO}: $BASH_SOURCE, pwd: $PWD)"' DEBUG
+
+function load_modules_file() {
+  local modules_file_path="$prefix_path/tests/$MODULES_FILE"
+  if [[ ! -f $modules_file_path ]]; then
+    echo "ERROR: Unknown module file path: ${module_file_path}" >&2
+    kill -TERM $$
+  fi
+  cat $modules_file_path
+}
+
+function run_script_modules_d() {
+  local script_name="$1"
+  local modname
+
+  load_modules_file | while read modname; do
+    [[ -d "${prefix_path}/tests/vdc.sh.d/modules.d/${modname}" ]] || return 1
+    local script_path="${prefix_path}/tests/vdc.sh.d/modules.d/${modname}/${script_name}"
+    if [[ -x "${script_path}" ]]; then
+    echo $script_path
+      echo "Running $script_name of $modname"
+      (
+        modules_home="${prefix_path}/tests/vdc.sh.d/modules.d/${modname}"
+        if [[ -f "$modules_home/config.env" ]]; then
+          . $modules_home/config.env
+        fi
+        cd $VDC_ROOT
+        . $script_path
+      )
+    fi
+  done
+}
 
 function cleanup {
   set +e
@@ -90,10 +122,14 @@ function cleanup {
 
   (initctl status tgt | grep stop) && initctl start tgt
 
+  run_script_modules_d "cleanup.sh"
+
   set -e
 }
 
 function init_db() {
+  local dbname
+
   for dbname in wakame_dcmgr wakame_dcmgr_gui; do
     yes | mysqladmin -uroot drop ${dbname} || :
     mysqladmin -uroot create ${dbname}
@@ -111,15 +147,11 @@ function init_db() {
   #local oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')
   eval ${oauth_keys}
 
-  # for dolphin
-  if [ "$feature_dolphin" = 1 ]; then
-    cd ${prefix_path}/dolphin
-    time bundle exec rake db:cassandra:clean
-    time bundle exec rake db:cassandra:migrate
-  fi
+  run_script_modules_d "init_db.sh"
 
   # Install demo data.
   (. $data_path/demodata.sh)
+  run_script_modules_d "demodata.sh"
 }
 
 function run_standalone() {
@@ -130,17 +162,13 @@ function run_standalone() {
   sleep 1
   screen_it collector "cd ./dcmgr; ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
   screen_it nsa       "cd ./dcmgr; ./bin/nsa -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-nsa.log"
-  screen_it hva       "cd ./dcmgr; ./bin/hva -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-hva.log"
   screen_it metadata  "cd ./dcmgr; bundle exec unicorn -p ${metadata_port} -o ${metadata_bind} ./config-metadata.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
   screen_it api       "cd ./dcmgr; bundle exec unicorn -p ${api_port} -o ${api_bind} ./config-dcmgr.ru 2>&1 | tee ${tmp_path}/vdc-dcmgr.log"
   screen_it auth      "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${auth_port} -o ${auth_bind} ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
   screen_it proxy     "${abs_path}/builder/conf/hup2term.sh /usr/sbin/httpd -X -f ${tmp_path}/apache-proxy.conf"
   screen_it webui     "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${webui_port} -o ${webui_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
-  screen_it sta       "cd ./dcmgr; ./bin/sta -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-sta.log"
   screen_it admin     "cd ./frontend/admin; bundle exec unicorn -p ${admin_port} -o ${admin_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-admin.log"
-  if [ "$feature_dolphin" = 1 ]; then
-    screen_it dolphin   "cd ./dolphin/bin; ./dolphin_server 2>&1 | tee ${tmp_path}/vdc-dolphin.log"
-  fi
+  run_script_modules_d "screen.sh"
 }
 
 mode=$1
@@ -157,6 +185,11 @@ case ${mode} in
     (. $data_path/openflow/setup-openflow.sh)
     (. $data_path/openflow/enable-ovs.sh)
     cp $data_path/openflow/hva.conf $prefix_path/dcmgr/config/hva.conf
+    ;;
+  setup|setup::*)
+    distro=${mode##setup::}; [[ "${distro}" = "setup" ]] && distro=ubuntu
+    (. $data_path/setup.sh)
+    run_script_modules_d "setup.sh"
     ;;
   init)
     init_db
