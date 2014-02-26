@@ -125,6 +125,9 @@ function cleanup {
   /etc/init.d/rabbitmq-server start
 
   (initctl status tgt | grep stop) && initctl start tgt
+  if ! /etc/init.d/mysql status > /dev/null; then
+    /etc/init.d/mysql start
+  fi
 
   run_script_modules_d "cleanup.sh"
 
