@@ -19,7 +19,7 @@ MODULES_FILE=${MODULES_FILE:-'Modulesfile'}
 PATH="${VDC_ROOT}/ruby/bin:$PATH"
 export PATH VDC_ROOT
 
-. ${abs_path}/builder/functions.sh
+. ${data_path}/functions.sh
 . ${data_path}/config.env
 
 [[ $UID = 0 ]] || abort "Need to run with root privilege"
@@ -41,15 +41,15 @@ function run_script_modules_d() {
 
   load_modules_file | while read -a modline; do
     local modname=${modline[0]}
-    [[ -d "${prefix_path}/tests/vdc.sh.d/modules.d/${modname}" ]] || return 1
-    local script_path="${prefix_path}/tests/vdc.sh.d/modules.d/${modname}/${script_name}"
+    [[ -d "${data_path}/modules.d/${modname}" ]] || return 1
+    local script_path="${data_path}/modules.d/${modname}/${script_name}"
     if [[ -x "${script_path}" ]]; then
       echo $script_path
       echo "Running $script_name of $modname"
       (
         # populate argument variables from Modulesfile
         eval "${modline[@]:1}"
-        modules_home="${prefix_path}/tests/vdc.sh.d/modules.d/${modname}"
+        modules_home="${data_path}/modules.d/${modname}"
         if [[ -f "$modules_home/config.env" ]]; then
           . $modules_home/config.env
         fi
