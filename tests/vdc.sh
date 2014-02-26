@@ -31,20 +31,24 @@ function load_modules_file() {
     echo "ERROR: Unknown module file path: ${module_file_path}" >&2
     kill -TERM $$
   fi
-  cat $modules_file_path
+  # print only valid lines.
+  cat $modules_file_path | grep -v -e '^\s*#'
 }
 
 function run_script_modules_d() {
   local script_name="$1"
-  local modname
+  local -a modline
 
-  load_modules_file | while read modname; do
+  load_modules_file | while read -a modline; do
+    local modname=${modline[0]}
     [[ -d "${prefix_path}/tests/vdc.sh.d/modules.d/${modname}" ]] || return 1
     local script_path="${prefix_path}/tests/vdc.sh.d/modules.d/${modname}/${script_name}"
     if [[ -x "${script_path}" ]]; then
-    echo $script_path
+      echo $script_path
       echo "Running $script_name of $modname"
       (
+        # populate argument variables from Modulesfile
+        eval "${modline[@]:1}"
         modules_home="${prefix_path}/tests/vdc.sh.d/modules.d/${modname}"
         if [[ -f "$modules_home/config.env" ]]; then
           . $modules_home/config.env
