@@ -118,8 +118,6 @@ module Dcmgr
       end
 
       include BackupAsSnapshot
-      
-      end
 
       private
       def volume_path
