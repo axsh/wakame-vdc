@@ -238,6 +238,41 @@ function screen_it {
   esac
 }
 
+function screen_it_remote {
+  local title=$1
+  local ssh_dest=$2
+  local cmd=$3
+
+  # read cmd lines from stdin
+  [[ -z "$cmd"  ]] && {
+    cmd="$cmd `read`"
+  }
+
+  case $screen_mode in
+      'tmux')
+          (tmux -S "${tmp_path}/vdc-tmux.s" list-windows -t vdc | grep ${title} >/dev/null) || {
+              tmux -S "${tmp_path}/vdc-tmux.s" new-window -n "$title"
+              # pipe-pane can not be called from command line in tmux version earlier than the revision below.
+              # http://sourceforge.net/mailarchive/message.php?msg_id=27900401
+              #tmux -v -S "${tmp_path}/vdc-tmux.s" pipe-pane -t "vdc:${title}.0" "'/bin/cat > \"${tmp_path}/screenlog.${title}\"'"
+          }
+          tmux -S "${tmp_path}/vdc-tmux.s" send-keys -t "vdc:${title}" "ssh ${ssh_dest}" \; send-keys "Enter"
+          if [[ $cmd = '-' ]]; then
+            while read cmdln; do
+              tmux -S "${tmp_path}/vdc-tmux.s" send-keys -t "vdc:${title}" "${cmdln}" \; send-keys "Enter"
+            done
+          else
+            tmux -S "${tmp_path}/vdc-tmux.s" send-keys -t "vdc:${title}" "${cmd}" \; send-keys "Enter"
+          fi
+          ;;
+      'screen')
+          retry 3 screen -L -r vdc -x -X screen -t $title
+          screen -L -r vdc -x -p $title -X stuff "ssh ${ssh_dest} $NL"
+          screen -L -r vdc -x -p $title -X stuff "${cmd}$NL"
+          ;;
+  esac
+}
+
 function screen_open {
     typeset ret=0
 

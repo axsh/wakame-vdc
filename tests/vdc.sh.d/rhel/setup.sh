@@ -23,8 +23,8 @@ ${VDC_ROOT}/rpmbuild/helpers/sysctl.sh < ${VDC_ROOT}/contrib/etc/sysctl.d/30-ope
 ${VDC_ROOT}/rpmbuild/helpers/set-openvswitch-conf.sh
 ${VDC_ROOT}/rpmbuild/helpers/add-loopdev.sh
 
-# disable SELinux.
-setenforce 0
+# disable SELinux. ignore error for disabled case.
+setenforce 0 || :
 
 # stop system services.
 for i in dnsmasq tgtd; do
