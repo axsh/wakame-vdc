@@ -80,13 +80,6 @@ module Dcmgr::Models
 
         super
       end
-
-      def after_create
-        #TODO refactor
-        DCell::Node['vnmgr']['database_mediator'].async.create_entry(self.class.name.demodulize.to_sym, self.to_hash)
-        super
-      end
-
       def after_initialize
         super
         # set random generated uuid value
@@ -670,7 +663,6 @@ module Dcmgr::Models
       end
       @install_data_hooks
     end
-
 
     private
     def self.inherited(klass)
