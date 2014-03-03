@@ -76,7 +76,7 @@ module Dcmgr
           bridge_if = dcn.bridge
 
           if network[:dc_network][:vlan_lease]
-            fwd_if = "#{dcn.interface}.#{network[:dc_network][:vlan_lease][:tag_id]}"
+            fwd_if = vif_uuid("#{dcn.interface}.#{network[:dc_network][:vlan_lease][:tag_id]}")
             bridge_if = network[:dc_network][:uuid]
             unless valid_nic?(fwd_if)
               sh("/sbin/vconfig add #{phy_if} #{network[:vlan_id]}")
@@ -86,11 +86,11 @@ module Dcmgr
 
             # create new bridge only when the vlan is assigned to customer.
             unless valid_nic?(bridge_if)
-              sh("#{Dcmgr.conf.brctl_path} addbr %s",    [bridge_if])
-              sh("#{Dcmgr.conf.brctl_path} setfd %s 0",    [bridge_if])
+              sh(add_bridge_cmd)
+              sh(minimize_stp_forward_delay(bridge_if))
               # There is null case for the forward interface to create closed bridge network.
               if fwd_if
-                sh("#{Dcmgr.conf.brctl_path} addif %s %s", [bridge_if, fwd_if])
+                sh(attach_vif_to_bridge(bridge_if, fwd_if))
               end
             end
           end

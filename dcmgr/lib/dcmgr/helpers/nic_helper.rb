@@ -52,36 +52,19 @@ module Dcmgr
         end
       end
 
-      def attach_vif_to_bridge(vif, tunctl = nil)
-        bridge, cmd, interface = get_bridge_cmd_interface(vif, :attach_vif)
-
-        sh("tunctl -t %s" % [interface]) if tunctl
-        sh("/sbin/ip link set %s up" % [interface])
-        sh("%s %s %s" % [cmd, bridge, interface])
+      def vif_uuid_pretty(uuid)
+        case Dcmgr.conf.edge_networking
+        when 'openvnet' then uuid.gsub("vif-", "if-")
+        else                 uuid
+        end
       end
 
-      def detach_vif_from_bridge(vif, tunctl = nil)
-        bridge, cmd, interface = get_bridge_cmd_interface(vif, :detach_vif)
-
-        sh("tunctl -d %s" % [interface]) if tunctl
-        sh("/sbin/ip link set %s down" % [interface])
-        sh("%s %s %s" % [cmd, bridge, interface])
-      end
-
-      def add_bridge_cmd
-        get_bridge_cmd(nil, :create_bridge).first
-      end
-
-      def get_bridge_cmd_interface(vif, option)
-        bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-        [bridge, get_bridge_cmd(vif, option)].flatten
-      end
-
-      def get_bridge_cmd(vif, option)
-         case Dcmgr.conf.edge_networking
-         when 'openvnet' then [vsctl(option), vif && vif_uuid(vif)]
-         else                 [brctl(option), vif && vif[:uuid]]
-         end
+      def vif_uuid(vif)
+        case vif
+        when Hash   then vif_uuid_pretty(vif[:uuid])
+        when String then vif_uuid_pretty(vif)
+        else
+        end
       end
 
       def vsctl(option)
@@ -94,10 +77,40 @@ module Dcmgr
         "#{Dcmgr.conf.brctl_path} #{list[option]}"
       end
 
-      def vif_uuid(vif)
-        vif[:uuid].gsub("vif-", "if-")
+      def get_bridge_cmd(bridge, vif, option)
+        case Dcmgr.conf.edge_networking
+        when 'openvnet' then
+          "#{vsctl(option)} #{bridge} #{vif_uuid(vif)}"
+        else
+          "#{brctl(option)} #{bridge} #{vif_uuid(vif)}"
+        end
+      end
+      
+      def attach_vif_to_bridge(bridge, vif)
+        get_bridge_cmd(bridge, vif, :attach)
       end
 
+      def detach_vif_from_bridge(bridge, vif)
+        get_bridge_cmd(bridge, vif, :detach)
+      end
+
+      def minimize_stp_forward_delay(bridge)
+        case Dcmgr.conf.edge_networking
+        when 'openvnet' then
+          "#{Dcmgr.conf.vsctl_path} add bridge #{bridge} other_config stp-forward-delay 4"
+        else
+          "#{Dcmgr.conf.brctl_path} setfd #{bridge} 0"
+        end
+      end
+
+      def add_bridge_cmd(bridge)
+        case Dcmgr.conf.edge_networking
+        when 'openvnet' then
+          "#{vsctl(:create_bridge)} #{bridge}"
+        else
+          "#{brctl(:create_bridge)} #{bridge}"
+        end
+      end
     end
   end
 end
