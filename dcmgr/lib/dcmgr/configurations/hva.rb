@@ -189,6 +189,7 @@ module Dcmgr
       param :netfilter_script_post_flush, :default=>nil
 
       param :brctl_path, :default => '/usr/sbin/brctl'
+      param :vsctl_path, :default => '/usr/bin/ovs-vsctl'
       param :ovs_run_dir, :default=>'/usr/var/run/openvswitch'
       # Path for ovs-ofctl
       param :ovs_ofctl_path, :default => '/usr/bin/ovs-ofctl'

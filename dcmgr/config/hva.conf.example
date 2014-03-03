@@ -48,6 +48,9 @@ config.logging_service_max_match_count = -1
 # Path for brctl
 config.brctl_path = '/usr/sbin/brctl'
 
+# Path for ovs-vsctl
+config.vsctl_path = '/usr/bin/ovs-vsctl'
+
 # Directory used by Open vSwitch daemon for run files
 config.ovs_run_dir = '/var/lib/wakame-vdc/ovs/var/run/openvswitch'
 
