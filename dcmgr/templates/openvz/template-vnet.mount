@@ -36,7 +36,8 @@ for iface in ${NETIFLIST}; do
 	while sleep 1; do
 	    /sbin/ifconfig ${host_ifname} 0 > /dev/null 2>&1
 	    if [ $? -eq 0 ]; then
-	  brctl addif ${bridge} ${host_ifname}
+		#brctl addif ${bridge} ${host_ifname}
+		ovs-vsctl add-port ${bridge} ${host_ifname}
 		break
 	    fi
 	done

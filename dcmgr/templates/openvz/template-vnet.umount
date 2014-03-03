@@ -5,10 +5,7 @@
 SRC=<%= ve_metadata_path %>
 DST=<%= hn_metadata_path %>
 
-if [ ! -e ${DST} ]; then
-    mkdir -p ${DST}
-fi
-mount -n -t simfs METADATA ${DST} -o ${SRC},noexec,nosuid
+umount ${DST}
 
 NETIFLIST=$(printf %s "$NETIF" |tr ';' '\n')
 
@@ -36,10 +33,13 @@ for iface in ${NETIFLIST}; do
 	while sleep 1; do
 	    /sbin/ifconfig ${host_ifname} 0 > /dev/null 2>&1
 	    if [ $? -eq 0 ]; then
-	  brctl addif ${bridge} ${host_ifname}
+		#brctl addif ${bridge} ${host_ifname}
+		ovs-vsctl del-port ${bridge} ${host_ifname}
 		break
 	    fi
 	done
     } &
 
 done
+
+exit 0
