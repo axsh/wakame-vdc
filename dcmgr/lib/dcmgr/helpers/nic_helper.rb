@@ -52,6 +52,52 @@ module Dcmgr
         end
       end
 
+      def attach_vif_to_bridge(vif, tunctl = nil)
+        bridge, cmd, interface = get_bridge_cmd_interface(vif, :attach_vif)
+
+        sh("tunctl -t %s" % [interface]) if tunctl
+        sh("/sbin/ip link set %s up" % [interface])
+        sh("%s %s %s" % [cmd, bridge, interface])
+      end
+
+      def detach_vif_from_bridge(vif, tunctl = nil)
+        bridge, cmd, interface = get_bridge_cmd_interface(vif, :detach_vif)
+
+        sh("tunctl -d %s" % [interface]) if tunctl
+        sh("/sbin/ip link set %s down" % [interface])
+        sh("%s %s %s" % [cmd, bridge, interface])
+      end
+
+      def add_bridge_cmd
+        get_bridge_cmd(nil, :create_bridge).first
+      end
+
+      def get_bridge_cmd_interface(vif, option)
+        bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+        [bridge, get_bridge_cmd(vif, option)].flatten
+      end
+
+      def get_bridge_cmd(vif, option)
+         case Dcmgr.conf.edge_networking
+         when 'openvnet' then [vsctl(option), vif && vif_uuid(vif)]
+         else                 [brctl(option), vif && vif[:uuid]]
+         end
+      end
+
+      def vsctl(option)
+        list = {:attach => 'add-port', :detach => 'del-port', :create_bridge => 'add-br', :delete_bridge => 'del-br'}
+        "#{Dcmgr.conf.vsctl_path} #{list[option]}"
+      end
+
+      def brctl(option)
+        list = {:attach => 'addif', :detach => 'delif', :create_bridge => 'addbr', :delete_bridge => 'delbr'}
+        "#{Dcmgr.conf.brctl_path} #{list[option]}"
+      end
+
+      def vif_uuid(vif)
+        vif[:uuid].gsub("vif-", "if-")
+      end
+
     end
   end
 end
