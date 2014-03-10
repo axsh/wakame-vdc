@@ -8,7 +8,7 @@ def filter_params(name, vdc_params, filter)
                         else vdc
                         end
   end
-  DCell::Node['vnmgr']['database_mediator'].async.create_entry(name, vnet_params)
+  DCell::Node['vnmgr']['vdc_vnet_plugin'] && DCell::Node['vnmgr']['vdc_vnet_plugin'].async.create_entry(name, vnet_params)
   true
 end
 
