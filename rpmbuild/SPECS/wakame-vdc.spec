@@ -64,6 +64,8 @@ Requires: jemalloc
 # for erlang, rabbitmq-server
 # Requires: epel-release-6-x
 Requires: parted
+# dcell
+Requires: zeromq3
 
 # (base)
 %description
