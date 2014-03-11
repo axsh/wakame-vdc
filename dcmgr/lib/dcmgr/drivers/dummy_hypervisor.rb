@@ -53,7 +53,7 @@ module Dcmgr
         vifs.each do |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
             bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-            detach_vif_from_bridge(bridge, vif)
+            sh(detach_vif_from_bridge(bridge, vif))
             sh("/sbin/ip link set %s down" % [vif_uuid(vif)])
             sh("tunctl -d %s" % [vif_uuid(vif)])
           end

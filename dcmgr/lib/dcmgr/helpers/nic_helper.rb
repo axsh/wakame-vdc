@@ -64,6 +64,7 @@ module Dcmgr
         when Hash   then vif_uuid_pretty(vif[:uuid])
         when String then vif_uuid_pretty(vif)
         else
+          raise "invalid format uuid.."
         end
       end
 
@@ -85,7 +86,7 @@ module Dcmgr
           "#{brctl(option)} #{bridge} #{vif_uuid(vif)}"
         end
       end
-      
+
       def attach_vif_to_bridge(bridge, vif)
         get_bridge_cmd(bridge, vif, :attach)
       end

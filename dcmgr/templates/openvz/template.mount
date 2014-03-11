@@ -6,40 +6,38 @@ SRC=<%= ve_metadata_path %>
 DST=<%= hn_metadata_path %>
 
 if [ ! -e ${DST} ]; then
-    mkdir -p ${DST}
+  mkdir -p ${DST}
 fi
 mount -n -t simfs METADATA ${DST} -o ${SRC},noexec,nosuid
 
 NETIFLIST=$(printf %s "$NETIF" |tr ';' '\n')
 
 if [ -z "${NETIFLIST}" ]; then
-    # should be able to run CT without vifs
-    echo "Warning: CT$VEID has no veth interface configured" 1>&2
-    exit 0
+  # should be able to run CT without vifs
+  echo "Warning: CT$VEID has no veth interface configured" 1>&2
+  exit 0
 fi
 
 for iface in ${NETIFLIST}; do
+  for str in $(printf %s "${iface}"|tr ',' '\n'); do
+    case "${str}" in
+    bridge=*|host_ifname=*)
+      eval "${str%%=*}=\${str#*=}" ;;
+    esac
+  done
 
-    for str in $(printf %s "${iface}"|tr ',' '\n'); do
-	case "${str}" in
-	    bridge=*|host_ifname=*)
-            eval "${str%%=*}=\${str#*=}" ;;
-	esac
+  if [ -z "${bridge}" ]; then
+    echo "Error: bridge interfae does not exist" 1>&2
+    exit 1
+  fi
+
+  {
+    while sleep 1; do
+      /sbin/ifconfig ${host_ifname} 0 > /dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        brctl addif ${bridge} ${host_ifname}
+        break
+      fi
     done
-
-    if [ -z "${bridge}" ]; then
-	echo "Error: bridge interfae does not exist" 1>&2
-	exit 1
-    fi
-
-    {
-	while sleep 1; do
-	    /sbin/ifconfig ${host_ifname} 0 > /dev/null 2>&1
-	    if [ $? -eq 0 ]; then
-	  brctl addif ${bridge} ${host_ifname}
-		break
-	    fi
-	done
-    } &
-
+  } &
 done
