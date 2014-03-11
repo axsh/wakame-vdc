@@ -43,6 +43,8 @@ manifest.instance_eval do
     load_module Dcmgr::NodeModules::ServiceOpenFlow
   when 'off'
     # Don't load openflow nor netfilter
+  when 'openvnet'
+    # Do not do anything, or something might be added...
   when 'netfilter'
     load_module Dcmgr::NodeModules::ServiceNetfilter
   else

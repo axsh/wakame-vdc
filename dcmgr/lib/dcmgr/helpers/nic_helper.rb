@@ -52,6 +52,66 @@ module Dcmgr
         end
       end
 
+      def vif_uuid_pretty(uuid)
+        case Dcmgr.conf.edge_networking
+        when 'openvnet' then uuid.gsub("vif-", "if-")
+        else                 uuid
+        end
+      end
+
+      def vif_uuid(vif)
+        case vif
+        when Hash   then vif_uuid_pretty(vif[:uuid])
+        when String then vif_uuid_pretty(vif)
+        else
+          raise "invalid format uuid.."
+        end
+      end
+
+      def vsctl(option)
+        list = {:attach => 'add-port', :detach => 'del-port', :create_bridge => 'add-br', :delete_bridge => 'del-br'}
+        "#{Dcmgr.conf.vsctl_path} #{list[option]}"
+      end
+
+      def brctl(option)
+        list = {:attach => 'addif', :detach => 'delif', :create_bridge => 'addbr', :delete_bridge => 'delbr'}
+        "#{Dcmgr.conf.brctl_path} #{list[option]}"
+      end
+
+      def get_bridge_cmd(bridge, vif, option)
+        case Dcmgr.conf.edge_networking
+        when 'openvnet' then
+          "#{vsctl(option)} #{bridge} #{vif_uuid(vif)}"
+        else
+          "#{brctl(option)} #{bridge} #{vif_uuid(vif)}"
+        end
+      end
+
+      def attach_vif_to_bridge(bridge, vif)
+        get_bridge_cmd(bridge, vif, :attach)
+      end
+
+      def detach_vif_from_bridge(bridge, vif)
+        get_bridge_cmd(bridge, vif, :detach)
+      end
+
+      def minimize_stp_forward_delay(bridge)
+        case Dcmgr.conf.edge_networking
+        when 'openvnet' then
+          "#{Dcmgr.conf.vsctl_path} add bridge #{bridge} other_config stp-forward-delay 4"
+        else
+          "#{Dcmgr.conf.brctl_path} setfd #{bridge} 0"
+        end
+      end
+
+      def add_bridge_cmd(bridge)
+        case Dcmgr.conf.edge_networking
+        when 'openvnet' then
+          "#{vsctl(:create_bridge)} #{bridge}"
+        else
+          "#{brctl(:create_bridge)} #{bridge}"
+        end
+      end
     end
   end
 end
