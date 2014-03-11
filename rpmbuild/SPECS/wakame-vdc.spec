@@ -66,6 +66,7 @@ Requires: jemalloc
 Requires: parted
 # dcell
 Requires: zeromq3
+Requires: zeromq3-devel
 
 # (base)
 %description
