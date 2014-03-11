@@ -232,6 +232,14 @@ module Dcmgr
       param :cassandra_uri, :default => '127.0.0.1:9160'
       param :cassandra_cf
 
+      # DCell connection (dcmgr)
+      param :dcmgr_dcell_node_id
+      param :dcmgr_dcell_node_uri
+
+      # DCell connection (collector)
+      param :collector_dcell_node_id
+      param :collector_dcell_node_uri
+
       # AMQP broker to be connected.
       param :amqp_server_uri
 

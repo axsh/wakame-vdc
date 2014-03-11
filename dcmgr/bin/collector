@@ -7,7 +7,6 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'isono'
 
-require 'dcell'
 
 Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                 [ENV['CONF_PATH'].to_s,
@@ -17,7 +16,12 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
 
 Dcmgr.run_initializers('logger', 'sequel', 'isono_messaging', 'sequel_class_method_hook')
 
-DCell.start :id => "collector", :addr => 'tcp://127.0.0.1:9099'
+if Dcmgr.conf.collector_dcell_node_uri
+  require 'dcell'
+  DCell.start :id => Dcmgr.conf.collector_dcell_node_id, :addr => "tcp://#{Dcmgr.conf.collector_dcell_node_uri}"
+  Dcmgr.run_initializers('vnet_hook')
+end
+
 
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do

@@ -6,8 +6,6 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'rack/cors'
 
-require 'dcell'
-
 Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                 ['/etc/wakame-vdc/dcmgr.conf',
                  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
@@ -29,7 +27,11 @@ map '/api' do
   end
 
   #TODO refactor
-  DCell.start :id => 'dcmgr', :addr => "tcp://127.0.0.1:9098"
+  if Dcmgr.conf.dcmgr_dcell_node_uri
+    require 'dcell'
+    DCell.start :id => Dcmgr.conf.dcmgr_dcell_node_id, :addr => "tcp://#{Dcmgr.conf.dcmgr_dcell_node_uri}"
+    Dcmgr.run_initializers('vnet_hook')
+  end
 
   map '/12.03' do
     run Dcmgr::Endpoints::V1203::CoreAPI.new
