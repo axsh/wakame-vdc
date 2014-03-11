@@ -232,6 +232,10 @@ module Dcmgr
       param :cassandra_uri, :default => '127.0.0.1:9160'
       param :cassandra_cf
 
+      param :dcell_adapter
+      param :dcell_host
+      param :dcell_port
+
       # DCell connection (dcmgr)
       param :dcmgr_dcell_node_id
       param :dcmgr_dcell_node_uri

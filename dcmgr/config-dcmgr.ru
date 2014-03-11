@@ -29,7 +29,13 @@ map '/api' do
   #TODO refactor
   if Dcmgr.conf.dcmgr_dcell_node_uri
     require 'dcell'
-    DCell.start :id => Dcmgr.conf.dcmgr_dcell_node_id, :addr => "tcp://#{Dcmgr.conf.dcmgr_dcell_node_uri}"
+    DCell.start(:id => Dcmgr.conf.dcmgr_dcell_node_id, :addr => "tcp://#{Dcmgr.conf.dcmgr_dcell_node_uri}",
+      :registry => {
+        :adapter => Dcmgr.conf.dcell_adapter,
+        :host => Dcmgr.conf.dcell_host,
+        :port => Dcmgr.conf.dcell_port
+      }
+    )
     Dcmgr.run_initializers('vnet_hook')
   end
 
