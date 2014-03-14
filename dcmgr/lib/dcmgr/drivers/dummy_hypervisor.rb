@@ -37,7 +37,7 @@ module Dcmgr
             sh("tunctl -t %s" % [vif_uuid(vif)])
             sh("/sbin/ip link set %s up" % [vif_uuid(vif)])
             bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-            sh(attach_vif_to_bridge(bridge, vif, true))
+            sh(attach_vif_to_bridge(bridge, vif))
           end
         }
       end
