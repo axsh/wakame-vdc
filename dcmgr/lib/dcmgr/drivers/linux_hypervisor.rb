@@ -177,8 +177,8 @@ module Dcmgr
         end
       end
 
-      def detach_volume_from_host(ctx)
-        vol = ctx.vol
+      def detach_volume_from_host(ctx, volume_id)
+        vol = ctx.inst[:volume][volume_id]
 
         if vol[:volume_type] == 'Dcmgr::Models::IscsiVolume'
           tryagain do

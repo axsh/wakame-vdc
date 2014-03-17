@@ -14,11 +14,9 @@ module Dcmgr
 
 
       def detach_volume_from_host(volume)
-        if volume[:volume_type] == 'Dcmgr::Models::IscsiVolume'
-          # iscsi logout
-          sh("iscsiadm -m node -T '%s' --logout", [volume[:volume_device][:iqn]])
-          # wait udev queue
-          sh("/sbin/udevadm settle")
+        tryagain do
+          task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                              :detach_volume_from_host, [@hva_ctx, volume[:uuid]])
         end
       end
 
@@ -527,10 +525,7 @@ module Dcmgr
 
         # detach disk on host os
         ignore_error {
-          tryagain do
-            task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                                :detach_volume_from_host, [@hva_ctx])
-          end
+          detach_volume_from_host(@vol)
         }
         update_volume_state_to_available
       end
