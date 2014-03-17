@@ -7,17 +7,34 @@
 ## retry
 
 function retry_until() {
-  local blk="$@"
-
+  local chk_cmd="$1"
+  shift;
   local wait_sec=${RETRY_WAIT_SEC:-120}
   local sleep_sec=${RETRY_SLEEP_SEC:-3}
-  local tries=0
+  local tries=0 fail_chk_cmd=
   local start_at=$(date +%s)
 
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      or_fail_with | --fail_with)
+        fail_chk_cmd="$2"
+        shift;
+        ;;
+    esac
+    shift
+  done
+
   while :; do
-    eval "${blk}" && {
+    eval "${chk_cmd}" && {
       break
     } || {
+      if [[ -n "${fail_chk_cmd}" ]]; then
+        eval "${fail_chk_cmd}";
+        if [[ "$?" -eq 0 ]]; then
+          echo "Detected failure case: eval:${fail_chk_cmd}" >&2
+          return 2
+        fi
+      fi
       sleep ${sleep_sec}
     }
 
@@ -31,8 +48,9 @@ function retry_until() {
 }
 
 function retry_while() {
-  local blk="$@"
-  retry_until ! ${blk}
+  local blk="$1"
+  shift;
+  retry_until "! ${blk}" $@
 }
 
 ## check
