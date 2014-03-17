@@ -106,7 +106,7 @@ module Dcmgr
 
         # cleanup vm data folder
         ignore_error {
-          unless @hva_ctx.hypervisor_driver_class == Dcmgr::Drivers::ESXi
+          unless @hva_ctx.hypervisor_driver_class.to_s == 'Dcmgr::Drivers::ESXi'
             FileUtils.rm_r(File.expand_path("#{@inst_id}", Dcmgr.conf.vm_data_dir))
           end
         }
