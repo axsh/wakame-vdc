@@ -44,16 +44,6 @@ metadata_server=${metadata_server:-${ipaddr}}
 
 node_id=${node_id:-"demo1"}
 
-hva_arch=$(uname -m)
-case ${hva_arch} in
-x86_64) ;;
-  i*86) hva_arch=x86 ;;
-     *) ;;
-esac
-
-(hva_id=${node_id} hva_arch=${hva_arch} . $data_path/demodata_hva.sh)
-(sta_id=${node_id} sta_server=${sta_server:-${ipaddr}} . $data_path/demodata_sta.sh)
-
 cd ${VDC_ROOT}/dcmgr/
 
 (. $data_path/demodata_images.sh)
@@ -192,10 +182,6 @@ network dhcp addrange nw-demo8 10.1.0.10 10.1.0.240
 
 network pool add --uuid="external" --display-name="external ips" --expire-initial=600 --expire-released=120
 network pool add-dcn ipp-external public
-
-resourcegroup map hng-shhost hn-${node_id}
-resourcegroup map sng-shstor sn-${node_id}
-resourcegroup map nwg-shnet  nw-demo1
 
 network reserve nw-demo1 --ipv4=${ipaddr}
 
