@@ -77,9 +77,9 @@ module Dcmgr::Models
         if !uuid_model_class.find(:uuid=>self.uuid).nil?
           raise "Duplicate UUID: #{self.canonical_uuid} already exists"
         end
+
         super
       end
-
       def after_initialize
         super
         # set random generated uuid value
@@ -663,7 +663,6 @@ module Dcmgr::Models
       end
       @install_data_hooks
     end
-
 
     private
     def self.inherited(klass)

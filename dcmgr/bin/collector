@@ -7,6 +7,7 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'isono'
 
+
 Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                 [ENV['CONF_PATH'].to_s,
                  '/etc/wakame-vdc/dcmgr.conf',
@@ -14,6 +15,19 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                 ])
 
 Dcmgr.run_initializers('logger', 'sequel', 'isono_messaging', 'sequel_class_method_hook')
+
+if Dcmgr.conf.collector_dcell_node_uri
+  require 'dcell'
+  DCell.start(:id => Dcmgr.conf.collector_dcell_node_id, :addr => "tcp://#{Dcmgr.conf.collector_dcell_node_uri}",
+    :registry => {
+      :adapter => Dcmgr.conf.dcell_adapter,
+      :host => Dcmgr.conf.dcell_host,
+      :port => Dcmgr.conf.dcell_port
+    }
+  )
+  Dcmgr.run_initializers('vnet_hook')
+end
+
 
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
@@ -33,6 +47,7 @@ manifest.instance_eval do
   load_module Dcmgr::NodeModules::EventHook
   load_module Dcmgr::NodeModules::JobQueueProxy
   load_module Dcmgr::NodeModules::ResourceCollector
+
 end
 
 Isono.at_disconnected do

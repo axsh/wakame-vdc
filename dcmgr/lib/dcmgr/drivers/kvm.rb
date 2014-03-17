@@ -149,14 +149,14 @@ module Dcmgr
             cmd << "-device " + qemu_drive_device_options(hc, {guest_device_name: v[:guest_device_name].succ, uuid: 'metadata'})
           end
         }
-        
+
         vifs = inst[:vif]
         if !vifs.empty?
           vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
             cmd << "-net nic,vlan=#{vif[:device_index].to_i},macaddr=%s,model=#{nic_model(hc)},addr=%x -net tap,vlan=#{vif[:device_index].to_i},ifname=%s,script=no,downscript=no"
             args << vif[:mac_addr].unpack('A2'*6).join(':')
             args << (KVM_NIC_PCI_ADDR_OFFSET + vif[:device_index].to_i)
-            args << vif[:uuid]
+            args << vif_uuid(vif)
           }
         end
         sh(cmd.join(' '), args)
@@ -165,14 +165,19 @@ module Dcmgr
 #{cmd.join(' ') % args}
 RUN_SH
 
-        vifs.each { |vif|
+        vifs.each do |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
-            sh("/sbin/ip link set %s up", [vif[:uuid]])
-            sh("#{Dcmgr.conf.brctl_path} addif %s %s", [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
-            run_sh += ("/sbin/ip link set %s up\n" % [vif[:uuid]])
-            run_sh += ("#{Dcmgr.conf.brctl_path} addif %s %s\n" % [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
+            sh("/sbin/ip link set %s up" % [vif_uuid(vif)])
+            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+            attach_vif_cmd = attach_vif_to_bridge(bridge, vif)
+
+            sh(attach_vif_cmd)
+            sh(ip_set_cmd)
+
+            run_sh += ("/sbin/ip link set %s up" % [vif_uuid(vif)])
+            run_sh += (ip_set_cmd)
           end
-        }
+        end
 
         # Dump as single shell script file to help failure recovery
         # process of the user instance.

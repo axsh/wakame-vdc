@@ -189,6 +189,7 @@ module Dcmgr
       param :netfilter_script_post_flush, :default=>nil
 
       param :brctl_path, :default => '/usr/sbin/brctl'
+      param :vsctl_path, :default => '/usr/bin/ovs-vsctl'
       param :ovs_run_dir, :default=>'/usr/var/run/openvswitch'
       # Path for ovs-ofctl
       param :ovs_ofctl_path, :default => '/usr/bin/ovs-ofctl'
@@ -237,7 +238,7 @@ module Dcmgr
           errors << "vm_data_dir does not exist: #{@config[:vm_data_dir]}"
         end
 
-        unless ['netfilter', 'legacy_netfilter', 'openflow', 'off'].member?(@config[:edge_networking])
+        unless ['netfilter', 'legacy_netfilter', 'openflow', 'openvnet', 'off'].member?(@config[:edge_networking])
           errors << "Unknown value for edge_networking: #{@config[:edge_networking]}"
         end
       end

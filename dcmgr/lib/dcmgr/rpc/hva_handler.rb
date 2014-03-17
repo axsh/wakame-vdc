@@ -190,13 +190,13 @@ module Dcmgr
       end
 
       def attach_vnic_to_port
-        sh("/sbin/ip link set %s up", [@nic_id])
-        sh("#{Dcmgr.conf.brctl_path} addif %s %s", [@bridge, @nic_id])
+        sh("/sbin/ip link set %s up", [vif_uuid(@nic_id)])
+        sh(attach_vif_to_bridge(@bridge, @nic_id))
       end
 
       def detach_vnic_from_port
-        sh("/sbin/ip link set %s down", [@nic_id])
-        sh("#{Dcmgr.conf.brctl_path} delif %s %s", [@bridge, @nic_id])
+        sh("/sbin/ip link set %s down", [vif_uuid(@nic_id)])
+        sh(detach_vif_from_bridge(@bridge, @nic_id))
       end
 
       def get_linux_dev_path
