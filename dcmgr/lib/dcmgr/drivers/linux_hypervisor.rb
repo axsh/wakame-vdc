@@ -155,6 +155,7 @@ module Dcmgr
 
       def attach_volume_to_host(ctx, volume_id)
         vol = ctx.inst[:volume][volume_id]
+        raise "Unknown volume_id is specified: #{volume_id}" if vol.nil?
 
         if vol[:volume_type] == 'Dcmgr::Models::IscsiVolume'
           tryagain do
@@ -179,6 +180,7 @@ module Dcmgr
 
       def detach_volume_from_host(ctx, volume_id)
         vol = ctx.inst[:volume][volume_id]
+        raise "Unknown volume_id is specified: #{volume_id}" if vol.nil?
 
         if vol[:volume_type] == 'Dcmgr::Models::IscsiVolume'
           tryagain do
