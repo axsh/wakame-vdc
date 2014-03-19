@@ -172,10 +172,9 @@ RUN_SH
             attach_vif_cmd = attach_vif_to_bridge(bridge, vif)
 
             sh(attach_vif_cmd)
-            sh(ip_set_cmd)
 
             run_sh += ("/sbin/ip link set %s up" % [vif_uuid(vif)])
-            run_sh += (ip_set_cmd)
+            run_sh += (attach_vif_cmd)
           end
         end
 
