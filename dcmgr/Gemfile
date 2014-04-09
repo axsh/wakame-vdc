@@ -60,4 +60,6 @@ else
 end
 
 
-gem 'dcell'
+gem 'dcell', '0.15.0'
+gem 'celluloid', '0.15.2'
+gem 'reel', '0.4.0'
