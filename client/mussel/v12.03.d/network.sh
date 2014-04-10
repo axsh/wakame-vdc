@@ -21,7 +21,7 @@ task_create() {
     $(add_param service_dhcp) \
     $(add_param account_id) \
   ) \
-  $(base_uri)/${namespace}s
+  $(base_uri)/${namespace}s.$(suffix)
 }
 
 task_destroy() {
@@ -29,5 +29,5 @@ task_destroy() {
   # usage:
   #   ./mussel.sh network destroy ${uuid}
   local namespace=$1 uuid=$3
-  call_api -X DELETE $(base_uri)/${namespace}s/${uuid}
+  call_api -X DELETE $(base_uri)/${namespace}s/${uuid}.$(suffix)
 }
