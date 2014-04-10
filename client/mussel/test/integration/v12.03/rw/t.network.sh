@@ -11,11 +11,6 @@
 
 ## functions
 
-function extract_uuid() {
-  local key=$1
-  awk '{if(match($0,/'${key}'\-[0-9a-zA-Z]+/)){print substr($0, RSTART, RLENGTH);}}'
-}
-
 function test_network_create() {
   dc_network=$(run_cmd dc_network index | hash_value id)
   vdc_network_uuid=$(run_cmd network create | extract_uuid nw)

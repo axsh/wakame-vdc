@@ -4,6 +4,11 @@
 #   bash
 #
 
+function extract_uuid() {
+  local key=$1
+  awk '{if(match($0,/'${key}'\-[0-9a-zA-Z]+/)){print substr($0, RSTART, RLENGTH);}}'
+}
+
 function hash_value() {
   local key=$1 line
 
