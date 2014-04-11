@@ -4,7 +4,7 @@
 
 module Dcmgr
   module Drivers
-    class IfsIscsi < IscsiTarget
+    class IndelibeIscsi < IscsiTarget
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
 

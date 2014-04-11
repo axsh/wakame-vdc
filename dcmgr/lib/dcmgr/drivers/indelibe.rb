@@ -4,7 +4,7 @@ require 'fileutils'
 
 module Dcmgr
   module Drivers
-    class Ifs < BackingStore
+    class Indelibe < BackingStore
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
 
@@ -21,15 +21,10 @@ module Dcmgr
         @ip = @volume[:storage_node][:ipaddr]
         @vol_path = @volume[:storage_node][:export_path]
 
-        #@temp_path = generate_temp_path
-
         ##TODO: Check if the directory exists first
         sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}?mkdir"
 
         if @snapshot
-          #raise NotImplementedError
-
-          #sh "curl -X PUT -d @#{snap_file} http://#{@ip}:#{@port}/ifsutils/#{@fsid}/volumes/#{@volume_id}"
           snap_path = @snapshot[:destination_key].split(":").last
           new_vol_path = @vol_path.split("/",2).last
           sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{snap_path}?duplicate=#{new_vol_path}/#{@volume_id}"

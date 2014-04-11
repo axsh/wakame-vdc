@@ -92,8 +92,8 @@ module Dcmgr
           Dcmgr::Drivers::Raw
         when "zfs"
           Dcmgr::Drivers::Zfs
-        when "ifs"
-          Dcmgr::Drivers::Ifs
+        when "indelibe"
+          Dcmgr::Drivers::Indelibe
         else
           raise "Unknown backing_store type: #{backing_store}"
         end
