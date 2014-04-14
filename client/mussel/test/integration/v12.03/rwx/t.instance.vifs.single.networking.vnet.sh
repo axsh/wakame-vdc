@@ -19,15 +19,14 @@ function needs_secg() { true; }
 
 ###
 
-function test_show_instance_vifs_single_networking_vnet() {
-  run_cmd instance show ${instance_uuid}
-}
-
 function test_show_instance_vifs_interfaces_corresponded_on_vnet() {
   vdc_networkvif_uuid=$(run_cmd instance show ${instance_uuid} | hash_value vif_id | sed -e 's/vif/if/g')
-  vnet_interface_uuid=$(curl -fsSkL -X GET http://${DCMGR_HOST}:9090/api/interfaces/${vdc_networkvif_uuid} | extract_uuid if)
+  vnet_interface_uuid=$(curl -fsSkL -X GET http://${DCMGR_HOST}:9090/api/interfaces/${vdc_networkvif_uuid}.$(suffix) | hash_value uuid | awk '{if(match($0, /if-[0-9a-zA-Z]+/)){print substr($0, RSTART, RLENGTH);}}')
 
-  asserEquals ${vdc_networkvif_uuid} ${vnet_interface_uuid}
+  echo "vdc_networkvif_uuid = ${vdc_networkvif_uuid}"
+  echo "vnet_interface_uuid = ${vnet_interface_uuid}"
+
+  assertEquals ${vdc_networkvif_uuid} ${vnet_interface_uuid}
 }
 
 ## shunit2
