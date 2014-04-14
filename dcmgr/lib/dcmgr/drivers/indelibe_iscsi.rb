@@ -12,15 +12,15 @@ module Dcmgr::Drivers
     def initialize()
       super
       # Hard coded for now
-      @web_ui_port = "8090"
+      @web_ui_port = "8091"
     end
 
     def create(ctx)
       @volume_id = ctx.volume_id
       @volume = ctx.volume
-      @vol_path = @volume[:storage_node][:export_path]
-      @snap_path = @volume[:storage_node][:snap_path]
-      @ip = @volume[:storage_node][:ipaddr]
+      @vol_path = @volume[:volume_device][:iscsi_storage_node][:export_path]
+      @snap_path = @volume[:volume_device][:iscsi_storage_node][:snap_path]
+      @ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
 
       iqn = "#{IQN_PREFIX}:#{@volume_id}"
 
@@ -32,7 +32,7 @@ module Dcmgr::Drivers
     def delete(ctx)
       @volume_id = ctx.volume_id
       @volume = ctx.volume
-      @ip = @volume[:storage_node][:ipaddr]
+      @ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
 
       sh("curl -s http://#{@ip}:#{@web_ui_port}/iscsi?unexport=#{IQN_PREFIX}:#{@volume_id}")
     end

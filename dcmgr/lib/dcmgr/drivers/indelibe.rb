@@ -11,17 +11,16 @@ module Dcmgr
       def initialize()
         super
         # Hard coded for now
-        @port = "8090"
+        @port = "8091"
       end
 
       def create_volume(ctx, snap_file = nil)
         @volume_id   = ctx.volume_id
         @volume      = ctx.volume
-        @snapshot    = ctx.snapshot
-        @ip = @volume[:storage_node][:ipaddr]
-        @vol_path = @volume[:storage_node][:export_path]
+        #TODO: Nilchecks... how many do we need here?
+        @ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
+        @vol_path = @volume[:volume_device][:iscsi_storage_node][:export_path]
 
-        ##TODO: Check if the directory exists first
         sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}?mkdir"
 
         if @snapshot
