@@ -29,8 +29,9 @@ module Dcmgr::Drivers
 
         ifsutils(snap_path, "cmd=duplicate&dest=#{new_vol_path}/#{@volume_id}")
       else
-        #TODO: Check if file was created successfully
-        ifsutils("#{@vol_path}/#{@volume_id}", "cmd=allocate&size=#{@volume[:size]}")
+        path = "#{@vol_path}/#{@volume_id}"
+        ifsutils(path, "cmd=allocate&size=#{@volume[:size]}")
+        raise "Failed to create volume: '#{@volume_id}'" unless file_exists?(path)
       end
 
       logger.info("created new volume: #{@volume_id}")
@@ -75,5 +76,9 @@ module Dcmgr::Drivers
       result["error"].nil? && result["list"].is_a?(Array)
     end
 
+    def file_exists?(file)
+      result = JSON.parse ifsutils(File.dirname(file), "cmd=list")[:stdout]
+      result["error"].nil? && result["list"].member?(file)
+    end
   end
 end
