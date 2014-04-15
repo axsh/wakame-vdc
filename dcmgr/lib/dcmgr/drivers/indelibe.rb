@@ -20,30 +20,27 @@ module Dcmgr::Drivers
       @ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
       @vol_path = @volume[:volume_device][:iscsi_storage_node][:export_path]
 
-      sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}?cmd=mkdir"
+      ifsutils(@vol_path, "cmd=mkdir")
 
       if @snapshot
         snap_path = @snapshot[:destination_key].split(":").last
         new_vol_path = @vol_path.split("/",2).last
-        sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{snap_path}?duplicate=#{new_vol_path}/#{@volume_id}"
+
+        ifsutils(snap_path, "cmd=duplicate&dest=#{new_vol_path}/#{@volume_id}")
       else
         #TODO: Check if file was created successfully
-        url = "http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}"
-        params = "cmd=allocate&size=#{@volume[:size]}"
-        sh "curl -s #{url}?#{params}"
+        ifsutils("#{@vol_path}/#{@volume_id}", "cmd=allocate&size=#{@volume[:size]}")
       end
 
       logger.info("created new volume: #{@volume_id}")
     end
 
     def delete_volume(ctx)
-      @volume_id = ctx.volume_id
-      @volume    = ctx.volume
-      @ip        = @volume[:storage_node][:ipaddr]
-      @vol_path  = @volume[:storage_node][:export_path]
+      @ip       = ctx.volume[:storage_node][:ipaddr]
+      vol_path  = ctx.volume[:storage_node][:export_path]
 
-      logger.info("Deleting volume: #{@volume_id}")
-      sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}?cmd=delete"
+      logger.info("Deleting volume: #{ctx.volume_id}")
+      ifsutils("#{vol_path}/#{ctx.volume_id}", "cmd=delete")
     end
 
     def create_snapshot(ctx)
@@ -52,7 +49,9 @@ module Dcmgr::Drivers
       @ip        = @volume[:storage_node][:ipaddr]
 
       new_snap_path = snapshot_path(ctx)
-      sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume[:uuid]}?duplicate=#{new_snap_path}"
+
+      sh "curl -s #{url}?#{params}"
+      ifsutils("#{@vol_path}/#{@volume[:uuid]}", "duplicate=#{new_snap_path}")
 
       logger.info("created new snapshot: #{new_snap_path}")
     end
@@ -63,6 +62,11 @@ module Dcmgr::Drivers
 
     def snapshot_path(ctx)
       ctx.backup_object[:object_key]
+    end
+
+    private
+    def ifsutils(uri_suffix, params)
+      sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{uri_suffix}?#{params}"
     end
 
   end
