@@ -20,7 +20,7 @@ module Dcmgr::Drivers
       @ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
       @vol_path = @volume[:volume_device][:iscsi_storage_node][:export_path]
 
-      sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}?mkdir"
+      sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}?cmd=mkdir"
 
       if @snapshot
         snap_path = @snapshot[:destination_key].split(":").last
@@ -28,7 +28,9 @@ module Dcmgr::Drivers
         sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{snap_path}?duplicate=#{new_vol_path}/#{@volume_id}"
       else
         #TODO: Check if file was created successfully
-        sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}?allocate=#{@volume[:size]}"
+        url = "http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}"
+        params = "cmd=allocate&size=#{@volume[:size]}"
+        sh "curl -s #{url}?#{params}"
       end
 
       logger.info("created new volume: #{@volume_id}")
@@ -41,7 +43,7 @@ module Dcmgr::Drivers
       @vol_path  = @volume[:storage_node][:export_path]
 
       logger.info("Deleting volume: #{@volume_id}")
-      sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}?delete"
+      sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}?cmd=delete"
     end
 
     def create_snapshot(ctx)
