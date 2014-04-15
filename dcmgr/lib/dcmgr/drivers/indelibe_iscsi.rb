@@ -26,7 +26,7 @@ module Dcmgr::Drivers
 
       sh("curl -s http://#{@ip}:#{@web_ui_port}/iscsi/#{@vol_path}/#{@volume_id}?export=#{iqn}")
 
-      { :iqn => iqn, :lun => 0, :ifs_id => @vol_path.split("/").first }
+      { :iqn => iqn, :lun => 0 }
     end
 
     def delete(ctx)
