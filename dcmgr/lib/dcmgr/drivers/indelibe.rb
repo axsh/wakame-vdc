@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'fileutils'
+require 'json'
 
 module Dcmgr::Drivers
   class Indelibe < BackingStore
@@ -20,7 +21,7 @@ module Dcmgr::Drivers
       @ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
       @vol_path = @volume[:volume_device][:iscsi_storage_node][:export_path]
 
-      ifsutils(@vol_path, "cmd=mkdir")
+      ifsutils(@vol_path, "cmd=mkdir") unless directory_exists?(@vol_path)
 
       if @snapshot
         snap_path = @snapshot[:destination_key].split(":").last
@@ -67,6 +68,11 @@ module Dcmgr::Drivers
     private
     def ifsutils(uri_suffix, params)
       sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{uri_suffix}?#{params}"
+    end
+
+    def directory_exists?(dir)
+      result = JSON.parse ifsutils(dir, "cmd=list")[:stdout]
+      result["error"].nil? && result["list"].is_a?(Array)
     end
 
   end
