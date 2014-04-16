@@ -2,6 +2,7 @@
 
 require 'fileutils'
 require 'json'
+require 'net/http'
 
 module Dcmgr::Drivers
   class Indelibe < BackingStore
@@ -21,16 +22,16 @@ module Dcmgr::Drivers
       @ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
       @vol_path = @volume[:volume_device][:iscsi_storage_node][:export_path]
 
-      ifsutils(@vol_path, "cmd=mkdir") unless directory_exists?(@vol_path)
+      ifsutils(@vol_path, cmd: :mkdir) unless directory_exists?(@vol_path)
 
       if @snapshot
         snap_path = @snapshot[:destination_key].split(":").last
         new_vol_path = @vol_path.split("/",2).last
 
-        ifsutils(snap_path, "cmd=duplicate&dest=#{new_vol_path}/#{@volume_id}")
+        ifsutils(snap_path, cmd: :duplicate, dest: "#{new_vol_path}/#{@volume_id}")
       else
         path = "#{@vol_path}/#{@volume_id}"
-        ifsutils(path, "cmd=allocate&size=#{@volume[:size]}")
+        ifsutils(path, cmd: :allocate, size: "#{@volume[:size]}")
         raise "Failed to create volume: '#{@volume_id}'" unless file_exists?(path)
       end
 
@@ -42,7 +43,7 @@ module Dcmgr::Drivers
       vol_path  = ctx.volume[:storage_node][:export_path]
 
       logger.info("Deleting volume: #{ctx.volume_id}")
-      ifsutils("#{vol_path}/#{ctx.volume_id}", "cmd=delete")
+      ifsutils("#{vol_path}/#{ctx.volume_id}", cmd: :delete)
     end
 
     def create_snapshot(ctx)
@@ -53,7 +54,7 @@ module Dcmgr::Drivers
       new_snap_path = snapshot_path(ctx)
 
       sh "curl -s #{url}?#{params}"
-      ifsutils("#{@vol_path}/#{@volume[:uuid]}", "duplicate=#{new_snap_path}")
+      ifsutils("#{@vol_path}/#{@volume[:uuid]}", :duplicate, new_snap_path)
 
       logger.info("created new snapshot: #{new_snap_path}")
     end
@@ -68,16 +69,21 @@ module Dcmgr::Drivers
 
     private
     def ifsutils(uri_suffix, params)
-      sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{uri_suffix}?#{params}"
+      uri = "http://#{@ip}:#{@port}/ifsutils/#{uri_suffix}?"
+      uri.concat params.to_a.map { |i| "#{i.first}=#{i.last}" }.join("&")
+      logger.debug "Calling Indelibe FS server: " + uri
+      JSON.parse Net::HTTP.get(URI(uri)).tap { |output|
+        logger.debug "Output: " + output
+      }
     end
 
     def directory_exists?(dir)
-      result = JSON.parse ifsutils(dir, "cmd=list")[:stdout]
+      result = ifsutils(dir, cmd: :list)
       result["error"].nil? && result["list"].is_a?(Array)
     end
 
     def file_exists?(file)
-      result = JSON.parse ifsutils(File.dirname(file), "cmd=list")[:stdout]
+      result = ifsutils(File.dirname(file), cmd: :list)
       result["error"].nil? && result["list"].member?(file)
     end
   end
