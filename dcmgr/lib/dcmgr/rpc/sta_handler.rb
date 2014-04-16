@@ -135,6 +135,7 @@ module Dcmgr
         rescue => e
           logger.error("#{@volume_id}: Failed to delete volume.")
           logger.error(e)
+          logger.error(e.backtrace.join("\n"))
           errcount += 1
         end
 
