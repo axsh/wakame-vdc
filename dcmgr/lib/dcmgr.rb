@@ -249,6 +249,7 @@ module Dcmgr
     autoload :Fluent, 'dcmgr/drivers/fluent'
     autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
     autoload :KvmLocalStore, 'dcmgr/drivers/kvm_local_store'
+    autoload :StorageTarget, 'dcmgr/drivers/storage_target'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'

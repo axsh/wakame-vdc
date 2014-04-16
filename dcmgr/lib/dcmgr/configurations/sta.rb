@@ -19,12 +19,19 @@ module Dcmgr
 
         # target_driver configuration section.
         def target_driver(driver_type, &blk)
-          c = Drivers::IscsiTarget.driver_class(driver_type)
+          c = Drivers::StorageTarget.driver_class(driver_type)
 
           conf = Fuguta::Configuration::ConfigurationMethods.find_configuration_class(c).new(self.instance_variable_get(:@subject)).parse_dsl(&blk)
-          @config[:iscsi_target_driver] = driver_type
-          @config[:iscsi_target] = conf
+          @config[:storage_target_driver] = driver_type
+          @config[:storage_target] = conf
         end
+      end
+
+      def iscsi_target_driver
+        @config[:storage_target_driver]
+      end
+      def iscsi_target
+        @config[:storage_target]
       end
 
       # obsolete parameters
@@ -33,8 +40,8 @@ module Dcmgr
       deprecated_warn_param :initiator_address,  :default=>'ALL'
 
       def validate(errors)
-        if @config[:iscsi_target].nil?
-          errors << "iscsi_target is unset."
+        if @config[:storage_target].nil?
+          errors << "storage_target is unset."
         end
 
         if @config[:backing_store].nil?
