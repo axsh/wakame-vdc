@@ -38,7 +38,7 @@ function test_network_create() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s"
+               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.$(suffix)"
 }
 
 ## shunit2
