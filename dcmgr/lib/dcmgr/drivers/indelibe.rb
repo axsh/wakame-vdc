@@ -22,17 +22,21 @@ module Dcmgr::Drivers
       @ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
       @vol_path = @volume[:volume_device][:iscsi_storage_node][:export_path]
 
-      ifsutils(@vol_path, cmd: :mkdir) unless directory_exists?(@vol_path)
+      ifsutils(@vol_path, :mkdir) unless directory_exists?(@vol_path)
 
       if @snapshot
         snap_path = @snapshot[:destination_key].split(":").last
         new_vol_path = @vol_path.split("/",2).last
 
-        ifsutils(snap_path, cmd: :duplicate, dest: "#{new_vol_path}/#{@volume_id}")
+        ifsutils(snap_path, :duplicate, dest: "#{new_vol_path}/#{@volume_id}")
       else
         path = "#{@vol_path}/#{@volume_id}"
-        ifsutils(path, cmd: :allocate, size: "#{@volume[:size]}")
-        raise "Failed to create volume: '#{@volume_id}'" unless file_exists?(path)
+        ifsutils(path, :allocate, size: "#{@volume[:size]}") { |result|
+          e = result["error"]
+          if e
+            raise "Indelibe FS error code #{e["code"]}. Long reason:\n#{e["longReason"]}"
+          end
+        }
       end
 
       logger.info("created new volume: #{@volume_id}")
@@ -43,7 +47,7 @@ module Dcmgr::Drivers
       vol_path  = ctx.volume[:storage_node][:export_path]
 
       logger.info("Deleting volume: #{ctx.volume_id}")
-      ifsutils("#{vol_path}/#{ctx.volume_id}", cmd: :delete)
+      ifsutils("#{vol_path}/#{ctx.volume_id}", :delete)
     end
 
     def create_snapshot(ctx)
@@ -68,23 +72,20 @@ module Dcmgr::Drivers
     end
 
     private
-    def ifsutils(uri_suffix, params)
+    def ifsutils(uri_suffix, cmd, params = {}, &blk)
       uri = "http://#{@ip}:#{@port}/ifsutils/#{uri_suffix}?"
+      params[:cmd] = cmd
       uri.concat params.to_a.map { |i| "#{i.first}=#{i.last}" }.join("&")
       logger.debug "Calling Indelibe FS server: " + uri
-      JSON.parse Net::HTTP.get(URI(uri)).tap { |output|
-        logger.debug "Output: " + output
+
+      JSON.parse(Net::HTTP.get(URI(uri))).tap { |output|
+        blk.call(output) if block_given?
       }
     end
 
     def directory_exists?(dir)
-      result = ifsutils(dir, cmd: :list)
+      result = ifsutils(dir, :list)
       result["error"].nil? && result["list"].is_a?(Array)
-    end
-
-    def file_exists?(file)
-      result = ifsutils(File.dirname(file), cmd: :list)
-      result["error"].nil? && result["list"].member?(file)
     end
   end
 end
