@@ -5,18 +5,18 @@ require 'net/http'
 module Dcmgr::Drivers
   class IndelibeIscsi < IscsiTarget
     include Dcmgr::Logger
-    include Dcmgr::Helpers::CliHelper
+    include Dcmgr::Helpers::IndelibleApi
 
     IQN_PREFIX="iqn.2010-09.jp.wakame".freeze
 
     def initialize()
       super
       # Hard coded for now
-      @web_ui_port = "8091"
+      @webapi_port = "8090"
     end
 
     def create(ctx)
-      @ip = ctx.volume[:volume_device][:iscsi_storage_node][:ip_address]
+      @webapi_ip = ctx.volume[:volume_device][:iscsi_storage_node][:ip_address]
 
       iqn = "#{IQN_PREFIX}:#{ctx.volume_id}"
       vol_path = ctx.volume[:volume_device][:iscsi_storage_node][:export_path]
@@ -28,21 +28,9 @@ module Dcmgr::Drivers
     end
 
     def delete(ctx)
-      @ip = ctx.volume[:volume_device][:iscsi_storage_node][:ip_address]
+      @webapi_ip = ctx.volume[:volume_device][:iscsi_storage_node][:ip_address]
 
-      ifs_iscsi("", :unexport, target: "#{IQN_PREFIX}:#{ctx.volume_id}")
-    end
-
-    private
-    def ifs_iscsi(uri_suffix, cmd, params = {}, &blk)
-      uri = "http://#{@ip}:#{@web_ui_port}/iscsi/#{uri_suffix}?"
-      params[:cmd] = cmd
-      uri.concat params.to_a.map { |i| "#{i.first}=#{i.last}" }.join("&")
-      logger.debug "Calling Indelibe FS server: " + uri
-
-      JSON.parse(Net::HTTP.get(URI(uri))).tap { |output|
-        blk.call(output) if block_given?
-      }
+       ifs_iscsi("", :unexport, target: "#{IQN_PREFIX}:#{ctx.volume_id}")
     end
   end
 end

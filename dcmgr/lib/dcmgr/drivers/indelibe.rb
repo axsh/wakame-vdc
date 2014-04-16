@@ -7,19 +7,19 @@ require 'net/http'
 module Dcmgr::Drivers
   class Indelibe < BackingStore
     include Dcmgr::Logger
-    include Dcmgr::Helpers::CliHelper
+    include Dcmgr::Helpers::IndelibleApi
 
     def initialize()
       super
       # Hard coded for now
-      @port = "8091"
+      @webapi_port = "8091"
     end
 
     def create_volume(ctx, snap_file = nil)
       @volume_id   = ctx.volume_id
       @volume      = ctx.volume
       #TODO: Nilchecks... how many do we need here?
-      @ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
+      @webapi_ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
       @vol_path = @volume[:volume_device][:iscsi_storage_node][:export_path]
 
       ifsutils(@vol_path, :mkdir) unless directory_exists?(@vol_path)
@@ -43,17 +43,17 @@ module Dcmgr::Drivers
     end
 
     def delete_volume(ctx)
-      @ip       = ctx.volume[:storage_node][:ipaddr]
-      vol_path  = ctx.volume[:storage_node][:export_path]
+      @webapi_ip = ctx.volume[:storage_node][:ipaddr]
+      vol_path   = ctx.volume[:storage_node][:export_path]
 
       logger.info("Deleting volume: #{ctx.volume_id}")
       ifsutils("#{vol_path}/#{ctx.volume_id}", :delete)
     end
 
     def create_snapshot(ctx)
-      @volume      = ctx.volume
+      @volume    = ctx.volume
       @vol_path  = @volume[:storage_node][:export_path]
-      @ip        = @volume[:storage_node][:ipaddr]
+      @webapi_ip = @volume[:storage_node][:ipaddr]
 
       new_snap_path = snapshot_path(ctx)
 
@@ -69,23 +69,6 @@ module Dcmgr::Drivers
 
     def snapshot_path(ctx)
       ctx.backup_object[:object_key]
-    end
-
-    private
-    def ifsutils(uri_suffix, cmd, params = {}, &blk)
-      uri = "http://#{@ip}:#{@port}/ifsutils/#{uri_suffix}?"
-      params[:cmd] = cmd
-      uri.concat params.to_a.map { |i| "#{i.first}=#{i.last}" }.join("&")
-      logger.debug "Calling Indelibe FS server: " + uri
-
-      JSON.parse(Net::HTTP.get(URI(uri))).tap { |output|
-        blk.call(output) if block_given?
-      }
-    end
-
-    def directory_exists?(dir)
-      result = ifsutils(dir, :list)
-      result["error"].nil? && result["list"].is_a?(Array)
     end
   end
 end

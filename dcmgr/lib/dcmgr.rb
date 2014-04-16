@@ -153,6 +153,7 @@ module Dcmgr
   end
 
   module Helpers
+    autoload :IndelibleApi, 'dcmgr/helpers/indelible_api'
     autoload :CliHelper, 'dcmgr/helpers/cli_helper'
     autoload :NicHelper, 'dcmgr/helpers/nic_helper'
     autoload :TemplateHelper, 'dcmgr/helpers/template_helper'
