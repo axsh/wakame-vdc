@@ -11,7 +11,8 @@ module Dcmgr::Models
     alias storage_node iscsi_storage_node
     
     def to_hash
-      super().to_hash.merge(:iscsi_storage_node=>iscsi_storage_node.to_hash)
+      super().to_hash.merge(:iscsi_storage_node=>iscsi_storage_node.to_hash,
+                            :storage_node=>iscsi_storage_node.to_hash)
     end
 
     private
