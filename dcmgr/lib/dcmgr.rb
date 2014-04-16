@@ -75,6 +75,8 @@ module Dcmgr
     autoload :NetworkVifIpLease, 'dcmgr/models/network_vif_ip_lease'
     autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
     autoload :NetworkVifSecurityGroup, 'dcmgr/models/network_vif_security_group'
+    autoload :NfsStorageNode, 'dcmgr/models/nfs_storage_node'
+    autoload :NfsVolume, 'dcmgr/models/nfs_volume'
     autoload :MacLease, 'dcmgr/models/mac_lease'
     autoload :MacRange, 'dcmgr/models/mac_range'
     autoload :SecurityGroup, 'dcmgr/models/security_group'
