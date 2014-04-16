@@ -250,6 +250,7 @@ module Dcmgr
     autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
     autoload :KvmLocalStore, 'dcmgr/drivers/kvm_local_store'
     autoload :StorageTarget, 'dcmgr/drivers/storage_target'
+    autoload :Nfs, 'dcmgr/drivers/nfs'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'
