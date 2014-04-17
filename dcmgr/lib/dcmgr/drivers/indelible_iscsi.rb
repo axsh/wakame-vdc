@@ -3,7 +3,7 @@
 require 'net/http'
 
 module Dcmgr::Drivers
-  class IndelibeIscsi < IscsiTarget
+  class IndelibleIscsi < IscsiTarget
     include Dcmgr::Logger
     include Dcmgr::Helpers::IndelibleApi
 

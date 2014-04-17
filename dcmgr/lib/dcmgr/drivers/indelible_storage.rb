@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Drivers
-  class IndelibeStorage < BackupStorage
+  class IndelibleStorage < BackupStorage
     include Dcmgr::Logger
     include Dcmgr::Helpers::IndelibleApi
 

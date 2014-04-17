@@ -5,7 +5,7 @@ require 'json'
 require 'net/http'
 
 module Dcmgr::Drivers
-  class Indelibe < BackingStore
+  class Indelible < BackingStore
     include Dcmgr::Logger
     include Dcmgr::Helpers::IndelibleApi
 
