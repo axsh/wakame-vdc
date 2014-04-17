@@ -7,6 +7,7 @@
 
 ## include files
 
+
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
 
 ## functions
