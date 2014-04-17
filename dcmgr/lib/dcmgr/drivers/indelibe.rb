@@ -43,8 +43,8 @@ module Dcmgr::Drivers
     end
 
     def delete_volume(ctx)
-      @webapi_ip = ctx.volume[:storage_node][:ipaddr]
-      vol_path   = ctx.volume[:storage_node][:export_path]
+      @webapi_ip = ctx.volume[:volume_device][:iscsi_storage_node][:ip_address]
+      vol_path   = ctx.volume[:volume_device][:iscsi_storage_node][:export_path]
 
       logger.info("Deleting volume: #{ctx.volume_id}")
       ifsutils("#{vol_path}/#{ctx.volume_id}", :delete)
@@ -52,12 +52,11 @@ module Dcmgr::Drivers
 
     def create_snapshot(ctx)
       @volume    = ctx.volume
-      @vol_path  = @volume[:storage_node][:export_path]
-      @webapi_ip = @volume[:storage_node][:ipaddr]
+      @vol_path  = @volume[:volume_device][:iscsi_storage_node][:export_path]
+      @webapi_ip = @volume[:volume_device][:iscsi_storage_node][:ip_address]
 
       new_snap_path = snapshot_path(ctx)
 
-      sh "curl -s #{url}?#{params}"
       ifsutils("#{@vol_path}/#{@volume[:uuid]}", :duplicate, new_snap_path)
 
       logger.info("created new snapshot: #{new_snap_path}")
