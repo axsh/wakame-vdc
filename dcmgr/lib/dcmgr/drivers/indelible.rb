@@ -35,8 +35,10 @@ module Dcmgr::Drivers
       else
         path = "#{vol_path}/#{volume_id}"
         ifsutils(path, :allocate, size: "#{ctx.volume[:size]}") { |result|
-          result["error"] && raise "Indelibe FS error code %s. Long reason:\n%s}" %
+          if result["error"]
+            raise "Indelibe FS error code %s. Long reason:\n%s}" %
               [result["error"]["code"], result["error"]["longReason"]]
+          end
         }
       end
 

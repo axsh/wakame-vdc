@@ -45,7 +45,7 @@ module Dcmgr
         when "comstar"
           Dcmgr::Drivers::Comstar
         when "indelible_iscsi"
-          Dcmgr::Drivers::IndelibeIscsi
+          Dcmgr::Drivers::IndelibleIscsi
         else
           raise "Unknown iscsi_target type: #{iscsi_target}"
         end
