@@ -9,10 +9,15 @@ module Dcmgr::Drivers
     include Dcmgr::Logger
     include Dcmgr::Helpers::IndelibleApi
 
+    def_configuration do
+      param :webapi_port, default: 8091
+      param :webapi_ip, default: "127.0.0.1"
+    end
+
     def initialize()
       super
-      # Hard coded for now
-      @webapi_port = "8091"
+      @webapi_port = Dcmgr.conf.backing_store.webapi_port
+      @webapi_ip   = Dcmgr.conf.backing_store.webapi_ip
     end
 
     def create_volume(ctx, snap_file = nil)
