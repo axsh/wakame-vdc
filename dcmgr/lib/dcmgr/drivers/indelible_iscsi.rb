@@ -7,18 +7,20 @@ module Dcmgr::Drivers
     include Dcmgr::Logger
     include Dcmgr::Helpers::IndelibleApi
 
-    IQN_PREFIX="iqn.2010-09.jp.wakame".freeze
+    def_configuration do
+      param :webapi_ip, default: "127.0.0.1"
+      param :webapi_port, default: 8090
+    end
 
     def initialize()
       super
-      # Hard coded for now
-      @webapi_port = "8090"
+      @iqn_prefix  = Dcmgr.conf.iscsi_target.iqn_prefix
+      @webapi_ip   = Dcmgr.conf.iscsi_target.webapi_ip
+      @webapi_port = Dcmgr.conf.iscsi_target.webapi_port
     end
 
     def create(ctx)
-      @webapi_ip = ctx.volume[:volume_device][:iscsi_storage_node][:ip_address]
-
-      iqn = "#{IQN_PREFIX}:#{ctx.volume_id}"
+      iqn = "#{@iqn_prefix}:#{ctx.volume_id}"
       vol_path = ctx.volume[:volume_device][:iscsi_storage_node][:export_path]
 
       #TODO: Error handling
@@ -28,9 +30,7 @@ module Dcmgr::Drivers
     end
 
     def delete(ctx)
-      @webapi_ip = ctx.volume[:volume_device][:iscsi_storage_node][:ip_address]
-
-       ifs_iscsi("", :unexport, target: "#{IQN_PREFIX}:#{ctx.volume_id}")
+       ifs_iscsi("", :unexport, target: "#{@iqn_prefix}:#{ctx.volume_id}")
     end
   end
 end
