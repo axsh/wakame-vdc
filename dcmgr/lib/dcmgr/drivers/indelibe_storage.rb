@@ -3,7 +3,7 @@
 module Dcmgr::Drivers
   class IndelibeStorage < BackupStorage
     include Dcmgr::Logger
-    include Dcmgr::Helpers::CliHelper
+    include Dcmgr::Helpers::IndelibleApi
 
     def download(src_bo, dst_path)
     end
@@ -12,7 +12,7 @@ module Dcmgr::Drivers
     end
 
     def delete(filename)
-      sh "curl -s #{@backup_storage[:base_uri]}/ifsutils/#{filename}?delete"
+      ifsutils(filename, :delete)
     end
   end
 end
