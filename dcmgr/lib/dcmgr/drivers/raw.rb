@@ -74,6 +74,25 @@ module Dcmgr
         File.expand_path("#{ctx.volume[:uuid]}.tmp", driver_configuration.snapshot_tmp_dir)
       end
 
+      include BackingStore::ProvideBackupVolume
+
+      def backup_volume(ctx)
+        @volume = ctx.volume
+        cp_sparse(vol_path, backup_real_path(backup_object_key_created(ctx)))
+      end
+
+      def delete_backup(ctx)
+        File.unlink(backup_real_path(backup_object_key_created(ctx))) rescue nil
+      end
+
+      # @return String path to the backup object key by backup_volume().
+      #
+      # backup_volume(ctx)
+      # puts backup_object_key_created(ctx)
+      def backup_object_key_created(ctx)
+        ctx.backup_object_id
+      end
+
       private
       def vol_path
         case @volume[:volume_type]
