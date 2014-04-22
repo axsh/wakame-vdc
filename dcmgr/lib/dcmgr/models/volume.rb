@@ -169,16 +169,18 @@ module Dcmgr::Models
     # Sequel's class_table_inheritance plugin caused many changes for our
     # model base class. so I stopped to use it.
     def volume_class
+      return nil if self.volume_type.nil?
       self.volume_type.split('::').unshift(Object).inject{|r, i| r.const_get(i) }
     end
 
     def volume_device
+      return nil if self.volume_class.nil?
       self.volume_class.with_pk(self.pk)
     end
 
     # Shortcut to get StorageNode from volume device.
     def storage_node
-      volume_device && volume_device.respond_to?(:storage_node) ? \
+      (volume_device && volume_device.respond_to?(:storage_node)) ? \
         volume_device.storage_node : nil
     end
     
