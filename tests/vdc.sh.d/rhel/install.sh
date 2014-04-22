@@ -29,7 +29,7 @@ function rpmspec_depends() {
 }
 
 # disable SELinux
-setenforce 0
+[[ "$(getenforce)" == "Disabled" ]] || setenforce 0
 
 yum install -y curl yum-plugin-versionlock
 
