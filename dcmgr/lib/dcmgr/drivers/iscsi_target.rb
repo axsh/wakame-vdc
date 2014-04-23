@@ -1,10 +1,26 @@
 # -*- coding: utf-8 -*-
+require 'fuguta'
 
 module Dcmgr
   module Drivers
     class IscsiTarget
       attr_reader :node
 
+      extend Fuguta::Configuration::ConfigurationMethods::ClassMethods
+
+      def_configuration do
+        param :iqn_prefix, :default=>'iqn.2010-09.jp.wakame'
+      end
+
+      # Retrive configuration section for this or child class.
+      def self.driver_configuration
+        Dcmgr.conf.iscsi_target
+      end
+
+      def driver_configuration
+        Dcmgr.conf.iscsi_target
+      end
+      
       def create(ctx)
         raise NotImplmenetedError
       end
@@ -20,21 +36,17 @@ module Dcmgr
         #raise NotImplmenetedError
       end
 
-      def self.select_iscsi_target(iscsi_target, node)
-        raise ArgumentError unless node.is_a?(Isono::Node)
+      def self.driver_class(iscsi_target)
         case iscsi_target
-        when "linux_iscsi"
-          bs = Dcmgr::Drivers::LinuxIscsi.new
+        when 'tgt', "linux_iscsi"
+          Dcmgr::Drivers::Tgt
         when "sun_iscsi"
-          bs = Dcmgr::Drivers::SunIscsi.new
+          Dcmgr::Drivers::SunIscsi
         when "comstar"
-          bs = Dcmgr::Drivers::Comstar.new
+          Dcmgr::Drivers::Comstar
         else
           raise "Unknown iscsi_target type: #{iscsi_target}"
         end
-        # for bs.node readable accessor.
-        bs.instance_variable_set(:@node, node)
-        bs
       end
     end
   end

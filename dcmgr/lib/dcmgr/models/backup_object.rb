@@ -24,6 +24,7 @@ module Dcmgr::Models
     end
 
     def validate
+      self.container_format ||= :raw
       unless CONTAINER_FORMAT.keys.member?(self.container_format.to_sym)
         errors.add(:container_format, "Unsupported container format: #{self.container_format}")
       end

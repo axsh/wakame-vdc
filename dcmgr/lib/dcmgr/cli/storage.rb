@@ -19,8 +19,6 @@ class Storage < Base
     
     desc "add <node id> [options]", "Register a new ISCSI storage node"
     option :uuid, :type => :string, :desc => "The uuid for the new storage node"
-    option :base_path, :type => :string, :required => true, :desc => "Base path to store volume files"
-    option :snapshot_base_path, :type => :string, :required => true, :desc => "Base path to store snapshot files"
     option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
     option :ipaddr, :type => :string, :required => true, :desc => "IP address of transport target"
     option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
@@ -28,8 +26,6 @@ class Storage < Base
       fields = {
         :node_id=>node_id,
         :offering_disk_space_mb=>options[:disk_space],
-        :export_path=>options[:base_path],
-        :snapshot_base_path => options[:snapshot_base_path],
         :ip_address=>options[:ipaddr],
         :display_name=>options[:display_name],
       }
@@ -40,8 +36,6 @@ class Storage < Base
 
     desc "modify <uuid> [options]", "Modify <uuid> of ISCSI storage node"
     option :node_id, :type => :string, :desc => "The node ID for the storage node"
-    option :base_path, :type => :string, :desc => "Base path to store volume files"
-    option :snapshot_base_path, :type => :string, :desc => "Base path to store snapshot files"
     option :disk_space, :type => :numeric, :desc => "Amount of disk size to be exported (in MB)"
     option :ipaddr, :type => :string, :desc => "IP address of transport target"
     option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
@@ -49,8 +43,6 @@ class Storage < Base
       fields = {
         :node_id=>options[:node_id],
         :offering_disk_space_mb=>options[:disk_space],
-        :export_path=>options[:base_path],
-        :snapshot_base_path => options[:snapshot_base_path],
         :ip_address=>options[:ipaddr],
         :display_name=>options[:display_name],
       }
@@ -74,14 +66,16 @@ class Storage < Base
 UUID: <%= st.canonical_uuid %>
 Node ID: <%= st.node_id %>
 Disk space (offerring): <%= st.offering_disk_space_mb %>MB
-Storage: <%= st.storage_type %>
-Transport: <%= st.transport_type %>
-IP Address: <%= st.ipaddr %>
-Export path: <%= st.export_path %>
-Snapshot base path: <%= st.snapshot_base_path %>
+Storage Type: <%= st.storage_type %>
 Create: <%= st.created_at %>
 Update: <%= st.updated_at %>
 __END
+      case st
+      when Dcmgr::Models::IscsiStorageNode
+        puts <<__END
+IP Address: #{st.ip_address}
+__END
+      end
     else
       ds = StorageNode.dataset
       table = [['UUID', 'Node ID', 'Storage', 'Status']]

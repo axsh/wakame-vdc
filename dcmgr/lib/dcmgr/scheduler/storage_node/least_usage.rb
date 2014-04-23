@@ -4,7 +4,7 @@ module Dcmgr
   module Scheduler
     module StorageNode
 
-      # Find storage node which has the largest available disk space.
+      # Find storage node which has largest available disk space.
       class LeastUsage < StorageNodeScheduler
         include Dcmgr::Logger
 
@@ -15,7 +15,7 @@ module Dcmgr
             s.free_disk_space
           }.reverse.first
           raise StorageNodeSchedulingError if storage_node.nil?
-          volume.storage_node = storage_node
+          storage_node.associate_volume(volume)
         end
       end
     end
