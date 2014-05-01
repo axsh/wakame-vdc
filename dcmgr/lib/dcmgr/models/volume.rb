@@ -73,7 +73,7 @@ module Dcmgr::Models
         # uniqueness check for device names per instance
         names = self.instance.volumes_dataset.attached.all.map{|v| v.guest_device_name }.sort
         unless names.size == names.uniq.size
-          errors.add(:guest_device_nam, "found duplicate device name (#{names.join(', ')}) for #{instance.caonnical_uuid}")
+          errors.add(:guest_device_name, "found duplicate device name (#{names.join(', ')}) for #{instance.caonnical_uuid}")
         end
       end
       
@@ -133,7 +133,7 @@ module Dcmgr::Models
 
     def to_hash
       super().merge(:is_local_volume=>local_volume?,
-                    :volume_device=>(self.volume_device.nil? ? nil : self.volume_device.to_hash)
+                    :volume_device=>(self.volume_device.nil? ? nil : self.volume_device.values)
                     )
     end
 
@@ -169,13 +169,21 @@ module Dcmgr::Models
     # Sequel's class_table_inheritance plugin caused many changes for our
     # model base class. so I stopped to use it.
     def volume_class
+      return nil if self.volume_type.nil?
       self.volume_type.split('::').unshift(Object).inject{|r, i| r.const_get(i) }
     end
 
     def volume_device
-      self.volume_class.find(:id=>self.id.to_i)
+      return nil if self.volume_class.nil?
+      self.volume_class.with_pk(self.pk)
     end
 
+    # Shortcut to get StorageNode from volume device.
+    def storage_node
+      (volume_device && volume_device.respond_to?(:storage_node)) ? \
+        volume_device.storage_node : nil
+    end
+    
     def boot_volume?
       self.instance && self.instance.boot_volume_id == self.canonical_uuid
     end
@@ -217,6 +225,20 @@ module Dcmgr::Models
       blk.call(bo)
       bo.save
       bo
+    end
+
+    def attach_to_instance(instance, guest_device_name=nil)
+      if guest_device_name
+        self.guest_device_name = guest_device_name
+      end
+      instance.add_volume(self)
+    end
+
+    def detach_from_instance
+      if self.instance
+        self.guest_device_name = nil
+        self.instance.remove_volume(self)
+      end
     end
     
     private

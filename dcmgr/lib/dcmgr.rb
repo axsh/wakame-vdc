@@ -75,6 +75,8 @@ module Dcmgr
     autoload :NetworkVifIpLease, 'dcmgr/models/network_vif_ip_lease'
     autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
     autoload :NetworkVifSecurityGroup, 'dcmgr/models/network_vif_security_group'
+    autoload :NfsStorageNode, 'dcmgr/models/nfs_storage_node'
+    autoload :NfsVolume, 'dcmgr/models/nfs_volume'
     autoload :MacLease, 'dcmgr/models/mac_lease'
     autoload :MacRange, 'dcmgr/models/mac_range'
     autoload :SecurityGroup, 'dcmgr/models/security_group'
@@ -225,7 +227,7 @@ module Dcmgr
     autoload :Raw,          'dcmgr/drivers/raw'
     autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
     autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
-    autoload :LinuxIscsi,   'dcmgr/drivers/linux_iscsi'
+    autoload :Tgt,          'dcmgr/drivers/tgt'
     autoload :Comstar,      'dcmgr/drivers/comstar'
     autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
     autoload :DummyLocalStore, 'dcmgr/drivers/dummy_local_store.rb'
@@ -247,6 +249,8 @@ module Dcmgr
     autoload :Fluent, 'dcmgr/drivers/fluent'
     autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
     autoload :KvmLocalStore, 'dcmgr/drivers/kvm_local_store'
+    autoload :StorageTarget, 'dcmgr/drivers/storage_target'
+    autoload :Nfs, 'dcmgr/drivers/nfs'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'

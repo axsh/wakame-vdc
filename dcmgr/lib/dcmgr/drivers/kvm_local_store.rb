@@ -6,6 +6,20 @@ module Dcmgr
   module Drivers
     class KvmLocalStore < LinuxLocalStore
       include Dcmgr::Logger
+      include Fuguta::Configuration::ConfigurationMethods
+
+      def_configuration do
+        # Set extra parameters to -drive qemu option.
+        param :drive_extra_options, :default=>'cache=none,aio=native'
+
+        def validate(errors)
+          if @config[:drive_extra_options] =~ /\s/
+            errors << "drive_extra_options can not include white space."
+          elsif @config[:drive_extra_options] == ''
+            @config[:drive_extra_options] = nil
+          end
+        end
+      end
       
       # download and setup single image file.
       def deploy_blank_volume(hva_ctx, volume, opts={})

@@ -48,7 +48,9 @@ module Dcmgr
             raise "Unsupoorted mount label: #{volume_hash[:volume_device][:mount_label]}"
           end
         when 'Dcmgr::Models::IscsiVolume'
-          raise NotImplementedError
+          hypervisor_driver_class.new.iscsi_target_dev_path(volume_hash)
+        when 'Dcmgr::Models::NfsVolume'
+          File.join(volume_hash[:volume_device][:nfs_storage_node][:mount_point], volume_hash[:volume_device][:path])
         else
           raise "Unsupported volume type: #{volume_hash[:volume_type]}"
         end

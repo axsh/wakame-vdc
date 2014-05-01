@@ -65,6 +65,9 @@ module Dcmgr
       end
 
       def_configuration do
+        # set Dcmgr::Drivers::Kvm constant.
+        @@configuration_source_class = ::Module.nesting.first
+
         param :qemu_path, :default=>proc { ||
           if File.exists?('/etc/debian_version')
             '/usr/bin/kvm'
@@ -136,14 +139,14 @@ module Dcmgr
         end
 
         inst[:volume].each { |vol_id, v|
-          cmd << "-drive file=%s,id=#{v[:uuid]}-drive,cache=none,aio=native,if=none"
+          cmd << with_drive_extra_opts("-drive file=%s,id=#{v[:uuid]}-drive,if=none")
           args << hc.volume_path(v)
-          cmd << qemu_drive_options(hc, v)
+          cmd << "-device " + qemu_drive_device_options(hc, v)
           # attach metadata drive
           if inst[:boot_volume_id] == v[:uuid]
-            cmd << "-drive file=#{hc.metadata_img_path},id=metadata-drive,cache=none,aio=native,if=none"
+            cmd << with_drive_extra_opts("-drive file=#{hc.metadata_img_path},id=metadata-drive,if=none")
             # guess secondary drive device name for metadata drive.
-            cmd << qemu_drive_options(hc, {guest_device_name: v[:guest_device_name].succ, uuid: 'metadata'})
+            cmd << "-device " + qemu_drive_device_options(hc, {guest_device_name: v[:guest_device_name].succ, uuid: 'metadata'})
           end
         }
 
@@ -204,6 +207,7 @@ RUN_SH
         }
       end
 
+      module Standard
       def attach_volume_to_guest(hc)
         # pci_devddr consists of three hex numbers with colon separator.
         #  dom <= 0xffff && bus <= 0xff && val <= 0x1f
@@ -270,6 +274,29 @@ RUN_SH
           raise "Detached disk device still be attached in qemu-kvm: #{pci_devaddr.join(':')}" if pass == false
         }
       end
+      end
+
+      # qemu on RHEL6 uses non-standarnd monitor command names for
+      # drive_add and drive_del.
+      #   __com.redhat_drive_add
+      #   __com.redhat_drive_del
+      module RHEL6
+        def attach_volume_to_guest(hc)
+          connect_monitor(hc) { |t|
+            drive_opts = with_drive_extra_opts("file=#{hc.volume_path(hc.vol)},id=#{hc.vol[:uuid]}-drive")
+            t.cmd("__com.redhat_drive_add #{drive_opts}")
+            t.cmd("device_add " + qemu_drive_device_options(hc, hc.vol))
+          }
+        end
+
+        def detach_volume_from_guest(hc)
+          connect_monitor(hc) { |t|
+            t.cmd("device_del " + hc.vol[:uuid])
+            t.cmd("__com.redhat_drive_del #{hc.vol[:uuid]}-drive")
+          }
+        end
+      end
+      include RHEL6
 
       def check_instance(i)
         kvm_pid_path = File.expand_path("#{i}/kvm.pid", Dcmgr.conf.vm_data_dir)
@@ -404,7 +431,8 @@ RUN_SH
         end
       end
 
-      def qemu_drive_options(hc, volume)
+      # Returns -device options for -drive.
+      def qemu_drive_device_options(hc, volume)
         device_model = if hc.inst[:image][:features][:virtio]
                          # provides virtio block disk.
                          'virtio-blk-pci'
@@ -427,12 +455,18 @@ RUN_SH
         when 'ide-drive'
         end
         
-        "-device #{option_str}"
+        option_str
       end
 
       Task::Tasklet.register(self) {
         self.new
       }
+
+      # Add extra options to -drive parameter.
+      # mainly for none=cache does not work some filesystems without O_DIRECT.
+      def with_drive_extra_opts(base)
+        [base, driver_configuration.local_store.drive_extra_options].compact.join(',')
+      end
     end
   end
 end

@@ -6,46 +6,46 @@ module Dcmgr
   module Configurations
     class Sta < Fuguta::Configuration
 
-      class RawBackingStore < Fuguta::Configuration
-        param :snapshot_tmp_dir, :default=>'/var/tmp'
-
-        def validate(errors)
-          unless File.directory?(@config[:snapshot_tmp_dir])
-            errors << "Could not find the snapshot_tmp_dir: #{@config[:snapshot_tmp_dir]}"
-          end
-        end
-      end
-
       DSL do
-        # Backing Store Driver
-        # raw, zfs, ifs
-        def backing_store_driver(driver, &blk)
-          @config[:backing_store] = driver
-          @config["#{driver}_backing_store"] = RawBackingStore.new.tap {
-            parse_dsl(&blk) if blk
-          }
+        # backing_store_driver configuration section.
+        def backing_store_driver(driver_type, &blk)
+          c = Drivers::BackingStore.driver_class(driver_type)
+
+          conf = Fuguta::Configuration::ConfigurationMethods.find_configuration_class(c).new(self.instance_variable_get(:@subject)).parse_dsl(&blk)
+          @config[:backing_store_driver] = driver_type
+          @config[:backing_store] = conf
+          @config["#{driver_type}_backing_store"] = conf
+        end
+
+        # target_driver configuration section.
+        def target_driver(driver_type, &blk)
+          c = Drivers::StorageTarget.driver_class(driver_type)
+
+          conf = Fuguta::Configuration::ConfigurationMethods.find_configuration_class(c).new(self.instance_variable_get(:@subject)).parse_dsl(&blk)
+          @config[:storage_target_driver] = driver_type
+          @config[:storage_target] = conf
         end
       end
 
-      param :tmp_dir, :default=>'/var/tmp'
+      def iscsi_target_driver
+        @config[:storage_target_driver]
+      end
+      def iscsi_target
+        @config[:storage_target]
+      end
 
-      # iSCSI Target Driver
-      # comstar, sun_iscsi, linux_iscsi
-      param :iscsi_target, :default=>'linux_iscsi'
-
-      # Initiator address is IP or ALL
-      param :initiator_address,  :default=>'ALL'
+      # obsolete parameters
+      deprecated_warn_param :tmp_dir, :default=>'/var/tmp'
+      deprecated_error_param :iscsi_target
+      deprecated_warn_param :initiator_address,  :default=>'ALL'
 
       def validate(errors)
-        if @config[:iscsi_target].nil?
-          errors << "iscsi_target is not set"
+        if @config[:storage_target].nil?
+          errors << "storage_target is unset."
         end
 
-        unless %w(comstart sun_iscsi linux_iscsi).member?(@config[:iscsi_target])
-          errors << "Unknown value for iscsi_target: #{@config[:iscsi_target]}"
-        end
-        unless %w(raw zfs ifs).member?(@config[:backing_store])
-          errors << "Unknown value for backing_store: #{@config[:backing_store]}"
+        if @config[:backing_store].nil?
+          errors << "backing_store is unset."
         end
       end
     end
