@@ -64,9 +64,6 @@ Requires: jemalloc
 # for erlang, rabbitmq-server
 # Requires: epel-release-6-x
 Requires: parted
-# dcell
-Requires: zeromq3
-Requires: zeromq3-devel
 
 # (base)
 %description
@@ -130,6 +127,9 @@ Requires: %{oname}-rack-config = %{version}-%{release}
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
+# dcell
+Requires: zeromq3
+Requires: zeromq3-devel
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
