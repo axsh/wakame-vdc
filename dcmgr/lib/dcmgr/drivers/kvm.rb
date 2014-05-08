@@ -102,70 +102,17 @@ module Dcmgr
       def run_instance(hc)
         poweron_instance(hc)
       end
-      
+
       def poweron_instance(hc)
+        qemu_command = build_qemu_command(hc)
+        sh(qemu_command)
 
-        # tcp listen ports for KVM monitor and VNC console
-        monitor_tcp_port = pick_tcp_listen_port
-        hc.dump_instance_parameter('monitor.port', monitor_tcp_port)
-
-        # run vm
-        inst = hc.inst
-        cmd = ["%s -m %d -smp %d -name vdc-%s",
-               "-pidfile %s",
-               "-daemonize",
-               "-monitor telnet:127.0.0.1:%d,server,nowait",
-               driver_configuration.qemu_options,
-               ]
-        args=[driver_configuration.qemu_path,
-              inst[:memory_size],
-              inst[:cpu_cores],
-              inst[:uuid],
-              File.expand_path('kvm.pid', hc.inst_data_dir),
-              monitor_tcp_port,
-             ]
-
-        if driver_configuration.vnc_options
-          vnc_tcp_port = pick_tcp_listen_port
-          hc.dump_instance_parameter('vnc.port', vnc_tcp_port)
-          # KVM -vnc port number offset is 5900
-          cmd << '-vnc ' + (driver_configuration.vnc_options.to_s % [vnc_tcp_port - 5900])
-        end
-
-        if driver_configuration.serial_port_options
-          serial_tcp_port = pick_tcp_listen_port
-          hc.dump_instance_parameter('serial.port', serial_tcp_port)
-          cmd << '-serial ' + (driver_configuration.serial_port_options.to_s % [serial_tcp_port])
-        end
-
-        inst[:volume].each { |vol_id, v|
-          cmd << with_drive_extra_opts("-drive file=%s,id=#{v[:uuid]}-drive,if=none")
-          args << hc.volume_path(v)
-          cmd << "-device " + qemu_drive_device_options(hc, v)
-          # attach metadata drive
-          if inst[:boot_volume_id] == v[:uuid]
-            cmd << with_drive_extra_opts("-drive file=#{hc.metadata_img_path},id=metadata-drive,if=none")
-            # guess secondary drive device name for metadata drive.
-            cmd << "-device " + qemu_drive_device_options(hc, {guest_device_name: v[:guest_device_name].succ, uuid: 'metadata'})
-          end
-        }
-
-        vifs = inst[:vif]
-        if !vifs.empty?
-          vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
-            cmd << "-net nic,vlan=#{vif[:device_index].to_i},macaddr=%s,model=#{nic_model(hc)},addr=%x -net tap,vlan=#{vif[:device_index].to_i},ifname=%s,script=no,downscript=no"
-            args << vif[:mac_addr].unpack('A2'*6).join(':')
-            args << (KVM_NIC_PCI_ADDR_OFFSET + vif[:device_index].to_i)
-            args << vif_uuid(vif)
-          }
-        end
-        sh(cmd.join(' '), args)
         run_sh = <<RUN_SH
 #!/bin/bash
-#{cmd.join(' ') % args}
+#{qemu_command}
 RUN_SH
 
-        vifs.each do |vif|
+        hc.inst[:vif].each do |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
             sh("/sbin/ip link set %s up" % [vif_uuid(vif)])
             bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
@@ -186,8 +133,6 @@ RUN_SH
         rescue => e
           hc.logger.warn("Failed to export run.sh rescue script: #{e}")
         end
-
-        sleep 1
       end
 
       def terminate_instance(hc)
@@ -456,6 +401,78 @@ RUN_SH
         end
         
         option_str
+      end
+
+      def build_qemu_options(hc, monitor_tcp_port, opts={})
+        inst = hc.inst
+        cmd = ["-m %d",
+               "-smp %d",
+               "-name vdc-%s",
+               "-pidfile %s",
+               "-daemonize",
+               "-monitor telnet:127.0.0.1:%d,server,nowait",
+               driver_configuration.qemu_options,
+               ]
+        args=[inst[:memory_size],
+              inst[:cpu_cores],
+              inst[:uuid],
+              File.expand_path('kvm.pid', hc.inst_data_dir),
+              monitor_tcp_port,
+             ]
+
+        if driver_configuration.vnc_options && opts[:vnc_tcp_port]
+          # KVM -vnc port number offset is 5900
+          cmd << '-vnc ' + (driver_configuration.vnc_options.to_s % [opts[:vnc_tcp_port].to_i - 5900])
+        end
+
+        if driver_configuration.serial_port_options && opts[:serial_tcp_port]
+          cmd << '-serial ' + (driver_configuration.serial_port_options.to_s % [opts[:serial_tcp_port].to_i])
+        end
+
+        inst[:volume].each { |vol_id, v|
+          cmd << with_drive_extra_opts("-drive file=%s,id=#{v[:uuid]}-drive,if=none")
+          args << hc.volume_path(v)
+          cmd << "-device " + qemu_drive_device_options(hc, v)
+          # attach metadata drive
+          if inst[:boot_volume_id] == v[:uuid]
+            cmd << with_drive_extra_opts("-drive file=#{hc.metadata_img_path},id=metadata-drive,if=none")
+            # guess secondary drive device name for metadata drive.
+            cmd << "-device " + qemu_drive_device_options(hc, {guest_device_name: v[:guest_device_name].succ, uuid: 'metadata'})
+          end
+        }
+
+        vifs = inst[:vif]
+        if !vifs.empty?
+          vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
+            cmd << "-net nic,vlan=#{vif[:device_index].to_i},macaddr=%s,model=#{nic_model(hc)},addr=%x -net tap,vlan=#{vif[:device_index].to_i},ifname=%s,script=no,downscript=no"
+            args << vif[:mac_addr].unpack('A2'*6).join(':')
+            args << (KVM_NIC_PCI_ADDR_OFFSET + vif[:device_index].to_i)
+            args << vif_uuid(vif)
+          }
+        end
+
+        cmd.join(' ') % args
+      end
+
+      def build_qemu_command(hc)
+        # tcp listen ports for KVM monitor and VNC console
+        monitor_tcp_port = pick_tcp_listen_port
+        hc.dump_instance_parameter('monitor.port', monitor_tcp_port)
+
+        opts = {}
+        # run vm
+        inst = hc.inst
+        if driver_configuration.vnc_options
+          opts[:vnc_tcp_port] = pick_tcp_listen_port
+          hc.dump_instance_parameter('vnc.port', opts[:vnc_tcp_port])
+        end
+
+        if driver_configuration.serial_port_options
+          opts[:serial_tcp_port] = pick_tcp_listen_port
+          hc.dump_instance_parameter('serial.port', opts[:serial_tcp_port])
+        end
+
+        "#{driver_configuration.qemu_path} #{build_qemu_options(hc, monitor_tcp_port, opts)}"
       end
 
       Task::Tasklet.register(self) {
