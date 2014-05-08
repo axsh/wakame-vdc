@@ -20,6 +20,9 @@ function test_vnet() {
 
   scp -i ${sshkey_1box} ${opts} ${ssh_key_pair_path} ${sshuser_1box}@${DCMGR_HOST}:~
 
+  #TODO refactor
+  sleep 40
+
   for instance_uuid in $(cat ${instance_uuids_path}); do
     instance_ipaddr_vnet=$(cached_instance_param ${instance_uuid} | grep -A 2 "${vdc_network_uuid}" | hash_value address)
     instance_ipaddr_mng=$(cached_instance_param ${instance_uuid} | grep -A 2 "${vifs_eth1_network_id}" | hash_value address)
@@ -35,7 +38,9 @@ function test_vnet() {
       echo "peer_instance_ipaddr_vnet : ${peer_instance_ipaddr_vnet}"
 
       ssh ${opts} -i ${sshkey_1box} ${sshuser_1box}@${DCMGR_HOST} "
-        ssh ${opts} -i ${ssh_key_pair_path##*/} root@${instance_ipaddr_mng} \"ping -c 1 -W 3 ${peer_instance_ipaddr_vnet}\"
+        ssh ${opts} -i ${ssh_key_pair_path##*/} root@${instance_ipaddr_mng} \"
+          ping -c 1 -W 3 ${peer_instance_ipaddr_vnet}
+        \"
       "
       assertEquals 0 $?
     done
