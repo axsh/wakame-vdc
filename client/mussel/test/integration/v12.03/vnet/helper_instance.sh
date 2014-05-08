@@ -6,6 +6,9 @@
 
 ## include files
 
+# abort test if ${VDC_EDGE_NETWORKING} is not set as openvnet
+. ${BASH_SOURCE[0]%/*}/helper_vnet_test.sh
+
 ## variables
 
 instance_ipaddr=
@@ -35,7 +38,13 @@ function render_vif_table() {
 function ssh_1box_to_wait_for_network_to_be_ready() {
   local instance_ipaddr=$1
   ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${sshkey_1box} ${sshuser_1box}@${DCMGR_HOST} "
-    while : ; do eval 'ping -c 1 -W 3 ${instance_ipaddr}' && break || { sleep ${sleep_sec} }; done
+    while :; do
+      eval 'ping -c 1 -W 3 ${instance_ipaddr}' && {
+        break
+      } || {
+        sleep ${sleep_sec}
+      }
+    done
   "
 }
 
