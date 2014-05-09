@@ -80,6 +80,7 @@ module Dcmgr
 
         param :serial_port_options, :default=>'telnet:127.0.0.1:%d,server,nowait'
         param :vnc_options, :default=>'127.0.0.1:%d'
+        param :incoming_ip
       end
 
       # 0x0-2 are reserved by KVM.
@@ -284,6 +285,65 @@ RUN_SH
         end
       end
 
+      include Hypervisor::MigrationLive
+
+      def run_migration_instance(hc)
+        qemu_command = build_qemu_command(hc)
+        
+        sh(qemu_command + " -incoming tcp:#{driver_configuration.incoming_ip}:#{4333}")
+
+        run_sh = <<RUN_SH
+#!/bin/bash
+#{qemu_command}
+RUN_SH
+
+        hc.inst[:vif].each do |vif|
+          if vif[:ipv4] and vif[:ipv4][:network]
+            sh("/sbin/ip link set %s up" % [vif_uuid(vif)])
+            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+            attach_vif_cmd = attach_vif_to_bridge(bridge, vif)
+
+            sh(attach_vif_cmd)
+
+            run_sh += ("/sbin/ip link set %s up" % [vif_uuid(vif)])
+            run_sh += (attach_vif_cmd)
+          end
+        end
+
+        # Dump as single shell script file to help failure recovery
+        # process of the user instance.
+        begin
+          hc.dump_instance_parameter('run.sh', run_sh)
+          File.chmod(0755, File.expand_path('run.sh', hc.inst_data_dir))
+        rescue => e
+          hc.logger.warn("Failed to export run.sh rescue script: #{e}")
+        end
+
+        {:listen_ip=>driver_configuration.incoming_ip, :port=>4333}
+      end
+
+      def start_migration(hc, dest_params)
+        connect_monitor(hc) do |t|
+          t.cmd("migrate -d tcp:#{dest_params[:listen_ip]}:#{dest_params[:port].to_i}")
+        end
+      end
+
+      def watch_migration(hc)
+        connect_monitor(hc) do |t|
+          while line = t.cmd("info migrate")
+            p line
+            if line =~ /\nMigration status: (\w+)/
+              case $1
+              when 'active'
+                sleep 1
+              when 'completed'
+                break
+              end
+            end
+          end
+        end
+      end
+      
       private
       # Establish telnet connection to KVM monitor console
       def connect_monitor(hc, &blk)

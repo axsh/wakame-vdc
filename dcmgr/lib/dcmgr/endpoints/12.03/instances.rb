@@ -686,18 +686,34 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
   put '/:id/move' do
     instance = find_by_uuid(:Instance, params[:id])
-    raise E::InvalidInstanceState, instance.state unless [C::Instance::STATE_RUNNING, C::Instance::STATE_HALTED].member?(instance.state)
-    if Dcmgr.conf.enable_instance_poweron_readiness_validation
-      unless instance.ready_poweron?
-        raise E::InvalidInstanceState, "not ready for poweron operation"
+    case instance.state
+    when C::Instance::STATE_RUNNING
+      if params['live'].to_s == 'true'
+      else
       end
+    when C::Instance::STATE_HALTED
+      if params['live'].to_s == 'true'
+        raise E::InvalidInstanceState, instance.state
+      end
+    else
+      raise E::InvalidInstanceState, instance.state 
     end
-    
+    raise E::InvalidInstanceState, instance.state unless [C::Instance::STATE_RUNNING, C::Instance::STATE_HALTED].member?(instance.state)
+
+    if params['host_node_id']
+      dest_host_node = find_by_uuid(:HostNode, params['host_node_id'])
+      if dest_host_node == instance.host_node
+        raise "Can not move to same host node"
+      end
+    else
+      raise "host_node_id has to be set"
+    end
+
     instance.state = 'migrating'
     instance.save_changes
 
     on_after_commit do
-      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'migrate_start',
+      Dcmgr.messaging.submit("migration-handle.#{dest_host_node.node_id}", 'run_vol_store',
                              instance.canonical_uuid)
     end
     respond_with({:instance_id=>instance.canonical_uuid,
