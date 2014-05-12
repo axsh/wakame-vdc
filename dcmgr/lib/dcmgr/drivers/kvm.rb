@@ -289,8 +289,10 @@ RUN_SH
 
       def run_migration_instance(hc)
         qemu_command = build_qemu_command(hc)
-        
-        sh(qemu_command + " -incoming tcp:#{driver_configuration.incoming_ip}:#{4333}")
+
+        migration_tcp_port = pick_tcp_listen_port
+
+        sh(qemu_command + " -incoming tcp:#{driver_configuration.incoming_ip}:#{migration_tcp_port}")
 
         run_sh = <<RUN_SH
 #!/bin/bash
@@ -319,7 +321,7 @@ RUN_SH
           hc.logger.warn("Failed to export run.sh rescue script: #{e}")
         end
 
-        {:listen_ip=>driver_configuration.incoming_ip, :port=>4333}
+        {:listen_ip=>driver_configuration.incoming_ip, :port=>migration_tcp_port}
       end
 
       def start_migration(hc, dest_params)
