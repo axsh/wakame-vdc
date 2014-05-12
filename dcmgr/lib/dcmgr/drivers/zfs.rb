@@ -121,7 +121,7 @@ module Dcmgr
 
       private
       def volume_path
-        File.join(driver_configuration.zpool_base_path, @volume[:uuid])
+        File.join(driver_configuration.zpool_base_path, @volume[:volume_device][:path])
       end
 
       def zfs(cmd, args=[])

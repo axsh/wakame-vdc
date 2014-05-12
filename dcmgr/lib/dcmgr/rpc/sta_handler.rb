@@ -14,8 +14,8 @@ module Dcmgr
         @backing_store = Dcmgr::Drivers::BackingStore.driver_class(Dcmgr.conf.backing_store_driver).new
       end
 
-      def iscsi_target
-        @iscsi_target = Dcmgr::Drivers::IscsiTarget.driver_class(Dcmgr.conf.iscsi_target_driver).new
+      def storage_target
+        @storage_target = Dcmgr::Drivers::StorageTarget.driver_class(Dcmgr.conf.storage_target_driver).new
       end
 
       # Setup volume file from snapshot storage and register to
@@ -69,10 +69,10 @@ module Dcmgr
         end
         logger.info("Finished creating new volume #{@volume_id}.")
 
-        logger.info("Registering to iscsi target: #{@volume_id}")
-        opt = iscsi_target.create(@sta_ctx)
+        logger.info("Registering to storage target: #{@volume_id}")
+        opt = storage_target.create(@sta_ctx)
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :volume_device=>opt})
-        logger.info("Finished registering iscsi target: #{@volume_id}")
+        logger.info("Finished registering storage target: #{@volume_id}")
       end
 
       job :create_volume, proc {
@@ -120,11 +120,11 @@ module Dcmgr
 
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleting})
 
-        # deregister iscsi target
+        # deregister from storage target
         begin
-          iscsi_target.delete(StaContext.new(self))
+          storage_target.delete(StaContext.new(self))
         rescue => e
-          logger.error("#{@volume_id}: Failed to delete ISCSI target entry.")
+          logger.error("#{@volume_id}: Failed to delete storage target entry.")
           logger.error(e)
           errcount += 1
         end
