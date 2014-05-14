@@ -12,7 +12,6 @@ task_evacuate() {
   [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   call_api -X PUT $(urlencode_data \
-    $(add_param host_node_id  string) \
    ) \
    $(base_uri)/${namespace}s/${uuid}/evacuate.$(suffix)
 }
