@@ -24,10 +24,13 @@ function oneTimeTearDown() {
 ###
 
 function test_destroy_poweroff_instance() {
+  local output=$(run_cmd instance create)
+  assertEquals 0 $?
+  echo "$output"
 
   # :state: scheduling
   # :status: init
-  instance_uuid=$(run_cmd instance create | hash_value id)
+  instance_uuid=$(echo "$output" | hash_value id)
   assertEquals 0 $?
 
   # :state: running
@@ -37,7 +40,7 @@ function test_destroy_poweroff_instance() {
 
   # :state: halting
   # :status: online
-  run_cmd instance poweroff ${instance_uuid} >/dev/null
+  run_cmd instance poweroff ${instance_uuid}
   assertEquals 0 $?
 
   # :state: halted
@@ -47,7 +50,7 @@ function test_destroy_poweroff_instance() {
 
   # :state: shuttingdown
   # :status: online
-  run_cmd instance destroy ${instance_uuid} >/dev/null
+  run_cmd instance destroy ${instance_uuid}
   assertEquals 0 $?
 
   # :state: terminated
