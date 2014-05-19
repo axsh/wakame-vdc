@@ -93,14 +93,13 @@ module Dcmgr
         @hva_ctx.dump_instance_parameter('state', state)
       end
 
-      def update_instance_state(opts, ev=nil)
+      def update_instance_state(opts, events_to_publish = nil)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
         rpc.request('hva-collector', 'update_instance', @inst_id, opts)
-        if ev
-          ev = [ev] unless ev.is_a? Array
-          ev.each { |e|
-            event.publish(e, :args=>[@inst_id])
-          }
+
+        if events_to_publish
+          events_to_publish = [events_to_publish] unless events_to_publish.is_a? Array
+          events_to_publish.each { |e| event.publish(e, :args=>[@inst_id]) }
         end
 
         update_state_file(opts[:state]) unless opts[:state].nil?
@@ -327,9 +326,16 @@ module Dcmgr
 
         @hva_ctx.logger.info("Booting instance")
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
-        raise "Invalid instance state: #{@inst[:state]}" unless %w(initializing).member?(@inst[:state].to_s)
+
+        unless %w(initializing).member?(@inst[:state].to_s)
+          raise "Invalid instance state: #{@inst[:state]}"
+        end
+
         if !@inst[:volume].values.all? {|v| v[:state].to_s == 'available' }
-          @hva_ctx.logger.error("Could not boot the instance. some volumes are not available yet: #{@inst[:volume].map{|volid, v| volid + "=" + v[:state] }.join(', ')}")
+          msg = "Could not boot the instance. Some volumes are not available yet: %s" %
+            @inst[:volume].map{|volid, v| volid + "=" + v[:state]}.join(', ')
+
+          @hva_ctx.logger.error(msg)
           next
         end
 
@@ -344,11 +350,16 @@ module Dcmgr
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :run_instance, [@hva_ctx])
 
-        # Node specific instance_started event for netfilter and general instance_started event for openflow
+        # Node specific instance_started event for netfilter and general
+        # instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started'])
 
         @inst[:volume].values.each { |v|
-          update_volume_state(v[:uuid], {:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
+          update_volume_state(
+            v[:uuid],
+            {:state=>:attached, :attached_at=>Time.now.utc},
+            'hva/volume_attached'
+          )
         }
 
         create_instance_vnics(@inst)
