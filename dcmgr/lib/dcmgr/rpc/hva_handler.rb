@@ -12,7 +12,6 @@ module Dcmgr
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::Helpers::BlockDeviceHelper
 
-
       def detach_volume_from_host(volume)
         tryagain do
           task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -34,7 +33,7 @@ module Dcmgr
           logger.warn("Skip delete_local_volume since hva context is unset.")
           return
         end
-        
+
         return unless volume[:is_local_volume]
 
         update_volume_state(volume[:uuid], {:state=>:deleting}, [])
@@ -43,7 +42,7 @@ module Dcmgr
         update_volume_state(volume[:uuid], {:state=>:deleted, :deleted_at=>Time.now.utc},
                             'hva/volume_deleted')
       end
-      
+
       def delete_all_local_volumes
         @inst[:volume].values.each { |v|
           ignore_error do
@@ -51,7 +50,7 @@ module Dcmgr
           end
         }
       end
-      
+
       # This method can be called sometime when the instance variables
       # are also failed to be set. They need to be checked before looked
       # up.
@@ -60,7 +59,7 @@ module Dcmgr
           logger.warn("Skip delte_local_volume since hva context is unset.")
           return
         end
-        
+
         ignore_error {
           @hva_ctx.logger.info("teminating instance")
           task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -123,18 +122,18 @@ module Dcmgr
 
       def update_instance_state_to_terminated(opts)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
-        
+
         # syncronized
         rpc.request('hva-collector', 'update_instance', @inst_id, opts)
-        
+
         ev = ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"]
         ev.each { |e|
           event.publish(e, :args=>[@inst_id])
         }
-        
+
         # Security group vnic left events for vnet netfilter
         destroy_instance_vnics(@inst)
-        
+
         @inst[:volume].values.each { |v|
           rpc.request('sta-collector', 'update_volume', v[:uuid], {
                         :state=>:deleted,
@@ -369,7 +368,7 @@ module Dcmgr
           @hva_ctx.logger.info("Wait for all volumes available. #{@inst[:volume].map{|volid, v| volid + "=" + v[:state] }.join(', ')}")
           next
         end
-        
+
         # setup vm data folder
         FileUtils.mkdir(@hva_ctx.inst_data_dir) unless File.exists?(@hva_ctx.inst_data_dir)
 
