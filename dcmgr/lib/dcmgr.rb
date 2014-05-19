@@ -155,6 +155,7 @@ module Dcmgr
   end
 
   module Helpers
+    autoload :IndelibleApi, 'dcmgr/helpers/indelible_api'
     autoload :CliHelper, 'dcmgr/helpers/cli_helper'
     autoload :NicHelper, 'dcmgr/helpers/nic_helper'
     autoload :TemplateHelper, 'dcmgr/helpers/template_helper'
@@ -234,9 +235,9 @@ module Dcmgr
     autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
     autoload :ESXiLocalStore, 'dcmgr/drivers/esxi_local_store.rb'
     autoload :OpenvzLocalStore, 'dcmgr/drivers/openvz_local_store.rb'
-    autoload :Ifs, 'dcmgr/drivers/ifs.rb'
-    autoload :IfsIscsi, 'dcmgr/drivers/ifs_iscsi'
-    autoload :IfsStorage, 'dcmgr/drivers/ifs_storage'
+    autoload :Indelible, 'dcmgr/drivers/indelible'
+    autoload :IndelibleIscsi, 'dcmgr/drivers/indelible_iscsi'
+    autoload :IndelibleStorage, 'dcmgr/drivers/indelible_storage'
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Webdav, 'dcmgr/drivers/webdav'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'

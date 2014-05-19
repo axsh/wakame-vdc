@@ -35,6 +35,8 @@ module Dcmgr
           Dcmgr::Drivers::SunIscsi
         when "comstar"
           Dcmgr::Drivers::Comstar
+        when "indelible_iscsi"
+          Dcmgr::Drivers::IndelibleIscsi
         else
           raise "Unknown storage target type: #{target_name}"
         end
