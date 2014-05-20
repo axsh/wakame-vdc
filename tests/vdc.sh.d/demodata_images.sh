@@ -108,6 +108,8 @@ for meta in $metalst; do
       --container-format="$container_format" \
       --description="'kvm 32bit'"
 
+    os_type=${os_type:-'generic'}
+
     case $storetype in
       "local")
         shlog ./bin/vdc-manage image add local "bo-${uuid}" \
@@ -120,7 +122,8 @@ for meta in $metalst; do
           --service-type ${service_type} \
           --is_public \
 	  --display-name "'${display_name}'" \
-	  --is-cacheable
+	  --is-cacheable \
+          --os-type "${os_type}"
         ;;
 
       "volume")
@@ -133,7 +136,8 @@ for meta in $metalst; do
           --root-device ${root_device} \
           --service-type ${service_type} \
           --is_public \
-	  --display-name "'${display_name}'"
+	  --display-name "'${display_name}'" \
+          --os-type "${os_type}"
         ;;
     esac
 
