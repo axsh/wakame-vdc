@@ -32,8 +32,11 @@ EOF
 # download demo image files.
 (
   cd ${vdc_data}/images
-  # remove md5sum cache files.
-  rm -f *.md5
+
+  if [[ ! -z "${remove_md5}" ]]; then
+    # remove md5sum cache files.
+    rm -f *.md5
+  fi
 
   for meta in $metalst; do
     (
@@ -71,7 +74,7 @@ for meta in $metalst; do
     }
 
     localpath="${vdc_data}/images/${localname}"
-    if [[ -f "${localpath}.md5" ]] && [[ "$localpath" -nt "${localpath}.md5" ]]; then
+    if [[ -f "${localpath}.md5" ]] && [[ "${localpath}.md5" -nt "${localpath}" ]]; then
       chksum=$(cat "${localpath}.md5")
     else
       echo "calculating checksum of $localpath ..."
