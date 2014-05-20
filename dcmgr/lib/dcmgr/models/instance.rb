@@ -389,12 +389,15 @@ module Dcmgr::Models
       # null column.
       boot_volume = image.create_volume(account)
       
-      instance = self.new &blk
+      instance = self.new
       instance.account_id = account.canonical_uuid
       instance.image = image
       instance.request_params = params.dup
       instance.service_type = image.service_type
       instance.boot_volume_id = boot_volume.canonical_uuid
+      if blk
+        blk.call(instance)
+      end
       # Determine primary key number.
       instance.save
 
