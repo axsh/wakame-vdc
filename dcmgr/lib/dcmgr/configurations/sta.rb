@@ -11,7 +11,8 @@ module Dcmgr
         def backing_store_driver(driver_type, &blk)
           c = Drivers::BackingStore.driver_class(driver_type)
 
-          conf = Fuguta::Configuration::ConfigurationMethods.find_configuration_class(c).new(self.instance_variable_get(:@subject)).parse_dsl(&blk)
+          conf_class = Fuguta::Configuration::ConfigurationMethods.find_configuration_class(c)
+          conf = conf_class.new(self.instance_variable_get(:@subject)).parse_dsl(&blk)
           @config[:backing_store_driver] = driver_type
           @config[:backing_store] = conf
           @config["#{driver_type}_backing_store"] = conf

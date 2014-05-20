@@ -79,6 +79,9 @@ function shlog() {
 }
 
 function curl_opts() {
+  if [[ $MUSSEL_LOGLEVEL = 'debug' ]]; then
+    CURL_OPTS_EX="${CURL_OPTS_EX} --dump-header -"
+  fi
   echo -fsSkL $(request_header) ${CURL_OPTS_EX}
 }
 
