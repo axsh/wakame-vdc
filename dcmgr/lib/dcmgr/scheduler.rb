@@ -219,6 +219,13 @@ module Dcmgr
       def schedule(instance)
         raise NotImplementedError
       end
+
+      module AllowOverCommit
+        # allow the instances over commit during HA event.
+        def schedule_over_commit(instance)
+          raise NotImplementedError
+        end
+      end
     end
 
     # Allocate StorageNode to Volume object.
