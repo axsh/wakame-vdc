@@ -103,7 +103,6 @@ task_move() {
 
   call_api -X PUT $(urlencode_data \
     $(add_param host_node_id string) \
-    $(add_param live string) \
    ) \
    $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
 }

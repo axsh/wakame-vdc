@@ -687,18 +687,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   put '/:id/move' do
     instance = find_by_uuid(:Instance, params[:id])
     case instance.state
-    when C::Instance::STATE_RUNNING
-      if params['live'].to_s == 'true'
-      else
-      end
-    when C::Instance::STATE_HALTED
-      if params['live'].to_s == 'true'
-        raise E::InvalidInstanceState, instance.state
-      end
+    when *C::Instance::MIGRATION_STATES
     else
-      raise E::InvalidInstanceState, instance.state 
+      raise E::InvalidInstanceState, "Unsupported instance state for migration: #{instance.state}"
     end
-    raise E::InvalidInstanceState, instance.state unless [C::Instance::STATE_RUNNING, C::Instance::STATE_HALTED].member?(instance.state)
 
     if params['host_node_id']
       dest_host_node = find_by_uuid(:HostNode, params['host_node_id'])
