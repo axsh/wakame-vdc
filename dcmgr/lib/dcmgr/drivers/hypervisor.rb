@@ -75,6 +75,20 @@ module Dcmgr
         poweroff_instance(hc)
       end
 
+      module MigrationLive
+        def run_migration_instance(hc)
+          raise NotImplementedError
+        end
+
+        def start_migration(hc, dest_params)
+          raise NotImplementedError
+        end
+
+        def watch_migration(hc)
+          raise NotImplementedError
+        end
+      end
+
       @@policy = HypervisorPolicy.new
       def self.policy
         @@policy

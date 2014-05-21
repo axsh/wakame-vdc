@@ -8,7 +8,7 @@ module Dcmgr
     class HvaContext
 
       def initialize(subject)
-        unless [HvaHandler, LocalStoreHandler].member?(subject.class)
+        unless [HvaHandler, LocalStoreHandler, MigrationHandler].member?(subject.class)
           raise "Invalid Class: #{subject.class}"
         end
         @hva = subject
