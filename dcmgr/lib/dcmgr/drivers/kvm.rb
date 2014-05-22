@@ -18,7 +18,7 @@ module Dcmgr
 
         def validate_instance_model(instance)
         end
-        
+
         def validate_volume_model(volume)
           if !volume.guest_device_name.nil?
             unless DEVNAME_REGEXP.find { |r| r =~ volume.guest_device_name.downcase }
@@ -30,7 +30,7 @@ module Dcmgr
         def on_associate_volume(instance, volume)
           if instance.boot_volume_id == volume.canonical_uuid && volume.guest_device_name.nil?
             # set device name as boot drive.
-            volume.guest_device_name = 
+            volume.guest_device_name =
               if instance.image.features[:virtio]
                 'vda'
               else
@@ -87,7 +87,7 @@ module Dcmgr
       # 1=ISA bridge
       # 2=VGA
       KVM_NIC_PCI_ADDR_OFFSET=0x10
-      
+
       def initialize
         @qemu_ver_str = `#{driver_configuration.qemu_path} -version`.chomp
         @qemu_version = if @qemu_ver_str =~ /^QEMU emulator version ([\d\.]+) \(/
@@ -102,7 +102,7 @@ module Dcmgr
       def run_instance(hc)
         poweron_instance(hc)
       end
-      
+
       def poweron_instance(hc)
 
         # tcp listen ports for KVM monitor and VNC console
@@ -117,6 +117,7 @@ module Dcmgr
                "-monitor telnet:127.0.0.1:%d,server,nowait",
                driver_configuration.qemu_options,
                ]
+
         args=[driver_configuration.qemu_path,
               inst[:memory_size],
               inst[:cpu_cores],
@@ -442,19 +443,19 @@ RUN_SH
                          'ide-drive'
                        end
         drive_idx = drive_index(volume[:guest_device_name])
-        
+
         option_str = "#{device_model},id=#{volume[:uuid]},drive=#{volume[:uuid]}-drive"
         if hc.inst[:boot_volume_id] == volume[:uuid]
           option_str += ',bootindex=0'
         end
-        
+
         case device_model
         when 'virtio-blk-pci'
           # virtio-blk consumes a pci address per device.
           option_str += ",bus=pci.0,addr=#{'0x' + ('%x' % (drive_idx + 4))}"
         when 'ide-drive'
         end
-        
+
         option_str
       end
 
