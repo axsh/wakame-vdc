@@ -14,7 +14,7 @@ backup_object_id=${backup_object_id:-centos1d64nfs}
 
 function test_create_new_volume(){
   # create volume
-  volume_uuid=(volume_size=${volume_size} run_cmd volume create | hash_value uuid) 
+  volume_uuid=$(volume_size=${volume_size} run_cmd volume create | hash_value uuid) 
   retry_until "document_pair? volume ${volume_uuid} state available"
   assertEquals 0 $?
 
@@ -26,7 +26,7 @@ function test_create_new_volume(){
 
 function test_create_new_volume_from_image(){
   # create volume
-  volume_uuid=(backup_object_id=${backup_object_id} run_cmd volume create | hash_value uuid) 
+  volume_uuid=$(backup_object_id=${backup_object_id} run_cmd volume create | hash_value uuid) 
   retry_until "document_pair? volume ${volume_uuid} state available"
   assertEquals 0 $?
 
