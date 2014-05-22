@@ -7,8 +7,8 @@
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
 
 ## variables
-volume_size=${volume_size:-10M}
-backup_object_id=${backup_object_id:-centos1d64nfs}
+volume_size=${volume_size:-10}
+backup_object_id=${backup_object_id:-bo-centos1d64nfs}
 
 ## setp
 
