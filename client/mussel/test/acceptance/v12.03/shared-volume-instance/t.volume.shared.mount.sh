@@ -49,7 +49,7 @@ EOS
 
   # detach volume to instance
   instance_id=${instance_uuid} run_cmd volume detach ${volume_uuid}
-  retry_until "document_pair? volume ${volume_uuid} state detached"
+  retry_until "document_pair? volume ${volume_uuid} state available"
   assertEquals 0 $?
 
   # delete volume
