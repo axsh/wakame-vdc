@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+#
+#
+
+## include
+. ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
+. ${BASH_SOURCE[0]%/*}/helper_instance.sh
+
+## variables
+volume_size=${volume_size:-10}
+
+## functions
+
+## step
+
+function test_mount_shared_volume(){
+  remote_sudo=$(remote_sudo)
+
+  # create new volume
+  volume_uuid=$(volume_size=${volume_size} run_cmd volume create | hash_value uuid)
+  retry_until "document_pair? volume ${volume_uuid} state available"
+  assertEquals 0 $?
+
+  # attch volume to instance
+  instance_id=${instance_uuid} run_cmd volume attach
+  retry_until "document_pair? volume ${volume_uuid} state attached"
+  assertEquals 0 $?
+
+  # device-check
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+${remote_sudo} lsblk
+EOS
+  assertEquals 0 $?
+
+  # format
+
+  # mount
+
+  # disk-usage
+
+  # umount
+
+  # device-check
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+${remote_sudo} lsblk
+EOS
+  assertEquals 0 $?
+
+  # detach volume to instance
+  instance_id=${instance_uuid} run_cmd volume detach
+  retry_until "document_pair? volume ${volume_uuid} state detached"
+  assertEquals 0 $?
+
+  # delete volume
+  run_cmd volume destroy ${volume_uuid}
+  retry_until "document_pair? volume ${volume_uuid} state deleted"
+  assertEquals 0 $?
+}
+
+## shunit2
+. ${shunit2_file}
+
