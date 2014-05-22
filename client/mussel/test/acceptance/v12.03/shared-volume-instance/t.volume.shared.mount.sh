@@ -23,7 +23,7 @@ function test_mount_shared_volume(){
   assertEquals 0 $?
 
   # attch volume to instance
-  instance_id=${instance_uuid} run_cmd volume attach
+  instance_id=${instance_uuid} run_cmd volume attach ${volume_uuid}
   retry_until "document_pair? volume ${volume_uuid} state attached"
   assertEquals 0 $?
 
@@ -48,7 +48,7 @@ EOS
   assertEquals 0 $?
 
   # detach volume to instance
-  instance_id=${instance_uuid} run_cmd volume detach
+  instance_id=${instance_uuid} run_cmd volume detach ${volume_uuid}
   retry_until "document_pair? volume ${volume_uuid} state detached"
   assertEquals 0 $?
 
