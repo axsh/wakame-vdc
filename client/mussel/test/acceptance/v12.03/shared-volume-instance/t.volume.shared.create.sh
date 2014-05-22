@@ -35,3 +35,8 @@ function test_create_new_volume_from_image(){
   retry_until "document_pair? volume ${volume_uuid} state available"
   assertEquals 0 $?
 }
+
+## shunit2
+
+. ${shunit2_file}
+
