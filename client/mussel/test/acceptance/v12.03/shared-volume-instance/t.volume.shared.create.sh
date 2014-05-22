@@ -20,7 +20,7 @@ function test_create_new_volume(){
 
   # delete volume
   run_cmd volume destroy ${volume_uuid}
-  retry_until "document_pair? volume ${volume_uuid} state available"
+  retry_until "document_pair? volume ${volume_uuid} state deleted"
   assertEquals 0 $?
 }
 
@@ -32,7 +32,7 @@ function test_create_new_volume_from_image(){
 
   # delete volume
   run_cmd volume destroy ${volume_uuid}
-  retry_until "document_pair? volume ${volume_uuid} state available"
+  retry_until "document_pair? volume ${volume_uuid} state deleted"
   assertEquals 0 $?
 }
 
