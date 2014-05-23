@@ -59,6 +59,10 @@ function test_mount_shared_volume(){
   assertEquals 0 $?
 
   # umount
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+        ${remote_sudo} umount /mnt
+        EOS
+  assertEquals 0 $?
 
   # detach volume to instance
   instance_id=${instance_uuid} run_cmd volume detach ${volume_uuid}
