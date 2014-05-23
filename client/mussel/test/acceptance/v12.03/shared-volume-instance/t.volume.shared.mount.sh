@@ -36,32 +36,32 @@ function test_mount_shared_volume(){
 
   # device-check
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-        ${remote_sudo} lsblk -d ${blank_dev_path}
-        EOS
+	${remote_sudo} lsblk -d ${blank_dev_path}
+	EOS
   assertEquals 0 $?
 
   # format
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-        ${remote_sudo} mkfs.ext3 -F -I 128 ${blank_dev_path}
-        EOS
+	${remote_sudo} mkfs.ext3 -F -I 128 ${blank_dev_path}
+	EOS
   assertEquals 0 $?
 
   # mount
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-        ${remote_sudo} mount ${blank_dev_path} /mnt
-        EOS
+	${remote_sudo} mount ${blank_dev_path} /mnt
+	EOS
   assertEquals 0 $?
 
   # disk-usage
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-        df -P -h
-        EOS
+	df -P -h
+	EOS
   assertEquals 0 $?
 
   # umount
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-        ${remote_sudo} umount /mnt
-        EOS
+	${remote_sudo} umount /mnt
+	EOS
   assertEquals 0 $?
 
   # detach volume to instance
@@ -71,8 +71,8 @@ function test_mount_shared_volume(){
 
   # device-check
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-${remote_sudo} lsblk -d ${blank_dev_path}
-EOS
+	${remote_sudo} lsblk -d ${blank_dev_path}
+	EOS
   assertNotEquals 0 $?
 
   # delete volume
