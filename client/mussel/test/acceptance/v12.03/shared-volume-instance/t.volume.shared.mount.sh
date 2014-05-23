@@ -47,6 +47,10 @@ function test_mount_shared_volume(){
   assertEquals 0 $?
 
   # mount
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+        ${remote_sudo} mount ${blank_dev_path} /mnt
+        EOS
+  assertEquals 0 $?
 
   # disk-usage
 
