@@ -27,9 +27,16 @@ function test_mount_shared_volume(){
   retry_until "document_pair? volume ${volume_uuid} state attached"
   assertEquals 0 $?
 
+  # TODO: temporarily using device /dev/sdc, /dev/vdc
+  # blank device path 
+  blank_dev_path=$(blank_dev_path)
+  [[ -n "${blank_dev_path}" ]]
+  assertEquals 0 $?
+  [[ -n "${blank_dev_path}" ]] || return
+
   # device-check
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-${remote_sudo} lsblk
+${remote_sudo} lsblk -d ${blank_dev_path}
 EOS
   assertEquals 0 $?
 
@@ -41,16 +48,16 @@ EOS
 
   # umount
 
-  # device-check
-  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-${remote_sudo} lsblk
-EOS
-  assertEquals 0 $?
-
   # detach volume to instance
   instance_id=${instance_uuid} run_cmd volume detach ${volume_uuid}
   retry_until "document_pair? volume ${volume_uuid} state available"
   assertEquals 0 $?
+
+  # device-check
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+${remote_sudo} lsblk -d ${blank_dev_path}
+EOS
+  assertNotEquals 0 $?
 
   # delete volume
   run_cmd volume destroy ${volume_uuid}
