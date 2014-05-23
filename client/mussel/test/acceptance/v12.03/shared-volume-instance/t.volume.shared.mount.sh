@@ -36,11 +36,15 @@ function test_mount_shared_volume(){
 
   # device-check
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-${remote_sudo} lsblk -d ${blank_dev_path}
-EOS
+        ${remote_sudo} lsblk -d ${blank_dev_path}
+        EOS
   assertEquals 0 $?
 
   # format
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+        ${remote_sudo} mkfs.ext3 -F -I 128 ${blank_dev_path}
+        EOS
+  assertEquals 0 $?
 
   # mount
 
