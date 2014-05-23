@@ -50,6 +50,12 @@ function render_secg_rule() {
 	EOS
 }
 
+function after_create_instance() {
+  instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
+  wait_for_network_to_be_ready ${instance_ipaddr}
+  wait_for_sshd_to_be_ready    ${instance_ipaddr}
+}
+
 ### shunit2 setup
 
 function oneTimeSetUp() {
