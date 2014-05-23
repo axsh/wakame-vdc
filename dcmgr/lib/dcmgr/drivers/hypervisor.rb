@@ -67,7 +67,7 @@ module Dcmgr
 
       def detach_volume_from_host(hc, volume_id)
       end
-      
+
       def check_instance(uuid)
       end
 
