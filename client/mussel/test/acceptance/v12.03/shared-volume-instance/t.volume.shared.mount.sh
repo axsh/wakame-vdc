@@ -86,7 +86,7 @@ function test_mount_shared_volume_halted_instance(){
 
   # poweroff instance
   run_cmd instance poweroff ${instance_uuid} >/dev/null
-  retry_untill "document_pair? instance ${instance_uuid} state halted"
+  retry_until "document_pair? instance ${instance_uuid} state halted"
   assertEquals 0 $?
 
   # create new volume
@@ -143,7 +143,7 @@ function test_mount_shared_volume_halted_instance(){
 
   # poweroff instance
   run_cmd instance poweroff ${instance_uuid} >/dev/null
-  retry_untill "document_pair? instance ${instance_uuid} state halted"
+  retry_until "document_pair? instance ${instance_uuid} state halted"
   assertEquals 0 $?
 
   # detach volume to instance
