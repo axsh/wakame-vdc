@@ -198,12 +198,6 @@ module Dcmgr::Models
       convert_byte(self[:size], byte_unit)
     end
 
-    def detach_from_instance
-      self.instance_id = nil
-      self.state = STATE_AVAILABLE
-      self.save_changes
-    end
-
     def create_backup_object(account, &blk)
       bo = BackupObject.new(:account_id => (account.nil? ? self.account_id : account.canonical_uuid),
                             :service_type => self.service_type,
