@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files`.split($\)
   spec.require_paths = ["lib"]
   spec.has_rdoc = false
-  spec.add_runtime_dependency 'fluentd', '0.10.39'
+  spec.add_runtime_dependency 'fluentd', '0.10.33'
   spec.add_runtime_dependency 'cassandra'
   spec.add_runtime_dependency 'metric_libs'
   spec.add_runtime_dependency 'dolphin_client'

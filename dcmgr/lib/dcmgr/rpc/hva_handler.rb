@@ -12,6 +12,10 @@ module Dcmgr
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::Helpers::BlockDeviceHelper
 
+<<<<<<< HEAD
+=======
+      module Helpers
+>>>>>>> master
       def detach_volume_from_host(volume)
         tryagain do
           task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -298,7 +302,10 @@ module Dcmgr
                             Task::TaskSession.current
                           end
       end
+    end
 
+      include Helpers
+      
       def wait_volumes_available
         if @inst[:volume].values.all?{|v| v[:state].to_s == 'available'}
           # boot instance becase all volumes are ready.

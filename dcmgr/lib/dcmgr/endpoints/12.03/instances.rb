@@ -197,9 +197,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # param :display_name, string, :optional
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
 
-    if params[:hypervisor]
-      if M::HostNode.online_nodes.filter(:hypervisor=>params[:hypervisor]).empty?
-        raise E::InvalidParameter, :hypervisor
+    if params['hypervisor']
+      if M::HostNode.online_nodes.filter(:hypervisor=>params['hypervisor']).empty?
+        raise E::InvalidParameter, "Unknown/Inactive hypervisor:#{params['hypervisor']}"
       end
     else
       raise E::InvalidParameter, :hypervisor
@@ -678,6 +678,34 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     on_after_commit do
       Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'poweron',
+                             instance.canonical_uuid)
+    end
+    respond_with({:instance_id=>instance.canonical_uuid,
+                 })
+  end
+
+  put '/:id/move' do
+    instance = find_by_uuid(:Instance, params[:id])
+    case instance.state
+    when *C::Instance::MIGRATION_STATES
+    else
+      raise E::InvalidInstanceState, "Unsupported instance state for migration: #{instance.state}"
+    end
+
+    if params['host_node_id']
+      dest_host_node = find_by_uuid(:HostNode, params['host_node_id'])
+      if dest_host_node == instance.host_node
+        raise "Can not move to same host node"
+      end
+    else
+      raise "host_node_id has to be set"
+    end
+
+    instance.state = 'migrating'
+    instance.save_changes
+
+    on_after_commit do
+      Dcmgr.messaging.submit("migration-handle.#{dest_host_node.node_id}", 'run_vol_store',
                              instance.canonical_uuid)
     end
     respond_with({:instance_id=>instance.canonical_uuid,
