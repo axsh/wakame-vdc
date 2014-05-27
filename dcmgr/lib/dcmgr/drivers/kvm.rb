@@ -449,8 +449,8 @@ RUN_SH
                          'ide-drive'
                        end
         drive_idx = drive_index(volume[:guest_device_name])
-
-        option_str = "#{device_model},id=#{volume[:uuid]},drive=#{volume[:uuid]}-drive"
+        
+        option_str = "#{device_model},id=#{volume[:uuid]},drive=#{volume[:uuid]}-drive,serial=#{volume[:uuid]}"
         if hc.inst[:boot_volume_id] == volume[:uuid]
           option_str += ',bootindex=0'
         end
