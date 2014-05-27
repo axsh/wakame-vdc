@@ -12,10 +12,7 @@ module Dcmgr
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::Helpers::BlockDeviceHelper
 
-<<<<<<< HEAD
-=======
       module Helpers
->>>>>>> master
       def detach_volume_from_host(volume)
         tryagain do
           task_session.invoke(@hva_ctx.hypervisor_driver_class,
