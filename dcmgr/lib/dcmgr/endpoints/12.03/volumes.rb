@@ -196,11 +196,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
     v.attach_to_instance(i, guest_device_name)
 
-    if i.state == 'running'
-      # hot add/attach
+    case i.state
+    when C::Instance::STATE_RUNNING
+      # hot attach
       on_after_commit do
         Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
       end
+    when C::Instance::STATE_HALTED
+      # cold attach
+      v.state = C::Volume::STATE_ATTACHED
+      v.save_changes
+    else
+      raise E::InvalidInstanceState, i.state.to_s
     end
 
     respond_with(R::Volume.new(v).generate)
@@ -222,11 +229,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     i = v.instance
     raise E::InvalidInstanceState unless i.live? && ['running', 'halted'].member?(i.state)
 
-    if i.state == 'running'
-      # hot remove/detach
+    case i.state
+    when C::Instance::STATE_RUNNING
+      # hot detach
       on_after_commit do
         Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
       end
+    when C::Instance::STATE_HALTED
+      # cold detach
+      v.detach_from_instance
+      v.state = C::Volume::STATE_AVAILABLE
+      v.save_changes
+    else
+      raise E::InvalidInstanceState, i.state
     end
 
     respond_with(R::Volume.new(v).generate)
