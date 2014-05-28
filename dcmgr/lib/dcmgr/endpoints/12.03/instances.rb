@@ -352,7 +352,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
 
         # common parameters
-        ['guest_device_name', 'display_name', 'description'].each { |pname|
+        ['display_name', 'description'].each { |pname|
           if !vparam[pname].blank?
             vol.send("#{pname}=", vparam[pname])
           end
