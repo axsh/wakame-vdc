@@ -354,6 +354,23 @@ module Dcmgr
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :run_instance, [@hva_ctx])
 
+        # Windows uses passwords instead of RSA keypairs. Therefore we need to
+        # have windows generate the encrypted password and put it in the database
+        if @hva_ctx.inst[:image][:os_type] == Dcmgr::Constants::Image::OS_TYPE_WINDOWS
+          encrypted_password = task_session.invoke(
+            @hva_ctx.hypervisor_driver_class,
+            :get_windows_password_hash,
+            [@hva_ctx]
+          )
+
+          rpc.request(
+            'hva-collector',
+            'update_instance',
+            @inst_id,
+            {encrypted_password: encrypted_password}
+          )
+        end
+
         # Node specific instance_started event for netfilter and general
         # instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started'])

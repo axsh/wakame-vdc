@@ -100,6 +100,39 @@ module Dcmgr
                         end
       end
 
+      def get_windows_password_hash(hc)
+        wait_for_kvm_termination(hc)
+        mount_point = "#{hc.inst_data_dir}/tmp_metadata_mnt"
+
+        FileUtils.mkdir(mount_point)
+        mount_metadata_drive(hc, mount_point)
+        password_hash = read_password_from_metadata_drive(mount_point)
+        umount_metadata_drive(hc, mount_point)
+
+        poweron_instance(hc)
+
+        password_hash
+      end
+
+      def read_password_from_metadata_drive(mount_point)
+        "temporary fake password"
+      end
+
+      def wait_for_kvm_termination(hc)
+        pid = File.read(File.expand_path('kvm.pid', hc.inst_data_dir)).to_i
+        logger.debug "Waiting for instance %s (process %s) to terminate" %
+          [hc.inst[:uuid], pid]
+
+        #TODO: Add a timeout here
+        begin
+         while true
+           sh "ps -p #{pid}"
+           sleep 2
+         end
+        rescue Dcmgr::Helpers::CliHelper::ShellRunner::CommandError
+        end
+      end
+
       def run_instance(hc)
         poweron_instance(hc)
       end
