@@ -81,6 +81,9 @@ module Dcmgr
         param :serial_port_options, :default=>'telnet:127.0.0.1:%d,server,nowait'
         param :vnc_options, :default=>'127.0.0.1:%d'
         param :incoming_ip
+
+        param :windows_configuring_status_sleeptime, default: 2
+        param :windows_configuring_status_timeout, default: 60
       end
 
       # 0x0-2 are reserved by KVM.
@@ -123,13 +126,24 @@ module Dcmgr
         logger.debug "Waiting for instance %s (process %s) to terminate" %
           [hc.inst[:uuid], pid]
 
-        #TODO: Add a timeout here
+        # We are doing this weirdness because we couldn't use Process.waitpid
+        # because kvm is not a child process. This driver creates a run.sh script
+        # and runs that which in turn runs kvm.
+        time_passed = 0
+        sleeptime = driver_configuration.windows_configuring_status_sleeptime
+        timeout = driver_configuration.windows_configuring_status_timeout
         begin
          while true
            sh "ps -p #{pid}"
-           sleep 2
+           sleep sleeptime
+           time_passed += sleeptime
+
+           if time_passed > timeout
+            raise "Windows took too long to configure itself. Waited #{timeout} seconds"
+           end
          end
         rescue Dcmgr::Helpers::CliHelper::ShellRunner::CommandError
+          # If we get this error, it means the kvm process has terminated
         end
       end
 
