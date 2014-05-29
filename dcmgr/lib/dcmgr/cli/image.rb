@@ -42,7 +42,7 @@ module Dcmgr::Cli
             desc: "The model name of the new instance"
           option :parent_image_id, type: :string,
             desc: "The parent image UUID"
-          option :os_type, type: :string, default: C::Image::OS_TYPE_GENERIC,
+          option :os_type, type: :string, default: C::Image::OS_TYPE_LINUX
             desc: "The type of OS installed in this image. (#{OS_TYPES.join(', ')})"
         end
 

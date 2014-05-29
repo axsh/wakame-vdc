@@ -3,7 +3,7 @@
 Sequel.migration do
   up do
     alter_table(:images) do
-      add_column :os_type, "varchar(255)", null: false, default: "generic"
+      add_column :os_type, "varchar(255)", null: false, default: "linux"
     end
 
     alter_table(:instances) do

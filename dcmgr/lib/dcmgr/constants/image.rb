@@ -19,9 +19,9 @@ module Dcmgr::Constants
 
     BOOT_DEV_FLAGS = [BOOT_DEV_SAN, BOOT_DEV_LOCAL].freeze
 
-    OS_TYPE_GENERIC = 'generic'.freeze
+    OS_TYPE_LINUX = 'linux'.freeze
     OS_TYPE_WINDOWS = 'windows'.freeze
-    OS_TYPES = [OS_TYPE_GENERIC, OS_TYPE_WINDOWS].freeze
+    OS_TYPES = [OS_TYPE_LINUX, OS_TYPE_WINDOWS].freeze
 
     CLONED_FIELDS_AT_TRANSFER=[:account_id,
                                :display_name,
