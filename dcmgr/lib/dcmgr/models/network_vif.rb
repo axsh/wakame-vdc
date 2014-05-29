@@ -166,6 +166,9 @@ module Dcmgr::Models
     end
 
     def before_destroy
+      if self.instance
+        raise "The interface is still attached to the instance: #{instance.canonical_uuid}"
+      end
       maclease = MacLease.find(:mac_addr=>self.mac_addr.hex)
       if maclease
         maclease.destroy
