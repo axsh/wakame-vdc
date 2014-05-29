@@ -32,6 +32,7 @@ module Dcmgr
         sh("truncate --size=#{volume[:size]} '#{volume_path}'")
       end
 
+      #TODO: Raise an error so that instances don't start when the volume wasn't found on disk
       def deploy_volume(hva_ctx, volume, backup_object, opts={:cache=>false})
         @ctx = hva_ctx
         @volume = volume
