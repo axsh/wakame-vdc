@@ -42,7 +42,7 @@ module Dcmgr::Cli
             desc: "The model name of the new instance"
           option :parent_image_id, type: :string,
             desc: "The parent image UUID"
-          option :os_type, type: :string, default: C::Image::OS_TYPE_LINUX
+          option :os_type, type: :string, default: C::Image::OS_TYPE_LINUX,
             desc: "The type of OS installed in this image. (#{OS_TYPES.join(', ')})"
         end
 
@@ -109,9 +109,11 @@ module Dcmgr::Cli
     method_option :is_cacheable, :type => :boolean, :desc =>"A flag that determines whether the new machine image is cacheable or not"
     method_option :instance_model_name, :type => :string, :desc => "The model name of the new instance"
     method_option :parent_image_id, :type => :string, :desc => "The parent image UUID"
+    method_option :os_type, type: :string, default: C::Image::OS_TYPE_LINUX,
+      desc: "The type of OS installed in this image. (#{OS_TYPES.join(', ')})"
     def modify(uuid)
       UnknownUUIDError.raise(uuid) if M::Image[uuid].nil?
-      UnsupportedArchError.raise(options[:arch]) unless C::HostNode::SUPPORTED_ARCH.member?(options[:arch])
+      UnsupportedArchError.raise(options[:arch]) if options[:arch] && !ARCHES.member?(options[:arch])
 
       fields = options.dup
 
