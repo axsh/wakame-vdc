@@ -111,7 +111,7 @@ for meta in $metalst; do
       --container-format="$container_format" \
       --description="'kvm 32bit'"
 
-    os_type=${os_type:-'generic'}
+    os_type=${os_type:-'linux'}
 
     case $storetype in
       "local")
