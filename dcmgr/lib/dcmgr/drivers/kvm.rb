@@ -289,7 +289,7 @@ RUN_SH
       module RHEL6
         def attach_volume_to_guest(hc)
           connect_monitor(hc) { |t|
-            drive_opts = with_drive_extra_opts("file=#{hc.volume_path(hc.vol)},id=#{hc.vol[:uuid]}-drive")
+            drive_opts = with_drive_extra_opts("file=#{hc.volume_path(hc.vol)},id=#{hc.vol[:uuid]}-drive", hc.vol)
             t.cmd("__com.redhat_drive_add #{drive_opts}")
             t.cmd("device_add " + qemu_drive_device_options(hc, hc.vol))
           }
@@ -510,7 +510,7 @@ RUN_SH
                        end
         drive_idx = drive_index(volume[:guest_device_name])
         
-        option_str = "#{device_model},id=#{volume[:uuid]},drive=#{volume[:uuid]}-drive,serial=#{volume[:uuid]}"
+        option_str = "#{device_model},id=#{volume[:uuid]},drive=#{volume[:uuid]}-drive"
         if hc.inst[:boot_volume_id] == volume[:uuid]
           option_str += ',bootindex=0'
         end
@@ -552,14 +552,15 @@ RUN_SH
         end
 
         inst[:volume].each { |vol_id, v|
-          cmd << with_drive_extra_opts("-drive file=%s,id=#{v[:uuid]}-drive,if=none")
+          cmd << "-drive " + with_drive_extra_opts("file=%s,id=#{v[:uuid]}-drive,if=none", v)
           args << hc.volume_path(v)
           cmd << "-device " + qemu_drive_device_options(hc, v)
           # attach metadata drive
           if inst[:boot_volume_id] == v[:uuid]
-            cmd << with_drive_extra_opts("-drive file=#{hc.metadata_img_path},id=metadata-drive,if=none")
+            metadata_drive_volume_hash = {guest_device_name: v[:guest_device_name].succ, uuid: 'metadata'}
+            cmd << "-drive " + with_drive_extra_opts("file=#{hc.metadata_img_path},id=metadata-drive,if=none", metadata_drive_volume_hash)
             # guess secondary drive device name for metadata drive.
-            cmd << "-device " + qemu_drive_device_options(hc, {guest_device_name: v[:guest_device_name].succ, uuid: 'metadata'})
+            cmd << "-device " + qemu_drive_device_options(hc, metadata_drive_volume_hash)
           end
         }
 
@@ -603,8 +604,8 @@ RUN_SH
 
       # Add extra options to -drive parameter.
       # mainly for none=cache does not work some filesystems without O_DIRECT.
-      def with_drive_extra_opts(base)
-        [base, driver_configuration.local_store.drive_extra_options].compact.join(',')
+      def with_drive_extra_opts(base, volume)
+        [base, "serial=#{volume[:uuid]}", driver_configuration.local_store.drive_extra_options].compact.join(',')
       end
     end
   end
