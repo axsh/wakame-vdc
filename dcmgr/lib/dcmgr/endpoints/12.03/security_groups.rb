@@ -73,7 +73,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
         g.set_label(name, value)
       end
     end
-    
+
     respond_with(R::SecurityGroup.new(g).generate)
   end
 

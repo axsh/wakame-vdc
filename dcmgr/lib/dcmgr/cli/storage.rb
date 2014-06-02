@@ -16,7 +16,7 @@ class Storage < Base
     def self.basename
       "#{super()} #{Storage.namespace} #{self.namespace}"
     end
-    
+
     desc "add <node id> [options]", "Register a new ISCSI storage node"
     option :uuid, :type => :string, :desc => "The uuid for the new storage node"
     option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
@@ -30,7 +30,7 @@ class Storage < Base
         :display_name=>options[:display_name],
       }
       fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
-      
+
       say super(M::IscsiStorageNode,fields)
     end
 
@@ -60,7 +60,7 @@ class Storage < Base
     def self.basename
       "#{super()} #{Storage.namespace} #{self.namespace}"
     end
-    
+
     desc "add <node id> [options]", "Register a new NFS storage node"
     option :uuid, :type => :string, :desc => "The uuid for the new storage node"
     option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"

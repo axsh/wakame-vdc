@@ -8,7 +8,7 @@ module Dcmgr
       class LeastUsage < HostNodeScheduler
         include Dcmgr::Logger
         include AllowOverCommit
-        
+
         configuration do
           SORT_PRIORITY_KEYS=[:cpu, :memory].freeze
 

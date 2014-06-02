@@ -17,9 +17,9 @@ module Dcmgr
         @hva_ctx.logger.info("Booting #{@inst_id}")
         raise "Invalid instance state: #{@inst[:state]}" unless %w(migrating).member?(@inst[:state].to_s)
         #if !@inst[:volume].values.all? {|v| v[:state].to_s == 'attached' }
-        ## 
+        ##
         #end
-        
+
         # setup vm data folder
         FileUtils.mkdir(@hva_ctx.inst_data_dir) unless File.exists?(@hva_ctx.inst_data_dir)
 
@@ -31,7 +31,7 @@ module Dcmgr
 
           unless @hva_ctx.inst[:volume][volume_id][:is_local_volume]
             @hva_ctx.logger.info("Attaching #{volume_id} to host node #{@node.node_id}")
-            
+
             task_session.invoke(@hva_ctx.hypervisor_driver_class,
                                 :attach_volume_to_host, [@hva_ctx, volume_id])
           end
@@ -50,7 +50,7 @@ module Dcmgr
       }, proc {
         # incoming instance needs to care for local resources,
         # process and local files, as it is not tracked instance until
-        # migration process completes. 
+        # migration process completes.
         ignore_error { terminate_instance(false) }
         ignore_error { update_instance_state({:state=>:running}) }
       }
@@ -71,7 +71,7 @@ module Dcmgr
 
         # shutdown source instance.
         terminate_instance(false)
-        
+
         rpc.request('hva-collector', 'switch_instance_host_node', @inst_id, @dest_node_id)
 
         update_instance_state({:state=>:running})

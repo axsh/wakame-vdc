@@ -75,7 +75,7 @@ module Dcmgr::Models
         # We don't validate anything beyond the above when the network
         # route is being deleted.
         next if @create_options.nil?
-        
+
         options = @create_options[arg]
 
         current_vif = self.send((current_vif_sym = "#{arg}_vif".to_sym))
@@ -94,11 +94,11 @@ module Dcmgr::Models
       if self.inner_vif && self.outer_vif
         errors.add(:inner_vif, "Cannot create route between the same network vif.") if self.inner_vif == self.outer_vif
       end
-      
+
       if self.inner_network && self.outer_network
         errors.add(:inner_network, "Cannot create route between the same network.") if self.inner_network == self.outer_network
       end
-      
+
       super
     end
 
@@ -118,7 +118,7 @@ module Dcmgr::Models
 
           if options[:find_service]
             vifs = self.get_network_services(options[:network], options[:find_service], options[:network_vif])
-            options[:network_vif] = vifs.first 
+            options[:network_vif] = vifs.first
           end
 
           if options[:find_ipv4] == :vif_first

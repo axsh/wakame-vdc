@@ -23,7 +23,7 @@ Sequel.migration do
 
       column :ip_pool_id, "int(11)", :null=>false
       column :dc_network_id, "int(11)", :null=>false
-      
+
       index [:ip_pool_id, :dc_network_id], :unique=>true
     end
 
@@ -40,7 +40,7 @@ Sequel.migration do
 
       index [:uuid], :unique=>true, :name=>:uuid
       index [:deleted_at]
-    end      
+    end
 
     create_table(:network_routes) do
       primary_key :id, :type=>"int(11)"

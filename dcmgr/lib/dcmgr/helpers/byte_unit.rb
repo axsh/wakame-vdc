@@ -33,7 +33,7 @@ module Dcmgr::Helpers
     }.freeze
 
     UNIT_SUFFIX=UNIT_PATTERNS.select{|k,v| k.size == 1 }.invert.freeze
-    
+
     # 30MB in Byte
     #   byte_unit_convert(30, ByteUnit::KB, ByteUnit::B)
     # 30MB in KB

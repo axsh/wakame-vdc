@@ -2,7 +2,7 @@
 
 module Dcmgr
   module Messaging
-    
+
     def self.job_queue
       JobQueue.new_backend
     end
@@ -11,7 +11,7 @@ module Dcmgr
     # Dcmgr::Messaging::JobQueue.backend(:Sequel)
     # Dcmgr::Messaging::JobQueue.backend(:AMQPClient, @node)
     # Dcmgr::Messaging.job_queue.submit('q1', xxx)
-    # 
+    #
     class JobQueue
       def self.backend(klass, *args)
         klass = self.const_get(klass) if klass.is_a?(Symbol)
@@ -24,13 +24,13 @@ module Dcmgr
         @backend_class || raise("Undefined JobQueue backend class")
         @backend_class.new(*@new_args)
       end
-      
+
       def submit(queue_name, resource_uuid, params, opts={}); end
       def pop(queue_name, worker_id, opts={}); end
       def cancel(job_id); end
       def finish_success(job_id, finish_message=nil); end
       def finish_fail(job_id, failure_reason); end
-      
+
       class Sequel < self
         def submit(queue_name, resource_uuid, params, opts={})
           opts = {:parent_id=>nil}.merge(opts)
@@ -68,7 +68,7 @@ module Dcmgr
           raise ArgumentError if !node.is_a?(Isono::Node)
           @node = node
         end
-        
+
         def submit(queue_name, resource_uuid, params, opts={}, &blk)
           rpc.request('jobqueue-proxy', 'submit',
                       queue_name, resource_uuid, params, opts, &blk)

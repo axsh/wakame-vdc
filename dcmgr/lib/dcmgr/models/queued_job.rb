@@ -10,7 +10,7 @@ module Dcmgr::Models
     plugin :serialization
     serialize_attributes :yaml, :params
     serialize_attributes :yaml, :finish_message
-    
+
     def validate
 
       # validations for null allowed columns
@@ -43,7 +43,7 @@ module Dcmgr::Models
     #    (default 0 = try default retry count set to each queue worker.)
     def self.submit(queue_name, resource_uuid, params, opts=nil)
       opts = {:retry_max=>0}.merge(opts || {})
-      
+
       db.transaction do
         job = create(:queue_name=>queue_name,
                      :state=>'pending',
@@ -71,7 +71,7 @@ module Dcmgr::Models
               job.retry_max = opts[:retry_max_if_zero].to_i
             end
           end
-          
+
           # increment at begging of the job.
           job.retry_count += 1
           job.save_changes
@@ -121,7 +121,7 @@ module Dcmgr::Models
       end
       self.save_changes
     end
-    
+
     # Notify that the job is finished successfully.
     def finish_fail(failure_reason)
       raise "Already terminated" if finished?
@@ -138,7 +138,7 @@ module Dcmgr::Models
     end
 
     private
-    # set common fields at finish state. 
+    # set common fields at finish state.
     def finish_entry(finish_status)
       self.state = 'finished'
       self.finished_at = Time.now.utc

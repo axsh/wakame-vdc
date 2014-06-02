@@ -19,7 +19,7 @@ module Dcmgr::Models
         T_STRING
       end
     end
-    
+
     def self.typecast_value_column(value)
       pair = {}
       t = typecast_const(value)
@@ -27,12 +27,12 @@ module Dcmgr::Models
       pair
     end
 
-    # dataset 
+    # dataset
     module LabelDatasetMethods
       def label(name)
         self.filter(:name=>name).first
       end
-      
+
       def set_label(name, value)
         l = self.label(name)
         if l
@@ -65,7 +65,7 @@ module Dcmgr::Models
         }
       end
     end
-    
+
     def value()
       t = case self.value_type
           when T_STRING[0]

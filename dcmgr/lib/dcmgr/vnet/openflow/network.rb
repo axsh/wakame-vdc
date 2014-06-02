@@ -119,7 +119,7 @@ module Dcmgr::VNet::OpenFlow
         icmp_handler.add(service.mac, service.ip, service)
       end
     end
-    
+
     def delete_service(switch, service_map)
       service = self.services.delete(service_map[:name].to_sym)
 

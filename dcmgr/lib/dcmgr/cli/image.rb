@@ -178,7 +178,7 @@ __END
       if options[:acpi]
         img.set_feature(:acpi, options[:acpi])
       end
-      
+
       img.save_changes
     end
 

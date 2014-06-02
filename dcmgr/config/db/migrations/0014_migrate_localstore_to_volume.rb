@@ -101,7 +101,7 @@ Sequel.migration do
             if volume[:boot_dev] == 1
               db[:instances].filter(:id=>instance[:id]).update(:boot_volume_id=>"vol-#{volume[:uuid]}")
             end
-          
+
             trans_info = YAML.load(volume[:transport_information])
             db[:iscsi_volumes].insert(:id=>volume[:id],
                                       :sotrage_node_id => volume[:storage_node_id],

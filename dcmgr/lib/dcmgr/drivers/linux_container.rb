@@ -25,7 +25,7 @@ module Dcmgr
       def self.policy
         Policy.new
       end
-      
+
       module SkipCheckHelper
         def self.stamp_path(instance_uuid)
           File.expand_path("#{instance_uuid}/skip_check.stamp", Dcmgr.conf.vm_data_dir)
@@ -46,7 +46,7 @@ module Dcmgr
           File.unlink(stamp_path(instance_uuid)) rescue nil
         end
       end
-      
+
       protected
       def check_cgroup_mount
         File.readlines('/proc/mounts').any? {|l| l.split(/\s+/)[2] == 'cgroup' }
@@ -64,7 +64,7 @@ module Dcmgr
           ctx.logger.debug("unmounted root mount directory #{mount_path}")
         end
       end
-      
+
       def mount_root_image(ctx, mount_path)
         # check mount directory
         raise "Mount point for root image does not exist: #{mount_path}" unless File.directory?(mount_path)
@@ -132,7 +132,7 @@ module Dcmgr
             sh(cmd, args)
           end
         end
-        
+
       end
     end
   end
