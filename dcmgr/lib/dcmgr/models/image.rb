@@ -7,9 +7,9 @@ module Dcmgr::Models
     accept_service_type
 
     include Dcmgr::Constants::Image
-    
+
     plugin Plugins::ResourceLabel
-      
+
     many_to_one :backup_object, :class=>BackupObject, :dataset=> lambda { BackupObject.filter(:uuid=>self.backup_object_id[BackupObject.uuid_prefix.size + 1, 255]) }
 
     subset(:alives, {:deleted_at => nil})

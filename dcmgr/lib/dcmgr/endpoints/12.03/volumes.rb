@@ -266,9 +266,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     if @volume.instance && !['running', 'halted'].member?(@volume.instance.state.to_s)
       raise E::InvalidInstanceState, @volume.instance.canonical_uuid
     end
-    
+
     bkst = find_target_backup_storage(@volume.service_type)
-    
+
     bo = @volume.create_backup_object(@account) do |b|
       b.state = C::BackupObject::STATE_PENDING
       if bkst

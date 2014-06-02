@@ -8,10 +8,10 @@ module Dcmgr
 
       def deploy_blank_volume(hva_ctx, volume, opts={})
       end
-      
+
       def delete_volume(hva_ctx, volume)
       end
-      
+
       def deploy_image(inst,ctx)
       end
 

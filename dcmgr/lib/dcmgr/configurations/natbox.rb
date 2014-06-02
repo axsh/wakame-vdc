@@ -3,7 +3,7 @@
 require 'fuguta'
 
 module Dcmgr
-  
+
   module Configurations
 
     class Natbox < Fuguta::Configuration

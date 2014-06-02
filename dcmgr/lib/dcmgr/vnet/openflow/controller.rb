@@ -54,7 +54,7 @@ module Dcmgr
 
           # Sometimes ovs changes the datapath ID and reconnects.
           old_switch = switches.find { |dpid,switch| switch.switch_name == bridge_name }
-          
+
           if old_switch
             logger.info "found old bridge: name:#{old_switch[1].switch_name} datapath_id:%016x" % old_switch[1].datapath.datapath_id
 

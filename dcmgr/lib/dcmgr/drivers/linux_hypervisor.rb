@@ -196,7 +196,7 @@ module Dcmgr
           sh("/sbin/udevadm settle")
         end
       end
-      
+
       protected
 
       # cgroup_set('blkio', "0") do

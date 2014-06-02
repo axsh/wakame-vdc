@@ -20,7 +20,7 @@ module Dcmgr
           end
         end
       end
-      
+
       # download and setup single image file.
       def deploy_blank_volume(hva_ctx, volume, opts={})
         @ctx = hva_ctx

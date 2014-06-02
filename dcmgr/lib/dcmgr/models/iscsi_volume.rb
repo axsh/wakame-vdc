@@ -9,7 +9,7 @@ module Dcmgr::Models
     one_to_one :volume, :key=>:id
 
     alias storage_node iscsi_storage_node
-    
+
     def to_hash
       super().to_hash.merge(:iscsi_storage_node=>iscsi_storage_node.to_hash,
                             :storage_node=>iscsi_storage_node.to_hash)
@@ -20,6 +20,6 @@ module Dcmgr::Models
       self.path ||= self.volume.canonical_uuid
       super
     end
-    
+
   end
 end

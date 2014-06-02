@@ -477,7 +477,7 @@ module Dcmgr::Models
           (superclass.track_columns if superclass.respond_to?(:track_columns)) ||
           (@track_columns = Hash.new)
       end
-      
+
       def track_column_set(event_name, columns)
         track_columns[event_name] = columns
       end
@@ -513,7 +513,7 @@ module Dcmgr::Models
 
   module Plugins
     M = Dcmgr::Models
-    
+
     module ResourceLabel
       def self.apply(model)
         model.one_to_many :resource_labels, :class=>M::ResourceLabel, :key=>:resource_uuid, :primary_key=>:canonical_uuid, :extend=>M::ResourceLabel::LabelDatasetMethods
@@ -534,7 +534,7 @@ module Dcmgr::Models
         def label(name)
           self.resource_labels_dataset.filter(:name=>name).first
         end
-        
+
         def set_label(name, value, value_type=nil)
           l = label(name)
           if value_type
@@ -544,7 +544,7 @@ module Dcmgr::Models
               l.save_changes
             else
               self.add_resource_label({:name=>name}.merge({value_type.to_sym=>value}))
-            end            
+            end
           else
             if l
               l.value = value
@@ -554,7 +554,7 @@ module Dcmgr::Models
             end
           end
         end
-        
+
         def unset_label(name)
           l = label(name)
           l.destroy if l

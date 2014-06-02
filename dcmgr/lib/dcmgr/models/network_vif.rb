@@ -253,7 +253,7 @@ module Dcmgr::Models
       end
 
       return nil unless lease.network == network
-      
+
       lease.attach_vif(self)
       lease
     end

@@ -66,7 +66,7 @@ module Dcmgr
         def logger
           @subject.logger
         end
-      
+
         private
         def dump_cache(cache_method_name, cache_args)
           case @dump_dst

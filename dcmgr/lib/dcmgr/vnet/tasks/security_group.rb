@@ -12,7 +12,7 @@ module Dcmgr
           super()
 
           @vnic = vnic
-          
+
           # Parse the rules in case they are referencing other security groups
           parsed_rules = group_map[:rules].map { |rule|
             ref_group_id = rule[:ip_source].scan(/sg-\w+/).first
@@ -46,7 +46,7 @@ module Dcmgr
             rescue ArgumentError => e
               STDERR.puts e
             end
-            
+
             case rule[:ip_protocol]
             when 'tcp', 'udp'
               if rule[:ip_fport] == rule[:ip_tport]

@@ -12,7 +12,7 @@ module Dcmgr
       end
 
       template_base_dir 'lxc'
-      
+
       def_configuration
 
       # Decorator pattern class of Rpc::HvaHandler::HvaContext.
@@ -45,7 +45,7 @@ module Dcmgr
         # First arugment is expected a HvaContext.
         @hc = @args.first
       end
-      
+
       def initialize
         @lxc_version = `lxc-version`.chomp.split(': ').last
         logger.info("lxc-version: #{@lxc_version}")
@@ -54,7 +54,7 @@ module Dcmgr
           raise "cgroup filesystem is not mounted."
         end
       end
-      
+
       def run_instance(ctx)
         # run lxc
         generate_config(ctx)
@@ -95,7 +95,7 @@ module Dcmgr
         umount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
         umount_root_image(ctx, ctx.root_mount_path)
       end
-      
+
       def attach_volume_to_guest(ctx)
         sddev = File.expand_path(File.readlink(ctx.os_devpath), '/dev/disk/by-path')
 
@@ -156,7 +156,7 @@ module Dcmgr
         render_template('lxc.conf', ctx.lxc_conf_path, binding)
       end
 
-      
+
       Task::Tasklet.register(self) {
         self.new
       }

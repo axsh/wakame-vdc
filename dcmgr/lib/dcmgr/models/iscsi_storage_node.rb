@@ -12,7 +12,7 @@ module Dcmgr::Models
     def volumes_dataset
       self.class.filter(:id=>self.pk).volumes
     end
- 
+
     def associate_volume(volume, &blk)
       raise ArgumentError, "Invalid class: #{volume.class}" unless volume.class == Volume
       raise ArgumentError, "#{volume.canonical_uuid} has already been associated." unless volume.volume_type.nil?

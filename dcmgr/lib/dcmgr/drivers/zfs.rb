@@ -23,7 +23,7 @@ module Dcmgr
 
         def validate(errors)
           super
-          
+
           if config[:zpool_base_path].nil?
             errors.add("zpool_base_path is unset.")
           elsif config[:zpool_base_path] =~ %r{^/}
@@ -55,7 +55,7 @@ module Dcmgr
 
             # create full copy volume from snapshot
             sh("#{driver_configuration.zfs_path} send %s | #{driver_configuration.zfs_path} recv %s", [zsnap_path(snap_path), volume_path()])
-            
+
             zfs("rollback -r %s@%s", [volume_path(), snap_path.split('@').last])
             zfs("destroy %s@%s", [volume_path(), snap_path.split('@').last])
           else
@@ -111,7 +111,7 @@ module Dcmgr
         # guess absolute path from backup object UUID only.
         #   zpool/vol-xxxx@bo-xxxx
         #
-        
+
         def zsnap_path(snap_path)
           File.join(driver_configuration.zpool_base_path, snap_path)
         end

@@ -17,7 +17,7 @@ module Dcmgr::Drivers
         end
       end
     end
-    
+
     ITEMS = {
       'PING' => {
         :monitor_type => :vif,

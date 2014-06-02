@@ -9,7 +9,7 @@ module Dcmgr::Models
     accept_service_type
 
     include Dcmgr::Constants::Instance
-    
+
     many_to_one :image
     many_to_one :host_node
     one_to_many :volumes, :before_add=>lambda { |instance, volume|
@@ -32,7 +32,7 @@ module Dcmgr::Models
     plugin ArchiveChangedColumn, :histories
     plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size]
     plugin Plugins::ResourceLabel
-      
+
     subset(:lives, {:terminated_at => nil})
     subset(:alives, {:terminated_at => nil})
     subset(:runnings, {:state => STATE_RUNNING})
@@ -141,7 +141,7 @@ module Dcmgr::Models
       unless self.volumes.all? { |v| v.derived_backup_objects_dataset.exclude(:state=>Dcmgr::Const::BackupObject::ALLOW_INSTANCE_DESTROY_STATES).empty? }
         return false
       end
-      
+
       HostnameLease.filter(:account_id=>self.account_id, :hostname=>self.hostname).destroy
       self.instance_nic.each { |o| o.destroy }
       self.volumes_dataset.attached.each { |v|
@@ -388,7 +388,7 @@ module Dcmgr::Models
       # Need to create boot volume first becase boot_volume_id is not
       # null column.
       boot_volume = image.create_volume(account)
-      
+
       instance = self.new &blk
       instance.account_id = account.canonical_uuid
       instance.image = image
@@ -402,7 +402,7 @@ module Dcmgr::Models
       instance.add_volume(boot_volume)
       boot_volume.state = Dcmgr::Constants::Volume::STATE_SCHEDULING
       boot_volume.save_changes
-      
+
       instance
     end
 
@@ -437,11 +437,11 @@ module Dcmgr::Models
       return {} if labels.empty?
 
       hlist={}
-     
+
       labels.each { |l|
         dummy, dummy, uuid, key = l.name.split('.', 4)
         h = (hlist[uuid] ||= {:enabled=>false, :title=>nil, :params=>{}})
-        
+
         h[key.to_sym] = case key
                         when 'enabled'
                           l.value == 'true'
@@ -453,7 +453,7 @@ module Dcmgr::Models
       }
       hlist
     end
-    
+
     # Add monitor item as resource label.
     def add_monitor_item(title, enabled, params={})
       # generate unique UUID uniqueness from instance's uuid.
@@ -464,7 +464,7 @@ module Dcmgr::Models
         retry_count -= 1
       end while !M::ResourceLabel.dataset.filter(:name=>"monitoring.items.#{uuid}.title").empty? && retry_count > 0
       raise "Failed to generate UUID for new monitor item." if retry_count <= 0
-      
+
       set_label("monitoring.items.#{uuid}.title", title.to_s)
       set_label("monitoring.items.#{uuid}.enabled", enabled.to_s)
       set_label("monitoring.items.#{uuid}.params", ::MultiJson.dump(params))
@@ -483,7 +483,7 @@ module Dcmgr::Models
       end
       monitor_item(uuid)
     end
-    
+
     # Delete monitor item from resource label.
     def delete_monitor_item(uuid)
       item = monitor_item(uuid)

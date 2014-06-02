@@ -30,7 +30,7 @@ module Dcmgr
         if @hva.instance_variable_get(:@os_devpath)
           return @hva.instance_variable_get(:@os_devpath)
         end
-        
+
         boot_vol = inst[:volume][inst[:boot_volume_id]]
         raise "Unknown boot volume details: #{inst[:boot_volume_id]}" if boot_vol.nil?
 
@@ -86,7 +86,7 @@ module Dcmgr
       def dump_instance_parameter(rel_path, buf)
         # ignore error when try to put file to deleted instance.
         return self unless File.directory?(self.inst_data_dir())
-        
+
         File.open(File.expand_path(rel_path, self.inst_data_dir()), 'w'){ |f|
           f.puts(buf)
         }

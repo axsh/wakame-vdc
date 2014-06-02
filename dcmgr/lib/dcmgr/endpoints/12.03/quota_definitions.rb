@@ -44,7 +44,7 @@ Sinatra::QuotaEvaluation.evaluators do
     end
 
     evaluate do |fetch_value|
-      quota_value.to_i <= fetch_value 
+      quota_value.to_i <= fetch_value
     end
   end
   quota_type 'instance.backup_operations_per_hour' do
