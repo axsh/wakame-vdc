@@ -10,11 +10,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
   register V1203::Helpers::ResourceLabel
   enable_resource_label(M::Image)
 
-  post do
-    # description 'Register new machine image'
-    raise NotImplementedError
-  end
-
   get do
     ds = M::Image.dataset
 

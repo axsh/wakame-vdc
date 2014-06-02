@@ -61,7 +61,8 @@ module Dcmgr::Models
 
       errors.add(:size, "Invalid volume size: #{self.size}") if self.size < 0
 
-      if self.instance
+      # test column value directly because associated model object might be cached.
+      if !self.instance_id.nil?
         # check if volume parameters are conformant for hypervisor.
         hypervisor_class = Dcmgr::Drivers::Hypervisor.driver_class(self.instance.hypervisor.to_sym)
         hypervisor_class.policy.validate_volume_model(self)
@@ -196,12 +197,6 @@ module Dcmgr::Models
 
     def size(byte_unit=B)
       convert_byte(self[:size], byte_unit)
-    end
-
-    def detach_from_instance
-      self.instance_id = nil
-      self.state = STATE_AVAILABLE
-      self.save_changes
     end
 
     def create_backup_object(account, &blk)

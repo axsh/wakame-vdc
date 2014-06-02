@@ -31,7 +31,8 @@ module Dcmgr
         # create blank image file.
         sh("truncate --size=#{volume[:size]} '#{volume_path}'")
       end
-      
+
+      #TODO: Raise an error so that instances don't start when the volume wasn't found on disk
       def deploy_volume(hva_ctx, volume, backup_object, opts={:cache=>false})
         @ctx = hva_ctx
         @volume = volume
@@ -45,13 +46,15 @@ module Dcmgr
 
         @bkst_drv_class = BackupStorage.driver_class(backup_object[:backup_storage][:storage_type])
 
-        logger.info("Deploying image: #{@ctx.inst[:image][:uuid]} from #{@ctx.inst[:image][:backup_object][:uri]} to #{volume_path}")
+        logger.info "Deploying image: %s from %s to #{volume_path}" %
+          [@ctx.inst[:image][:uuid], @ctx.inst[:image][:backup_object][:uri]]
+
         # cmd_tuple has ["", []] array.
         cmd_tuple = if Dcmgr.conf.local_store.enable_image_caching && opts[:cache]
                       FileUtils.mkdir_p(vmimg_cache_dir) unless File.exist?(vmimg_cache_dir)
                       download_to_local_cache(backup_object, volume)
                       logger.debug("Copying #{vmimg_cache_path(@volume[:volume_device][:path])} to #{volume_path}")
-                      
+
                       ["cat %s", [vmimg_cache_path(@volume[:volume_device][:path])]]
                     else
                       if @bkst_drv_class.include?(BackupStorage::CommandAPI)
@@ -64,11 +67,11 @@ module Dcmgr
                         invoke_task(@bkst_drv_class,
                                     :download, [backup_object, vmimg_tmp_path(@volume[:volume_device][:path])])
                         logger.debug("Copying #{vmimg_tmp_path(@volume[:volume_device][:path])} to #{volume_path}")
-                        
+
                         ["cat %s", [vmimg_tmp_path(@volume[:volume_device][:path])]]
                       end
                     end
-      
+
 
         pv_command = "pv -W -f -p -s #{backup_object[:size]} |"
 
@@ -108,7 +111,7 @@ module Dcmgr
       ensure
         File.unlink(vmimg_tmp_path(@volume[:volume_device][:path])) rescue nil
       end
-      
+
       def deploy_image(inst, ctx)
         @ctx = ctx
         # setup vm data folder
@@ -133,7 +136,7 @@ module Dcmgr
 
         @snapshot_path = take_snapshot_for_backup(@ctx.volume_path(volume))
         logger.info("#{@snapshot_path}")
-        
+
         # upload image file
         if @bkst_drv_class.include?(BackupStorage::CommandAPI)
           archive_from_snapshot(@ctx, @snapshot_path) do |cmd_tuple, chksum_path, size_path|
@@ -157,7 +160,7 @@ module Dcmgr
               rescue EOFError
                 # ignore this error
               end
-              
+
             end
             unless r.exitstatus == 0
               raise "Failed to run archive & upload command: exitcode=#{r.exitstatus}\n#{stderr_buf}"
@@ -213,7 +216,7 @@ module Dcmgr
       ensure
         clean_snapshot_for_backup()
       end
-      
+
       def upload_image(inst, ctx, bo, evcb)
         @ctx = ctx
         @bo = bo
@@ -223,7 +226,7 @@ module Dcmgr
 
         @snapshot_path = take_snapshot_for_backup(@ctx.os_devpath)
         logger.info("#{@snapshot_path}")
-        
+
         # upload image file
         if @bkst_drv_class.include?(BackupStorage::CommandAPI)
           archive_from_snapshot(@ctx, @snapshot_path) do |cmd_tuple, chksum_path, size_path|
@@ -247,7 +250,7 @@ module Dcmgr
               rescue EOFError
                 # ignore this error
               end
-              
+
             end
             unless r.exitstatus == 0
               raise "Failed to run archive & upload command: exitcode=#{r.exitstatus}\n#{stderr_buf}"
