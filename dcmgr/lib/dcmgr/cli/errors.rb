@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Cli
+  C = Dcmgr::Constants
   class Error < StandardError
     attr_reader :exit_code
     def initialize(msg, exit_code=1)
@@ -43,6 +44,28 @@ module Dcmgr::Cli
     end
 
     def self.raise(model,exit_code=100)
+      super
+    end
+  end
+
+  class InvalidStateError < Error
+    def initialize(state, exit_code = 100)
+      possible_states = C::Image::STATES
+      super("Not a valid state: '#{state}'. Must be one of (#{possible_states.join(", ")})")
+    end
+
+    def self.raise(state, exit_code=100)
+      super
+    end
+  end
+
+  class InvalidOSTypeError < Error
+    def initialize(os_type, exit_code = 100)
+      possible_os_types = C::Image::OS_TYPES
+      super("Not a valid os_type: '#{os_type}'. Must be one of (#{possible_os_types.join(", ")})")
+    end
+
+    def self.raise(os_type, exit_code=100)
       super
     end
   end

@@ -8,7 +8,7 @@ module Dcmgr
     class LocalStoreHandler < HvaHandler
       include Dcmgr::Logger
       C = Dcmgr::Constants
-      
+
       concurrency Dcmgr.conf.local_store.thread_concurrency.to_i
       job_thread_pool Isono::ThreadPool.new(Dcmgr.conf.local_store.thread_concurrency.to_i, "LocalStore")
 
@@ -24,7 +24,7 @@ module Dcmgr
         hv_klass = Drivers::Hypervisor.driver_class(@inst[:host_node][:hypervisor])
         hv_klass.local_store_class
       end
-      
+
       def deploy_local_volume(volume_hash)
         v = volume_hash
         opts = {}
@@ -39,7 +39,7 @@ module Dcmgr
           task_session.invoke(local_store_driver_class,
                               :deploy_blank_volume, [@hva_ctx, v])
         end
-        
+
         update_volume_state(v[:uuid], {:state=>C::Volume::STATE_AVAILABLE}, 'hva/volume_available')
       end
 
@@ -56,7 +56,7 @@ module Dcmgr
         raise "Invalid volume state: #{@inst[:state]}" unless C::Volume::DEPLOY_STATES.member?(@volume[:state].to_s)
 
         deploy_local_volume(@volume)
-        
+
         job.submit("hva-handle.#{@node.node_id}", 'attach_volume', @inst_id, @vol_id)
       }, proc {
         ignore_error {
@@ -75,7 +75,7 @@ module Dcmgr
         if @volume[:state].to_s != 'deleting'
           @hva_ctx.logger.warn("Unexpected state #{@volume[:state]} of #{@vol_id}. But try to delete.")
         end
-        
+
         ignore_error {
           task_session.invoke(local_store_driver_class,
                               :delete_volume, [@hva_ctx, @volume])
@@ -92,14 +92,17 @@ module Dcmgr
         @hva_ctx.logger.info("Booting #{@inst_id}: phase 1")
 
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
-        raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
+
+        unless %w(pending failingover).member?(@inst[:state].to_s)
+          raise "Invalid instance state: #{@inst[:state]}"
+        end
 
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:initializing})
 
         each_all_local_volumes do |v|
           deploy_local_volume(v)
         end
-        
+
         job.submit("hva-handle.#{@node.node_id}", 'run_local_store', @inst_id)
       }, proc {
         each_all_local_volumes do |v|
@@ -129,7 +132,7 @@ module Dcmgr
         @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
 
         @volume = @inst[:volume][@volume_id]
-        
+
         raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
         if @volume[:state].to_s == 'attached'
           raise "Invalid instance state (expected running): #{@inst[:state]}" unless ['running', 'halted'].member?(@inst[:state].to_s)
@@ -160,7 +163,7 @@ module Dcmgr
           @hva_ctx.logger.error("Failed to upload image backup object: #{@backupobject_id}")
           raise
         end
-        
+
         rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
         @hva_ctx.logger.info("Uploaded new backup object successfully: #{@backupobject_id}")
       }, proc {
@@ -189,7 +192,7 @@ module Dcmgr
           @callee.call(:progress, percent)
         end
       end
-      
+
       job :backup_image, proc {
         @inst_id = request.args[0]
         @backupobject_id = request.args[1]

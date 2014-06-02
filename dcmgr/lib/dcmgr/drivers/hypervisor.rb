@@ -53,6 +53,10 @@ module Dcmgr
       def check_interface(hc)
       end
 
+      def get_windows_password_hash(hc)
+        raise NotImplementedError
+      end
+
       def setup_metadata_drive(hc,metadata_items)
       end
 
@@ -67,7 +71,7 @@ module Dcmgr
 
       def detach_volume_from_host(hc, volume_id)
       end
-      
+
       def check_instance(uuid)
       end
 

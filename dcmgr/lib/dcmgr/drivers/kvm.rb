@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 require 'net/telnet'
+require 'timeout'
+require 'base64'
 
 module Dcmgr
   module Drivers
@@ -18,7 +20,7 @@ module Dcmgr
 
         def validate_instance_model(instance)
         end
-        
+
         def validate_volume_model(volume)
           if !volume.guest_device_name.nil?
             unless DEVNAME_REGEXP.find { |r| r =~ volume.guest_device_name.downcase }
@@ -30,7 +32,7 @@ module Dcmgr
         def on_associate_volume(instance, volume)
           if instance.boot_volume_id == volume.canonical_uuid && volume.guest_device_name.nil?
             # set device name as boot drive.
-            volume.guest_device_name = 
+            volume.guest_device_name =
               if instance.image.features[:virtio]
                 'vda'
               else
@@ -81,6 +83,9 @@ module Dcmgr
         param :serial_port_options, :default=>'telnet:127.0.0.1:%d,server,nowait'
         param :vnc_options, :default=>'127.0.0.1:%d'
         param :incoming_ip
+
+        param :windows_configuring_status_sleeptime, default: 2
+        param :windows_configuring_status_timeout, default: 60
       end
 
       # 0x0-2 are reserved by KVM.
@@ -88,7 +93,7 @@ module Dcmgr
       # 1=ISA bridge
       # 2=VGA
       KVM_NIC_PCI_ADDR_OFFSET=0x10
-      
+
       def initialize
         @qemu_ver_str = `#{driver_configuration.qemu_path} -version`.chomp
         @qemu_version = if @qemu_ver_str =~ /^QEMU emulator version ([\d\.]+) \(/
@@ -98,6 +103,61 @@ module Dcmgr
                         else
                           raise "Failed to parse qemu version string: #{@qemu_ver_str}"
                         end
+      end
+
+      def get_windows_password_hash(hc)
+        logger.info "Instance #{hc.inst[:uuid]} is running Windows. " +
+                    "Waiting for Windows to generate a password and shut down."
+
+        begin
+          wait_for_kvm_termination(hc,
+            driver_configuration.windows_configuring_status_timeout,
+            driver_configuration.windows_configuring_status_sleeptime
+          )
+        rescue Timeout::Error
+          raise "Windows took too long generating a password. Waited %s seconds." %
+            driver_configuration.windows_configuring_status_timeout
+        end
+        logger.info "Windows finished configuring. " +
+                    "Reading its password hash from metadata drive"
+
+        mount_point = "#{hc.inst_data_dir}/tmp_metadata_mnt"
+        FileUtils.mkdir(mount_point)
+
+        mount_metadata_drive(hc, mount_point)
+        password_hash = read_password_from_metadata_drive(mount_point)
+        umount_metadata_drive(hc, mount_point)
+
+        logger.info "Read Windows password from matadata drive. " +
+                    "Booting up the instance again."
+
+        poweron_instance(hc)
+
+        password_hash
+      end
+
+      def read_password_from_metadata_drive(mount_point)
+        raw_pw_data = File.read(File.expand_path("#{mount_point}/pw.enc"))
+        Base64.encode64(raw_pw_data)
+      end
+
+      def wait_for_kvm_termination(hc, timeout = 60, sleeptime = 2)
+        pid = File.read(File.expand_path('kvm.pid', hc.inst_data_dir)).to_i
+
+        # We are doing this weirdness because we couldn't use Process.waitpid
+        # because kvm is not a child process. This driver creates a run.sh script
+        # and runs that which in turn runs kvm.
+        Timeout::timeout(timeout) do
+          begin
+            loop do
+              # Kill -0 does the error checks but doesn't really send a kill signal
+              Process.kill(0, pid)
+              sleep sleeptime
+            end
+          rescue Errno::ESRCH
+            # If we get this error, it means the kvm process has terminated
+          end
+        end
       end
 
       def run_instance(hc)
@@ -454,14 +514,14 @@ RUN_SH
         if hc.inst[:boot_volume_id] == volume[:uuid]
           option_str += ',bootindex=0'
         end
-        
+
         case device_model
         when 'virtio-blk-pci'
           # virtio-blk consumes a pci address per device.
           option_str += ",bus=pci.0,addr=#{'0x' + ('%x' % (drive_idx + 4))}"
         when 'ide-drive'
         end
-        
+
         option_str
       end
 

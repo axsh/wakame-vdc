@@ -34,7 +34,7 @@ module Dcmgr
           logger.warn("Skip delete_local_volume since hva context is unset.")
           return
         end
-        
+
         return unless volume[:is_local_volume]
 
         update_volume_state(volume[:uuid], {:state=>:deleting}, [])
@@ -43,7 +43,7 @@ module Dcmgr
         update_volume_state(volume[:uuid], {:state=>:deleted, :deleted_at=>Time.now.utc},
                             'hva/volume_deleted')
       end
-      
+
       def delete_all_local_volumes
         @inst[:volume].values.each { |v|
           ignore_error do
@@ -51,7 +51,7 @@ module Dcmgr
           end
         }
       end
-      
+
       # This method can be called sometime when the instance variables
       # are also failed to be set. They need to be checked before looked
       # up.
@@ -60,7 +60,7 @@ module Dcmgr
           logger.warn("Skip delte_local_volume since hva context is unset.")
           return
         end
-        
+
         ignore_error {
           @hva_ctx.logger.info("teminating instance")
           task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -94,14 +94,13 @@ module Dcmgr
         @hva_ctx.dump_instance_parameter('state', state)
       end
 
-      def update_instance_state(opts, ev=nil)
+      def update_instance_state(opts, events_to_publish = nil)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
         rpc.request('hva-collector', 'update_instance', @inst_id, opts)
-        if ev
-          ev = [ev] unless ev.is_a? Array
-          ev.each { |e|
-            event.publish(e, :args=>[@inst_id])
-          }
+
+        if events_to_publish
+          events_to_publish = [events_to_publish] unless events_to_publish.is_a? Array
+          events_to_publish.each { |e| event.publish(e, :args=>[@inst_id]) }
         end
 
         update_state_file(opts[:state]) unless opts[:state].nil?
@@ -123,18 +122,18 @@ module Dcmgr
 
       def update_instance_state_to_terminated(opts)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
-        
+
         # syncronized
         rpc.request('hva-collector', 'update_instance', @inst_id, opts)
-        
+
         ev = ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"]
         ev.each { |e|
           event.publish(e, :args=>[@inst_id])
         }
-        
+
         # Security group vnic left events for vnet netfilter
         destroy_instance_vnics(@inst)
-        
+
         @inst[:volume].values.each { |v|
           rpc.request('sta-collector', 'update_volume', v[:uuid], {
                         :state=>:deleted,
@@ -331,9 +330,16 @@ module Dcmgr
 
         @hva_ctx.logger.info("Booting instance")
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
-        raise "Invalid instance state: #{@inst[:state]}" unless %w(initializing).member?(@inst[:state].to_s)
+
+        unless %w(initializing).member?(@inst[:state].to_s)
+          raise "Invalid instance state: #{@inst[:state]}"
+        end
+
         if !@inst[:volume].values.all? {|v| v[:state].to_s == 'available' }
-          @hva_ctx.logger.error("Could not boot the instance. some volumes are not available yet: #{@inst[:volume].map{|volid, v| volid + "=" + v[:state] }.join(', ')}")
+          msg = "Could not boot the instance. Some volumes are not available yet: %s" %
+            @inst[:volume].map{|volid, v| volid + "=" + v[:state]}.join(', ')
+
+          @hva_ctx.logger.error(msg)
           next
         end
 
@@ -348,11 +354,33 @@ module Dcmgr
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :run_instance, [@hva_ctx])
 
-        # Node specific instance_started event for netfilter and general instance_started event for openflow
+        # Windows uses passwords instead of RSA keypairs. Therefore we need to
+        # have windows generate the encrypted password and put it in the database
+        if @hva_ctx.inst[:image][:os_type] == Dcmgr::Constants::Image::OS_TYPE_WINDOWS
+          encrypted_password = task_session.invoke(
+            @hva_ctx.hypervisor_driver_class,
+            :get_windows_password_hash,
+            [@hva_ctx]
+          )
+
+          rpc.request(
+            'hva-collector',
+            'update_instance',
+            @inst_id,
+            {encrypted_password: encrypted_password}
+          )
+        end
+
+        # Node specific instance_started event for netfilter and general
+        # instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started'])
 
         @inst[:volume].values.each { |v|
-          update_volume_state(v[:uuid], {:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
+          update_volume_state(
+            v[:uuid],
+            {:state=>:attached, :attached_at=>Time.now.utc},
+            'hva/volume_attached'
+          )
         }
 
         create_instance_vnics(@inst)
@@ -372,7 +400,7 @@ module Dcmgr
           @hva_ctx.logger.info("Wait for all volumes available. #{@inst[:volume].map{|volid, v| volid + "=" + v[:state] }.join(', ')}")
           next
         end
-        
+
         # setup vm data folder
         FileUtils.mkdir(@hva_ctx.inst_data_dir) unless File.exists?(@hva_ctx.inst_data_dir)
 
