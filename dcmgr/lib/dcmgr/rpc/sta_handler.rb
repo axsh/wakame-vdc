@@ -29,7 +29,7 @@ module Dcmgr
 
           @backup_object = rpc.request('sta-collector', 'get_backup_object', @volume[:backup_object_id])
           raise "Invalid backup_object state: #{@backup_object[:state]}" unless @backup_object[:state].to_s == 'available'
-          
+
           if backing_store.local_backup_object?(@backup_object)
             # the backup data exists on the same storage and also
             # is known how to convert to volume by the backing
@@ -37,14 +37,14 @@ module Dcmgr
 
             logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{convert_byte(@volume[:size], MB)} MB)")
             backing_store.create_volume(@sta_ctx, @backup_object[:object_key])
-            
+
           else
             # download backup data from backup storage. then create
             # volume from the snapshot.
 
             begin
               snap_tmp_path = File.expand_path("#{@volume[:uuid]}.tmp", Dcmgr.conf.tmp_dir)
-              
+
               begin
                 # download backup object to the tmporary place.
                 backup_storage = Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])
@@ -56,13 +56,13 @@ module Dcmgr
                 raise "Failed to download backup object: #{@backup_object[:uuid]}"
               end
               logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{convert_byte(@volume[:size], MB)} MB)")
-              
+
               backing_store.create_volume(@sta_ctx, snap_tmp_path)
             ensure
               File.unlink(snap_tmp_path) rescue nil
             end
           end
-          
+
         else
           logger.info("Creating new blank volume #{@volume_id} (#{convert_byte(@volume[:size], MB)} MB)")
           backing_store.create_volume(@sta_ctx, nil)

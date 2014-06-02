@@ -14,15 +14,15 @@ module Dcmgr
 
         def validate(errors)
           super
-          
+
           unless File.directory?(@config[:export_path])
             errors << "Could not find the export_path: #{@config[:export_path]}"
           end
-          
+
           unless File.directory?(@config[:local_backup_path])
             errors << "Could not find the local_backup_path: #{@config[:local_backup_path]}"
           end
-          
+
           unless File.directory?(@config[:snapshot_tmp_dir])
             errors << "Could not find the snapshot_tmp_dir: #{@config[:snapshot_tmp_dir]}"
           end
@@ -36,8 +36,8 @@ module Dcmgr
 
         if @backup_object
           logger.info("creating new volume: id:#{@volume_id} path:#{vol_path} from #{@backup_object[:uuid]}.")
-          
-        
+
+
           # sh("/bin/mkdir -p #{vol_path}") unless File.directory?(vol_path)
           cp_sparse(backup_real_path(backup_key), vol_path)
         else

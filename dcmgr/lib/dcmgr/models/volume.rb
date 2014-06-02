@@ -18,7 +18,7 @@ module Dcmgr::Models
       def attached
         filter_by_state(STATE_ATTACHED)
       end
-      
+
       def filter_by_state(state)
         filter({:state=>state})
       end
@@ -54,7 +54,7 @@ module Dcmgr::Models
       #   %w(hdaz hdaa hdc hdz hdn) => hdd (= "hdc".succ)
       device_names.zip(device_names.dup.tap(&:shift)).inject(device_names.first) {|r,l|  r.succ == l.last ? l.last : r }.succ
     end
-    
+
     def validate
       # do not run validation if the row is maked as deleted.
       return true if self.deleted_at
@@ -77,7 +77,7 @@ module Dcmgr::Models
           errors.add(:guest_device_name, "found duplicate device name (#{names.join(', ')}) for #{instance.caonnical_uuid}")
         end
       end
-      
+
       super
     end
 
@@ -184,7 +184,7 @@ module Dcmgr::Models
       (volume_device && volume_device.respond_to?(:storage_node)) ? \
         volume_device.storage_node : nil
     end
-    
+
     def boot_volume?
       self.instance && self.instance.boot_volume_id == self.canonical_uuid
     end
@@ -210,13 +210,13 @@ module Dcmgr::Models
         bo.display_name = src_bo.display_name
         bo.description = src_bo.description
       }
-      
+
       if self.backup_object
         self.backup_object.tap(&copy_attrs)
       elsif self.instance && self.instance.image.backup_object
         self.instance.image.backup_object.tap(&copy_attrs)
       end
-      
+
       blk.call(bo)
       bo.save
       bo
@@ -235,7 +235,7 @@ module Dcmgr::Models
         self.instance.remove_volume(self)
       end
     end
-    
+
     private
     def _destroy_delete
       self.deleted_at ||= Time.now

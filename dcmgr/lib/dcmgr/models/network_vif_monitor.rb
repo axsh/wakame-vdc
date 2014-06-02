@@ -17,7 +17,7 @@ module Dcmgr::Models
     def before_validation
       self.params ||= {}
     end
-    
+
     def _destroy_delete
       self.deleted_at ||= Time.now
       self.save_changes

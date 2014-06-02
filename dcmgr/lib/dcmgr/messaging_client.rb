@@ -4,7 +4,7 @@ require 'isono'
 require 'eventmachine'
 
 module Dcmgr
-  # @example Sync RPC call with object method. 
+  # @example Sync RPC call with object method.
   # mc = MessagingClient.start
   # puts mc.request('endpoint', 'func1', xxxx, xxxx)
   # puts mc.request('endpoint', 'func2', xxx, xxx)
@@ -52,7 +52,7 @@ module Dcmgr
         }
       end
     end
-    
+
     def initialize(m=nil, &blk)
       m ||= Isono::Manifest.new(Dir.pwd) {
         node_name 'dcmgr'
@@ -68,7 +68,7 @@ module Dcmgr
 
     class RpcSyncDelegator
       attr_reader :endpoint
-      
+
       def initialize(rpc, endpoint, opts={})
         @rpc = rpc
         @endpoint = endpoint
@@ -94,7 +94,7 @@ module Dcmgr
         @rpc.request(@endpoint, m, *args)
       end
     end
-    
+
     def sync_rpc(endpoint, opts={})
       rpc = Isono::NodeModules::RpcChannel.new(self)
       RpcSyncDelegator.new(rpc, endpoint, opts)
@@ -112,7 +112,7 @@ module Dcmgr
     def job_run(job_endpoint, key, *args)
       Isono::NodeModules::JobChannel.new(self).run(job_endpoint, key, *args)
     end
-    
+
     def event_publish(evname, opts={})
       Isono::NodeModules::EventChannel.new(self).publish(evname, opts)
     end

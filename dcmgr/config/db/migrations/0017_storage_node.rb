@@ -12,4 +12,4 @@ Sequel.migration do
   down do
   end
 end
-  
+

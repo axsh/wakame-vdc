@@ -16,7 +16,7 @@ module Dcmgr
       def self.policy
         Policy.new
       end
-      
+
       def self.local_store_class
         DummyLocalStore
       end

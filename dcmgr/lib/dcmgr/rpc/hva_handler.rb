@@ -302,7 +302,7 @@ module Dcmgr
     end
 
       include Helpers
-      
+
       def wait_volumes_available
         if @inst[:volume].values.all?{|v| v[:state].to_s == 'available'}
           # boot instance becase all volumes are ready.

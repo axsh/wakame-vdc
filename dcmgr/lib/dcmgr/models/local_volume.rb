@@ -3,7 +3,7 @@
 module Dcmgr::Models
   class LocalVolume < BaseNew
     unrestrict_primary_key
-    
+
     many_to_one :instance
     one_to_one :volume, :key=>:id
 

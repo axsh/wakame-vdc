@@ -65,7 +65,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     return false
   end
-  
+
   def set_monitoring_parameters(instance)
     dirty = [false]
     # monitoring parameter is optional.
@@ -332,7 +332,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
             raise E::InvalidParameter, 'volumes.size'
           end
         end
-        
+
         if !vparam['size'].blank? && bo
           # create volume from the backup object and grow its size.
           # check size is larger or equal than backup object's size.
@@ -370,7 +370,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
       }
     end
-    
+
     #
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
@@ -429,7 +429,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     unless i.ready_destroy?
       raise E::InvalidInstanceState, i.state
     end
-    
+
     case i.state
     when C::Instance::STATE_STOPPED
       # just destroy the record.
@@ -561,7 +561,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
       end
     end
-    
+
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 
@@ -595,11 +595,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
             b.backup_storage = bkst
           end
         end
-        
+
         if instance.boot_volume_id == v.canonical_uuid
           boot_bko = bo
         end
-        
+
         bko_list << bo
       }
     else
@@ -651,7 +651,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         Dcmgr.conf.default_force_poweroff_instance
       end
     job_name = force ? 'poweroff' : 'soft_poweroff'
-    
+
     instance.state = :halting
     instance.save
 
@@ -672,7 +672,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         raise E::InvalidInstanceState, "not ready for poweron operation"
       end
     end
-    
+
     instance.state = C::Instance::STATE_STARTING
     instance.save_changes
 
@@ -756,7 +756,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
                                       :args=>[{:instance_id=>@instance.canonical_uuid, :monitor_id=>params[:monitor_id]}])
       end
-      
+
       respond_with([params[:monitor_id]])
     end
 
@@ -809,7 +809,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
 
       bkst = find_target_backup_storage(@instance.service_type)
-      
+
       bo = @volume.create_backup_object(@volume.account) do |b|
         b.state = C::BackupObject::STATE_PENDING
         if bkst

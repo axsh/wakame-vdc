@@ -16,7 +16,7 @@ module Dcmgr::Models
     end
 
     subset(:alives, {:deleted_at => nil})
-    
+
     def validate
       unless STORAGE_TYPES.member?(self.storage_type.to_sym)
         errors.add(:storage_type, "Unknown storage type: #{self.storage_type}")

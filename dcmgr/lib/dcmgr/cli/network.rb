@@ -318,7 +318,7 @@ __END
 
       puts super(M::IpPool, fields)
     end
-    
+
     desc "add-dcn POOL DCN [options]", "Add DC Network to IP pool."
     def add_dcn(pool_uuid, dcn_uuid)
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
@@ -372,9 +372,9 @@ __END
 
       network || Error.raise("Could not find appropriate network for leasing an IP.", 100)
 
-      st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)      
+      st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)
       lease = st.ip_address.schedule({:network => network, :ip_pool => ip_pool})
-      
+
       puts "#{lease.ip_handle.canonical_uuid} #{lease.ipv4_s}"
     end
 
@@ -456,7 +456,7 @@ __END
         else
           UnknownUUIDError.raise(inner_uuid)
         end
-        
+
         ds
       end
     }

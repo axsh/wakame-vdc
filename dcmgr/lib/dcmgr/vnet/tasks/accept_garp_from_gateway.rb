@@ -6,7 +6,7 @@ module Dcmgr
 
       # Allow GARP from gateway device when it fails over to
       # slave device/node.
-      # 
+      #
       # Note: this rule needs to be installed before the line of
       # anti-spoofing rules:
       #   DropIpSpoofing, DropARPSpoofing

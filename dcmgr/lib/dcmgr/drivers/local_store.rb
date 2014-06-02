@@ -22,7 +22,7 @@ module Dcmgr
       def deploy_blank_volume(hva_ctx, volume, opts={})
         raise NotImplementedError
       end
-      
+
       # delete an image file.
       def delete_volume(hva_ctx, volume)
         raise NotImplementedError

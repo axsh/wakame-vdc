@@ -8,7 +8,7 @@ class Host < Base
   namespace :host
   include Dcmgr::Models
   include Dcmgr::Constants::HostNode
-  
+
   desc "add NODE_ID [options]", "Register a new host node"
   method_option :uuid, :type => :string, :desc => "The UUID for the new host node"
   method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new host node"
@@ -70,7 +70,7 @@ class Host < Base
   no_tasks {
     include Dcmgr::Helpers
   }
-  
+
   desc "show [UUID]", "Show list of host nodes and details"
   def show(uuid=nil)
     if uuid
