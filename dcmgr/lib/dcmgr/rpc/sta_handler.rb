@@ -150,6 +150,7 @@ module Dcmgr
       job :backup_volume, proc {
         @volume_id = request.args[0]
         @backup_object_id = request.args[1]
+
         @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
         @backup_object = rpc.request('sta-collector', 'get_backup_object', @backup_object_id) unless @backup_object_id.nil?
         @sta_ctx = StaContext.new(self)
@@ -171,6 +172,36 @@ module Dcmgr
         logger.info("created new backup: #{@backup_object_id}")
       }
 
+      job :backup_image, proc {
+        @volume_id = request.args[0]
+        @backup_object_id = request.args[1]
+        @image_id = request.args[2]
+
+        @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
+        @backup_object = rpc.request('sta-collector', 'get_backup_object', @backup_object_id) unless @backup_object_id.nil?
+        @sta_ctx = StaContext.new(self)
+
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:state=>:creating})
+        
+        # backup volume
+        if backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvideBackupVolume)
+          backing_store.backup_volume(@sta_ctx)
+          new_object_key = backing_store.backup_object_key_created(@sta_ctx)
+        elsif backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvidePointInTimeSnapshot)
+          # take one generation snapshot -> copy data -> delete snapshot.
+          new_object_key = nil
+          raise NotImplementedError
+        else
+          raise "None of backup operation types are supported by #{backing_store.class}."
+        end
+
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
+                    {:state=>:available, :object_key=>new_object_key})
+        logger.info("created new backup: #{@backup_object_id}")
+        rpc.request('sta-collector', 'post_process_backup_image',
+                    @image_id)
+      }
+      
       job :create_snapshot, proc {
         @volume_id = request.args[0]
         @backup_object_id = request.args[1]
