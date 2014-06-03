@@ -32,6 +32,10 @@ module Dcmgr
         end
       end
 
+      class WindowsHandler < Fuguta::Configuration
+        param :thread_concurrency, :default=>2
+      end
+
       class LocalStore < Fuguta::Configuration
         # enable local image cache under "vm_data_dir/_base"
         param :enable_image_caching, :default=>true
