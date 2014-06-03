@@ -299,6 +299,15 @@ module Dcmgr
                             Task::TaskSession.current
                           end
       end
+
+      def failed_instance_launch_rollback
+        ignore_error { terminate_instance(false) }
+        ignore_error { finalize_instance() }
+      end
+
+      def event
+        @event ||= Isono::NodeModules::EventChannel.new(@node)
+      end
     end
 
       include Helpers
@@ -357,23 +366,18 @@ module Dcmgr
         # Windows uses passwords instead of RSA keypairs. Therefore we need to
         # have windows generate the encrypted password and put it in the database
         if @hva_ctx.inst[:image][:os_type] == Dcmgr::Constants::Image::OS_TYPE_WINDOWS
-          encrypted_password = task_session.invoke(
-            @hva_ctx.hypervisor_driver_class,
-            :get_windows_password_hash,
-            [@hva_ctx]
-          )
+          # We wait for windows to shut down and then read its password and call poweron
+          # That's why we don't set the state to running nor install security groups yet.
+          # This stuff will happen when we call poweron later.
+          job_channel.submit("windows-handle.#{@node.node_id}", "launch_windows", @inst)
+        else
+          # Node specific instance_started event for netfilter and general
+          # instance_started event for openflow
+          update_instance_state({:state=>:running}, ['hva/instance_started'])
 
-          rpc.request(
-            'hva-collector',
-            'update_instance',
-            @inst_id,
-            {encrypted_password: encrypted_password}
-          )
+          create_instance_vnics(@inst)
         end
 
-        # Node specific instance_started event for netfilter and general
-        # instance_started event for openflow
-        update_instance_state({:state=>:running}, ['hva/instance_started'])
 
         @inst[:volume].values.each { |v|
           update_volume_state(
@@ -382,12 +386,7 @@ module Dcmgr
             'hva/volume_attached'
           )
         }
-
-        create_instance_vnics(@inst)
-      }, proc {
-        ignore_error { terminate_instance(false) }
-        ignore_error { finalize_instance() }
-      }
+      }, proc { failed_instance_launch_rollback }
 
       job :run_vol_store, proc {
         # create hva context
@@ -647,9 +646,6 @@ module Dcmgr
         }
       }
 
-      def event
-        @event ||= Isono::NodeModules::EventChannel.new(@node)
-      end
     end
   end
 end
