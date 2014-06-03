@@ -54,5 +54,8 @@ Dcmgr::Models::NetworkService.after_create do |network_service|
   })
 end
 
-
-
+Dcmgr::Models::NetworkRoute.after_create do |network_route|
+  p "----- NetworkRoute.after_create ----"
+  p network_route.inspect
+  p "------------------------------------"
+end
