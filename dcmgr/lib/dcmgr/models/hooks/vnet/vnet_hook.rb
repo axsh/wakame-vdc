@@ -55,7 +55,8 @@ Dcmgr::Models::NetworkService.after_create do |network_service|
 end
 
 Dcmgr::Models::NetworkRoute.after_create do |network_route|
-  p "----- NetworkRoute.after_create ----"
-  p network_route.inspect
-  p "------------------------------------"
+  filter_params(:NetworkRoute, network_route.to_hash, {
+    :interface_uuid => network_route.outer_lease.network_vif.canonical_uuid,
+    :ipv4_address => network_route.outer_lease.ipv4
+  })
 end
