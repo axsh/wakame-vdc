@@ -369,7 +369,7 @@ module Dcmgr
           # We wait for windows to shut down and then read its password and call poweron
           # That's why we don't set the state to running nor install security groups yet.
           # This stuff will happen when we call poweron later.
-          job_channel.submit("windows-handle.#{@node.node_id}", "launch_windows", @inst)
+          job.submit("windows-handle.#{@node.node_id}", "launch_windows", @inst)
         else
           # Node specific instance_started event for netfilter and general
           # instance_started event for openflow
