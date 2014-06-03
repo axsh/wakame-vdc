@@ -5,6 +5,9 @@ module Dcmgr::Rpc
 
     include HvaHandler::Helpers
 
+    concurrency 2
+    job_thread_pool Isono::ThreadPool.new(2, "WindowsHandle")
+
     job :launch_windows, proc {
       @hva_ctx = HvaContext.new(self)
       @inst = request.args[0]
