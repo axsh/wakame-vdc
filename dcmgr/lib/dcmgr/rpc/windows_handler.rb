@@ -28,7 +28,6 @@ module Dcmgr::Rpc
       )
 
       update_instance_state({:state=>:running}, ['hva/instance_started'])
-      create_instance_vnics(@inst)
     }, proc { failed_instance_launch_rollback }
 
   end

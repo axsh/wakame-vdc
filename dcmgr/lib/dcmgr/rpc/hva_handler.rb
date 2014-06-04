@@ -374,10 +374,9 @@ module Dcmgr
           # Node specific instance_started event for netfilter and general
           # instance_started event for openflow
           update_instance_state({:state=>:running}, ['hva/instance_started'])
-
-          create_instance_vnics(@inst)
         end
 
+        create_instance_vnics(@inst)
 
         @inst[:volume].values.each { |v|
           update_volume_state(
