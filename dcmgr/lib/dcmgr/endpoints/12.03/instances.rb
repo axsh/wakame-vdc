@@ -585,7 +585,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     bkst = find_target_backup_storage(@instance.service_type)
 
     boot_bko = nil
-    bko_list = []
+    bko_list = {}
 
     if params[:all]
       instance.volumes_dataset.attached.each { |v|
@@ -599,8 +599,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         if instance.boot_volume_id == v.canonical_uuid
           boot_bko = bo
         end
-
-        bko_list << bo
+        bko_list[v.canonical_uuid]=bo
       }
     else
       # only takes backup for the boot volume. (default behavior)
@@ -611,7 +610,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
       end
       boot_bko = bo
-      bko_list << bo
+      bko_list[instance.boot_volume.canonical_uuid]=bo
     end
 
     image = instance.image.entry_clone do |i|
@@ -623,15 +622,31 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       i.account_id = @account.canonical_uuid
       i.backup_object_id = boot_bko.canonical_uuid
-      i.state = C::Image::STATE_PENDING
+      i.state = C::Image::STATE_CREATING
+      
+      i.volumes = bko_list.values.delete_if { |bo|
+        boot_bko == bo
+      }.map { |bo|
+        {:backup_object_id => bo.canonical_uuid}
+      }
+    end
+    
+    if instance.boot_volume.local_volume?
+      on_after_commit do
+        Dcmgr.messaging.submit("local-store-handle.#{v.instance.host_node.node_id}", 'backup_image',
+                               instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+      end
+    else
+      instance.volumes_dataset.attached.each { |v|
+        bo = bko_list[v.canonical_uuid]
+        on_after_commit do
+          Dcmgr.messaging.submit("sta-handle.#{v.storage_node.node_id}", 'backup_image',
+                                 v.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+        end
+      }
     end
 
-    on_after_commit do
-      Dcmgr.messaging.submit("local-store-handle.#{instance.host_node.node_id}", 'backup_image',
-                             instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
-    end
     respond_with({:instance_id=>instance.canonical_uuid,
-                   :backup_object_id => bo.canonical_uuid,
                    :image_id => image.canonical_uuid,
                  })
   end
