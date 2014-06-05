@@ -36,7 +36,7 @@ module Dcmgr
         param :thread_concurrency, :default=>2
 
         param :password_generation_sleeptime, default: 2
-        param :password_generation_timeout, default: 60
+        param :password_generation_timeout, default: 60 * 15
       end
 
       class LocalStore < Fuguta::Configuration
