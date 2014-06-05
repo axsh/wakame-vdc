@@ -61,6 +61,12 @@ function test_migration_shared_volume_instance(){
   retry_until "document_pair? instance ${instance_uuid} state running"
   assertEquals 0 $?
 
+  # wait for network to be ready
+  wait_for_network_to_be_ready ${instance_ipaddr}
+
+  # wait for sshd to be ready
+  wait_for_sshd_to_be_ready    ${instance_ipaddr}
+
   # create new blank volume
   volume_uuid=$(volume_size=${blank_volume_size} run_cmd volume create | hash_value uuid)
   retry_until "document_pair? volume ${volume_uuid} state available"
