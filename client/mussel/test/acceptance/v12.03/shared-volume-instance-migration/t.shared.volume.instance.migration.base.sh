@@ -99,8 +99,35 @@ function test_migration_shared_volume_instance(){
 # 5. poweroff the instance.
 # 6. poweron the instance.
 # 7. terminate the instance.
-#function test_migration_shared_volume_instance_with_second_blank_volume(){
-#}
+function test_migration_shared_volume_instance_with_second_blank_volume(){
+  # boot shared volume instance with second blank volume.
+  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared
+  local host_node_id=${launch_host_node}
+  create_instance
+
+  # migration the instance.
+  host_node_id=${migration_host_node} run_cmd instance move ${instance_uuid} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid} state running"
+  assertEquals 0 $?
+
+  # check the process.
+
+  # check the second blank disk.
+
+  # poweroff the instance.
+  run_cmd instance poweroff ${instance_uuid} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid} state halted"
+  assertEquals 0 $?
+
+  # poweron the instance.
+  run_cmd instance poweron ${instance_uuid} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid} state running"
+  assertEquals 0 $?
+
+  # terminate the instance.
+  run_cmd instance destroy ${instance_uuid} >/dev/null
+  assertEquals 0 $?
+}
 
 ## shunit2
 
