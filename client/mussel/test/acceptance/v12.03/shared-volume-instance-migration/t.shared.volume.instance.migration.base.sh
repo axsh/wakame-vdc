@@ -57,7 +57,8 @@ function test_migration_shared_volume_instance(){
 
   # poweron the instance.
   run_cmd instance poweron ${instance_uuid} >/dev/null
-  assertNotEquals 0 $?
+  retry_until "document_pair? instance ${instance_uuid} state running"
+  assertEquals 0 $?
 
   # attach volume to instance.
 
