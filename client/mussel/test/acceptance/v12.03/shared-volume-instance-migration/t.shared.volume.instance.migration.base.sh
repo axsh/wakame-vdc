@@ -72,6 +72,30 @@ function test_migration_shared_volume_instance(){
   assertEquals 0 $?
 
   # check the attach second volume.
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} lsblk
+	EOS
+  assertEquals 0 $?
+
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} ls -la /dev/mapper/
+	EOS
+  assertEquals 0 $?
+
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} ls -la /dev/disk/by-label/
+	EOS
+  assertEquals 0 $?
+
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} ls -la /dev/disk/by-path/
+	EOS
+  assertEquals 0 $?
+
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} ls -la /dev/disk/by-uuid/
+	EOS
+  assertEquals 0 $?
 
   # detach volume to instance
   instance_id=${instance_uuid} run_cmd volume detach ${volume_uuid}
