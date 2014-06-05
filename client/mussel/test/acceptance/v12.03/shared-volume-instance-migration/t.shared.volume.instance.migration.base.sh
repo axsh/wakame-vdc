@@ -101,7 +101,7 @@ function test_migration_shared_volume_instance(){
 # 7. terminate the instance.
 function test_migration_shared_volume_instance_with_second_blank_volume(){
   # boot shared volume instance with second blank volume.
-  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared
+  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
   local host_node_id=${launch_host_node}
   create_instance
 
