@@ -12,6 +12,7 @@
 ## variables
 launch_host_node=${launch_host_node:-dsv0003}
 migration_host_node=${migration_host_node:-dsv0005}
+blank_volume_size=${blank_volume_size:-10}
 
 ## hook functions
 
@@ -60,13 +61,29 @@ function test_migration_shared_volume_instance(){
   retry_until "document_pair? instance ${instance_uuid} state running"
   assertEquals 0 $?
 
+  # create new blank volume
+  volume_uuid=$(volume_size=${blank_volume_size} run_cmd volume create | hash_value uuid)
+  retry_until "document_pair? volume ${volume_uuid} state available"
+  assertEquals 0 $?
+
   # attach volume to instance.
+  instance_id=${instance_uuid} run_cmd volume attach ${volume_uuid}
+  retry_until "document_pair? volume ${volume_uuid} state attached"
+  assertEquals 0 $?
 
   # check the attach second volume.
 
   # detach volume to instance
+  instance_id=${instance_uuid} run_cmd volume detach ${volume_uuid}
+  retry_until "document_pair? volume ${volume_uuid} state available"
+  assertEquals 0 $?
 
   # check the detach second volume.
+
+  # delete new blank volume
+  run_cmd volume destroy ${volume_uuid}
+  retry_until "document_pair? volume ${volume_uuid} state deleted"
+  assertEquals 0 $?
 
   # terminate the instance.
   run_cmd instance destroy ${instance_uuid} >/dev/null
