@@ -10,8 +10,8 @@
 . ${BASH_SOURCE[0]%/*}/helper_instance.sh
 
 ## variables
-launch_host_node=${launch_host_node:-dsv0003}
-migration_host_node=${migration_host_node:-dsv0005}
+launch_host_node=${launch_host_node:-hn-dsv0003}
+migration_host_node=${migration_host_node:-hn-dsv0005}
 blank_volume_size=${blank_volume_size:-10}
 
 ## hook functions
@@ -85,6 +85,11 @@ function test_migration_shared_volume_instance(){
 
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
 	${remote_sudo} ls -la /dev/mapper/
+	EOS
+  assertEquals 0 $?
+
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} ls -la /dev/disk
 	EOS
   assertEquals 0 $?
 
