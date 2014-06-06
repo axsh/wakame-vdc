@@ -147,6 +147,25 @@ module Dcmgr
         end
       end
 
+      def backup_single_volume()
+        new_object_key = nil
+
+        raise "Missing volume hash object" if @sta_ctx.volume.nil?
+        
+        # backup volume
+        if backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvideBackupVolume)
+          backing_store.backup_volume(@sta_ctx)
+          new_object_key = backing_store.backup_object_key_created(@sta_ctx)
+        elsif backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvidePointInTimeSnapshot)
+          # take one generation snapshot -> copy data -> delete snapshot.
+          raise NotImplementedError
+        else
+          raise "None of backup operation types are supported by #{backing_store.class}."
+        end
+
+        return new_object_key
+      end
+
       job :backup_volume, proc {
         @volume_id = request.args[0]
         @backup_object_id = request.args[1]
@@ -155,17 +174,7 @@ module Dcmgr
         @backup_object = rpc.request('sta-collector', 'get_backup_object', @backup_object_id) unless @backup_object_id.nil?
         @sta_ctx = StaContext.new(self)
 
-        # backup volume
-        if backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvideBackupVolume)
-          backing_store.backup_volume(@sta_ctx)
-          new_object_key = backing_store.backup_object_key_created(@sta_ctx)
-        elsif backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvidePointInTimeSnapshot)
-          # take one generation snapshot -> copy data -> delete snapshot.
-          new_object_key = nil
-          raise NotImplementedError
-        else
-          raise "None of backup operation types are supported by #{backing_store.class}."
-        end
+        new_object_key = backup_single_volume
 
         rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
                     {:state=>:available, :object_key=>new_object_key})
@@ -183,17 +192,7 @@ module Dcmgr
 
         rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:state=>:creating})
         
-        # backup volume
-        if backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvideBackupVolume)
-          backing_store.backup_volume(@sta_ctx)
-          new_object_key = backing_store.backup_object_key_created(@sta_ctx)
-        elsif backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvidePointInTimeSnapshot)
-          # take one generation snapshot -> copy data -> delete snapshot.
-          new_object_key = nil
-          raise NotImplementedError
-        else
-          raise "None of backup operation types are supported by #{backing_store.class}."
-        end
+        new_object_key = backup_single_volume
 
         rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
                     {:state=>:available, :object_key=>new_object_key})
