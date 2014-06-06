@@ -133,6 +133,14 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   local host_node_id=${launch_host_node}
   create_instance
 
+  # second blank volume
+  run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
+  assertEquals 0 $?
+
+  local ex_volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
+  test -n "${ex_volume_uuid}"
+  assertEquals 0 $?
+
   # bind sleep process
   bind_sleep_process
   assertEquals 0 $?
@@ -154,6 +162,10 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   assertEquals ${process_id} ${new_process_id}
 
   # check the second blank disk.
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} ls -la /dev/disk/by-id/ | grep ${ex_volume_uuid}
+	EOS
+  assertEquals 0 $?
 
   # poweroff the instance.
   run_cmd instance poweroff ${instance_uuid} >/dev/null
