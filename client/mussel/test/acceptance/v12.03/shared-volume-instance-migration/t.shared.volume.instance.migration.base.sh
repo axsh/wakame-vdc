@@ -84,27 +84,7 @@ function test_migration_shared_volume_instance(){
   assertEquals 0 $?
 
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-	${remote_sudo} ls -la /dev/mapper/
-	EOS
-  assertEquals 0 $?
-
-  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-	${remote_sudo} ls -la /dev/disk
-	EOS
-  assertEquals 0 $?
-
-  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-	${remote_sudo} ls -la /dev/disk/by-label/
-	EOS
-  assertEquals 0 $?
-
-  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-	${remote_sudo} ls -la /dev/disk/by-path/
-	EOS
-  assertEquals 0 $?
-
-  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-	${remote_sudo} ls -la /dev/disk/by-uuid/
+	${remote_sudo} ls -la /dev/disk/by-id/
 	EOS
   assertEquals 0 $?
 
