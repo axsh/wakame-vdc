@@ -34,6 +34,18 @@ function blank_dev_path() {
 	EOS
 }
 
+function bind_sleep_process() {
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
+	/bin/sleep 300s &
+	EOS
+}
+
+function sleep_process_id() {
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
+	/usr/bin/pgrep sleep
+	EOS
+}
+
 ### instance
 
 function render_vif_table() {
