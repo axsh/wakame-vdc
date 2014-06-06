@@ -15,6 +15,9 @@ blank_volume_size=${blank_volume_size:-10}
 ## step
 
 function test_mount_shared_volume(){
+  # boot shared volume instance
+  create_instance
+ 
   remote_sudo=$(remote_sudo)
 
   # create new volume
@@ -79,9 +82,16 @@ function test_mount_shared_volume(){
   run_cmd volume destroy ${volume_uuid}
   retry_until "document_pair? volume ${volume_uuid} state deleted"
   assertEquals 0 $?
+
+  # terminate the instance.
+  run_cmd instance destroy ${instance_uuid} >/dev/null
+  assertEquals 0 $?
 }
 
 function test_mount_shared_volume_halted_instance(){
+  # boot shared volume instance
+  create_instance
+
   remote_sudo=$(remote_sudo)
 
   # poweroff instance
@@ -171,6 +181,11 @@ function test_mount_shared_volume_halted_instance(){
   # delete volume
   run_cmd volume destroy ${volume_uuid}
   retry_until "document_pair? volume ${volume_uuid} state deleted"
+  assertEquals 0 $?
+
+
+  # terminate the instance.
+  run_cmd instance destroy ${instance_uuid} >/dev/null
   assertEquals 0 $?
 }
 
