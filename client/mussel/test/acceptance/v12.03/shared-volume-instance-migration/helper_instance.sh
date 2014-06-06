@@ -36,7 +36,7 @@ function blank_dev_path() {
 
 function bind_sleep_process() {
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
-	/bin/sleep 300s &
+	/bin/sleep 300s >/dev/null 2>&1 &
 	EOS
 }
 
