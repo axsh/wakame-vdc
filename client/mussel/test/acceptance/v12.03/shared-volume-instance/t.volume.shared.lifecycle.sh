@@ -9,6 +9,15 @@
 
 ## variables
 
+## shunit2 setup
+
+function oneTimeSetUp() {
+  create_instance
+}
+
+function oneTimeTearDown() {
+  destroy_instance
+}
 
 ## step
 

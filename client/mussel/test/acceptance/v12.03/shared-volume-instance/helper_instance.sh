@@ -56,12 +56,3 @@ function after_create_instance() {
   wait_for_sshd_to_be_ready    ${instance_ipaddr}
 }
 
-### shunit2 setup
-
-function oneTimeSetUp() {
-  create_instance
-}
-
-function oneTimeTearDown() {
-  destroy_instance
-}
