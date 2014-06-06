@@ -51,6 +51,9 @@ function test_image_backup_just_for_boot_volume() {
   test -n "$image_uuid"
   assertEquals 0 $?
 
+  run_cmd image show ${image_uuid} | ydump > $last_result_path
+  assertEquals 0 $?
+
   local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
   test -n "$backup_object_uuid"
   assertEquals 0 $?
@@ -97,6 +100,9 @@ function test_image_backup_just_for_boot_volume() {
 
 #   local image_uuid=$(yfind ':image_id:' < $last_result_path)
 #   test -n "$image_uuid"
+#   assertEquals 0 $?
+
+#   run_cmd image show ${image_uuid} | ydump > $last_result_path
 #   assertEquals 0 $?
 
 #   local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
