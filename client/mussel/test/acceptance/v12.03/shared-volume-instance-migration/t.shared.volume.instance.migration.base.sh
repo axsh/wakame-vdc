@@ -52,6 +52,7 @@ function test_migration_shared_volume_instance(){
   process_id=$(sleep_process_id)
   [[ -n "${process_id}" ]]
   assertEquals 0 $?
+  echo "sleep process id: ${process_id}"
 
   # migration the instance.
   host_node_id=${migration_host_node} run_cmd instance move ${instance_uuid} >/dev/null
@@ -62,6 +63,7 @@ function test_migration_shared_volume_instance(){
   new_process_id=$(sleep_process_id)
   [[ -n "${new_process_id}" ]]
   assertEquals 0 $?
+  echo "sleep process id: ${new_process_id}"
   assertEquals ${process_id} ${new_process_id}
 
   # poweroff the instance.
@@ -149,6 +151,7 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   process_id=$(sleep_process_id)
   [[ -n "${process_id}" ]]
   assertEquals 0 $?
+  echo "sleep process id: ${process_id}"
 
   # migration the instance.
   host_node_id=${migration_host_node} run_cmd instance move ${instance_uuid} >/dev/null
@@ -159,6 +162,7 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   new_process_id=$(sleep_process_id)
   [[ -n "${new_process_id}" ]]
   assertEquals 0 $?
+  echo "sleep process id: ${new_process_id}"
   assertEquals ${process_id} ${new_process_id}
 
   # check the second blank disk.
