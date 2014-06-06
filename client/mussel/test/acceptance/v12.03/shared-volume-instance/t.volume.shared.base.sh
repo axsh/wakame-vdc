@@ -7,13 +7,13 @@
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
 
 ## variables
-volume_size=${volume_size:-10}
+blank_volume_size=${blank_volume_size:-10}
 
 ## setp
 
 function test_create_new_volume(){
   # create volume
-  volume_uuid=$(volume_size=${volume_size} run_cmd volume create | hash_value uuid) 
+  volume_uuid=$(volume_size=${blank_volume_size} run_cmd volume create | hash_value uuid) 
   retry_until "document_pair? volume ${volume_uuid} state available"
   assertEquals 0 $?
 
@@ -40,7 +40,7 @@ function test_create_new_volume_from_image(){
 
 function test_volume_backup_from_new_volume(){
   # create volume
-  volume_uuid=$(volume_size=${volume_size} run_cmd volume create | hash_value uuid)
+  volume_uuid=$(volume_size=${blank_volume_size} run_cmd volume create | hash_value uuid)
   retry_until "document_pair? volume ${volume_uuid} state available"
   assertEquals 0 $?
 
