@@ -30,6 +30,9 @@ function test_mount_shared_volume(){
   retry_until "document_pair? volume ${volume_uuid} state attached"
   assertEquals 0 $?
 
+  # work around
+  sleep 30
+
   # blank device path 
   dev_name=$(find_dev_path)
   [[ -n "${dev_name}" ]]
@@ -119,6 +122,9 @@ function test_mount_shared_volume_halted_instance(){
 
   # wait for sshd to be ready
   wait_for_sshd_to_be_ready    ${instance_ipaddr}
+
+  # work around
+  sleep 30
 
   # blank device path
   dev_name=$(find_dev_path)
