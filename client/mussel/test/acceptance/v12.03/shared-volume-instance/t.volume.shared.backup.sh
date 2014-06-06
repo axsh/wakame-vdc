@@ -137,45 +137,45 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
   assertEquals 0 $?
 }
 
-# function test_volume_backup_second_blank_volume(){
-#   # boot boot shared volume instance
-#   create_instance
+function test_volume_backup_second_blank_volume(){
+  # boot boot shared volume instance
+  create_instance
 
-#   # poweroff instance
-#   run_cmd instance poweroff ${instance_uuid} >/dev/null
-#   retry_until "document_pair? instance ${instance_uuid} state halted"
-#   assertEquals 0 $?
+  # poweroff instance
+  run_cmd instance poweroff ${instance_uuid} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid} state halted"
+  assertEquals 0 $?
 
-#   run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
-#   assertEquals 0 $?
+  run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
+  assertEquals 0 $?
 
-#   local ex_volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
-#   test -n "$ex_volume_uuid"
-#   assertEquals 0 $?
+  local ex_volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
+  test -n "$ex_volume_uuid"
+  assertEquals 0 $?
 
-#   # backup second blank volume
-#   run_cmd instance backup_volume ${instance_uuid} $ex_volume_uuid | ydump > $last_result_path
-#   assertEquals 0 $?
+  # backup second blank volume
+  run_cmd instance backup_volume ${instance_uuid} $ex_volume_uuid | ydump > $last_result_path
+  assertEquals 0 $?
 
-#   local backup_obj_uuid=$(yfind ':backup_object_id:' < $last_result_path)
-#   test -n "$backup_obj_uuid"
-#   assertEquals 0 $?
+  local backup_obj_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+  test -n "$backup_obj_uuid"
+  assertEquals 0 $?
 
-#   # assert that poweron should fail until backup task completes.
-#   run_cmd instance poweron ${instance_uuid} >/dev/null
-#   assertNotEquals 0 $?
+  # assert that poweron should fail until backup task completes.
+  run_cmd instance poweron ${instance_uuid} >/dev/null
+  assertNotEquals 0 $?
 
-#   retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
-#   assertEquals 0 $?
+  retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
+  assertEquals 0 $?
 
-#   # delete backup_object
-#   run_cmd backup_object destroy ${backup_obj_uuid}
-#   assertEquals 0 $?
+  # delete backup_object
+  run_cmd backup_object destroy ${backup_obj_uuid}
+  assertEquals 0 $?
 
-#   # terminate the instance.
-#   run_cmd instance destroy ${instance_uuid} >/dev/null
-#   assertEquals 0 $?
-# }
+  # terminate the instance.
+  run_cmd instance destroy ${instance_uuid} >/dev/null
+  assertEquals 0 $?
+}
 
 ## shunit2
 . ${shunit2_file}
