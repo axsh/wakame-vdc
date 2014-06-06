@@ -109,6 +109,10 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
   test -n "$backup_object_uuid"
   assertEquals 0 $?
 
+  local volume_backup_object_uuid=$(yfind ':volumes:/0/:backup_object_id:' < $last_result_path)
+  test -n "$backup_object_uuid"
+  assertEquals 0 $?
+
   # assert that poweron should fail until backup task completes.
   run_cmd instance poweron ${instance_uuid} >/dev/null
   assertNotEquals 0 $?
@@ -122,6 +126,10 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
 
   # delete backup object
   run_cmd backup_object destroy ${backup_object_uuid}
+  assertEquals 0 $?
+
+  # delete backup object
+  run_cmd backup_object destroy ${volume_backup_object_uuid}
   assertEquals 0 $?
 
   # terminate the instance.
