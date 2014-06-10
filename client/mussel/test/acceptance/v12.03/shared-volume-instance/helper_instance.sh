@@ -30,7 +30,7 @@ function remote_sudo() {
 
 function find_dev_path() {
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
-	fgrep -r ${volume_uuid} /sys/block/*/serial | awk -F/ '{print $4}'
+	fgrep -r ${volume_uuid} | awk -F/ '{print $4}'
 	EOS
 }
 
