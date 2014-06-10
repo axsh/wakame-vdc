@@ -30,12 +30,12 @@ function test_mount_shared_volume(){
   retry_until "document_pair? volume ${volume_uuid} state attached"
   assertEquals 0 $?
 
+  # TODO: temporarily using device /dev/sdc, /dev/vdc
   # blank device path 
-  dev_name=$(find_dev_path)
-  [[ -n "${dev_name}" ]]
+  blank_dev_path=$(blank_dev_path)
+  [[ -n "${blank_dev_path}" ]]
   assertEquals 0 $?
-  [[ -n "${dev_name}" ]] || return
-  blank_dev_path=/dev/${dev_name}
+  [[ -n "${blank_dev_path}" ]] || return
 
   # device-check
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
@@ -120,12 +120,12 @@ function test_mount_shared_volume_halted_instance(){
   # wait for sshd to be ready
   wait_for_sshd_to_be_ready    ${instance_ipaddr}
 
+  # TODO: temporarily using device /dev/sdc, /dev/vdc
   # blank device path
-  dev_name=$(find_dev_path)
-  [[ -n "${dev_name}" ]]
+  blank_dev_path=$(blank_dev_path)
+  [[ -n "${blank_dev_path}" ]]
   assertEquals 0 $?
-  [[ -n "${dev_name}" ]] || return
-  blank_dev_path=/dev/${dev_name}
+  [[ -n "${blank_dev_path}" ]] || return
 
   # device check
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
@@ -182,6 +182,7 @@ function test_mount_shared_volume_halted_instance(){
   run_cmd volume destroy ${volume_uuid}
   retry_until "document_pair? volume ${volume_uuid} state deleted"
   assertEquals 0 $?
+
 
   # terminate the instance.
   run_cmd instance destroy ${instance_uuid} >/dev/null

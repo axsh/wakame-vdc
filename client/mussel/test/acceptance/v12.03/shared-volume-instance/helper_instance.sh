@@ -28,9 +28,10 @@ function remote_sudo() {
 	EOS
 }
 
-function find_dev_path() {
+function blank_dev_path() {
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
-	fgrep -r ${volume_uuid} | awk -F/ '{print $4}'
+	[[ -b /dev/vdc ]] && echo /dev/vdc
+	[[ -b /dev/sdc ]] && echo /dev/sdc
 	EOS
 }
 
