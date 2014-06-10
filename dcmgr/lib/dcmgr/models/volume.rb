@@ -61,7 +61,7 @@ module Dcmgr::Models
 
       errors.add(:size, "Invalid volume size: #{self.size}") if self.size < 0
 
-      if self.instance
+      if self.instance(:reload=>true)
         # check if volume parameters are conformant for hypervisor.
         hypervisor_class = Dcmgr::Drivers::Hypervisor.driver_class(self.instance.hypervisor.to_sym)
         hypervisor_class.policy.validate_volume_model(self)

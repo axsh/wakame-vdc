@@ -189,12 +189,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       raise E::AttachVolumeFailure, "Volume is attached to running instance."
     end
 
-    guest_device_name = nil
-    if !params['guest_device_name'].blank?
-      guest_device_name = params['guest_device_name']
-    end
-
-    v.attach_to_instance(i, guest_device_name)
+    v.attach_to_instance(i)
 
     case i.state
     when C::Instance::STATE_RUNNING
