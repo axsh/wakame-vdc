@@ -29,7 +29,11 @@ module Dcmgr
         v = volume_hash
         opts = {}
         if v[:backup_object]
-          opts[:cache] = (@inst[:image][:backup_object_id] == v[:backup_object_id] && @inst[:image][:is_cacheable] == 1)
+          opts[:cache] = (
+            @inst[:image][:backup_object_id] == v[:backup_object_id] &&
+            @inst[:image][:is_cacheable] == 1
+          )
+
           @hva_ctx.logger.info("Creating volume #{v[:uuid]} from #{v[:backup_object_id]}.")
           # create volume from backup object.
           task_session.invoke(local_store_driver_class,

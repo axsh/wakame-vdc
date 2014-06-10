@@ -32,7 +32,7 @@ module Dcmgr::Models
       }
 
       nd[:local_vnics] = {}
-      local_vnics_dataset = self.network_vif_dataset.filter(:instance => Instance.runnings.filter(:host_node => HostNode.filter(:node_id => host_node_id)))
+      local_vnics_dataset = self.network_vif_dataset.filter(:instance => Instance.running_or_initializing.filter(:host_node => HostNode.filter(:node_id => host_node_id)))
       local_vnics_dataset.all.each { |vnic|
         nd[:local_vnics][vnic.canonical_uuid] = vnic.to_netfilter_document
       }

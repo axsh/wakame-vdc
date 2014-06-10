@@ -32,6 +32,13 @@ module Dcmgr
         end
       end
 
+      class Windows < Fuguta::Configuration
+        param :thread_concurrency, :default=>2
+
+        param :password_generation_sleeptime, default: 2
+        param :password_generation_timeout, default: 60 * 15
+      end
+
       class LocalStore < Fuguta::Configuration
         # enable local image cache under "vm_data_dir/_base"
         param :enable_image_caching, :default=>true
@@ -133,6 +140,10 @@ module Dcmgr
           @config[:local_store].parse_dsl(&blk)
         end
 
+        def windows(&blk)
+          @config[:windows].parse_dsl(&blk)
+        end
+
         def backup_storage(&blk)
           @config[:backup_storage].parse_dsl(&blk)
         end
@@ -162,6 +173,7 @@ module Dcmgr
         @config[:backup_storage] = BackupStorage.new(self)
         @config[:capture] = Capture.new(self)
         @config[:metadata] = Metadata.new(self)
+        @config[:windows] = Windows.new(self)
         @config[:hypervisor_driver] = {}
       end
 

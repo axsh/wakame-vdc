@@ -36,6 +36,7 @@ module Dcmgr::Models
     subset(:lives, {:terminated_at => nil})
     subset(:alives, {:terminated_at => nil})
     subset(:runnings, {:state => STATE_RUNNING})
+    subset(:running_or_initializing, {:state => [STATE_RUNNING, STATE_INITIALIZING]})
     subset(:stops, {:state => STATE_STOPPED})
 
     # lists the instances which alives and died within

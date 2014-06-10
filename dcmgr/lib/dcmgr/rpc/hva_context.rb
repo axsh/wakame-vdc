@@ -6,9 +6,15 @@ require 'isono'
 module Dcmgr
   module Rpc
     class HvaContext
+      ACCEPTED_CLASSES = [
+        HvaHandler,
+        LocalStoreHandler,
+        MigrationHandler,
+        WindowsHandler
+      ]
 
       def initialize(subject)
-        unless [HvaHandler, LocalStoreHandler, MigrationHandler].member?(subject.class)
+        unless ACCEPTED_CLASSES.member?(subject.class)
           raise "Invalid Class: #{subject.class}"
         end
         @hva = subject

@@ -11,7 +11,11 @@ require 'socket'
 
 include Isono::Runner::RpcServer
 
-path = [ENV['CONF_PATH'].to_s, '/etc/wakame-vdc/hva.conf', File.expand_path('config/hva.conf', Dcmgr::DCMGR_ROOT)].find { |i| File.exists?(i) }
+path = [ENV['CONF_PATH'].to_s,
+        '/etc/wakame-vdc/hva.conf',
+        File.expand_path('config/hva.conf', Dcmgr::DCMGR_ROOT)
+       ].find { |i| File.exists?(i) }
+
 abort("ERROR: Failed to load hva.conf") if path.nil?
 
 begin
@@ -34,9 +38,11 @@ manifest.instance_eval do
 
   load_module Isono::NodeModules::NodeHeartbeat
   load_module Dcmgr::NodeModules::InstanceMonitor
+
   if Dcmgr.conf.enabled_feature_resource_monitor
     load_module Dcmgr::NodeModules::Monitor
   end
+
   case Dcmgr.conf.edge_networking
   when 'openflow'
     load_module Dcmgr::NodeModules::DebugOpenFlow
@@ -48,8 +54,11 @@ manifest.instance_eval do
   when 'netfilter'
     load_module Dcmgr::NodeModules::ServiceNetfilter
   else
-    raise "Configuration error: '#{Dcmgr.conf.edge_networking}' is not a valid option for edge_networking. Valid options are 'openflow', 'netfilter', 'legacy_netfilter' and 'off'"
+    raise "Configuration error: '#{Dcmgr.conf.edge_networking}' is not " +
+          "a valid option for edge_networking. Valid options are 'openflow'," +
+          " 'netfilter', 'legacy_netfilter' and 'off'"
   end
+
   load_module Dcmgr::NodeModules::AlarmConfigUpdater
 end
 
@@ -58,6 +67,7 @@ Isono.at_disconnected do
 end
 
 start(manifest) do
+  endpoint "windows-handle.#{@node.node_id}", Dcmgr::Rpc::WindowsHandler
   endpoint "hva-handle.#{@node.node_id}", Dcmgr::Rpc::HvaHandler
   endpoint "local-store-handle.#{@node.node_id}", Dcmgr::Rpc::LocalStoreHandler
   endpoint "migration-handle.#{@node.node_id}", Dcmgr::Rpc::MigrationHandler
