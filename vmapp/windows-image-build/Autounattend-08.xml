@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend">
+    <settings pass="windowsPE">
+      <component name="Microsoft-Windows-PnpCustomizationsWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+         <DriverPaths>
+            <PathAndCredentials wcm:keyValue="1" wcm:action="add">
+               <Path>E:\WLH\AMD64</Path>
+            </PathAndCredentials>
+            <PathAndCredentials wcm:keyValue="2" wcm:action="add">
+               <Path>E:\VISTA\AMD64</Path>
+            </PathAndCredentials>
+         </DriverPaths>
+      </component>
+        <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DiskConfiguration>
+                <WillShowUI>OnError</WillShowUI>
+                <Disk wcm:action="add">
+                    <CreatePartitions>
+                        <CreatePartition wcm:action="add">
+                            <Order>1</Order>
+                            <Size>350</Size>
+                            <Type>Primary</Type>
+                        </CreatePartition>
+                        <CreatePartition wcm:action="add">
+                            <Order>2</Order>
+                            <Extend>true</Extend>
+                            <Type>Primary</Type>
+                        </CreatePartition>
+                    </CreatePartitions>
+                    <ModifyPartitions>
+                        <ModifyPartition wcm:action="add">
+                            <Active>true</Active>
+                            <Label>Boot</Label>
+                            <Format>NTFS</Format>
+                            <Order>1</Order>
+                            <PartitionID>1</PartitionID>
+                        </ModifyPartition>
+                        <ModifyPartition wcm:action="add">
+                            <Format>NTFS</Format>
+                            <Order>2</Order>
+                            <PartitionID>2</PartitionID>
+                            <Label>System</Label>
+                        </ModifyPartition>
+                    </ModifyPartitions>
+                    <DiskID>0</DiskID>
+                    <WillWipeDisk>true</WillWipeDisk>
+                </Disk>
+            </DiskConfiguration>
+            <ImageInstall>
+                <OSImage>
+                    <InstallTo>
+                        <PartitionID>2</PartitionID>
+                        <DiskID>0</DiskID>
+                    </InstallTo>
+                    <InstallToAvailablePartition>false</InstallToAvailablePartition>
+                    <WillShowUI>OnError</WillShowUI>
+                    <InstallFrom>
+                        <MetaData wcm:action="add">
+                            <Key>/IMAGE/NAME</Key>
+                            <!--
+                                Windows 7 ENTERPRISE
+                                Windows 8 ENTERPRISE
+                                Windows 8 PROFESSIONAL
+                                Windows 8.1 ENTERPRISE
+                                Windows 8.1 PROFESSIONAL
+                                Windows Server 2008 R2 SERVERHYPERCORE
+                                Windows Server 2008 R2 SERVERSTANDARD
+                                Hyper-V Server 2012 SERVERHYPERCORE
+                                Windows Server 2012 SERVERSTANDARD
+                                Hyper-V Server 2012 R2 SERVERHYPERCORE
+                                Windows Server 2012 R2 SERVERSTANDARD
+                            -->
+                            <Value>Windows Server 2008 R2 SERVERSTANDARD</Value>
+                        </MetaData>
+                    </InstallFrom>
+                </OSImage>
+            </ImageInstall>
+            <UserData>
+                <AcceptEula>true</AcceptEula>
+                <!--
+                <ProductKey>
+                    <Key>XXXXX-XXXXX-XXXXX-XXXXX-XXXXX</Key>
+                    <WillShowUI>OnError</WillShowUI>
+                </ProductKey>
+                -->
+            </UserData>
+        </component>
+        <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <SetupUILanguage>
+                <UILanguage>ja-JP</UILanguage>
+            </SetupUILanguage>
+            <InputLocale>ja-JP</InputLocale>
+            <UILanguage>ja-JP</UILanguage>
+            <SystemLocale>ja-JP</SystemLocale>
+            <UserLocale>ja-JP</UserLocale>
+        </component>
+    </settings>
+    <settings pass="oobeSystem">
+        <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <OOBE>
+                <HideEULAPage>true</HideEULAPage>
+                <!--
+                    ProtectYourPC:
+                    1 Specifies the recommended level of protection for your computer.
+                    2 Specifies that only updates are installed.
+                    3 Specifies that automatic protection is disabled.
+                -->
+                <ProtectYourPC>3</ProtectYourPC>
+                <NetworkLocation>Work</NetworkLocation>
+                <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+                <!-- Comment the following two options on Windows Vista / 7 and Windows Server 2008 / 2008 R2 -->
+                <!--
+                <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+                <HideLocalAccountScreen>true</HideLocalAccountScreen>
+                -->
+            </OOBE>
+            <!-- Use FirstLogonCommands instead of LogonCommands if you don't need to install Windows Updates -->
+            <UserAccounts>
+                <!--
+                    Password to be used only during initial provisioning.
+                    Must be rest with final Sysprep.
+                -->
+                <AdministratorPassword>
+                    <Value>axsh,1</Value>
+                    <PlainText>true</PlainText>
+                </AdministratorPassword>
+                <!-- The following is needed on a client OS -->
+                <!--
+                <LocalAccounts>
+                    <LocalAccount wcm:action="add">
+                        <Description>Admin user</Description>
+                        <DisplayName>Admin</DisplayName>
+                        <Group>Administrators</Group>
+                        <Name>Admin</Name>
+                    </LocalAccount>
+                </LocalAccounts>
+                -->
+            </UserAccounts>
+        </component>
+    </settings>
+    <settings pass="specialize">
+        <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <RunSynchronous>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>1</Order>
+                    <Path>A:\FinalStepsForInstall.cmd</Path>
+                </RunSynchronousCommand>
+            </RunSynchronous>
+        </component>
+    </settings>
+</unattend>

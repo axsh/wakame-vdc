@@ -1,0 +1,93 @@
+
+"Starting wakame-init-every-boot.ps1" | Write-Host
+
+$script:MDLetter = ""
+
+function Get_MD_Letter()
+{
+    if ( $script:MDLetter -eq "" )
+    {
+	# Output initial disk status for debugging online/offline status
+	"Testing 111" | Write-Host
+	"list disk" | diskpart.exe | Write-Host
+	"Testing 222" | Write-Host
+	if ($PSVersionTable.PSVersion.Major -gt 2) {
+	    # This does work with the version 2 PowerShell on Windows
+	    # Server 2008, but may be unnecessary because the
+	    # metadata disk is online by default.  Can't find any
+	    # documentation to say why it should behave differently
+	    # from Windows Server 2012.
+	    "Bringing all disks online" | Write-Host
+	    Get-Disk | ? IsOffline | Set-Disk -IsOffline:$false  # make sure all disks are online
+	}
+        $metavol = Get-WmiObject -class win32_volume -filter "Label = 'METADATA'"
+	$script:MDLetter = $metavol.DriveLetter
+	if ($script:MDLetter -eq $null)
+	{
+	    # set first free drive letter found with code from:
+	    # http://stackoverflow.com/questions/12488030/getting-a-free-drive-letter
+	    $script:MDLetter = (ls function:[e-z]: -n | ?{ !(test-path $_) } | select -First 1)
+	    write-host "Using drive letter $script:MDLetter"
+	    $phash = @{DriveLetter="$script:MDLetter" ;}
+	    Set-WmiInstance -input $metavol -Arguments $phash
+	}
+	if (! (Test-Path ("$script:MDLetter" + "\meta-data")))
+	{
+	    $msg = "Could not find meta-data directory on $script:MDLetter"
+	    $script:MDLetter = ""
+	    throw $msg
+	}
+	# Make sure Metadata drive is not mounted readonly
+	Get-Disk | foreach {
+            $adisk =  $_
+	    $_ | Get-Partition | foreach {
+		if ($_.DriveLetter -eq $script:MDLetter.trim(":")) {
+		    write-host "setting to readable: $adisk)"
+		    $adisk | Set-Disk -isreadonly:$false
+		}
+	    }
+	}
+    	# Output resulting disk status for debugging online/offline status
+	"Testing 333" | Write-Host
+	"list disk" | diskpart.exe | Write-Host
+	"Testing 444" | Write-Host
+    }
+    $script:MDLetter
+}
+
+function Read_Metadata( $mdpath )
+{
+    $mdl = Get_MD_Letter
+    [System.IO.File]::ReadAllText("$mdl\meta-data\$mdpath").trim()
+}
+
+function Get_Metadata_Mac_Addresses()
+{
+    $mdl = Get_MD_Letter
+    (Get-ChildItem "$mdl\meta-data\network\interfaces\macs") | foreach {
+       $_.Name
+    }
+}
+
+function Set_Networking_From_Metadata( $macAddr )
+{
+    $macAddrColons = $_.replace("-",":")
+    try {
+	$metaIpv4 = Read_Metadata("network\interfaces\macs\$macAddr\local-ipv4s")
+	$metaMask = Read_Metadata("network\interfaces\macs\$macAddr\x-netmask")
+	$metaGateway = Read_Metadata("network\interfaces\macs\$macAddr\x-gateway")
+	$wmi = Get-WmiObject win32_networkadapterconfiguration -filter "MACAddress = '$macAddrColons'"
+	if ($wmi -eq $null) {
+	    write-host "Could not find interface with MAC=$macAddrColons"
+	} else {
+	    write-host "Setting interface for ${macAddrColons}: IP=$metaIpv4, mask=$metaMask, gateway=$metaGateway"
+	    $wmi.EnableStatic($metaIpv4, $metaMask)
+	    $wmi.SetGateways($metaGateway, 1)
+	    # $wmi.SetDNSServerSearchOrder("10.0.0.100")
+	}
+    }
+    catch {
+	$Error[0] | Write-Host
+	Write-Host "Error occurred while setting interface with MAC=$macAddrColons"
+    }
+}
