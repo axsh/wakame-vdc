@@ -55,7 +55,9 @@ function Get_MD_Letter()
 	"Testing 111" | Write-Host
 	"list disk" | diskpart.exe | Write-Host
 	"Testing 222" | Write-Host
-	if ($PSVersionTable.PSVersion.Major -gt 2) {
+	$vers = $PSVersionTable.PSVersion.Major
+	"PowerShell Version: $($vers)" | Write-Host
+	if ($vers -gt 2) {
 	    # This does work with the version 2 PowerShell on Windows
 	    # Server 2008, but may be unnecessary because the
 	    # metadata disk is online by default.  Can't find any
