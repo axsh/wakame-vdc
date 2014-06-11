@@ -91,3 +91,11 @@ function Set_Networking_From_Metadata( $macAddr )
 	Write-Host "Error occurred while setting interface with MAC=$macAddrColons"
     }
 }
+
+# Set up networking
+Get_Metadata_Mac_Addresses | foreach { Set_Networking_From_Metadata( $_ ) }
+# The above can sometimes fail for multiple nics where one nic already has the
+# intended setting as the nic the code is currently trying to set.  Windows
+# seems to just ignore the request without thowing any errors.  The simple solution
+# here is just to set everything twice.
+Get_Metadata_Mac_Addresses | foreach { Set_Networking_From_Metadata( $_ ) }
