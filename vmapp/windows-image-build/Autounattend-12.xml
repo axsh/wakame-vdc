@@ -118,7 +118,7 @@
                     Must be rest with final Sysprep.
                 -->
                 <AdministratorPassword>
-                    <Value>axsh,1</Value>
+                    <Value>a:run-sysprep</Value>
                     <PlainText>true</PlainText>
                 </AdministratorPassword>
                 <!-- The following is needed on a client OS -->
