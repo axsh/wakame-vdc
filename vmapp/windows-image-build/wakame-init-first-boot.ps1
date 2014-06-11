@@ -230,10 +230,8 @@ catch {
 
 try {
     # Set up script for configuration on each reboot
-    $onbootScript = "C:\Windows\Setup\Scripts\wakame-init-every-boot.ps1"
-    $pspath = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
-    $wholecmd = "$pspath -ExecutionPolicy Unrestricted -nologo -noprofile -noninteractive $onbootScript"
-    schtasks /create /tn "Wakame Init" /tr "$wholecmd" /sc onstart /ru System
+    $onbootScript = "C:\Windows\Setup\Scripts\wakame-init-every-boot.cmd"
+    schtasks /create /tn "Wakame Init" /tr "$onbootScript" /sc onstart /ru System
 }
 catch {
     $Error[0] | Write-Host

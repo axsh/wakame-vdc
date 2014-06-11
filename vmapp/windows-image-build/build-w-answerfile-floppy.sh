@@ -77,6 +77,7 @@ for fn in FinalStepsForInstall.cmd \
 	     SetupComplete-firstboot.cmd \
 	     SetupComplete-install.cmd \
 	     run-sysprep.cmd \
+	     wakame-init-every-boot.cmd \
 	     wakame-init-every-boot.ps1 ; do
     sudo cp "$SCRIPT_DIR/$fn" "./mnt/"
 done
