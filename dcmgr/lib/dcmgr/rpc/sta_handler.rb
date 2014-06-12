@@ -18,6 +18,39 @@ module Dcmgr
         @storage_target = Dcmgr::Drivers::StorageTarget.driver_class(Dcmgr.conf.storage_target_driver).new
       end
 
+      def setup_and_export_volume_new
+        @sta_ctx = StaContext.new(self)
+
+        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:creating})
+
+        if @volume[:backup_object_id]
+
+          @backup_object = rpc.request('sta-collector', 'get_backup_object', @volume[:backup_object_id])
+          raise "Invalid backup_object state: #{@backup_object[:state]}" unless @backup_object[:state].to_s == 'available'
+
+          if backing_store.local_backup_object?(@backup_object)
+            # the backup data exists on the same storage and also
+            # is known how to convert to volume by the backing
+            # store driver. e.g. filesystem level snapshot.
+
+            logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{convert_byte(@volume[:size], MB)} MB)")
+            backing_store.create_volume_from_local_backup(@sta_ctx)
+
+          else
+            backing_store.create_volume_from_backup(@sta_ctx)
+          end
+        else
+          logger.info("Creating new blank volume #{@volume_id} (#{convert_byte(@volume[:size], MB)} MB)")
+          backing_store.create_blank_volume(@sta_ctx)
+        end
+        logger.info("Finished creating new volume #{@volume_id}.")
+
+        logger.info("Registering to storage target: #{@volume_id}")
+        opt = storage_target.create(@sta_ctx)
+        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :volume_device=>opt})
+        logger.info("Finished registering storage target: #{@volume_id}")
+      end
+
       # Setup volume file from snapshot storage and register to
       # sotrage target.
       def setup_and_export_volume
@@ -80,7 +113,11 @@ module Dcmgr
         @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
         raise "Invalid volume state: #{@volume[:state]}" unless @volume[:state].to_s == 'pending'
 
-        setup_and_export_volume
+        if backing_store.kind_of?(Drivers::BackingStore::CreateVolumeInterface)
+          setup_and_export_volume_new
+        else
+          setup_and_export_volume
+        end
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
