@@ -83,9 +83,6 @@ module Dcmgr
         param :serial_port_options, :default=>'telnet:127.0.0.1:%d,server,nowait'
         param :vnc_options, :default=>'127.0.0.1:%d'
         param :incoming_ip
-
-        param :windows_configuring_status_sleeptime, default: 2
-        param :windows_configuring_status_timeout, default: 60
       end
 
       # 0x0-2 are reserved by KVM.
@@ -111,12 +108,12 @@ module Dcmgr
 
         begin
           wait_for_kvm_termination(hc,
-            driver_configuration.windows_configuring_status_timeout,
-            driver_configuration.windows_configuring_status_sleeptime
+            Dcmgr.conf.windows.password_generation_timeout,
+            Dcmgr.conf.windows.password_generation_sleeptime
           )
         rescue Timeout::Error
           raise "Windows took too long generating a password. Waited %s seconds." %
-            driver_configuration.windows_configuring_status_timeout
+            Dcmgr.conf.windows.password_generation_timeout
         end
         logger.info "Windows finished configuring. " +
                     "Reading its password hash from metadata drive"
