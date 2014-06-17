@@ -66,22 +66,20 @@ module Dcmgr
               ["cat %s", [local_backup_path]]
             elsif @backup_storage.class.include?(BackupStorage::CommandAPI)
               # download_command() returns cmd_tuple.
-              @backup_storage.download_command(@backup_object, temp_path(@volume[:volume_device][:path]))
+              @backup_storage.download_command(@backup_object, download_temp_path(@volume[:volume_device][:path]))
             else
               logger.info("Downloading image file: #{volume_path}")
-              @backup_storage.download(@backup_object, temp_path(@volume[:volume_device][:path]))
-              logger.info("Copying #{temp_path(@volume[:volume_device][:path])} to #{volume_path}")
+              @backup_storage.download(@backup_object, download_temp_path(@volume[:volume_device][:path]))
+              logger.info("Copying #{download_temp_path(@volume[:volume_device][:path])} to #{volume_path}")
             
-              ["cat %s", [temp_path(@volume[:volume_device][:path])]]
+              ["cat %s", [download_temp_path(@volume[:volume_device][:path])]]
             end
 
           pv_command = [PV_COMMAND, [@backup_object[:size]]]
 
-          tmpdir = File.dirname(temp_path(nil))
-          
           case @backup_object[:container_format].to_sym
           when :tgz
-            Dir.mktmpdir(nil, tmpdir) { |tmpdir|
+            Dir.mktmpdir(nil, download_temp_dir) { |tmpdir|
               cmd_tuple_list << pv_command
               cmd_tuple_list << ["tar -zxS -C %s", [tmpdir]]
               shell.run!(build_piped_command(cmd_tuple_list))
@@ -96,7 +94,7 @@ module Dcmgr
             cmd_tuple_list << ['cp --sparse=always /dev/stdin %s', [volume_path]]
             shell.run!(build_piped_command(cmd_tuple_list))
           when :tar
-            Dir.mktmpdir(nil, tmpdir) { |tmpdir|
+            Dir.mktmpdir(nil, download_temp_dir) { |tmpdir|
               cmd_tuple_list << pv_command
               cmd_tuple_list << ["tar -xS -C %s", [tmpdir]]
               shell.run!(build_piped_command(cmd_tuple_list))
@@ -113,14 +111,18 @@ module Dcmgr
 
           raise "Image file is not ready: #{volume_path}" unless File.exist?(volume_path)
         ensure
-          File.unlink(temp_path(@volume[:volume_device][:path])) rescue nil
+          File.unlink(download_temp_path(@volume[:volume_device][:path])) rescue nil
         end
 
         private
         def volume_path
         end
 
-        def temp_path(real_path)
+        def download_temp_dir
+        end
+
+        def download_temp_path(real_path)
+          File.expand_path(real_path, download_temp_dir())
         end
 
         def build_piped_command(cmd_tuple_list)
@@ -231,7 +233,7 @@ module Dcmgr
       end
 
       # overload: 
-      def temp_path(real_path)
+      def download_temp_dir()
         File.join(driver_configuration.export_path, 'tmp')
       end
 
