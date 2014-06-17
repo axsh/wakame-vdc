@@ -114,6 +114,80 @@ module Dcmgr
           File.unlink(download_temp_path(@volume[:volume_device][:path])) rescue nil
         end
 
+        def local_copy_and_archive_volume(ctx, src_path, dest_path, progress_callback)
+          @ctx = ctx
+          @volume= ctx.volume
+          @backup_object = ctx.backup_object
+
+          tmpdir = Dir.mktmpdir(nil, download_temp_dir)
+          chksum_path = File.expand_path('md5', tmpdir)
+          size_path = File.expand_path('size', tmpdir)
+
+          logger.info("Local copy and archive: #{@backup_object_id}")
+          cmd = build_piped_command(build_archive_command(@ctx, src_path, chksum_path, size_path))
+          cmd += ('> %s' % [dest_path])
+          run_with_progress(cmd, progress_callback)
+
+          chksum = File.read(chksum_path).split(/\s+/).first
+          alloc_size = File.read(size_path).split(/\s+/).first
+
+          # Report archived file size & md5 checksum
+          progress_callback.setattr(chksum, alloc_size.to_i)
+          progress_callback.progress(100)
+        end
+
+        def upload_and_archive_volume(ctx, src_path, progress_callback)
+          @ctx = ctx
+          @volume= ctx.volume
+          @backup_object = ctx.backup_object
+
+          @bkst_drv_class = BackupStorage.driver_class(@backup_object[:backup_storage][:storage_type]).new
+
+          tmpdir = Dir.mktmpdir(nil, download_temp_dir)
+          chksum_path = File.expand_path('md5', tmpdir)
+          size_path = File.expand_path('size', tmpdir)
+
+          if @bkst_drv_class.class.include?(Drivers::BackupStorage::CommandAPI)
+            logger.info("Stream upload: #{@backup_object_id}")
+            # 1. build piped command line which does both compress
+            #    and upload.
+            # 2. Run the commoand line.
+            cmd_list = build_archive_command(@ctx, src_path, chksum_path, size_path)
+            cmd_list << @bkst_drv_class.upload_command(nil, @backup_object)
+
+            run_with_progress(build_piped_command(cmd_list), progress_callback)
+            chksum = File.read(chksum_path).split(/\s+/).first
+            alloc_size = File.read(size_path).split(/\s+/).first
+          else
+            logger.info("Convert and upload: #{@backup_object_id}")
+            # 1. Covert original image to archived/compressed format
+            #    and save to temporary file.
+            # 2. Upload the temporary file to the destination
+            bkup_tmp = Tempfile.new(volume[:uuid], download_temp_dir)
+            begin
+              bkup_tmp.close(false)
+
+              cmd = build_piped_command(build_archive_command(@ctx, src_path, chksum_path, size_path))
+              cmd += ('> %s' % [bkup_tmp.path])
+              run_with_progress(cmd, progress_callback)
+
+              alloc_size = File.size(bkup_tmp.path)
+              chksum = File.read(chksum_path).split(/\s+/).first
+
+              @bkst_drv_class.upload(bkup_tmp.path, @backup_object)
+            ensure
+              bkup_tmp.unlink rescue nil
+            end
+          end
+          # Report archived file size & md5 checksum
+          progress_callback.setattr(chksum, alloc_size.to_i)
+          progress_callback.progress(100)
+        ensure
+          if File.directory?(tmpdir)
+            FileUtils.remove_entry_secure(tmpdir)
+          end
+        end
+
         private
         def volume_path
         end
@@ -135,6 +209,78 @@ module Dcmgr
               t
             end
           }.join(' | ')
+        end
+
+        def build_archive_command(ctx, src_path, chksum_path, size_path)
+          fstat = File.stat(src_path)
+          fstat.instance_eval do
+            def block_size
+              blocks * 512 * 1024
+            end
+          end
+
+          cmd_tuple_list = []
+
+          # set approx file size estimated from the block count since the target
+          # file might be sparsed.
+          pv_command = [PV_COMMAND, [fstat.block_size.to_s]]
+
+          # build archive command.
+          cmd_tuple = case ctx.backup_object[:container_format].to_sym
+          when :tgz
+            # tar | pv | gzip
+            cmd_tuple_list.push(
+              ['tar -cS -C %s %s', [File.dirname(src_path),
+                                    File.basename(src_path)]
+              ],
+              pv_command,
+              'gzip')
+          when :tar
+            # tar | pv
+            cmd_tuple_list.push(
+              ['tar -cS -C %s %s', [File.dirname(src_path),
+                                    File.basename(src_path)]
+              ],
+              pv_command)
+          when :gz
+            # cp | pv | gzip
+            cmd_tuple_list.push(
+              ['cp -p --sparse=always %s /dev/stdout', [src_path]],
+              pv_command,
+              'gzip'
+              )
+          else
+            cmd_tuple_list.push(
+              ["cp -p --sparse=always %s /dev/stdout", [src_path]],
+              pv_command
+            )
+          end
+          
+          # Insert reporting part for md5sum and archived byte size.
+          cmd_tuple_list << ["tee >(md5sum > '%s') >(wc -c > '%s')", [chksum_path, size_path]]
+          cmd_tuple_list          
+        end
+
+        def run_with_progress(cmd, callback)
+          stderr_buf=""
+          logger.info("Executing command line: " + cmd)
+          r = shell.popen4(cmd) do |pid, sin, sout, eout|
+            sin.close
+            begin
+              while l = eout.readline
+                if l =~ /(\d+)/
+                  # Report transfer progress
+                  callback.progress($1.to_f)
+                end
+                stderr_buf << l
+              end
+            rescue EOFError
+              # ignore this error
+            end
+          end
+          unless r.exitstatus == 0
+            raise "Failed to run archive & upload command: exitcode=#{r.exitstatus}\n#{stderr_buf}"
+          end
         end
       end
 
@@ -202,9 +348,18 @@ module Dcmgr
 
       include BackingStore::ProvideBackupVolume
 
-      def backup_volume(ctx)
+      def backup_volume(ctx, progress_callback)
+        # src volume
         @volume = ctx.volume
-        cp_sparse(volume_path, backup_real_path(backup_object_key_created(ctx)))
+        # dest backup
+        @backup_object = ctx.backup_object
+
+        @bkst_drv_class = BackupStorage.driver_class(@backup_object[:backup_storage][:storage_type]).new
+        if self.local_backup_object?(@backup_object)
+          local_copy_and_archive_volume(ctx, volume_path(), backup_real_path(@backup_object[:object_key]), progress_callback)
+        else
+          upload_and_archive_volume(ctx, volume_path(), progress_callback)
+        end
       end
 
       def delete_backup(ctx)
@@ -247,6 +402,7 @@ module Dcmgr
         end
       end
 
+      # Local backup path
       def backup_real_path(backup_key)
         File.join(driver_configuration.local_backup_path, backup_key)
       end

@@ -24,7 +24,6 @@ module Dcmgr
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:creating})
 
         if @volume[:backup_object_id]
-
           @backup_object = rpc.request('sta-collector', 'get_backup_object', @volume[:backup_object_id])
           raise "Invalid backup_object state: #{@backup_object[:state]}" unless @backup_object[:state].to_s == 'available'
 
@@ -32,10 +31,8 @@ module Dcmgr
             # the backup data exists on the same storage and also
             # is known how to convert to volume by the backing
             # store driver. e.g. filesystem level snapshot.
-
             logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{convert_byte(@volume[:size], MB)} MB)")
             backing_store.create_volume_from_local_backup(@sta_ctx)
-
           else
             backing_store.create_volume_from_backup(@sta_ctx)
           end
@@ -59,7 +56,6 @@ module Dcmgr
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:creating})
 
         if @volume[:backup_object_id]
-
           @backup_object = rpc.request('sta-collector', 'get_backup_object', @volume[:backup_object_id])
           raise "Invalid backup_object state: #{@backup_object[:state]}" unless @backup_object[:state].to_s == 'available'
 
@@ -70,14 +66,11 @@ module Dcmgr
 
             logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{convert_byte(@volume[:size], MB)} MB)")
             backing_store.create_volume(@sta_ctx, @backup_object[:object_key])
-
           else
             # download backup data from backup storage. then create
             # volume from the snapshot.
-
             begin
               snap_tmp_path = File.expand_path("#{@volume[:uuid]}.tmp", Dcmgr.conf.tmp_dir)
-
               begin
                 # download backup object to the tmporary place.
                 backup_storage = Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])
@@ -95,13 +88,11 @@ module Dcmgr
               File.unlink(snap_tmp_path) rescue nil
             end
           end
-
         else
           logger.info("Creating new blank volume #{@volume_id} (#{convert_byte(@volume[:size], MB)} MB)")
           backing_store.create_volume(@sta_ctx, nil)
         end
         logger.info("Finished creating new volume #{@volume_id}.")
-
         logger.info("Registering to storage target: #{@volume_id}")
         opt = storage_target.create(@sta_ctx)
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :volume_device=>opt})
@@ -184,14 +175,52 @@ module Dcmgr
         end
       end
 
+      class ProgressCallback
+        def initialize(&blk)
+          @callee = blk
+        end
+
+        def setattr(checksum, alloc_size)
+          @callee.call(:setattr, checksum, alloc_size)
+        end
+
+        def progress(percent)
+          if !(0.0 > percent.to_f)
+            percent = 0
+          elsif 100.0 < percent.to_f
+            percent = 100
+          end
+          @callee.call(:progress, percent)
+        end
+      end
+      
       def backup_single_volume()
         new_object_key = nil
-
         raise "Missing volume hash object" if @sta_ctx.volume.nil?
+        
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:state=>:creating})
+
+        progress_callback = ProgressCallback.new { |cmd, *value|
+            case cmd
+            when :setattr
+              # update checksum & allocation_size of the backup object
+              rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {
+                            :checksum=>value[0],
+                            :allocation_size => value[1],
+                          })
+            when :progress
+              # update upload progress of backup object
+              rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:progress=>value[0]}) do |req|
+                req.oneshot = true
+              end
+            else
+              raise "Unknown callback command: #{cmd}"
+            end
+        }
         
         # backup volume
         if backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvideBackupVolume)
-          backing_store.backup_volume(@sta_ctx)
+          backing_store.backup_volume(@sta_ctx, progress_callback)
           new_object_key = backing_store.backup_object_key_created(@sta_ctx)
         elsif backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvidePointInTimeSnapshot)
           # take one generation snapshot -> copy data -> delete snapshot.
@@ -208,7 +237,7 @@ module Dcmgr
         @backup_object_id = request.args[1]
 
         @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
-        @backup_object = rpc.request('sta-collector', 'get_backup_object', @backup_object_id) unless @backup_object_id.nil?
+        @backup_object = rpc.request('sta-collector', 'get_backup_object', @backup_object_id)
         @sta_ctx = StaContext.new(self)
 
         new_object_key = backup_single_volume
@@ -228,6 +257,7 @@ module Dcmgr
         @sta_ctx = StaContext.new(self)
 
         rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:state=>:creating})
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating})
         
         new_object_key = backup_single_volume
 

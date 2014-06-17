@@ -51,7 +51,7 @@ module Dcmgr
       module ProvideBackupVolume
         # Create local backup from volume.
         # @param StaContext ctx
-        def backup_volume(ctx)
+        def backup_volume(ctx, progress_callback)
           raise NotImplementedError
         end
 
@@ -59,7 +59,7 @@ module Dcmgr
           raise NotImplementedError
         end
 
-        # @return String path to the backup object key by backup_volume().
+        # @return String path to the backup object.
         #
         # backup_volume(ctx)
         # puts backup_object_key_created(ctx)
