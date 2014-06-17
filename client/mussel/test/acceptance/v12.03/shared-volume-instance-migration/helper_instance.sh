@@ -68,3 +68,8 @@ function after_create_instance() {
   boot_volume_uuid=$(run_cmd instance show ${instance_uuid} | hash_value boot_volume_id)
 }
 
+function before_destroy_instance() {
+  ssh_key_pair_uuid="$(cached_instance_param ${instance_uuid}   | egrep ' ssh-' | awk '{print $2}')"
+  security_group_uuid="$(cached_instance_param ${instance_uuid} | egrep ' sg-'  | awk '{print $2}')"
+}
+
