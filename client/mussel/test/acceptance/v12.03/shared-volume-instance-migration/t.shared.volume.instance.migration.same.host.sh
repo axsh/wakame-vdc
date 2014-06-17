@@ -64,7 +64,7 @@ function test_migration_shared_volume_instance_same_host(){
   assertEquals 0 $?
 
   # sleep process id 2
-  process_id1=$(sleep_process_id)
+  process_id2=$(sleep_process_id)
   [[ -n "${process_id2}" ]]
   assertEquals 0 $?
   echo "sleep process id: ${process_id2}"
@@ -122,8 +122,8 @@ function test_migration_shared_volume_instance_same_host(){
   assertEquals ${process_id2} ${new_process_id2}
 
   # terminate the instance 1.
-  local instance_uuid=${instance_uuid1}
-  destroy_instance
+  run_cmd instance destroy ${instance_uuid1} >/dev/null
+  assertEquals 0 $?
 
   # terminate the instance 2.
   local instance_uuid=${instance_uuid2}
