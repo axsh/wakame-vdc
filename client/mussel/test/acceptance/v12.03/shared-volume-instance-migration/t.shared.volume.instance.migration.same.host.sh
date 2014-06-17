@@ -130,3 +130,8 @@ function test_migration_shared_volume_instance_same_host(){
   destroy_instance
 
 }
+
+## shunit2
+
+. ${shunit2_file}
+
