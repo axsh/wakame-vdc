@@ -120,6 +120,9 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
   retry_until "document_pair? image ${image_uuid} state available"
   assertEquals 0 $?
 
+  retry_until "document_pair? backup_object ${volume_backup_object_uuid} state available"
+  assertEquals 0 $?
+
   # delete image
   run_cmd image destroy ${image_uuid}
   assertEquals 0 $?
