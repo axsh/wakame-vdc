@@ -244,7 +244,10 @@ module Dcmgr
 
         rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
                     {:state=>:available, :object_key=>new_object_key})
-        logger.info("created new backup: #{@backup_object_id}")
+        logger.info("Created new backup from #{@volume_id}: #{@backup_object_id}")
+      }, proc {
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
+                    {:state=>:deleted})
       }
 
       job :backup_image, proc {
@@ -253,8 +256,15 @@ module Dcmgr
         @image_id = request.args[2]
 
         @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
+        @image = rpc.request('sta-collector', 'get_image', @image_id)
         @backup_object = rpc.request('sta-collector', 'get_backup_object', @backup_object_id) unless @backup_object_id.nil?
         @sta_ctx = StaContext.new(self)
+
+        if @image[:state] == 'deleted'
+          raise "Skip to backup volume since the associated image #{@image_id} had been destroyed already: #{@backup_object_id}"
+        elsif @image[:state] != 'creating'
+          raise "Unexpected image state: #{@image_id}, #{@image[:state]}"
+        end
 
         rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:state=>:creating})
         rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating})
@@ -263,9 +273,14 @@ module Dcmgr
 
         rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
                     {:state=>:available, :object_key=>new_object_key})
-        logger.info("created new backup: #{@backup_object_id}")
+        logger.info("Created new backup from #{@volume_id} for image #{@image_id}: #{@backup_object_id}")
         rpc.request('sta-collector', 'post_process_backup_image',
                     @image_id)
+      }, proc {
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
+                    {:state=>:deleted, :deleted_at=>Time.now.utc})
+        rpc.request('sta-collector', 'update_image', @image_id,
+                    {:state=>:deleted, :deleted_at=>Time.now.utc})
       }
       
       job :create_snapshot, proc {
