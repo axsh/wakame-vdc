@@ -16,7 +16,29 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                  '/etc/wakame-vdc/dcmgr.conf',
                  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
                 ])
-Dcmgr.run_initializers('logger', 'sequel')
+
+Dcmgr.run_initializers('logger', 'sequel', 'sequel_class_method_hook')
+
+if Dcmgr.conf.dcmgr_dcell_node_uri
+  require 'dcell'
+
+  #
+  # We need to use an port except for some that is used in vdc nodes
+  #
+  # http://www.commandlinefu.com/commands/view/7299/find-an-unused-unprivileged-tcp-port
+  port = `netstat  -atn | perl -0777 -ne '@ports = /tcp.*?\:(\d+)\s+/imsg ; for $port (32768..61000) {if(!grep(/^$port$/, @ports)) { print $port; last } }'`
+  puts "port: #{port}"
+  raise "Fail to get an unused port" unless $? == 0
+
+  DCell.start(:addr => "tcp://127.0.0.1:#{port}",
+    :registry => {
+      :adapter => Dcmgr.conf.dcell_adapter,
+      :host => Dcmgr.conf.dcell_host,
+      :port => Dcmgr.conf.dcell_port
+    }
+  )
+  Dcmgr.run_initializers('vnet_hook')
+end
 
 
 class RootCli < Thor
