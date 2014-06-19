@@ -92,14 +92,15 @@ function test_migration_shared_volume_instance(){
   retry_until "document_pair? volume ${volume_uuid} state attached"
   assertEquals 0 $?
 
+  # blank device path 
+  blank_dev_path=$(blank_dev_path)
+  [[ -n "${blank_dev_path}" ]]
+  assertEquals 0 $?
+  [[ -n "${blank_dev_path}" ]] || return
+
   # check the attach second volume.
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-	${remote_sudo} lsblk
-	EOS
-  assertEquals 0 $?
-
-  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-	${remote_sudo} ls -la /dev/disk/by-id/
+	${remote_sudo} lsblk -d ${blank_dev_path}
 	EOS
   assertEquals 0 $?
 
@@ -109,6 +110,10 @@ function test_migration_shared_volume_instance(){
   assertEquals 0 $?
 
   # check the detach second volume.
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} lsblk -d ${blank_dev_path}
+	EOS
+  assertNotEquals 0 $?
 
   # delete new blank volume
   run_cmd volume destroy ${volume_uuid}
@@ -165,9 +170,16 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   echo "sleep process id: ${new_process_id}"
   assertEquals ${process_id} ${new_process_id}
 
+  # blank device path 
+  volume_uuid=${ex_volume_uuid}
+  blank_dev_path=$(blank_dev_path)
+  [[ -n "${blank_dev_path}" ]]
+  assertEquals 0 $?
+  [[ -n "${blank_dev_path}" ]] || return
+
   # check the second blank disk.
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-	${remote_sudo} ls -la /dev/disk/by-id/ | grep ${ex_volume_uuid}
+	${remote_sudo} lsblk -d ${blank_dev_path}
 	EOS
   assertEquals 0 $?
 

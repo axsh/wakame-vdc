@@ -27,11 +27,15 @@ function remote_sudo() {
 	EOS
 }
 
-function blank_dev_path() {
-  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
-	[[ -b /dev/vdc ]] && echo /dev/vdc
-	[[ -b /dev/sdc ]] && echo /dev/sdc
+function blank_dev_serial() {
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	fgrep -r ${volume_uuid} /sys/block/*/serial
 	EOS
+}
+
+function blank_dev_path() {
+  dev_name=$(blank_dev_serial | awk -F/ '{print $4}')
+  [[ -n "${dev_name}" ]] && echo /dev/${dev_name}
 }
 
 function bind_sleep_process() {
