@@ -10,8 +10,8 @@
 . ${BASH_SOURCE[0]%/*}/helper_instance.sh
 
 ## variables
-launch_host_node=${launch_host_node:-hn-dsv0003}
-migration_host_node=${migration_host_node:-hn-dsv0005}
+launch_host_node=${launch_host_node:-hn-demo1}
+migration_host_node=${migration_host_node:-hn-demo2}
 blank_volume_size=${blank_volume_size:-10}
 
 ## hook functions

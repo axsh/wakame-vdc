@@ -10,19 +10,21 @@
 . ${BASH_SOURCE[0]%/*}/helper_instance.sh
 
 ## variables
-launch_host_node=${launch_host_node:-hn-demo1}
-migration_host_node=${migration_host_node:-hn-demo2}
+launch_host_node1=${launch_host_node:-hn-demo1}
+launch_host_node2=${migration_host_node:-hn-demo2}
+migration_host_node1=${migration_host_node:-hn-demo2}
+migration_host_node2=${launch_host_node:-hn-demo1}
 blank_volume_size=${blank_volume_size:-10}
 
 ## hook functions
 
 ### step
 
-# API test for shared volume instance migration to same host.
+# API test for shared volume instance migration to different host.
 #
-function test_migration_shared_volume_instance_same_host(){
+function test_migration_shared_volume_instance_different_host(){
   # boot shared volume instance 1.
-  local host_node_id=${launch_host_node}
+  local host_node_id=${launch_host_node1}
   create_instance
 
   # setup instance 1.
@@ -30,6 +32,7 @@ function test_migration_shared_volume_instance_same_host(){
   local instance_ipaddr1=${instance_ipaddr}
 
   # boot shared volume instance 2.
+  local host_node_id=${launch_host_node2}
   create_instance
 
   # setup instance 2
@@ -59,11 +62,11 @@ function test_migration_shared_volume_instance_same_host(){
   echo "sleep process id: ${process_id2}"
 
   # migration the instance 1.
-  host_node_id=${migration_host_node} run_cmd instance move ${instance_uuid1} >/dev/null
+  host_node_id=${migration_host_node1} run_cmd instance move ${instance_uuid1} >/dev/null
   assertEquals 0 $?
 
   # migration the instance 2.
-  host_node_id=${migration_host_node} run_cmd instance move ${instance_uuid2} >/dev/null
+  host_node_id=${migration_host_node2} run_cmd instance move ${instance_uuid2} >/dev/null
   assertEquals 0 $?
 
   # wait migration
@@ -90,11 +93,11 @@ function test_migration_shared_volume_instance_same_host(){
   assertEquals ${process_id2} ${new_process_id2}
 
   # migration the instance 1.
-  host_node_id=${launch_host_node} run_cmd instance move ${instance_uuid1} >/dev/null
+  host_node_id=${launch_host_node1} run_cmd instance move ${instance_uuid1} >/dev/null
   assertEquals 0 $?
 
   # migration the instance 2.
-  host_node_id=${launch_host_node} run_cmd instance move ${instance_uuid2} >/dev/null
+  host_node_id=${launch_host_node2} run_cmd instance move ${instance_uuid2} >/dev/null
   assertEquals 0 $?
 
   # wait migration
