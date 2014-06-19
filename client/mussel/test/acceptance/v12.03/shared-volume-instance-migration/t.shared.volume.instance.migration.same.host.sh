@@ -16,17 +16,6 @@ blank_volume_size=${blank_volume_size:-10}
 
 ## hook functions
 
-instance_result_path1=""
-instance_result_path2=""
-
-function setUp(){
-  instance_result_path1=$(mktemp --tmpdir=${SHUNIT_TMPDIR})
-  instance_result_path2=$(mktemp --tmpdir=${SHUNIT_TMPDIR})
-
-  # reset command parameters
-  volumes_args=
-}
-
 ### step
 
 # API test for shared volume instance migration to same host.
