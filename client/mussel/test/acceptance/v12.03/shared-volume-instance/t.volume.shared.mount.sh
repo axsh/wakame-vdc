@@ -84,8 +84,7 @@ function test_mount_shared_volume(){
   assertEquals 0 $?
 
   # terminate the instance.
-  run_cmd instance destroy ${instance_uuid} >/dev/null
-  assertEquals 0 $?
+  destroy_instance
 }
 
 function test_mount_shared_volume_halted_instance(){
@@ -183,10 +182,8 @@ function test_mount_shared_volume_halted_instance(){
   retry_until "document_pair? volume ${volume_uuid} state deleted"
   assertEquals 0 $?
 
-
   # terminate the instance.
-  run_cmd instance destroy ${instance_uuid} >/dev/null
-  assertEquals 0 $?
+  destroy_instance
 }
 
 ## shunit2
