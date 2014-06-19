@@ -16,17 +16,6 @@ blank_volume_size=${blank_volume_size:-10}
 
 ## hook functions
 
-instance_result_path1=""
-instance_result_path2=""
-
-function setUp(){
-  instance_result_path1=$(mktemp --tmpdir=${SHUNIT_TMPDIR})
-  instance_result_path2=$(mktemp --tmpdir=${SHUNIT_TMPDIR})
-
-  # reset command parameters
-  volumes_args=
-}
-
 ### step
 
 # API test for shared volume instance migration to same host.
@@ -71,11 +60,16 @@ function test_migration_shared_volume_instance_same_host(){
 
   # migration the instance 1.
   host_node_id=${migration_host_node} run_cmd instance move ${instance_uuid1} >/dev/null
-  retry_until "document_pair? instance ${instance_uuid1} state running"
   assertEquals 0 $?
 
   # migration the instance 2.
   host_node_id=${migration_host_node} run_cmd instance move ${instance_uuid2} >/dev/null
+  assertEquals 0 $?
+
+  # wait migration
+  retry_until "document_pair? instance ${instance_uuid1} state running"
+  assertEquals 0 $?
+
   retry_until "document_pair? instance ${instance_uuid2} state running"
   assertEquals 0 $?
 
@@ -97,11 +91,16 @@ function test_migration_shared_volume_instance_same_host(){
 
   # migration the instance 1.
   host_node_id=${launch_host_node} run_cmd instance move ${instance_uuid1} >/dev/null
-  retry_until "document_pair? instance ${instance_uuid1} state running"
   assertEquals 0 $?
 
   # migration the instance 2.
   host_node_id=${launch_host_node} run_cmd instance move ${instance_uuid2} >/dev/null
+  assertEquals 0 $?
+
+  # wait migration
+  retry_until "document_pair? instance ${instance_uuid1} state running"
+  assertEquals 0 $?
+
   retry_until "document_pair? instance ${instance_uuid2} state running"
   assertEquals 0 $?
 
