@@ -29,7 +29,7 @@ function remote_sudo() {
 }
 
 function blank_dev_serial() {
-  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-'EOS'
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
 	fgrep -r ${volume_uuid} /sys/block/*/serial
 	EOS
 }
