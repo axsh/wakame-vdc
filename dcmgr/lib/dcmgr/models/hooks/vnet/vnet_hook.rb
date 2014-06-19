@@ -54,5 +54,40 @@ Dcmgr::Models::NetworkService.after_create do |network_service|
   })
 end
 
+Dcmgr::Models::SecurityGroup.after_create do |security_group|
+  security_group.db.after_commit do
+    converted_rule = (security_group.rule || "").split("\n").map do |rule|
+      next rule if rule =~ /^ *#/
 
+      #  Maybe more strict expression should be required
+      m = rule.match(/^(?<protocol>[^:]*):(?<from_port>-?\d+),(?<to_port>-?\d+),ip4:(?<ipaddr>.+)$/)
+      raise "Invalid rule. security_group: #{security_group.canonical_uuid} rule: #{rule}" unless m
 
+      if m[:protocol] == "icmp"
+        "#{m[:protocol]}::#{m[:ipaddr]}"
+      elsif m[:from_port] != m[:to_port]
+        (m[:from_port].to_i...m[:to_port].to_i).map do |port|
+          "#{m[:protocol]}:#{port}:#{m[:ipaddr]}"
+        end
+      else
+        "#{m[:protocol]}:#{m[:from_port]}:#{m[:ipaddr]}"
+      end
+    end.flatten.join("\n")
+
+    filter_params(:SecurityGroup, security_group.to_hash, {
+      :uuid => :uuid,
+      :display_name => security_group.display_name || security_group.canonical_uuid,
+      :rules => converted_rule,
+      :description => :description
+    })
+  end
+end
+
+Dcmgr::Models::NetworkVifSecurityGroup.after_create do |network_vif_security_group|
+  network_vif_security_group.db.after_commit do
+    filter_params(:NetworkVifSecurityGroup, network_vif_security_group.to_hash, {
+      :interface_uuid => "if-#{network_vif_security_group.network_vif.uuid}",
+      :security_group_uuid => "sg-#{network_vif_security_group.security_group.uuid}"
+    })
+  end
+end
