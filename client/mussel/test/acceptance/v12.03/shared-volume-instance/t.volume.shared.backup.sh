@@ -74,8 +74,7 @@ function test_image_backup_just_for_boot_volume() {
   assertEquals 0 $?
 
   # terminate the instance.
-  run_cmd instance destroy ${instance_uuid} >/dev/null
-  assertEquals 0 $?
+  destroy_instance
 }
 
 function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
@@ -136,8 +135,7 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
   assertEquals 0 $?
 
   # terminate the instance.
-  run_cmd instance destroy ${instance_uuid} >/dev/null
-  assertEquals 0 $?
+  destroy_instance
 }
 
 function test_volume_backup_second_blank_volume(){
@@ -176,8 +174,7 @@ function test_volume_backup_second_blank_volume(){
   assertEquals 0 $?
 
   # terminate the instance.
-  run_cmd instance destroy ${instance_uuid} >/dev/null
-  assertEquals 0 $?
+  destroy_instance
 }
 
 ## shunit2
