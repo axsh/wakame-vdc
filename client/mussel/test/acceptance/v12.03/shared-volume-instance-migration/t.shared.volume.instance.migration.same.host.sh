@@ -20,6 +20,18 @@ blank_volume_size=${blank_volume_size:-10}
 
 # API test for shared volume instance migration to same host.
 #
+# 1. boot shared volume instance 1.
+# 2. boot shared volume instance 2.
+# 3. migration the instance 1.
+# 4. migration the instance 2.
+# 5. check the process 1.
+# 6. check the process 2.
+# 7. migration the instance 1.
+# 8. migration the instance 2.
+# 9. check the process 1.
+# 10. check the process 2.
+# 11. terminate the instance 1.
+# 12. terminate the instance 2.
 function test_migration_shared_volume_instance_same_host(){
   # boot shared volume instance 1.
   local host_node_id=${launch_host_node}
