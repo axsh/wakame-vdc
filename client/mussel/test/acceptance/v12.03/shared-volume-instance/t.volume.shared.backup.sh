@@ -27,8 +27,18 @@ function before_create_instance() {
 }
 
 ## step
+
+# API test for image backup just for boot volume.
+#
+# 1. boot shared volume instance.
+# 2. poweroff the instance.
+# 3. instance backup.
+# 4. assert that poweron should fail until backup task completes.
+# 5. delete image.
+# 6. delete backup object.
+# 7. terminate the instance.
 function test_image_backup_just_for_boot_volume() {
-  # boot boot shared volume instance
+  # boot shared volume instance
   create_instance
 
   # poweroff instance
@@ -77,8 +87,18 @@ function test_image_backup_just_for_boot_volume() {
   destroy_instance
 }
 
+# API test for image backup just for boot volume and second blank volume
+#
+# 1. boot shared volume instance.
+# 2. poweroff instance.
+# 3. backup instance and second blank volume.
+# 4. assert that poweron should fail until backup task completes.
+# 5. delete image.
+# 6. delete backup object from boot volume.
+# 7. delete backup object from second blank volume.
+# 8. delete terminate the instance.
 function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
-  # boot boot shared volume instance
+  # boot shared volume instance
   create_instance
 
   # poweroff instance
@@ -138,8 +158,16 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
   destroy_instance
 }
 
+# API test for volume backup second blank volume.
+#
+# 1. boot shared volume instance.
+# 2. poweroff instance.
+# 3. backup second blank volume.
+# 4. assert that poweron should fail until backup task completes.
+# 5. delete backup object from second blank volume.
+# 6. terminate the instance.
 function test_volume_backup_second_blank_volume(){
-  # boot boot shared volume instance
+  # boot shared volume instance
   create_instance
 
   # poweroff instance

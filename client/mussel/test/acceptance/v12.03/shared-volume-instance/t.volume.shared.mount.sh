@@ -14,6 +14,20 @@ blank_volume_size=${blank_volume_size:-10}
 
 ## step
 
+# API test for mount shared volume.
+#
+# 1. boot shared volume instance.
+# 2. create new volume.
+# 3. attch volume to instance.
+# 4. device check.
+# 5. volume format.
+# 6. volume mount.
+# 7. check disk-usage.
+# 8. volume umount.
+# 9. detach volume to instance.
+# 10. device check.
+# 11. delete volume.
+# 12. terminate the instance.
 function test_mount_shared_volume(){
   # boot shared volume instance
   create_instance
@@ -87,6 +101,23 @@ function test_mount_shared_volume(){
   destroy_instance
 }
 
+# API test for mount shared volume halted instance.
+#
+# 1. boot shared volume instance.
+# 2. poweroff instance.
+# 3. create new volume.
+# 4. attch volume to instance.
+# 5. poweron instance.
+# 6. device check.
+# 7. volume format.
+# 8. volume mount.
+# 9. check disk-usage.
+# 10. poweroff instance.
+# 11. detach volume to instance.
+# 12. poweron instance.
+# 13. device check.
+# 14. delete volume.
+# 15. terminate the instance.
 function test_mount_shared_volume_halted_instance(){
   # boot shared volume instance
   create_instance
