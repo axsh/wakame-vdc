@@ -147,6 +147,7 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   local volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
   test -n "${volume_uuid}"
   assertEquals 0 $?
+  echo ${volume_uuid}
 
   # bind sleep process
   bind_sleep_process
@@ -175,6 +176,7 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   [[ -n "${blank_dev_path}" ]]
   assertEquals 0 $?
   [[ -n "${blank_dev_path}" ]] || return
+  echo ${blank_dev_path}
 
   # check the second blank disk.
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
