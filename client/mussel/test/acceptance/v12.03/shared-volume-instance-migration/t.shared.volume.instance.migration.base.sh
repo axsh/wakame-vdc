@@ -159,6 +159,19 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   assertEquals 0 $?
   echo "sleep process id: ${process_id}"
 
+  # blank device path 
+  blank_dev_path=$(blank_dev_path)
+  [[ -n "${blank_dev_path}" ]]
+  assertEquals 0 $?
+  [[ -n "${blank_dev_path}" ]] || return
+  echo ${blank_dev_path}
+
+  # check the second blank disk.
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} lsblk -d ${blank_dev_path}
+	EOS
+  assertEquals 0 $?
+
   # migration the instance.
   host_node_id=${migration_host_node} run_cmd instance move ${instance_uuid} >/dev/null
   retry_until "document_pair? instance ${instance_uuid} state running"
@@ -170,13 +183,6 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   assertEquals 0 $?
   echo "sleep process id: ${new_process_id}"
   assertEquals ${process_id} ${new_process_id}
-
-  # blank device path 
-  blank_dev_path=$(blank_dev_path)
-  [[ -n "${blank_dev_path}" ]]
-  assertEquals 0 $?
-  [[ -n "${blank_dev_path}" ]] || return
-  echo ${blank_dev_path}
 
   # check the second blank disk.
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
