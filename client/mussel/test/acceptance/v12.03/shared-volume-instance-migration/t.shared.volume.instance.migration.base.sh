@@ -144,8 +144,8 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
   assertEquals 0 $?
 
-  local ex_volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
-  test -n "${ex_volume_uuid}"
+  local volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
+  test -n "${volume_uuid}"
   assertEquals 0 $?
 
   # bind sleep process
@@ -171,7 +171,6 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   assertEquals ${process_id} ${new_process_id}
 
   # blank device path 
-  volume_uuid=${ex_volume_uuid}
   blank_dev_path=$(blank_dev_path)
   [[ -n "${blank_dev_path}" ]]
   assertEquals 0 $?
