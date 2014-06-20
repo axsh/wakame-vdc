@@ -21,6 +21,12 @@ function oneTimeTearDown() {
 
 ## step
 
+# API test for shared volume instance lifecycle.
+#
+# 1. boot shared volume instance.
+# 2. poweroff the instance.
+# 3. poweron the instance.
+# 4. terminate the instance.
 function test_poweroff_instance_shared_volume(){
   run_cmd instance poweroff ${instance_uuid} >/dev/null
   retry_until "document_pair? instance ${instance_uuid} state halted"
