@@ -24,6 +24,14 @@ ssh_user=${ssh_user:-root}
 
 ## functions
 
+## hook functions
+
+last_result_path=""
+
+function setUp() {
+  last_result_path=$(mktemp --tmpdir=${SHUNIT_TMPDIR})
+}
+
 ### step
 
 function test_backup_instance_and_destroy() {
@@ -48,12 +56,12 @@ function test_backup_instance_and_destroy() {
   run_cmd instance poweroff ${instance_uuid} >/dev/null
   retry_until "document_pair? instance ${instance_uuid} state halted"
 
-  output="$(run_cmd instance backup ${instance_uuid})"
+  run_cmd instance backup "${instance_uuid}" | ydump > $last_result_path
   # ---
   # :instance_id: i-xxx
   # :backup_object_id: bo-xxx
   # :image_id: wmi-xxx
-  backup_object_uuid="$(echo "${output}" | hash_value backup_object_id)"
+  backup_object_uuid=$(yfind ':backup_object_ids:/0' < $last_result_path)
   new_image_uuid="$(echo "${output}" | hash_value image_id)"
 
   retry_until "document_pair? backup_object ${backup_object_uuid} state available"
