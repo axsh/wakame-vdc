@@ -26,8 +26,7 @@ if Dcmgr.conf.dcmgr_dcell_node_uri
   # We need to use an port except for some that is used in vdc nodes
   #
   # http://www.commandlinefu.com/commands/view/7299/find-an-unused-unprivileged-tcp-port
-  port = `netstat  -atn | perl -0777 -ne '@ports = /tcp.*?\:(\d+)\s+/imsg ; for $port (32768..61000) {if(!grep(/^$port$/, @ports)) { print $port; last } }'`
-  puts "port: #{port}"
+  port = `port=32768; while netstat -atn | grep -q :$port; do port=$(expr $port + 1); done; echo $port`
   raise "Fail to get an unused port" unless $? == 0
 
   DCell.start(:addr => "tcp://127.0.0.1:#{port}",
