@@ -98,3 +98,7 @@ function test_mount_shared_volume_with_instance(){
   destroy_instance
 }
 
+## shunit2
+
+. ${shunit2_file}
+
