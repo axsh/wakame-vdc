@@ -51,7 +51,7 @@ end
 Dcmgr::Models::NetworkVifIpLease.after_create do |nvil|
   unless nvil.network_vif_id.nil?
     filter_params(:NetworkVifIpLease, nvil.to_hash, {
-      :network_uuid => nvil.network && network.canonical_uuid,
+      :network_uuid => nvil.network && nvil.network.canonical_uuid,
       :interface_uuid => nvil.network_vif && "if-#{nvil.network_vif.uuid}",
       :ipv4_address => nvil && nvil.ipv4_s
     })
