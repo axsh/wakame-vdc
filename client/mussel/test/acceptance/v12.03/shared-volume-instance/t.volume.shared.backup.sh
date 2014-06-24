@@ -20,12 +20,6 @@ function setUp() {
   volumes_args=
 }
 
-## instance
-function before_create_instance() {
-  # boot instance with second blank volume.
-  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
-}
-
 ## step
 
 # API test for image backup just for boot volume.
@@ -40,6 +34,9 @@ function before_create_instance() {
 # 8. delete backup object.
 # 9. terminate the instance.
 function test_image_backup_just_for_boot_volume() {
+  # boot instance with second blank volume.
+  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
+
   # boot shared volume instance
   create_instance
 
@@ -117,6 +114,9 @@ function test_image_backup_just_for_boot_volume() {
 # 7. delete backup object from second blank volume.
 # 8. delete terminate the instance.
 function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
+  # boot instance with second blank volume.
+  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
+
   # boot shared volume instance
   create_instance
 
@@ -186,6 +186,9 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
 # 5. delete backup object from second blank volume.
 # 6. terminate the instance.
 function test_volume_backup_second_blank_volume(){
+  # boot instance with second blank volume.
+  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
+
   # boot shared volume instance
   create_instance
 
