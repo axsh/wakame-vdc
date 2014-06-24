@@ -124,11 +124,6 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
 
   local instance_uuid1=${instance_uuid}
 
-  # poweroff instance
-  run_cmd instance poweroff ${instance_uuid} >/dev/null
-  retry_until "document_pair? instance ${instance_uuid} state halted"
-  assertEquals 0 $?
-
   run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
   assertEquals 0 $?
 
@@ -178,6 +173,11 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
 	${remote_sudo} umount /mnt
 	EOS
+  assertEquals 0 $?
+
+  # poweroff instance
+  run_cmd instance poweroff ${instance_uuid} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid} state halted"
   assertEquals 0 $?
 
   # instance backup
