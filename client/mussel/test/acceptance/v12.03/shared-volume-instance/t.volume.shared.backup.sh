@@ -376,7 +376,7 @@ function test_volume_backup_second_blank_volume(){
   # poweron the instance.
   run_cmd instance poweron ${instance_uuid} >/dev/null
   retry_until "document_pair? instance ${instance_uuid} state running"
-  assertNotEquals 0 $?
+  assertEquals 0 $?
 
   # wait for network to be ready
   wait_for_network_to_be_ready ${instance_ipaddr}
