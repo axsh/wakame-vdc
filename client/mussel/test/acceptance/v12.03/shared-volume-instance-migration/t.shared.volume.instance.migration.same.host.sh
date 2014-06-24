@@ -12,7 +12,7 @@
 ## variables
 launch_host_node=${launch_host_node:-hn-demo1}
 migration_host_node=${migration_host_node:-hn-demo2}
-blank_volume_size=${blank_volume_size:-10}
+blank_volume_size=${blank_volume_size:-10M}
 
 ## hook functions
 
