@@ -123,8 +123,7 @@ function test_migration_shared_volume_instance(){
   assertEquals 0 $?
 
   # terminate the instance.
-  run_cmd instance destroy ${instance_uuid} >/dev/null
-  assertEquals 0 $?
+  destroy_instance
 }
 
 # API test for shared volume instance with second blank volume migration.
