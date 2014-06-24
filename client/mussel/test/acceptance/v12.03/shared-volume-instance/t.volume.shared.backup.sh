@@ -211,7 +211,7 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
 
   # confirm that the instance from backup image accepts ssh login.
   local image_id=${image_uuid}
-  local volumes_args=
+  local volumes_args="volumes[0][backup_object_id]=${volume_backup_object_uuid} volumes[0][volume_type]=shared"
   create_instance
 
   remote_sudo=$(remote_sudo)
