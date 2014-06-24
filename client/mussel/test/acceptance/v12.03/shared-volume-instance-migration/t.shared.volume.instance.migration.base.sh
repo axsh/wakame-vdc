@@ -131,8 +131,8 @@ function test_migration_shared_volume_instance(){
 #
 # 1. boot shared volume instance with second blank volume.
 # 2. migration the instance.
-# 3. check the process.
-# 4. check the second blank disk.
+# 3. check the second blank disk.
+# 4. check the process.
 # 5. poweroff the instance.
 # 6. poweron the instance.
 # 7. terminate the instance.
@@ -151,16 +151,6 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   assertEquals 0 $?
   echo ${volume_uuid}
 
-  # bind sleep process
-  bind_sleep_process
-  assertEquals 0 $?
-
-  # sleep process id
-  process_id=$(sleep_process_id)
-  test -n "${process_id}"
-  assertEquals 0 $?
-  echo "sleep process id: ${process_id}"
-
   remote_sudo=$(remote_sudo)
 
   # blank device path
@@ -175,6 +165,16 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
 	${remote_sudo} lsblk -d ${blank_dev_path}
 	EOS
   assertEquals 0 $?
+
+  # bind sleep process
+  bind_sleep_process
+  assertEquals 0 $?
+
+  # sleep process id
+  process_id=$(sleep_process_id)
+  test -n "${process_id}"
+  assertEquals 0 $?
+  echo "sleep process id: ${process_id}"
 
   # migration the instance.
   host_node_id=${migration_host_node} run_cmd instance move ${instance_uuid} >/dev/null
