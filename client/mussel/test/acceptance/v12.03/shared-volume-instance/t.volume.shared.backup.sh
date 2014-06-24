@@ -240,12 +240,6 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
 	EOS
   assertEquals 0 $?
 
-  # format
-  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-	${remote_sudo} mkfs.ext3 -F -I 128 ${blank_dev_path}
-	EOS
-  assertEquals 0 $?
-
   # mount
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
 	${remote_sudo} mount ${blank_dev_path} /mnt
@@ -297,8 +291,10 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
 # 2. poweroff instance.
 # 3. backup second blank volume.
 # 4. assert that poweron should fail until backup task completes.
-# 5. delete backup object from second blank volume.
-# 6. terminate the instance.
+# 5. poweron the instance.
+# 6. confirm that the volume from backup object accepts ssh login.
+# 7. delete backup object from second blank volume.
+# 8. terminate the instance.
 function test_volume_backup_second_blank_volume(){
   # boot instance with second blank volume.
   volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
@@ -306,24 +302,68 @@ function test_volume_backup_second_blank_volume(){
   # boot shared volume instance
   create_instance
 
+  run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
+  assertEquals 0 $?
+
+  local volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
+  test -n "${volume_uuid}"
+  assertEquals 0 $?
+
+  remote_sudo=$(remote_sudo)
+
+  # blank device path
+  blank_dev_path=$(blank_dev_path)
+  test -n "${blank_dev_path}"
+  assertEquals 0 $?
+  test -n "${blank_dev_path}" | return
+
+  # device check
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} lsblk -d ${blank_dev_path}
+	EOS
+  assertEquals 0 $?
+
+  # format
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} mkfs.ext3 -F -I 128 ${blank_dev_path}
+	EOS
+  assertEquals 0 $?
+
+  # mount
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} mount ${blank_dev_path} /mnt
+	EOS
+  assertEquals 0 $?
+ 
+  # disk usage
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	df -P -h
+	EOS
+  assertEquals 0 $?
+
+  # touch file
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} touch /mnt/sample.txt
+	EOS
+  assertEquals 0 $?
+
+  # umount
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} umount /mnt
+	EOS
+  assertEquals 0 $?
+
   # poweroff instance
   run_cmd instance poweroff ${instance_uuid} >/dev/null
   retry_until "document_pair? instance ${instance_uuid} state halted"
   assertEquals 0 $?
 
-  run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
-  assertEquals 0 $?
-
-  local ex_volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
-  test -n "$ex_volume_uuid"
-  assertEquals 0 $?
-
   # backup second blank volume
-  run_cmd instance backup_volume ${instance_uuid} $ex_volume_uuid | ydump > $last_result_path
+  run_cmd instance backup_volume ${instance_uuid} ${volume_uuid} | ydump > $last_result_path
   assertEquals 0 $?
 
-  local backup_obj_uuid=$(yfind ':backup_object_id:' < $last_result_path)
-  test -n "$backup_obj_uuid"
+  local backup_obj_uuid=$(yfind ':backup_object_id:' < ${last_result_path})
+  test -n "${backup_obj_uuid}"
   assertEquals 0 $?
 
   # assert that poweron should fail until backup task completes.
@@ -331,6 +371,64 @@ function test_volume_backup_second_blank_volume(){
   assertNotEquals 0 $?
 
   retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
+  assertEquals 0 $?
+
+  # poweron the instance.
+  run_cmd instance poweron ${instance_uuid} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid} state running"
+  assertNotEquals 0 $?
+
+  # wait for network to be ready
+  wait_for_network_to_be_ready ${instance_ipaddr}
+
+  # wait for sshd to be ready
+  wait_for_sshd_to_be_ready    ${instance_ipaddr}
+
+  # confirm that the volume from backup object accepts ssh login.
+  # create new volume from backup
+  volume_uuid=$(backup_object_id=${backup_obj_uuid} run_cmd volume create | hash_value uuid)
+  retry_until "document_pair? volume ${volume_uuid} state available"
+  assertEquals 0 $?
+
+  # attach volume
+  instance_id=${instance_uuid} run_cmd volume attach ${volume_uuid}
+  retry_until "document_pair? volume ${volume_uuid} state attached"
+  assertEquals 0 $?
+
+  # blank device path
+  blank_dev_path=$(blank_dev_path)
+  test -n "${blank_dev_path}"
+  assertEquals 0 $?
+  test -n "${blank_dev_path}" | return
+
+  # device check
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} lsblk -d ${blank_dev_path}
+	EOS
+  assertEquals 0 $?
+
+  # mount
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} mount ${blank_dev_path} /mnt
+	EOS
+  assertEquals 0 $?
+
+  # disk-usage
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	df -P -h
+	EOS
+  assertEquals 0 $?
+
+  # check file
+  ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} ls -la /mnt/sample.txt
+	EOS
+  assertEquals 0 $?
+
+  # umount
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} umount /mnt
+	EOS
   assertEquals 0 $?
 
   # delete backup_object
