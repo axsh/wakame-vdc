@@ -7,7 +7,7 @@
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
 
 ## variables
-blank_volume_size=${blank_volume_size:-10}
+blank_volume_size=${blank_volume_size:-10M}
 
 ## setp
 
