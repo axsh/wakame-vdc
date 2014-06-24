@@ -137,7 +137,7 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
   blank_dev_path=$(blank_dev_path)
   test -n "${blank_dev_path}"
   assertEquals 0 $?
-  test -n "${blank_dev_path}" | return
+  test -n "${blank_dev_path}" || return
 
   # device check
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
@@ -227,7 +227,7 @@ function test_image_backup_just_for_boot_volume_and_second_blank_volume() {
   blank_dev_path=$(blank_dev_path)
   test -n "${blank_dev_path}"
   assertEquals 0 $?
-  test -n "${blank_dev_path}" | return
+  test -n "${blank_dev_path}" || return
 
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
 	${remote_sudo} lsblk
@@ -315,7 +315,7 @@ function test_volume_backup_second_blank_volume(){
   blank_dev_path=$(blank_dev_path)
   test -n "${blank_dev_path}"
   assertEquals 0 $?
-  test -n "${blank_dev_path}" | return
+  test -n "${blank_dev_path}" || return
 
   # device check
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
@@ -399,7 +399,7 @@ function test_volume_backup_second_blank_volume(){
   blank_dev_path=$(blank_dev_path)
   test -n "${blank_dev_path}"
   assertEquals 0 $?
-  test -n "${blank_dev_path}" | return
+  test -n "${blank_dev_path}" || return
 
   # device check
   ssh -t  ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
