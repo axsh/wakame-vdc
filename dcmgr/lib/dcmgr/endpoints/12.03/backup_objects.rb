@@ -102,6 +102,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
   # Register copy_to task
   put '/:id/copy_to' do
     bo = find_by_uuid(:BackupObject, params[:id])
+    unless bo.state.to_s == C::BackupObject::STATE_AVAILABLE
+      raise E::InvalidBackupObjectState, "#{params[:id]}:#{bo.state}"
+    end
     if params[:destination] && params[:destination].to_s.size > 0
     else
       raise E::InvalidParameter, :destination
@@ -132,7 +135,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
 
     bo = find_by_uuid(:BackupObject, params[:id])
     raise E::UnknownBackupObject, params[:id] if bo.nil?
-    raise E::InvalidBackupObjectState, params[:id] unless bo.state == "available"
+    unless bo.state.to_s == C::BackupObject::STATE_AVAILABLE
+      raise E::InvalidBackupObjectState, "#{params[:id]}:#{bo.state}"
+    end
 
     begin
       bo.destroy
