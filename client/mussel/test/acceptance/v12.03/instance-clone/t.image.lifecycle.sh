@@ -62,7 +62,7 @@ function test_backup_instance_and_destroy() {
   # :backup_object_id: bo-xxx
   # :image_id: wmi-xxx
   backup_object_uuid=$(yfind ':backup_object_ids:/0' < $last_result_path)
-  new_image_uuid="$(echo "${output}" | hash_value image_id)"
+  new_image_uuid=$(yfind ':image_id:' < $last_result_path)
 
   retry_until "document_pair? backup_object ${backup_object_uuid} state available"
   assertEquals 0 $?
