@@ -647,6 +647,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     respond_with({:instance_id=>instance.canonical_uuid,
                    :image_id => image.canonical_uuid,
+                   :backup_object_ids => ([boot_bko.canonical_uuid] + image.volumes.map { |hash| hash[:backup_object_id] })
                  })
   end
 

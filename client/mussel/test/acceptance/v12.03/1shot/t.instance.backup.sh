@@ -159,7 +159,7 @@ function test_image_backup_just_for_boot_volume() {
   test -n "$image_uuid"
   assertEquals 0 $?
 
-  local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+  local backup_object_uuid=$(yfind ':backup_object_ids:/0' < $last_result_path)
   test -n "$backup_object_uuid"
   assertEquals 0 $?
 
@@ -216,7 +216,7 @@ function test_image_backup_and_verify_new_image() {
   test -n "$image_uuid"
   assertEquals 0 $?
 
-  local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+  local backup_object_uuid=$(yfind ':backup_object_ids:/0' < $last_result_path)
   test -n "$backup_object_uuid"
   assertEquals 0 $?
 
@@ -273,7 +273,7 @@ function test_expect_failure_at_instance_terminate() {
   test -n "$image_uuid"
   assertEquals 0 $?
 
-  local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+  local backup_object_uuid=$(yfind ':backup_object_ids:/0' < $last_result_path)
   test -n "$backup_object_uuid"
   assertEquals 0 $?
 
