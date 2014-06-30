@@ -98,7 +98,7 @@ module Dcmgr
         setup_and_export_volume
 
         @instance = rpc.request('hva-collector', 'get_instance', @instance_id)
-        jobreq.submit("hva-handle.#{@instance[:host_node][:node_id]}", 'run_vol_store', @instance_id)
+        jobreq.submit("hva-handle.#{@instance[:host_node][:node_id]}", 'wait_volumes_available', @instance_id)
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
