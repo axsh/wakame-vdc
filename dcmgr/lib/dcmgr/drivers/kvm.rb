@@ -124,6 +124,8 @@ module Dcmgr
         mount_metadata_drive(hc, mount_point, "-o rw")
         password_hash = read_password_from_metadata_drive(mount_point)
 
+        # We delete this file so Windows will not regenerate the administrator
+        # password on reboot
         File.delete(File.expand_path("#{mount_point}/meta-data/first-boot"))
 
         umount_metadata_drive(hc, mount_point)
