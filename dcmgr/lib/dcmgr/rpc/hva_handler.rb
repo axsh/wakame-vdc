@@ -224,6 +224,7 @@ module Dcmgr
           'ami-manifest-path' => nil,
           'ancestor-ami-ids' => nil,
           'block-device-mapping/root' => '/dev/sda',
+          'first-boot' => '', # Simple flag so windows instances know to generate a new password
           'hostname' => @inst[:hostname],
           'instance-action' => @inst[:state],
           'instance-id' => @inst[:uuid],

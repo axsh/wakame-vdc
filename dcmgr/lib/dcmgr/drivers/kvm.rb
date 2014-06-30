@@ -121,8 +121,11 @@ module Dcmgr
         mount_point = "#{hc.inst_data_dir}/tmp_metadata_mnt"
         FileUtils.mkdir(mount_point)
 
-        mount_metadata_drive(hc, mount_point)
+        mount_metadata_drive(hc, mount_point, "-o rw")
         password_hash = read_password_from_metadata_drive(mount_point)
+
+        File.delete(File.expand_path("#{mount_point}/meta-data/first-boot"))
+
         umount_metadata_drive(hc, mount_point)
 
         logger.info "Read Windows password from matadata drive. " +
