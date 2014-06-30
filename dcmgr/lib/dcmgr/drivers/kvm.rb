@@ -118,8 +118,8 @@ module Dcmgr
         logger.info "Windows finished configuring. " +
                     "Reading its password hash from metadata drive"
 
-        mount_point = "#{hc.inst_data_dir}/tmp_metadata_mnt"
-        FileUtils.mkdir(mount_point)
+        mount_point = "#{hc.inst_data_dir}/tmp"
+        FileUtils.mkdir(mount_point) unless File.exists?(mount_point)
 
         mount_metadata_drive(hc, mount_point, "-o rw")
         password_hash = read_password_from_metadata_drive(mount_point)
