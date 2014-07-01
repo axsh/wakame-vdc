@@ -131,3 +131,21 @@ catch {
     $Error[0] | Write-Host
     Write-Host "Error occurred while updating hosts file"
 }
+
+if (Test-Path ("$mdl\meta-data\first-boot"))
+{
+    # A zero byte pw.enc file will indicate to HVA that the image (now
+    # going through first boot) had not been prepared with sysprep.
+    try {
+	[System.IO.File]::WriteAllBytes("$mdl\meta-data\pw.enc",@())
+    }
+    catch {
+	$Error[0] | Write-Host
+	Write-Host "Error occurred while writing out empty pw.enc file"
+    }
+
+    # shutdown
+    Stop-Computer
+}
+
+"Finishing wakame-init-every-boot.ps1" | Write-Host
