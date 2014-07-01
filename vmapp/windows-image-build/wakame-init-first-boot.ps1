@@ -162,7 +162,6 @@ try {
     Add-Type -AssemblyName System.Web
     $randpass = [System.Web.Security.Membership]::GeneratePassword(12,2).ToCharArray()
     $Encode = New-Object "System.Text.UTF8Encoding"
-    $randpass = "beer,1".ToCharArray()  # for easy typing when debugging!!
     $randpasstxt = $Encode.GetString([byte[]] $randpass)
 
     # Encrypt password
