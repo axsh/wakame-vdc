@@ -238,5 +238,20 @@ catch {
     Write-Host "Error occurred while setting up script for configuration on each reboot"
 }
 
+try {
+    # Installing product key
+    $computer = gc env:computername
+    $key = [System.IO.File]::ReadAllText("C:\Windows\Setup\Scripts\keyfile").trim()
+    echo "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" >C:\Windows\Setup\Scripts\keyfile
+    $service = get-wmiObject -query "select * from SoftwareLicensingService" -computername $computer
+    $service.InstallProductKey($key)
+}
+catch {
+    $Error[0] | Write-Host
+    Write-Host "Error occurred while installing product key"
+}
+
+"Finishing wakame-init-first-boot.ps1...about to do Stop-Computer" | Write-Host
+
 # shutdown
 Stop-Computer
