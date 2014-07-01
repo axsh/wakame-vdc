@@ -26,6 +26,43 @@ module Dcmgr::Models
       self.to_hash
     end
 
+    def to_netfilter_document(host_node_id)
+      nd = {
+        :uuid  => self.canonical_uuid,
+        :rules => self.rules_array
+      }
+
+      nd[:local_vnics] = {}
+      local_vnics_dataset = self.network_vif_dataset.filter(:instance => Instance.runnings.filter(:host_node => HostNode.filter(:node_id => host_node_id)))
+      local_vnics_dataset.all.each { |vnic|
+        nd[:local_vnics][vnic.canonical_uuid] = vnic.to_netfilter_document
+      }
+      # Save all the vnics on other host nodes
+      nd[:foreign_vnics] = {}
+      exclude_vnics_dataset = self.network_vif_dataset.filter(:instance => Instance.alives.filter(:host_node => HostNode.filter(:node_id => host_node_id)))
+      self.network_vif_dataset.exclude(:uuid => exclude_vnics_dataset.select(:uuid)).all.each { |vnic|
+        nd[:foreign_vnics][vnic.canonical_uuid] = vnic.to_netfilter_document
+      }
+      # Save all vnics in security groups that are referenced by this group
+      nd[:referencees] = {}
+      self.referencees.each { |ref|
+        nd[:referencees][ref.canonical_uuid] = {}
+        ref.network_vif_dataset.all.each { |vnic|
+          nd[:referencees][ref.canonical_uuid][vnic.canonical_uuid] = vnic.to_netfilter_document
+        }
+      }
+      # Save all vnics in security groups that are referencing this group
+      nd[:referencers] = {}
+      self.referencers.each { |ref|
+        nd[:referencers][ref.canonical_uuid] = {}
+        ref.network_vif_dataset.all.each { |vnic|
+          nd[:referencers][ref.canonical_uuid][vnic.canonical_uuid] = vnic.to_netfilter_document
+        }
+      }
+
+      nd
+    end
+
     def host_nodes
       self.network_vif.map {|vif| vif.instance && vif.instance.host_node}.uniq
     end

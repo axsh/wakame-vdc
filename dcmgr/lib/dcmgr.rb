@@ -300,6 +300,11 @@ module Dcmgr
     autoload :PacketfilterService, 'dcmgr/vnet/packetfilter_service'
 
     module NetworkModes
+      module Legacy
+        autoload :SecurityGroup, 'dcmgr/vnet/network_modes/legacy/security_group'
+        autoload :PassThrough, 'dcmgr/vnet/network_modes/legacy/passthrough'
+        autoload :L2Overlay, 'dcmgr/vnet/network_modes/legacy/l2overlay'
+      end
       autoload :SecurityGroup, 'dcmgr/vnet/network_modes/security_group'
       autoload :PassThrough, 'dcmgr/vnet/network_modes/passthrough'
       autoload :L2Overlay, 'dcmgr/vnet/network_modes/l2overlay'
@@ -310,6 +315,16 @@ module Dcmgr
       autoload :NetfilterHandler, 'dcmgr/vnet/netfilter/netfilter_handler'
       autoload :NetfilterTasks, 'dcmgr/vnet/netfilter/netfilter_tasks'
       autoload :Chains, 'dcmgr/vnet/netfilter/chains'
+      #legacy stuff
+      autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'
+      autoload :Chain, 'dcmgr/vnet/netfilter/chain'
+      autoload :IptablesChain, 'dcmgr/vnet/netfilter/chain'
+      autoload :EbtablesChain, 'dcmgr/vnet/netfilter/chain'
+      autoload :EbtablesRule, 'dcmgr/vnet/netfilter/ebtables_rule'
+      autoload :IptablesRule, 'dcmgr/vnet/netfilter/iptables_rule'
+      autoload :NetfilterTaskManager, 'dcmgr/vnet/netfilter/task_manager'
+      autoload :VNicProtocolTaskManager, 'dcmgr/vnet/netfilter/task_manager'
+      autoload :CacheDumper, 'dcmgr/vnet/netfilter/cache_dumper'
     end
 
     module OpenFlow
@@ -335,6 +350,39 @@ module Dcmgr
       autoload :ServiceGateway, 'dcmgr/vnet/openflow/service_gateway'
       autoload :ServiceMetadata, 'dcmgr/vnet/openflow/service_metadata'
     end
+
+    module Tasks
+      autoload :AcceptAllDNS, 'dcmgr/vnet/tasks/accept_all_dns'
+      autoload :AcceptArpBroadcast, 'dcmgr/vnet/tasks/accept_arp_broadcast'
+      autoload :AcceptARPFromFriends, 'dcmgr/vnet/tasks/accept_arp_from_friends'
+      autoload :AcceptARPFromGateway, 'dcmgr/vnet/tasks/accept_arp_from_gateway'
+      autoload :AcceptARPFromDNS, 'dcmgr/vnet/tasks/accept_arp_from_dns'
+      autoload :AcceptARPToHost, 'dcmgr/vnet/tasks/accept_arp_to_host'
+      autoload :AcceptIpFromFriends, 'dcmgr/vnet/tasks/accept_ip_from_friends'
+      autoload :AcceptIpToAnywhere, 'dcmgr/vnet/tasks/accept_ip_to_anywhere'
+      autoload :AcceptRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
+      autoload :AcceptTcpRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
+      autoload :AcceptUdpEstablished, 'dcmgr/vnet/tasks/accept_related_established'
+      autoload :AcceptIcmpRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
+      autoload :AcceptWakameDHCPOnly, 'dcmgr/vnet/tasks/accept_wakame_dhcp_only'
+      autoload :AcceptWakameDNSOnly, 'dcmgr/vnet/tasks/accept_wakame_dns_only'
+      autoload :DebugIptables, 'dcmgr/vnet/tasks/debug_iptables'
+      autoload :DropArpForwarding, 'dcmgr/vnet/tasks/drop_arp_forwarding'
+      autoload :DropArpToHost, 'dcmgr/vnet/tasks/drop_arp_to_host'
+      autoload :DropIpFromAnywhere, 'dcmgr/vnet/tasks/drop_ip_from_anywhere'
+      autoload :DropIpSpoofing, 'dcmgr/vnet/tasks/drop_ip_spoofing'
+      autoload :DropMacSpoofing, 'dcmgr/vnet/tasks/drop_mac_spoofing'
+      autoload :ExcludeFromNat, 'dcmgr/vnet/tasks/exclude_from_nat'
+      autoload :ExcludeFromNatIpSet, 'dcmgr/vnet/tasks/exclude_from_nat'
+      autoload :SecurityGroup, 'dcmgr/vnet/tasks/security_group'
+      autoload :StaticNat, 'dcmgr/vnet/tasks/static_nat'
+      autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
+      autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
+      autoload :TranslateLoggingAddress, 'dcmgr/vnet/tasks/translate_logging_address'
+      autoload :AcceptGARPFromGateway, 'dcmgr/vnet/tasks/accept_garp_from_gateway'
+      autoload :AcceptARPReply, 'dcmgr/vnet/tasks/accept_arp_reply'
+    end
+
   end
 
   require 'dcmgr/messaging'
