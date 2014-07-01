@@ -13,7 +13,105 @@ try()
     eval "$@" || reportfail "$@"
 }
 
-set -e
+usage() {
+    cat <<EOF
+
+First parameter should be 2008 or 2012.
+Second parameter is one of the following commands:
+  -install
+  -test
+  -testoff
+  -mount
+  -umount
+EOF
+    exit
+}
+
+mount-image()
+{
+    local installdir="$1"
+    local imagename="$2"
+    partion="$3"
+    options="$4"
+    # (1) mkdir mntpoint, (2) kpartx, (3) mount
+    cd "$installdir"
+    
+    
+    if [ -d mntpoint ]
+    then
+	rmdir mntpoint || reportfail "something is already mounted at mntpoint"
+    fi
+    try mkdir mntpoint
+    
+    loopstatus="$(sudo losetup -a)"
+    if [[ "$loopstatus"  == *$(pwd -P)/$imagename* ]]
+    then
+	reportfail "Image file is already mounted."
+    else
+	rm -f kpartx.out
+	try sudo kpartx -av "$installdir/$imagename" 1>kpartx.out
+    fi
+    
+    loopstatus2="$(sudo losetup -a)"
+    # lines look like this:
+    # /dev/loop0: [0801]:3018908 (/home/potter/winraw/windows-expanded2/windows2012-GEN-sparsed.raw)
+    parse1="${loopstatus2%*$(pwd -P)/$imagename*}" # /dev/loop0: [0801]:3018908 (
+    parse2="${parse1##*/dev/}"  # loop0: [0801]:3018908 (
+    loopdev="${parse2%%:*}" # loop0
+    
+    [ "${loopdev/[0-9]/}" = "loop" ] || reportfail "could not parse $loopstatus2"
+    echo "$loopdev" >loopdev
+    
+    sudo mount /dev/mapper/${loopdev}p${partion} mntpoint $options
+}
+
+umount-image()
+{
+    loopdev="$(cat ./loopdev 2>/dev/null)" || reportfail "could not read ./loopdev"
+    sudo umount mntpoint
+    sudo kpartx -dv /dev/$loopdev
+    sudo losetup -d /dev/$loopdev
+    # next line assumes nobody else is using loop mounts
+    loopcheck="$(sudo losetup -a)"
+    [ "$loopcheck" = "" ] || reportfail "Still loopback devices in use. Either umounting failed or they were created by other processes."
+}
+
+# potentially interesting logs and directories for debugging
+windowsLogs=(
+    Windows/DtcInstall.log
+    Windows/inf/setupapi.app.log
+    Windows/Panther
+    Windows/setupact.log
+    Windows/System32/sysprep
+    Windows/TSSysprep.log
+    Windows/WindowsUpdate.log
+    Windows/Setup
+)
+
+tar-up-windows-logs()
+{
+    [ -d mntpoint/Windows ] || reportfail "Windows disk image not mounted"
+    target="$1"
+    tar czvf "$target" -C mntpoint "${windowsLogs[@]}"
+}
+
+mount-tar-umount()
+{
+    partitionNumber=2
+    mount-image "$(pwd)" "$WINIMG" $partitionNumber "-o ro"
+    tar-up-windows-logs "$1"
+    umount-image
+}
+
+confirm-sysprep-shutdown()
+{
+    # TODO: automate this
+    [ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
+    echo "Did sysprep succeed? (YES/n)"
+    read ans
+    [ "$ans" = "YES" ] || exit 255
+}
+
 set -x
 
 case "$1" in
@@ -22,15 +120,26 @@ case "$1" in
 	ANSFILE=Autounattend-08.xml
 	WINISO=SW_DVD5_Windows_Svr_DC_EE_SE_Web_2008_R2_64Bit_Japanese_w_SP1_MLF_X17-22600.ISO
 	UD=8 # unique digit
+	LABEL=2008
 	;;
     *12*)
 	WINIMG=win-2012.raw
 	ANSFILE=Autounattend-12.xml
 	WINISO=SW_DVD9_Windows_Svr_Std_and_DataCtr_2012_R2_64Bit_Japanese_-3_MLF_X19-53644.ISO
 	UD=9 # unique digit
+	LABEL=2012
 	;;
     *)
-	reportfail "First parameter should be 2008 or 2012"
+	usage
+	;;
+esac
+
+case "$1" in # allow a couple more test VMs to run in parallel
+    *8b*)
+	UD=6 # unique digit
+	;;
+    *12b*)
+	UD=7 # unique digit
 	;;
 esac
 
@@ -46,59 +155,216 @@ portforward="$portforward,hostfwd=tcp:0.0.0.0:$RDP-:3389"  # RDP
 portforward="$portforward,hostfwd=tcp:0.0.0.0:$SSH-:22"  # ssh (for testing)
 portforward="$portforward,hostfwd=tcp:0.0.0.0:$MISC-:7890"  # test (for testing)
 
-# Special case for testing already built image
-if [[ "$2" == -test* ]]
-then
+install-windows-from-iso()
+{
+    # Copy Autounattend.xml into fresh floppy image
+    FLP="./answerfile-floppy.img"
+    dd if=/dev/zero of="$FLP" bs=1k count=1440
+    mkfs.vfat "$FLP"
+    mkdir -p "./mnt"
+    sudo mount -t vfat -o loop $FLP "./mnt"
+    sudo cp keyfile "./mnt/"
+    sudo cp "$SCRIPT_DIR/$ANSFILE" "./mnt/Autounattend.xml"
+    for fn in FinalStepsForInstall.cmd \
+		  Unattend-for-first-boot.xml \
+		  wakame-init-first-boot.ps1 \
+		  SetupComplete-firstboot.cmd \
+		  SetupComplete-install.cmd \
+		  run-sysprep.cmd \
+		  wakame-init-every-boot.cmd \
+		  wakame-init-every-boot.ps1 ; do
+	sudo cp "$SCRIPT_DIR/$fn" "./mnt/"
+    done
+    
+    sudo umount "./mnt"
+    
+    # Create 30GB image
+    rm -f "$WINIMG"
+    qemu-img create -f raw "$WINIMG" 30G
+    
+    setsid >>./kvm.stdout 2>>./kvm.stderr \
+	   kvm -m 2000 -smp 1 \
+	   -fda "$FLP" \
+	   -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
+	   -drive file="$SCRIPT_DIR/virtio-win-0.1-74.iso",index=3,media=cdrom \
+	   -boot d \
+	   -no-kvm-pit-reinjection \
+	   -vnc :$VNC \
+	   -drive file="$WINIMG",id=windows2012-GEN-drive,cache=none,aio=native,if=none \
+	   -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
+	   -net nic,vlan=0,model=virtio,macaddr=52-54-00-11-a0-5b \
+	   -net user,vlan=0${portforward} \
+	   -usbdevice tablet  \
+	   -k ja &
+    echo "$!" >thisrun/kvm.pid
+}
+
+boot-without-networking()
+{
+    # Special case for testing already built image, keep off from internet
     setsid >>./kvm.stdout 2>>./kvm.stderr \
 	   kvm -m 2000 -smp 1 \
 	   -no-kvm-pit-reinjection \
 	   -vnc :$VNC \
 	   -drive file="$WINIMG",id=windows2012-GEN-drive,cache=none,aio=native,if=none \
 	   -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
-	   -drive file="$SCRIPT_DIR/metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
+	   -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
+	   -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
+	   -net nic,vlan=0,macaddr=52-54-00-11-a0-5b \
+	   -net socket,vlan=0,mcast=230.0.$UD.1:12341 \
+	   -usbdevice tablet  \
+	   -k ja &
+    echo "$!" >thisrun/kvm.pid
+}
+
+boot-with-networking()
+{
+    # Special case for testing already built image
+    setsid >>./kvm.stdout 2>>./kvm.stderr \
+	   kvm -m 2000 -smp 1 \
+	   -no-kvm-pit-reinjection \
+	   -vnc :$VNC \
+	   -drive file="$WINIMG",id=windows2012-GEN-drive,cache=none,aio=native,if=none \
+	   -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
+	   -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
 	   -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
 	   -net nic,vlan=0,model=virtio,macaddr=52-54-00-11-a0-5b \
 	   -net user,vlan=0${portforward} \
 	   -usbdevice tablet  \
 	   -k ja &
-    exit
+    echo "$!" >thisrun/kvm.pid
+}
+
+get-decode-password()
+{
+    mount-image "$(pwd)" metadata.img 1 "-o ro"
+    if [ -f "mntpoint/pw.enc" ]
+    then
+	pwtxt="$(openssl rsautl -decrypt -inkey testsshkey -in mntpoint/pw.enc -oaep)"
+	echo "$pwtxt"
+    else
+	set +x
+	echo
+	echo "---encrypted file not available yet---"
+    fi
+    umount-image 2>/dev/null 1>/dev/null
+}
+
+
+if [ "$2" == "-next" ]
+then
+    cmd="$(< thisrun/nextstep)"
+else
+    cmd="$2"
 fi
 
-# Copy Autounattend.xml into fresh floppy image
-FLP="./answerfile-floppy.img"
-dd if=/dev/zero of="$FLP" bs=1k count=1440
-mkfs.vfat "$FLP"
-mkdir -p "./mnt"
-sudo mount -t vfat -o loop $FLP "./mnt"
-sudo cp "$SCRIPT_DIR/$ANSFILE" "./mnt/Autounattend.xml"
-for fn in FinalStepsForInstall.cmd \
-	     Unattend-for-first-boot.xml \
-	     wakame-init-first-boot.ps1 \
-	     SetupComplete-firstboot.cmd \
-	     SetupComplete-install.cmd \
-	     run-sysprep.cmd \
-	     wakame-init-every-boot.cmd \
-	     wakame-init-every-boot.ps1 ; do
-    sudo cp "$SCRIPT_DIR/$fn" "./mnt/"
-done
+genCount="${cmd#*gen}"
+genCount="${genCount%%-*}"
 
-sudo umount "./mnt"
-
-# Create 30GB image
-rm -f "$WINIMG"
-qemu-img create -f raw "$WINIMG" 30G
-
-setsid >>./kvm.stdout 2>>./kvm.stderr \
-       kvm -m 2000 -smp 1 \
-       -fda "$FLP" \
-       -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
-       -drive file="$SCRIPT_DIR/virtio-win-0.1-74.iso",index=3,media=cdrom \
-       -boot d \
-       -no-kvm-pit-reinjection \
-       -vnc :$VNC \
-       -drive file="$WINIMG",id=windows2012-GEN-drive,cache=none,aio=native,if=none \
-       -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
-       -net nic,vlan=0,model=virtio,macaddr=52-54-00-11-a0-5b \
-       -net user,vlan=0${portforward} \
-       -usbdevice tablet  \
-       -k ja &
+case "$cmd" in
+    -install)
+	install-windows-from-iso
+	;;
+    -save-logs)
+	[[ "$3" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
+	tar-up-windows-logs "$3"
+	;;
+    -mtu)
+	[[ "$3" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
+        mount-tar-umount "$3"
+	;;
+    -mount)
+	partitionNumber=2
+	mount-image "$(pwd)" "$WINIMG" $partitionNumber "-o ro"
+	;;
+    -umount)
+	umount-image
+	;;
+    -testoff)
+	boot-without-networking
+	;;
+    -test)
+	boot-with-networking
+	;;
+    -pw)
+	get-decode-password
+	;;
+    ### from here start new framework
+    0-init)
+	[ -f "$SCRIPT_DIR/$WINISO" ] || reportfail "Must first copy $WINISO to $SCRIPT_DIR"
+	[ -f ./keyfile ] || reportfail "Must first create the file ./keyfile with 5X5 product key"
+	for (( i=0 ; i<10000 ; i++ ))
+	do
+	    trythis="$(printf "run-$LABEL-%03d" $i)"
+	    [ -d "$trythis" ] && continue
+	    mkdir "$trythis"
+	    rm -f thisrun
+	    ln -s "$trythis" thisrun
+	    echo "1-install" >thisrun/nextstep
+	    echo "$(date +%y%m%d-%H%M%S)" >thisrun/timestamp
+	    break
+	done
+	;;
+    1-install)
+	install-windows-from-iso
+	echo "1b-record-logs-at-ctr-alt-delete-prompt-gen0" >thisrun/nextstep
+	;;
+    1b-record-logs-at-ctr-alt-delete-prompt-gen0)
+	mount-tar-umount thisrun/at-$cmd.tar.gz
+	echo "2-confirm-sysprep-gen0" >thisrun/nextstep
+	echo "Login with 'a:run-sysprep', then run sysprep"
+	;;
+    2-confirm-sysprep-gen0)
+	confirm-sysprep-shutdown
+	mount-tar-umount thisrun/after-gen0-sysprep.tar.gz
+	echo "3-tar-the-image" >thisrun/nextstep
+	;;
+    3-tar-the-image)
+	md5sum "$WINIMG" >"$WINIMG".md5
+	tar czSvf "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
+	cp -al "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz thisrun
+	mount-tar-umount thisrun/after-gen0-sysprep.tar.gz
+	echo "1001-gen0-first-boot" >thisrun/nextstep
+	;;
+    1001-gen*-first-boot)
+	mount-tar-umount thisrun/before-$cmd.tar.gz
+	boot-without-networking
+	echo "1002-confirm-gen$genCount-shutdown-get-pw" >thisrun/nextstep
+	;;
+    1002-confirm-gen*-shutdown-get-pw)
+	[ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
+	mount-tar-umount thisrun/after-$cmd.tar.gz
+	get-decode-password | tee thisrun/pw
+	echo "1003-gen$genCount-second-boot" >thisrun/nextstep
+	;;
+    1003-gen*-second-boot)
+	boot-without-networking
+	echo "1003b-record-logs-at-ctr-alt-delete-prompt1-gen$genCount" >thisrun/nextstep
+	;;
+    1003b-record-logs-at-ctr-alt-delete-prompt1-gen*)
+	mount-tar-umount thisrun/at-$cmd.tar.gz
+	echo "1004-confirm-gen$genCount-shutdown" >thisrun/nextstep
+	echo "Password is '$(< thisrun/pw)'"
+	;;
+    1004-confirm-gen*-shutdown)
+	[ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
+	mount-tar-umount thisrun/after-$cmd.tar.gz
+	boot-without-networking
+	echo "1004b-record-logs-at-ctr-alt-delete-prompt2-gen$genCount" >thisrun/nextstep
+	echo "Rebooting"
+	;;
+    1004b-record-logs-at-ctr-alt-delete-prompt2-gen*)
+	mount-tar-umount thisrun/at-$cmd.tar.gz
+	echo "1005-confirm-gen$genCount-sysprep-shutdown" >thisrun/nextstep
+	echo "Password is still '$(< thisrun/pw)'"
+	echo "Run sysprep to make backup image"
+	;;
+    1005-confirm-gen*-sysprep-shutdown)
+	confirm-sysprep-shutdown
+	mount-tar-umount thisrun/after-$cmd.tar.gz
+	echo "1001-gen$((genCount + 1))-first-boot" >thisrun/nextstep
+	;;
+    *)
+	reportfail "Invalid command for 2nd parameter"
+	;;
+esac
