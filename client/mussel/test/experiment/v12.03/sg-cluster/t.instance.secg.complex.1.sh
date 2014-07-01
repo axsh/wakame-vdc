@@ -20,13 +20,11 @@ ssh_user=${ssh_user:-root}
 image_id=${image_id_lbnode:-wmi-lbnode}
 vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
 
-api_client_addr=$(for i in $(ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)
-
 target_instance_num=${target_instance_num:-5}
 
 cat <<-EOS > ${rule_path}
-icmp:-1,-1,ip4:${api_client_addr}/32
-tcp:22,22,ip4:${api_client_addr}/32
+icmp:-1,-1,ip4:${DCMGR_CLIENT_ADDR}/32
+tcp:22,22,ip4:${DCMGR_CLIENT_ADDR}/32
 EOS
 rule=${rule_path}
 
@@ -119,11 +117,11 @@ function test_complex_security_group() {
 
   # from aaa_1
   ssh ${ssh_user}@${ipaddr_aaa_1} -i ${ssh_key_pair_path} "ping -c 1 -W 3 ${ipaddr_aaa_2}"
-  assertNotEquals "aaa_1 -> aaa_2" $? 0
+  assertNotEquals "aaa_1 -> aaa_2" 0 $?
 
   # from aaa_2
   ssh ${ssh_user}@${ipaddr_aaa_2} -i ${ssh_key_pair_path} "ping -c 1 -W 3 ${ipaddr_aaa_1}"
-  assertNotEquals "aaa_2 -> aaa_1" $? 0
+  assertNotEquals "aaa_2 -> aaa_1" 0 $?
 }
 
 ## shunit2

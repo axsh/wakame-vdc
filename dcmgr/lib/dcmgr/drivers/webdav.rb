@@ -19,7 +19,7 @@ module Dcmgr::Drivers
     include CommandAPI
 
     attr_accessor :upload_base_uri
-    
+
     def download_command(src_bo, dst_path)
       ["curl -fsS %s", [abs_uri(src_bo)]]
     end

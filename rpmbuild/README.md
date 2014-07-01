@@ -25,7 +25,7 @@ For OpenVZ container support, add another repository.
 
 Install epel-release.
 
-    # yum install -y http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release
+    # rpm -Uvh http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release
 
 ### Dcmgr installation
 
@@ -203,8 +203,8 @@ Developing Wakame-VDC RPMs
 
     $ [ -d ~/rpmbuild/BUILD/ ] || mkdir -p ~/rpmbuild/BUILD/
     $ cd ~/rpmbuild/BUILD/
-    $ git clone git://github.com/axsh/wakame-vdc.git wakame-vdc-13.06
-    $ cd wakame-vdc-13.06
+    $ git clone git://github.com/axsh/wakame-vdc.git wakame-vdc-13.08
+    $ cd wakame-vdc-13.08
 
 ### Modifying files.
 

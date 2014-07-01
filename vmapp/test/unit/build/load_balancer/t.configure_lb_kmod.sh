@@ -22,7 +22,7 @@ function tearDown() {
 
 function test_configure_lb_kmod() {
   configure_lb_kmod ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

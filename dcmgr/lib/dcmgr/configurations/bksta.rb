@@ -15,7 +15,7 @@ module Dcmgr
       param :site_over_rpc_timeout, :default=>10.0
 
       param :default_retry_max_per_job, :default=>2
-      
+
       DSL do
         def driver(driver_name, &blk)
           @config[:driver_class] = klass = ::Dcmgr::Drivers::NetworkMonitoring.driver_class(driver_name)
@@ -53,7 +53,7 @@ module Dcmgr
             errors << "Unsupported type for export_uri: #{self.export_uri.class}"
           end
         end
-        
+
         #unless self.driver
         #  errors << "driver is unset"
         #end

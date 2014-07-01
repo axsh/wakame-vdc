@@ -14,7 +14,7 @@
 
 function test_vmbuilder_dir() {
   vmbuilder_dir
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

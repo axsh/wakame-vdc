@@ -6,17 +6,31 @@
 MUSSEL_PROMPT='$'
 MUSSEL_ARGS=
 MUSSEL_FRONTEND=${MUSSEL_FRONTEND:-noninteractive} # [ interactive | noninteractive ]
+CURL_OPTS_EX=
 
 function extract_args() {
   MUSSEL_ARGS=
-  local arg= key= value=
+  local arg= key= value= key_prefix=
   while [[ $# != 0 ]]; do
     arg="$1" key= value=
     case "${arg}" in
+    --curl-opts)
+      CURL_OPTS_EX="${CURL_OPTS_EX} $2"
+      shift
+      ;;
     --*=*)
       key=${arg%%=*}; key=${key##--}; key=${key//-/_}
-      value="${value} ${arg##--*=}"
-      eval "${key}=\"${value}\""; value="\${${key}}"; value=$(eval echo ${value}); eval "${key}=\"${value## }\""
+      if echo $key | grep -qF '['; then
+        # --volumes[0][type]=xxxx --volumes[0][size]=50G
+        #  |
+        #  V
+        # volumes_curl_args="volumes[0][type]=xxxx volumes[0][size]=50G
+        key_prefix=${key%%\[*}
+        eval "${key_prefix}_args=\"\$\{${key_prefix}_args\} ${arg##--}\""
+      else
+        value="${value} ${arg##--*=}"
+        eval "${key}=\"${value}\""; value="\${${key}}"; value=$(eval echo ${value}); eval "${key}=\"${value## }\""
+      fi
       ;;
     --*)
       key=${arg##--}; key=${key//-/_}
@@ -65,11 +79,16 @@ function shlog() {
 }
 
 function curl_opts() {
-  echo -fsSkL $(request_header)
+  if [[ $MUSSEL_LOGLEVEL = 'debug' ]]; then
+    CURL_OPTS_EX="${CURL_OPTS_EX} --dump-header -"
+  fi
+  echo -fsSkL $(request_header) ${CURL_OPTS_EX}
 }
 
 function request_header() {
-  echo -H X_VDC_ACCOUNT_UUID:${account_id}
+  if [[ -n "${account_id}" ]]; then
+    echo -H X_VDC_ACCOUNT_UUID:${account_id}
+  fi
 }
 
 function request_param() {
@@ -109,6 +128,17 @@ function strfile_type() {
   "
 }
 
+function add_args_param() {
+  local param_key=$1
+  [[ -n "${param_key}" ]] || { echo "[ERROR] 'param_key' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  eval "
+   [[ -n "\${${param_key}_args}" ]] || return 0
+
+   local i; for i in \${${param_key}_args}; do echo $(urlencode_data \$i); done
+  "
+}
+
 function add_param() {
   local param_key=$1 param_type=${2:-string}
   [[ -n "${param_key}" ]] || { echo "[ERROR] 'param_key' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
@@ -121,6 +151,7 @@ function add_param() {
      array) local i; for i in \${${param_key}}; do echo "${param_key}[]=\${i}"; done ;;
    strfile) strfile_type ${param_key}            ;;
   strplain) echo "\${${param_key}}" ;;
+      hash) local i; for i in \${${param_key}}; do echo \${param_key}[\${i%%=*}]=\${i##*=}; done ;;
    esac
   "
 }

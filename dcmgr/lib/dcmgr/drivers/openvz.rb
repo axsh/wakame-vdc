@@ -8,6 +8,10 @@ module Dcmgr
       include Dcmgr::Logger
       include Dcmgr::Helpers::NicHelper
 
+      def self.local_store_class
+        LinuxLocalStore
+      end
+
       template_base_dir "openvz"
 
       def_configuration do
@@ -130,12 +134,11 @@ module Dcmgr
           vifs.sort {|a, b| a[:device_index] <=> b[:device_index]}.each {|vif|
             ifname = "eth#{vif[:device_index]}"
             mac = vif[:mac_addr].unpack('A2'*6).join(':')
-            host_ifname = vif[:uuid]
             # host_mac become a randomly generated MAC Address.
             host_mac = nil
             if vif[:ipv4] && vif[:ipv4][:network]
               bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-              sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[hc.inst_id, ifname, mac, host_ifname, host_mac, bridge])
+              sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[hc.inst_id, ifname, mac, vif_uuid(vif), host_mac, bridge])
             end
             #
             # NETIF="ifname=eth0,bridge=vzbr0,mac=52:54:00:68:BB:AC,host_ifname=vif-h63jg7pp,host_mac=52:54:00:68:BB:AC"
@@ -241,9 +244,14 @@ module Dcmgr
         # template variables
         ve_metadata_path = "#{hc.inst_data_dir}/metadata"
         hn_metadata_path = "#{hc.config.ve_root}/#{hc.ctid}/metadata"
-        
-        render_template('template.mount', hc.ct_mount_path, binding)
-        render_template('template.umount', hc.ct_umount_path, binding)
+
+        if Dcmgr.conf.edge_networking == 'openvnet'
+          render_template('template-vnet.mount', hc.ct_mount_path, binding)
+          render_template('template-vnet.umount', hc.ct_umount_path, binding)
+        else
+          render_template('template.mount', hc.ct_mount_path, binding)
+          render_template('template.umount', hc.ct_umount_path, binding)
+        end
         sh("chmod +x %s", [hc.ct_umount_path])
         sh("chmod +x %s", [hc.ct_mount_path])
         hc.logger.info("Created CT config: #{hc.ct_mount_path}")

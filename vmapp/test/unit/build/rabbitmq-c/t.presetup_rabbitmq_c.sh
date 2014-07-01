@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_presetup_rabbitmq_c() {
   presetup_rabbitmq_c ${chroot_dir} | egrep "^chroot ${chroot_dir}"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

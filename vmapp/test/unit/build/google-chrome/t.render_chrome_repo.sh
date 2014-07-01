@@ -14,7 +14,7 @@
 
 function test_render_chrome_repo() {
   render_chrome_repo
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

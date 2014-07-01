@@ -24,12 +24,12 @@ function tearDown() {
 
 function test_install_fcgiwrap_envcgi() {
   install_fcgiwrap_envcgi ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_install_fcgiwrap_sleepcgi() {
   install_fcgiwrap_sleepcgi ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

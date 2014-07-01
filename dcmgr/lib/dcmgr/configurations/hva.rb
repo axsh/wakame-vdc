@@ -32,6 +32,13 @@ module Dcmgr
         end
       end
 
+      class Windows < Fuguta::Configuration
+        param :thread_concurrency, :default=>2
+
+        param :password_generation_sleeptime, default: 2
+        param :password_generation_timeout, default: 60 * 15
+      end
+
       class LocalStore < Fuguta::Configuration
         # enable local image cache under "vm_data_dir/_base"
         param :enable_image_caching, :default=>true
@@ -87,6 +94,27 @@ module Dcmgr
         end
       end
 
+      # Add a parameter to be set to GuestOS startup.
+      # For example, if you want to add a host name and ip address to etc hosts.
+      #
+      # metadata {
+      #   path 'extra-hosts/fluent.local', '192.168.1.101'
+      # }
+      class Metadata < Fuguta::Configuration
+        DSL do
+          def path(key,value)
+            @config[:path_list][key] = value
+          end
+        end
+
+        def validate(errors)
+        end
+
+        def after_initialize
+          @config[:path_list] = {}
+        end
+      end
+
       def hypervisor_driver(driver_class)
         if driver_class.is_a?(Class) && driver_class < (Drivers::Hypervisor)
           # TODO: do not create here. the configuration object needs to be attached in earlier phase.
@@ -112,12 +140,21 @@ module Dcmgr
           @config[:local_store].parse_dsl(&blk)
         end
 
+        def windows(&blk)
+          @config[:windows].parse_dsl(&blk)
+        end
+
         def backup_storage(&blk)
           @config[:backup_storage].parse_dsl(&blk)
         end
 
         def capture(&blk)
           @config[:capture].parse_dsl(&blk)
+        end
+
+        # metadata configuration section.
+        def metadata(&blk)
+          @config[:metadata].parse_dsl(&blk)
         end
 
         # hypervisor_driver configuration section.
@@ -135,6 +172,8 @@ module Dcmgr
         @config[:local_store] = LocalStore.new(self)
         @config[:backup_storage] = BackupStorage.new(self)
         @config[:capture] = Capture.new(self)
+        @config[:metadata] = Metadata.new(self)
+        @config[:windows] = Windows.new(self)
         @config[:hypervisor_driver] = {}
       end
 
@@ -155,10 +194,14 @@ module Dcmgr
       param :logging_service_port, :default => 8888
       param :logging_service_conf, :default => '/var/lib/wakame-vdc/fluent.conf'
       param :logging_service_reload, :default => '/etc/init.d/td-agent reload'
+      param :logging_service_max_read_message_bytes, :default => -1
+      param :logging_service_max_match_count, :default => -1
       param :enable_gre, :default=>false
       param :enable_subnet, :default=>false
+      param :netfilter_script_post_flush, :default=>nil
 
       param :brctl_path, :default => '/usr/sbin/brctl'
+      param :vsctl_path, :default => '/usr/bin/ovs-vsctl'
       param :ovs_run_dir, :default=>'/usr/var/run/openvswitch'
       # Path for ovs-ofctl
       param :ovs_ofctl_path, :default => '/usr/bin/ovs-ofctl'
@@ -197,6 +240,9 @@ module Dcmgr
       # Dolphin server connection string
       param :dolphin_server_uri, :default=> 'http://127.0.0.1:9004/'
 
+      # Decides what resource monitor will be used.
+      param :enabled_feature_resource_monitor, :default=>false
+
       def validate(errors)
         if @config[:vm_data_dir].nil?
           errors << "vm_data_dir not set"
@@ -204,7 +250,7 @@ module Dcmgr
           errors << "vm_data_dir does not exist: #{@config[:vm_data_dir]}"
         end
 
-        unless ['netfilter', 'legacy_netfilter', 'openflow', 'off'].member?(@config[:edge_networking])
+        unless ['netfilter', 'legacy_netfilter', 'openflow', 'openvnet', 'off'].member?(@config[:edge_networking])
           errors << "Unknown value for edge_networking: #{@config[:edge_networking]}"
         end
       end

@@ -20,8 +20,6 @@ ssh_user=${ssh_user:-root}
 image_id=${image_id_lbnode:-wmi-lbnode}
 vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
 
-api_client_addr=$(for i in $(ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)
-
 target_instance_num=${target_instance_num:-5}
 
 rule=${rule_path}
@@ -41,15 +39,15 @@ function render_vif_table() {
 
 function render_secg_rule() {
   cat <<-EOS
-	icmp:-1,-1,ip4:${api_client_addr}/32
-	tcp:22,22,ip4:${api_client_addr}/32
+	icmp:-1,-1,ip4:${DCMGR_CLIENT_ADDR}/32
+	tcp:22,22,ip4:${DCMGR_CLIENT_ADDR}/32
 	EOS
 }
 
 function render_ssh_and_icmp_secg_rule() {
   cat <<-EOS
-	icmp:-1,-1,ip4:${api_client_addr}/32
-	tcp:22,22,ip4:${api_client_addr}/32
+	icmp:-1,-1,ip4:${DCMGR_CLIENT_ADDR}/32
+	tcp:22,22,ip4:${DCMGR_CLIENT_ADDR}/32
 	EOS
 }
 
@@ -171,11 +169,11 @@ function test_complex_security_group() {
 
   # from xxx
   ssh ${ssh_user}@${ipaddr_xxx} -i ${ssh_key_pair_path} "ping -c 1 -W 3 ${ipaddr_yyy}"
-  assertNotEquals "xxx -> yyy" $? 0
+  assertNotEquals "xxx -> yyy" 0 $?
 
   # from yyy
   ssh ${ssh_user}@${ipaddr_yyy} -i ${ssh_key_pair_path} "ping -c 1 -W 3 ${ipaddr_xxx}"
-  assertNotEquals "yyy -> xxx" $? 0
+  assertNotEquals "yyy -> xxx" 0 $?
 }
 
 ## shunit2

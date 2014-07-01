@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_unprevent_cassandra_starting() {
   unprevent_cassandra_starting ${chroot_dir} | egrep -q -w "^chroot ${chroot_dir} bash -e -c chkconfig cassandra on"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

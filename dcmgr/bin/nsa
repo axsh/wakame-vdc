@@ -206,7 +206,7 @@ manifest.instance_eval do
     c.enable_dnsmasq = true
   end
 
-  path = ['/etc/wakame-vdc/nsa.conf', File.expand_path('config/nsa.conf', Dcmgr::DCMGR_ROOT)].find { |i| File.exists?(i) }
+  path = [ENV['CONF_PATH'].to_s, '/etc/wakame-vdc/nsa.conf', File.expand_path('config/nsa.conf', Dcmgr::DCMGR_ROOT)].find { |i| File.exists?(i) }
   load_config File.expand_path(path, app_root)
 end
 

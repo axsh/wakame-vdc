@@ -7,7 +7,7 @@ module MetricLibs
   class TimeSeries
     extend Forwardable
 
-    def_delegators :@timeseries, :each, :to_a, :length, :first
+    def_delegators :@timeseries, :each, :to_a, :length, :first, :find_all
 
     def initialize
       @timeseries = SortedSet.new

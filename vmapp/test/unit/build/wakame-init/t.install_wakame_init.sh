@@ -39,27 +39,27 @@ function tearDown() {
 
 function test_install_wakame_init_unknown() {
   install_wakame_init ${chroot_dir} unknown
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 ##
 
 function test_install_wakame_init_md() {
   install_wakame_init ${chroot_dir} md centos
-  assertEquals $? 0
+  assertEquals 0 $?
 
   install_wakame_init ${chroot_dir} md centos | egrep -q -w prevent_interfaces_booting
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_install_wakame_init_ms() {
   install_wakame_init ${chroot_dir} ms centos
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_install_wakame_init_mcd() {
   install_wakame_init ${chroot_dir} mcd centos
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

@@ -29,6 +29,7 @@ task_create() {
     $(add_param user_data          strfile) \
     $(add_param vifs               strfile) \
    ) \
+   $(add_args_param volumes) \
    $(base_uri)/${namespace}s.$(suffix)
 }
 
@@ -44,18 +45,37 @@ task_backup() {
     $(add_param is_cacheable string) \
     $(add_param is_public    string) \
    ) \
-   $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
+   $(base_uri)/${namespace}s/${uuid}/backup.$(suffix)
+}
+
+task_show_volumes() {
+  local namespace=$1 cmd=$2 uuid=$3
+  call_api -X GET $(base_uri)/${namespace}s/${uuid}/volumes.$(suffix)
+}
+
+task_backup_volume() {
+  local namespace=$1 cmd=$2 uuid=$3 volume_uuid=$4
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${volume_uuid}" ]] || { echo "[ERROR] 'volume_uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  call_api -X PUT $(urlencode_data \
+    $(add_param description  string) \
+    $(add_param display_name string) \
+   ) \
+   $(base_uri)/${namespace}s/${uuid}/volumes/${volume_uuid}/backup.$(suffix)
 }
 
 task_reboot() {
   cmd_put $*
 }
 
-task_stop() {
+_task_stop() {
   cmd_put $*
 }
 
-task_start() {
+_task_start() {
   cmd_put $*
 }
 
@@ -73,4 +93,16 @@ task_poweroff() {
 
 task_poweron() {
   cmd_put $*
+}
+
+task_move() {
+  local namespace=$1 cmd=$2 uuid=$3
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  call_api -X PUT $(urlencode_data \
+    $(add_param host_node_id string) \
+   ) \
+   $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
 }

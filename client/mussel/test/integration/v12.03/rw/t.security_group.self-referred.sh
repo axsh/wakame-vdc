@@ -26,7 +26,7 @@ function test_create_sg() {
 	icmp:-1,-1,ip4:0.0.0.0/0
 	EOS
   sg_uuid=$(run_cmd security_group create | hash_value id)
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_allow_self_sg() {
@@ -34,12 +34,12 @@ function test_allow_self_sg() {
 	icmp:-1,-1,${sg_uuid}
 	EOS
   run_cmd security_group update ${sg_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_destroy_self_referred_sg() {
   run_cmd security_group destroy ${sg_uuid}
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_flush_sg() {
@@ -47,12 +47,12 @@ function test_flush_sg() {
 	#
 	EOS
   run_cmd security_group update ${sg_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_destroy_sg() {
   run_cmd security_group destroy ${sg_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

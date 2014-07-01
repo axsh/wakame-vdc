@@ -32,14 +32,13 @@ module Dcmgr
             tryagain(opts={:timeout=>Dcmgr.conf.capture.timeout_sec, :retry=>Dcmgr.conf.capture.retry_count}) do
               h["#{i[:uuid]}"] = parse_pidstat(metric_name, exec_pidstat(metric_name, kvmpid.to_i))
             end
-            logger.debug(h)
+            h["#{i[:uuid]}"]["time"] = Time.at(h["#{i[:uuid]}"]["time"].to_i)
           rescue TimeoutError => e
             logger.debug("Caught Error. #{e} pidstat #{i[:uuid]}")
-            hash = {}
-            SUPPORT_METRIC_NAMES[metric_name].each {|m| hash[m] = "error"}
-            h["#{i[:uuid]}"] = hash.merge({"timeout"=>"true", "time"=>Time.now})
+            h["#{i[:uuid]}"] = create_error_data(metric_name)
           rescue Exception => e
             logger.error("Error occured. [Instance ID: #{i[:uuid]}]: #{e}")
+            h["#{i[:uuid]}"] = create_error_data(metric_name)
           ensure
             unless i[:vif].blank?
               vif = i[:vif].first
@@ -75,19 +74,24 @@ module Dcmgr
 
         initial_keys = SUPPORT_METRIC_NAMES[metric_name]
         raise "Unknown Metric type: #{metric_name}" if initial_keys.nil?
-
         values = []
-        metric.each {|m|
-          next if m.empty?
-          m.lstrip!
+        metric_value = metric.map {|m|  m.lstrip!}.compact
+        metric_value.each {|m|
           m = m.split(nil)
           m.pop
-          next if m.include?("#")
+          m.slice!(0,2) if m.size <= 5
           values << m
         }
-        Hash[*initial_keys.zip(values.flatten.uniq).flatten]
+        Hash[*initial_keys.zip(values.flatten).flatten]
       end
 
+      def create_error_data(metric_name)
+        raise ArgumentError unless metric_name.is_a?(String)
+
+        hash = {}
+        SUPPORT_METRIC_NAMES[metric_name].each {|m| hash[m] = nil}
+        hash.merge({"time" => Time.now})
+      end
     end
   end
 end

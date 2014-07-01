@@ -3,7 +3,7 @@
 # for RHEL6
 
 ###
-# chkconfig: 2345 99 89
+# chkconfig: 2345 99 1
 # description: vdc-net-event startup script.
 ###
 

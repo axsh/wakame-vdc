@@ -5,6 +5,8 @@ module Dcmgr::Models
     taggable 'bo'
     accept_service_type
 
+    include Dcmgr::Constants::BackupObject
+
     many_to_one :backup_storage
     plugin ArchiveChangedColumn, :histories
     # TODO put logs to accounting log.
@@ -22,8 +24,15 @@ module Dcmgr::Models
     end
 
     def validate
-      unless Dcmgr::Const::BackupObject::CONTAINER_FORMAT.keys.member?(self.container_format.to_sym)
+      self.container_format ||= :raw
+      unless CONTAINER_FORMAT.keys.member?(self.container_format.to_sym)
         errors.add(:container_format, "Unsupported container format: #{self.container_format}")
+      end
+
+      errors.add(:size, "Invalid size: #{self.size}") if self.size < 0
+      if !self.allocation_size.nil?
+        # allocation_size is NULL column. so check only if not null.
+        errors.add(:allocation_size, "Invalid size: #{self.allocation_size}") if self.allocation_size.to_i < 0
       end
 
       unless self.progress.to_f.between?(0.0, 100.0)
@@ -36,7 +45,7 @@ module Dcmgr::Models
       bo.backup_storage = (bkst.is_a?(BackupStorage) ? bkst : BackupStorage[bkst.to_s])
       bo.account_id = (account.is_a?(Account) ? account.canonical_uuid : account.to_s)
       bo.size = size.to_i
-      bo.state = :creating
+      bo.state = STATE_CREATING
       blk.call(bo)
       bo.save
     end
@@ -58,10 +67,16 @@ module Dcmgr::Models
       super.merge(:backup_storage=> self.backup_storage.to_hash)
     end
 
+    def create_volume(account=nil)
+      Volume.entry_new(account || self.account, self.size, {}) do |v|
+        v.backup_object_id = self.canonical_uuid
+      end
+    end
+
     private
-    
+
     def before_save
-      if self.state == :available
+      if self.state == STATE_AVAILABLE
         self.progress = 100.0
       end
 
@@ -69,7 +84,7 @@ module Dcmgr::Models
     end
 
     def _destroy_delete
-      self.state = :deleted if self.state != :deleted
+      self.state = STATE_DELETED if self.state != STATE_DELETED
       self.deleted_at ||= Time.now
       self.save_changes
     end

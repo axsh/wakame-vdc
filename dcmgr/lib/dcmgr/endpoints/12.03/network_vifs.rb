@@ -242,7 +242,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         :ipv4 => route.outer_lease.ipv4_s,
       }
     }
-    
+
     respond_with(result)
   end
 
@@ -277,7 +277,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         :network_vif => inner_vif,
       }
     }
-      
+
     route_data = {
       :route_type => 'external-ip',
       :outer_lease_id => outer_ip_handle.ip_lease.id,

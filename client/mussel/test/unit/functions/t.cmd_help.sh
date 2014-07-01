@@ -22,14 +22,14 @@ function test_cmd_help() {
 
 function test_cmd_help_no_opts() {
   cmd_help 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_cmd_help_namespace() {
   local namespace=instance
 
   cmd_help ${namespace} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_cmd_help_namespace_cmd() {
@@ -37,7 +37,7 @@ function test_cmd_help_namespace_cmd() {
   local cmd=show
 
   cmd_help ${namespace} ${cmd} 2>/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

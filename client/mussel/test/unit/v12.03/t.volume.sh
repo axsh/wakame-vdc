@@ -19,7 +19,7 @@ declare namespace=volume
 function test_volume_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 ${namespace} [help|destroy|index|show|xcreate]"
+  assertEquals "${res}" "$0 ${namespace} [help|attach|backup|create|destroy|detach|index|show|xcreate]"
 }
 
 ## shunit2

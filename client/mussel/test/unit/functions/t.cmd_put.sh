@@ -28,14 +28,14 @@ function test_cmd_put() {
 
 function test_cmd_put_no_opts() {
   cmd_put 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_cmd_put_namespace() {
   local namespace=instance
 
   cmd_put ${namespace} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_cmd_put_namespace_cmd() {
@@ -43,7 +43,7 @@ function test_cmd_put_namespace_cmd() {
   local cmd=reboot
 
   cmd_put ${namespace} ${cmd} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_cmd_put_namespace_cmd_uuid() {
@@ -52,7 +52,7 @@ function test_cmd_put_namespace_cmd_uuid() {
   local uuid=asdf
 
   cmd_put ${namespace} ${cmd} ${uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

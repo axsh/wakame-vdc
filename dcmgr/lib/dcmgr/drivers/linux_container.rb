@@ -7,6 +7,25 @@ module Dcmgr
       include Dcmgr::Helpers::Cgroup::CgroupContextProvider
       include Dcmgr::Helpers::BlockDeviceHelper
 
+      class Policy < HypervisorPolicy
+        def validate_volume_model(volume)
+          if !volume.guest_device_name.nil? && volume.guest_device_name !~ /^\//
+            raise ValidataionError, "InvalidParameter: guest_device_name #{volume.guest_device_name}"
+          end
+        end
+
+        def on_associate_volume(instance, volume)
+          if instance.boot_volume_id == volume.canonical_uuid && volume.guest_device_name.nil?
+            # helps only when root mount point is unset.
+            volume.guest_device_name = '/'
+          end
+        end
+      end
+
+      def self.policy
+        Policy.new
+      end
+
       module SkipCheckHelper
         def self.stamp_path(instance_uuid)
           File.expand_path("#{instance_uuid}/skip_check.stamp", Dcmgr.conf.vm_data_dir)
@@ -27,7 +46,7 @@ module Dcmgr
           File.unlink(stamp_path(instance_uuid)) rescue nil
         end
       end
-      
+
       protected
       def check_cgroup_mount
         File.readlines('/proc/mounts').any? {|l| l.split(/\s+/)[2] == 'cgroup' }
@@ -45,7 +64,7 @@ module Dcmgr
           ctx.logger.debug("unmounted root mount directory #{mount_path}")
         end
       end
-      
+
       def mount_root_image(ctx, mount_path)
         # check mount directory
         raise "Mount point for root image does not exist: #{mount_path}" unless File.directory?(mount_path)
@@ -113,7 +132,7 @@ module Dcmgr
             sh(cmd, args)
           end
         end
-        
+
       end
     end
   end

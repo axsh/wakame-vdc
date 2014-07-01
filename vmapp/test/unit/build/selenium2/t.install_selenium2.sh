@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_install_selenium2() {
   install_selenium2 ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

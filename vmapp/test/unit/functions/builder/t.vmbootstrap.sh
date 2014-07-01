@@ -30,7 +30,7 @@ function setUp() {
 
 function test_vmbootstrap() {
   vmbootstrap ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

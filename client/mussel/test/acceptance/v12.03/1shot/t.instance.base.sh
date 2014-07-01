@@ -12,6 +12,8 @@
 
 ## variables
 
+ssh_user=${ssh_user:-root}
+
 ## functions
 
 function render_secg_rule() {
@@ -26,23 +28,23 @@ function render_secg_rule() {
 
 function test_get_instance_ipaddr() {
   instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_network_to_be_ready() {
   wait_for_network_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_sshd_to_be_ready() {
   wait_for_sshd_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_compare_instance_hostname() {
   assertEquals \
     "$(run_cmd instance show ${instance_uuid} | hash_value hostname)" \
-    "$(ssh root@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)"
+    "$(ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)"
 }
 
 ## shunit2

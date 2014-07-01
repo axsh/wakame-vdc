@@ -27,14 +27,14 @@ function test_cmd_xcreate() {
 
 function test_cmd_xcreate_no_opts() {
   cmd_xcreate 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_cmd_xcreate_namespace() {
   local namespace=instance
 
   cmd_xcreate ${namespace} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

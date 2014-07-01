@@ -6,10 +6,13 @@ module Dcmgr::Constants
     STATE_PENDING = "pending".freeze
     STATE_AVAILABLE = "available".freeze
     STATE_DELETED = "deleted".freeze
-    
-    STATES=[STATE_CREATING, STATE_PENDING, STATE_AVAILABLE, STATE_DELETED].freeze
+    STATE_PURGED = "purged".freeze
 
-    CONTAINER_FORMAT={:tgz=>['tar.gz', 'tgz'], :tar=>['tar'], :gz=>['gz'], :none=>[]}.freeze
+    STATES=[STATE_CREATING, STATE_PENDING, STATE_AVAILABLE, STATE_DELETED].freeze
+    ALLOW_INSTANCE_DESTROY_STATES=[STATE_AVAILABLE, STATE_DELETED, STATE_PURGED].freeze
+    ALLOW_INSTANCE_POWERON_STATES=ALLOW_INSTANCE_DESTROY_STATES
+
+    CONTAINER_FORMAT={:tgz=>['tar.gz', 'tgz'], :tar=>['tar'], :gz=>['gz'], :none=>[], :raw=>['raw']}.freeze
     CONTAINER_FORMAT_NAMES=CONTAINER_FORMAT.keys.freeze
     CONTAINER_EXTS=Hash[*CONTAINER_FORMAT.map{|k,v|
                           v.map { |v2|

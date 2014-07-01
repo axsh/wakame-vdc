@@ -27,13 +27,13 @@ function test_ssh_key_pair_help_stderr_to_stdout_success() {
 function test_ssh_key_pair_create_no_uuid() {
   extract_args ${namespace} create
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_ssh_key_pair_create_uuid() {
   extract_args ${namespace} create asdf
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

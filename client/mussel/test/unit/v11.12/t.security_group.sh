@@ -27,13 +27,13 @@ function test_security_group_help_stderr_to_stdout_success() {
 function test_security_group_create_no_uuid() {
   extract_args ${namespace} create
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_security_group_create_uuid() {
   extract_args ${namespace} create asdf
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### update
@@ -41,13 +41,13 @@ function test_security_group_create_uuid() {
 function test_security_group_update_no_uuid() {
   extract_args ${namespace} update
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_security_group_update_uuid() {
   extract_args ${namespace} update asdf
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

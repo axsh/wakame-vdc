@@ -12,6 +12,8 @@
 
 ## variables
 
+ssh_user=${ssh_user:-root}
+
 ## functions
 
 function render_secg_rule() {
@@ -32,17 +34,17 @@ function destroy_instance() {
 
 function test_get_instance_ipaddr() {
   instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_network_to_be_ready() {
   wait_for_network_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_sshd_to_be_ready() {
   wait_for_sshd_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## login to the instance
@@ -50,69 +52,69 @@ function test_wait_for_sshd_to_be_ready() {
 function test_compare_instance_hostname() {
   assertEquals \
     "$(run_cmd instance show ${instance_uuid} | hash_value hostname)" \
-    "$(ssh root@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)"
+    "$(ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)"
 }
 
 ## running -> stop
 
-function test_stop_instance() {
+function _test_stop_instance() {
   run_cmd instance stop ${instance_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 
   retry_until "document_pair? instance ${instance_uuid} state stopped"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
-function test_wait_for_network_not_to_be_ready_after_stopping() {
+function _test_wait_for_network_not_to_be_ready_after_stopping() {
   wait_for_network_not_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
-function test_wait_for_sshd_not_to_be_ready_after_stopping() {
+function _test_wait_for_sshd_not_to_be_ready_after_stopping() {
   wait_for_sshd_not_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## halted  -> start
 
-function test_start_instance() {
+function _test_start_instance() {
   run_cmd instance start ${instance_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 
   retry_until "document_pair? instance ${instance_uuid} state running"
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
-function test_get_instance_ipaddr_after_starting() {
+function _test_get_instance_ipaddr_after_starting() {
   instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
-function test_wait_for_network_to_be_ready_after_starting() {
+function _test_wait_for_network_to_be_ready_after_starting() {
   wait_for_network_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
-function test_wait_for_sshd_to_be_ready_after_starting() {
+function _test_wait_for_sshd_to_be_ready_after_starting() {
   wait_for_sshd_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## after terminating
 
 function test_destroy_instance() {
   _destroy_instance
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_network_not_to_be_ready_after_terminating() {
   wait_for_network_not_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_wait_for_sshd_not_to_be_ready_after_terminating() {
   wait_for_sshd_not_to_be_ready ${instance_ipaddr}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

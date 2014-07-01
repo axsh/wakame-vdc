@@ -1,13 +1,25 @@
 source 'https://rubygems.org'
 
-gem 'wakame-dolphin'
+gem 'wakame-dolphin', '0.0.5'
+
+# *** work-around ***
+#
+# sub package dependency for wakame-dolphin 0.0.5
+#
+# wakame-dolphin (0.0.5)
+#   reel (0.3.0)
+#     http_parser.rb # should be 0.5.3
+#
+# in wakame-dolphin.gemspec, http_parser.rb version is not fixed.
+#
+gem 'http_parser.rb', '0.5.3'
 
 # 1. vdc-dolphin requires gem packages
 # 2. *should be* same version of wakame-dolphin/Gemfile
 
 group :mysql do
   gem 'sequel', '3.48.0'
-  gem 'mysql2', '0.3.11'
+  gem 'mysql2', '~> 0.3.14'
 end
 
 group :cassandra do

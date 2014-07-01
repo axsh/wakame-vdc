@@ -21,6 +21,9 @@ module Dcmgr::Endpoints::V1203::Responses
           :arch        => image.arch,
           :image_id    => image.canonical_uuid,
           :created_at  => self.created_at,
+          :updated_at  => self.updated_at,
+          :terminated_at  => self.terminated_at,
+          :deleted_at  => self.terminated_at,
           :state => self.state,
           :status => self.status,
           :ssh_key_pair => nil,
@@ -37,6 +40,8 @@ module Dcmgr::Endpoints::V1203::Responses
             :items => {},
           },
           :labels=>resource_labels.map{ |l| ResourceLabel.new(l).generate },
+          :boot_volume_id => self.boot_volume_id,
+          :encrypted_password => self.encrypted_password
         }
 
         h[:monitoring][:items] = self.monitor_items
@@ -72,11 +77,10 @@ module Dcmgr::Endpoints::V1203::Responses
           h[:vif] << ent
         }
 
-        self.volume.each { |v|
+        self.volumes_dataset.each { |v|
           h[:volume] << {
             :vol_id => v.canonical_uuid,
-            :guest_device_name=>v.guest_device_name,
-            :state=>v.state,
+            :state  => v.state,
           }
         }
 

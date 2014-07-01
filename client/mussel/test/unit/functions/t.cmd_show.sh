@@ -28,14 +28,14 @@ function test_cmd_show() {
 
 function test_cmd_show_no_opts() {
   cmd_show 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_cmd_show_namespace() {
   local namespace=instance
 
   cmd_show ${namespace} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_cmd_show_namespace_cmd() {
@@ -43,7 +43,7 @@ function test_cmd_show_namespace_cmd() {
   local cmd=show
 
   cmd_show ${namespace} ${cmd} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 ## shunit2

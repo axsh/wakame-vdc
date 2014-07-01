@@ -22,17 +22,17 @@ function tearDown() {
 
 function test_normalize_ini_filter() {
   mycnf | normalize_ini
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_normalize_ini_file() {
   normalize_ini ${inifile}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_normalize_ini_redirect() {
   normalize_ini < ${inifile}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

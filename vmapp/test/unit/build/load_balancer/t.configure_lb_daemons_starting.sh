@@ -26,7 +26,7 @@ function tearDown() {
 
 function test_configure_lb_daemons_starting() {
   configure_lb_daemons_starting ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

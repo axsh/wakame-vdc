@@ -41,6 +41,7 @@ public_key=${public_key:-${ssh_key_pair_path}.pub}
 
 function _create_instance() {
   setup_vif
+  setup_volumes
   create_ssh_key_pair
 
   local create_output="$(run_cmd instance create)"
@@ -150,6 +151,14 @@ function teardown_vif() {
   rm -f ${rule_path}
 }
 
+### volumes
+
+# expose $volumes_args global variable for "instance create"
+# overwrite in calling test scripts.
+function setup_volumes() {
+  volumes_args=${volumes_args:-}
+}
+
 ### secg
 
 function needless_secg() {
@@ -195,4 +204,16 @@ function destroy_instance() {
   before_destroy_instance
         _destroy_instance
    after_destroy_instance
+}
+
+# help to switch test scinarios for container type $hypervisor.
+function is_container_hypervisor() {
+  case "${hypervisor}" in
+  openvz|lxc)
+    return 0
+    ;;
+  *)
+    return 1
+    ;;
+  esac
 }

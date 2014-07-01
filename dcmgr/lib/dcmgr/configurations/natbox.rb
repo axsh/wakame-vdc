@@ -3,12 +3,12 @@
 require 'fuguta'
 
 module Dcmgr
-  
+
   module Configurations
 
     class Natbox < Fuguta::Configuration
 
-      class DcNetwork < Configuration
+      class DcNetwork < Fuguta::Configuration
         param :interface
         param :bridge
 

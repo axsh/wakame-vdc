@@ -29,6 +29,9 @@ module Dcmgr
     autoload :LoadBalancer, 'dcmgr/constants/load_balancer'
     autoload :Image, 'dcmgr/constants/image'
     autoload :BackupObject, 'dcmgr/constants/backup_object'
+    autoload :Volume, 'dcmgr/constants/volume'
+    autoload :HostNode, 'dcmgr/constants/host_node'
+    autoload :StorageNode, 'dcmgr/constants/storage_node'
     autoload :Alarm, 'dcmgr/constants/alarm'
   end
   Const = Constants
@@ -72,6 +75,8 @@ module Dcmgr
     autoload :NetworkVifIpLease, 'dcmgr/models/network_vif_ip_lease'
     autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
     autoload :NetworkVifSecurityGroup, 'dcmgr/models/network_vif_security_group'
+    autoload :NfsStorageNode, 'dcmgr/models/nfs_storage_node'
+    autoload :NfsVolume, 'dcmgr/models/nfs_volume'
     autoload :MacLease, 'dcmgr/models/mac_lease'
     autoload :MacRange, 'dcmgr/models/mac_range'
     autoload :SecurityGroup, 'dcmgr/models/security_group'
@@ -99,6 +104,9 @@ module Dcmgr
     end
 
     autoload :ResourceLabel, 'dcmgr/models/resource_label'
+    autoload :LocalVolume, 'dcmgr/models/local_volume'
+    autoload :IscsiVolume, 'dcmgr/models/iscsi_volume'
+    autoload :IscsiStorageNode, 'dcmgr/models/iscsi_storage_node'
   end
 
   module Endpoints
@@ -148,6 +156,7 @@ module Dcmgr
   end
 
   module Helpers
+    autoload :IndelibleApi, 'dcmgr/helpers/indelible_api'
     autoload :CliHelper, 'dcmgr/helpers/cli_helper'
     autoload :NicHelper, 'dcmgr/helpers/nic_helper'
     autoload :TemplateHelper, 'dcmgr/helpers/template_helper'
@@ -194,6 +203,8 @@ module Dcmgr
     autoload :HvaContext, 'dcmgr/rpc/hva_context'
     autoload :LocalStoreHandler, 'dcmgr/rpc/local_store_handler'
     autoload :NetfilterHandler, 'dcmgr/rpc/netfilter_handler'
+    autoload :MigrationHandler, 'dcmgr/rpc/migration_handler'
+    autoload :WindowsHandler, 'dcmgr/rpc/windows_handler'
   end
 
   # namespace for custom Rack HTTP middleware.
@@ -221,25 +232,30 @@ module Dcmgr
     autoload :Raw,          'dcmgr/drivers/raw'
     autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
     autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
-    autoload :LinuxIscsi,   'dcmgr/drivers/linux_iscsi'
+    autoload :Tgt,          'dcmgr/drivers/tgt'
     autoload :Comstar,      'dcmgr/drivers/comstar'
     autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
     autoload :DummyLocalStore, 'dcmgr/drivers/dummy_local_store.rb'
     autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
     autoload :ESXiLocalStore, 'dcmgr/drivers/esxi_local_store.rb'
     autoload :OpenvzLocalStore, 'dcmgr/drivers/openvz_local_store.rb'
-    autoload :Ifs, 'dcmgr/drivers/ifs.rb'
-    autoload :IfsIscsi, 'dcmgr/drivers/ifs_iscsi'
-    autoload :IfsStorage, 'dcmgr/drivers/ifs_storage'
+    autoload :Indelible, 'dcmgr/drivers/indelible'
+    autoload :IndelibleIscsi, 'dcmgr/drivers/indelible_iscsi'
+    autoload :IndelibleStorage, 'dcmgr/drivers/indelible_storage'
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Webdav, 'dcmgr/drivers/webdav'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'
     autoload :Stud, 'dcmgr/drivers/stud'
     autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
     autoload :Zabbix, 'dcmgr/drivers/zabbix'
+    autoload :PublicZabbix, 'dcmgr/drivers/public_zabbix'
     autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
     autoload :Natbox, 'dcmgr/drivers/natbox'
     autoload :Fluent, 'dcmgr/drivers/fluent'
+    autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
+    autoload :KvmLocalStore, 'dcmgr/drivers/kvm_local_store'
+    autoload :StorageTarget, 'dcmgr/drivers/storage_target'
+    autoload :Nfs, 'dcmgr/drivers/nfs'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'

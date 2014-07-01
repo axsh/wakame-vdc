@@ -12,7 +12,7 @@
 %{?repo_uri:%define _vdc_git_uri %{repo_uri}}
 
 Name: %{oname}
-Version: 13.06
+Version: 13.08
 Release: %{release_id}%{?dist}
 Summary: The wakame virtual data center.
 Group: Development/Languages
@@ -26,7 +26,8 @@ License: see https://github.com/axsh/wakame-vdc/blob/master/README.md
 AutoReqProv: no
 
 # * build
-BuildRequires: rpm-build
+# rpm-build and etc...
+BuildRequires: rpmdevtools
 BuildRequires: createrepo
 BuildRequires: make
 BuildRequires: gcc-c++ gcc
@@ -126,6 +127,9 @@ Requires: %{oname}-rack-config = %{version}-%{release}
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
+# dcell
+Requires: zeromq3
+Requires: zeromq3-devel
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
@@ -155,7 +159,7 @@ BuildArch: noarch
 Summary: Configuration set for proxy VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
-Requires: nginx
+Requires: httpd
 %description proxy-vmapp-config
 <insert long description, indented with spaces>
 
@@ -180,11 +184,14 @@ Requires: iscsi-initiator-utils scsi-target-utils
 Requires: ebtables iptables ethtool vconfig iproute
 Requires: bridge-utils
 Requires: dracut-kernel
-Requires: kmod-openvswitch
-Requires: openvswitch
+Requires: kmod-openvswitch >= 1.6.1
+Requires: kmod-openvswitch <  1.6.2
+Requires: openvswitch      >= 1.6.1
+Requires: openvswitch      <  1.6.2
 Requires: kpartx
 Requires: libcgroup
 Requires: tunctl
+Requires: sysstat
 # Trema/racket gem binary dependency
 Requires: sqlite libpcap
 Requires: pv
@@ -247,8 +254,10 @@ Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
 Requires: keepalived
 Requires: bridge-utils
-Requires: kmod-openvswitch
-Requires: openvswitch
+Requires: kmod-openvswitch >= 1.6.1
+Requires: kmod-openvswitch <  1.6.2
+Requires: openvswitch      >= 1.6.1
+Requires: openvswitch      <  1.6.2
 %description  natbox-vmapp-config
 <insert long description, indented with spaces>
 
@@ -361,6 +370,7 @@ components="
  dolphin
  contrib
  vendor
+ vdc-fluentd
 "
 for component in ${components}; do
   rsync -aHA --exclude=".git/*" --exclude="*~" --exclude="*/cache/*.gem" --exclude="*/cache/bundler/git/*" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
@@ -404,7 +414,6 @@ ln -s /etc/%{oname}/admin/admin.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/fro
 [ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/cucumber ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/cucumber
 rsync -aHA `pwd`/tests/vdc.sh   ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
 rsync -aHA `pwd`/tests/vdc.sh.d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
-rsync -aHA `pwd`/tests/builder/functions.sh ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder/functions.sh
 rsync -aHA `pwd`/tests/cucumber ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
 
 # log directory
@@ -552,6 +561,8 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config(noreplace) /etc/default/vdc-hva
 %config /etc/init/vdc-hva.conf
 %config /etc/init/vdc-hva-worker.conf
+%config(noreplace) /etc/default/vdc-fluentd
+%config /etc/init/vdc-fluentd.conf
 %config /etc/sysctl.d/30-bridge-if.conf
 %dir /var/lib/%{oname}/instances
 %dir /var/lib/%{oname}/instances/tmp

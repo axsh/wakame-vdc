@@ -35,7 +35,7 @@ function tearDown() {
 
 function test_update_load_balancer_allow_list_single_cidr() {
   load_balancer_uuid="$(run_cmd load_balancer create | hash_value id)"
-  assertEquals $? 0
+  assertEquals 0 $?
 
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
 

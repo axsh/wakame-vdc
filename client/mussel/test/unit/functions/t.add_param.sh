@@ -18,7 +18,7 @@ function setUp() {
 
 function test_add_param_no_opts() {
   add_param >/dev/null 2>&1
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_add_param_key_z() {
@@ -53,6 +53,23 @@ function test_add_param_key_strfile() {
 function test_add_param_key_strplain() {
   local name=i-xxx
   assertEquals "$(add_param name strplain)" "${name}"
+}
+
+function test_add_param_key_hash() {
+  local name="inst_id=i-xxx"
+  assertEquals "$(add_param name hash)" "name[inst_id]=i-xxx"
+}
+
+function test_add_param_key_hash_multi() {
+  local name="inst_id=i-xxx addr=bar"
+  assertEquals "$(add_param name hash)" "name[inst_id]=i-xxx
+name[addr]=bar"
+}
+
+function test_add_param_key_extended_hash_multi() {
+  local name="volumes[0][type]=xxxx volumes[0][size]=50G"
+  assertEquals "name[volumes[0][type]]=xxxx
+name[volumes[0][size]]=50G" "$(add_param name hash)"
 }
 
 ## shunit2

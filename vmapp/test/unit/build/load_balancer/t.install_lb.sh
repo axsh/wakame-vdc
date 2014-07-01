@@ -25,7 +25,7 @@ function tearDown() {
 
 function test_install_lb() {
   install_lb ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

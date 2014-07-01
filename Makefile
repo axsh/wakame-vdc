@@ -6,6 +6,10 @@ RUBYDIR ?= $(CURDIR)/ruby
 
 RUBY_BUILD_REPO_URI  ?= https://github.com/sstephenson/ruby-build.git
 
+# Workaround for a ruby build bug on redhat/centos systems
+# https://github.com/sstephenson/ruby-build/wiki#make-error-for-200-p247-and-lower-on-fedorared-hat
+RUBY_PATCH := curl -fsSL https://bugs.ruby-lang.org/projects/ruby-trunk/repository/revisions/41808/diff?format=diff | filterdiff -x ChangeLog |
+
 CFLAGS := -fno-strict-aliasing
 CXXFLAGS := -fno-strict-aliasing
 # configure options set by ruby-build
@@ -39,7 +43,7 @@ ruby-build:
 
 ruby: ruby-stamp
 ruby-stamp:
-	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(RUBYDIR))
+	(cd $(CURDIR)/ruby-build; $(RUBY_PATCH) ./bin/ruby-build $(ruby_ver) $(RUBYDIR) --patch)
 	gem install bundler --no-rdoc --no-ri
 	touch $@
 

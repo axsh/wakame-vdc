@@ -42,9 +42,14 @@ config.logging_service_host_ip = '127.0.0.2'
 config.logging_service_port = 8888
 config.logging_service_conf = '/var/lib/wakame-vdc/fluent.conf'
 config.logging_service_reload = '/etc/init.d/td-agent reload'
+config.logging_service_max_read_message_bytes = -1
+config.logging_service_max_match_count = -1
 
 # Path for brctl
 config.brctl_path = '/usr/sbin/brctl'
+
+# Path for ovs-vsctl
+config.vsctl_path = '/usr/bin/ovs-vsctl'
 
 # Directory used by Open vSwitch daemon for run files
 config.ovs_run_dir = '/var/lib/wakame-vdc/ovs/var/run/openvswitch'
@@ -92,6 +97,9 @@ dc_network('management') {
 # Dolphin server connection uri
 config.dolphin_server_uri = "http://localhost:9004/"
 
+# Decides what resource monitor will be used.
+config.enabled_feature_resource_monitor = false
+
 # Setup of a capture interval.
 # By the default, the capture interval is set 60. (cpu_time, memory_time)
 # The response timeout use timeout_sec.
@@ -101,4 +109,11 @@ capture {
   memory_time 60
   timeout_sec 10
   retry_count 1
+}
+
+# Add a parameter to be set to GuestOS startup.
+# For example, if you want to add a host name and ip address to etc hosts.
+#
+metadata {
+  path 'extra-hosts/fluent.local', '192.168.1.101'
 }

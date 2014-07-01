@@ -58,7 +58,7 @@ module MetricLibs
       if resource_id.nil?
         return @manager.values.collect {|a| a[:alarm]}
       end
-
+      
       if metric_name.nil?
         alarm = @manager.values.collect {|alm|
           alm[:alarm].resource_id == resource_id
@@ -72,40 +72,9 @@ module MetricLibs
       alarm.collect { |a| a[:alarm]}
     end
 
-    private
-    def get_hash(uuid)
-      raise ArgumentError unless uuid.is_a?(String)
-      @manager[uuid]
-    end
-
     def get_alarm(uuid)
       raise ArgumentError unless uuid.is_a?(String)
-      @manager[uuid][:alarm]
-    end
-
-    def get_timer(uuid)
-      raise ArgumentError unless uuid.is_a?(String)
-      @manager[uuid][:timer]
-    end
-
-    def set_hash(uuid)
-      raise ArgumentError unless uuid.is_a?(String)
-      @manager[uuid] ||= {}
-    end
-
-    def set_alarm(alm)
-      raise ArgumentError unless alm.is_a?(Hash)
-      @manager[alm[:uuid]][:alarm] = Alarm.new(alm, self)
-    end
-
-    def set_timer(uuid)
-      raise ArgumentError unless uuid.is_a?(String)
-      @manager[uuid][:timer] = @timer.add_periodic_timer(get_alarm(uuid))
-    end
-
-    def delete_hash(uuid)
-      raise ArgumentError unless uuid.is_a?(String)
-      @manager.delete(uuid)
+      @manager[uuid][:alarm] if @manager.has_key? uuid
     end
 
     def update_alarm(alm)
@@ -133,6 +102,37 @@ module MetricLibs
         get_timer(uuid).cancel unless @timer.nil?
         delete_hash(uuid)
       end
+    end
+
+    private
+    def get_hash(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      @manager[uuid]
+    end
+
+    def get_timer(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      @manager[uuid][:timer]
+    end
+
+    def set_hash(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      @manager[uuid] ||= {}
+    end
+
+    def set_alarm(alm)
+      raise ArgumentError unless alm.is_a?(Hash)
+      @manager[alm[:uuid]][:alarm] = Alarm.new(alm, self)
+    end
+
+    def set_timer(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      @manager[uuid][:timer] = @timer.add_periodic_timer(get_alarm(uuid))
+    end
+
+    def delete_hash(uuid)
+      raise ArgumentError unless uuid.is_a?(String)
+      @manager.delete(uuid)
     end
 
   end

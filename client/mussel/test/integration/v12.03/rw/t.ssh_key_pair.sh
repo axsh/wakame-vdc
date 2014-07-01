@@ -29,22 +29,22 @@ function oneTimeTearDown() {
 
 function test_create_ssh_key_pair() {
   ssh_key_pair_uuid=$(run_cmd ssh_key_pair create | hash_value id)
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_show_ssh_key_pair() {
   run_cmd ssh_key_pair show ${ssh_key_pair_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_update_ssh_key_pair() {
   run_cmd ssh_key_pair update ${ssh_key_pair_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_destroy_ssh_key_pair() {
   run_cmd ssh_key_pair destroy ${ssh_key_pair_uuid} >/dev/null
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

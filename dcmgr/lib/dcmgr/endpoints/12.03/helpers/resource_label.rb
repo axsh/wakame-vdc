@@ -88,7 +88,7 @@ module Dcmgr::Endpoints::V1203::Helpers
     LABELS_ROUTES = proc {
       get do
         ds = @uuid_resource.resource_labels_dataset
-        
+
         if !params['name'].blank?
           ds = if params['name'] =~ /(.+)*$/
                  ds.grep(:name, "#{$1}%")
@@ -96,23 +96,23 @@ module Dcmgr::Endpoints::V1203::Helpers
                  ds.filter(:name=>params['name'])
                end
         end
-        
+
         respond_with(R::ResourceLabelCollection.new(ds).generate)
       end
-      
+
       get '/:name' do
         l = @uuid_resource.label(params['name']) || raise(E::UnknownResourceLabel, params['id'], params['name'])
         respond_with(R::ResourceLabel.new(l).generate)
       end
-      
+
       post '/:name' do
         single_label_set
       end
-      
+
       put '/:name' do
         single_label_set
       end
-      
+
       post do
         bulk_label_set
       end
@@ -120,7 +120,7 @@ module Dcmgr::Endpoints::V1203::Helpers
       put do
         bulk_label_set
       end
-      
+
       # delete a label.
       delete '/:name' do
         @uuid_resource.unset_label(params[:name])
@@ -132,7 +132,7 @@ module Dcmgr::Endpoints::V1203::Helpers
       end
 
       private
-      
+
       def single_label_set
         l = @uuid_resource.set_label(params['name'], params['value'])
         respond_with(R::ResourceLabel.new(l).generate)
@@ -143,7 +143,7 @@ module Dcmgr::Endpoints::V1203::Helpers
         each_bulk_label_params do |n, v|
           results << @uuid_resource.set_label(n, v)
         end
-        
+
         respond_with(results.map {|l| R::ResourceLabel.new(l).generate })
       end
 

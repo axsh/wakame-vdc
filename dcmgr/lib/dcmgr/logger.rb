@@ -18,7 +18,7 @@ module Dcmgr
 
     class CustomLogger
       attr_reader :logger
-      
+
       def initialize(progname)
         @progname = progname
       end

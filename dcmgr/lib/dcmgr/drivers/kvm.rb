@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 require 'net/telnet'
+require 'timeout'
+require 'base64'
 
 module Dcmgr
   module Drivers
@@ -9,7 +11,65 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
+      # API policy information for QEMU-KVM hypervisor.
+      class Policy < HypervisorPolicy
+        DEVNAME_REGEXP=[/^sd([a-z]+)$/,
+                        /^hd([a-z]+)$/,
+                        /^vd([a-z]+)$/
+                       ].freeze
+
+        def validate_instance_model(instance)
+        end
+
+        def validate_volume_model(volume)
+          if !volume.guest_device_name.nil?
+            unless DEVNAME_REGEXP.find { |r| r =~ volume.guest_device_name.downcase }
+              raise ValidationError, "InvalidParameter: guest_device_name #{volume.guest_device_name}"
+            end
+          end
+        end
+
+        def on_associate_volume(instance, volume)
+          if instance.boot_volume_id == volume.canonical_uuid && volume.guest_device_name.nil?
+            # set device name as boot drive.
+            volume.guest_device_name =
+              if instance.image.features[:virtio]
+                'vda'
+              else
+                'sda'
+              end
+          elsif volume.guest_device_name.nil?
+            devnames = instance.volume_guest_device_names
+            # sdb,vdb,hdb are reserved for metadata drive. extra volumes
+            # should starts from third device number.
+            devnames.push( instance.boot_volume.guest_device_name.succ )
+            volume.guest_device_name = find_candidate_device_name(devnames)
+          end
+        end
+
+        private
+        def find_candidate_device_name(device_names)
+          # sort %w(hdaz hdaa hdc hdz hdn) => ["hdc", "hdn", "hdz", "hdaa", "hdaz"]
+          device_names = device_names.sort{|a,b| a.size == b.size ? a <=> b :  a.size <=> b.size }
+          return nil if device_names.empty?
+          # find candidate device name from unused successor of device_names.
+          #   %w(hdaz hdaa hdc hdz hdn) => hdd (= "hdc".succ)
+          device_names.zip(device_names.dup.tap(&:shift)).inject(device_names.first) {|r,l|  r.succ == l.last ? l.last : r }.succ
+        end
+      end
+
+      def self.policy
+        Policy.new
+      end
+
+      def self.local_store_class
+        KvmLocalStore
+      end
+
       def_configuration do
+        # set Dcmgr::Drivers::Kvm constant.
+        @@configuration_source_class = ::Module.nesting.first
+
         param :qemu_path, :default=>proc { ||
           if File.exists?('/etc/debian_version')
             '/usr/bin/kvm'
@@ -22,6 +82,7 @@ module Dcmgr
 
         param :serial_port_options, :default=>'telnet:127.0.0.1:%d,server,nowait'
         param :vnc_options, :default=>'127.0.0.1:%d'
+        param :incoming_ip
       end
 
       # 0x0-2 are reserved by KVM.
@@ -29,7 +90,7 @@ module Dcmgr
       # 1=ISA bridge
       # 2=VGA
       KVM_NIC_PCI_ADDR_OFFSET=0x10
-      
+
       def initialize
         @qemu_ver_str = `#{driver_configuration.qemu_path} -version`.chomp
         @qemu_version = if @qemu_ver_str =~ /^QEMU emulator version ([\d\.]+) \(/
@@ -41,73 +102,91 @@ module Dcmgr
                         end
       end
 
+      def get_windows_password_hash(hc)
+        logger.info "Instance #{hc.inst[:uuid]} is running Windows. " +
+                    "Waiting for Windows to generate a password and shut down."
+
+        begin
+          wait_for_kvm_termination(hc,
+            Dcmgr.conf.windows.password_generation_timeout,
+            Dcmgr.conf.windows.password_generation_sleeptime
+          )
+        rescue Timeout::Error
+          raise "Windows took too long generating a password. Waited %s seconds." %
+            Dcmgr.conf.windows.password_generation_timeout
+        end
+        logger.info "Windows finished configuring. " +
+                    "Reading its password hash from metadata drive"
+
+        mount_point = "#{hc.inst_data_dir}/tmp"
+        FileUtils.mkdir(mount_point) unless File.exists?(mount_point)
+
+        mount_metadata_drive(hc, mount_point, "-o rw")
+        password_hash = read_password_from_metadata_drive(mount_point)
+
+        # We delete this file so Windows will not regenerate the administrator
+        # password on reboot
+        File.delete(File.expand_path("#{mount_point}/meta-data/first-boot"))
+
+        umount_metadata_drive(hc, mount_point)
+
+        logger.info "Read Windows password from matadata drive. " +
+                    "Booting up the instance again."
+
+        poweron_instance(hc)
+
+        password_hash
+      end
+
+      def read_password_from_metadata_drive(mount_point)
+        raw_pw_data = File.read(File.expand_path("#{mount_point}/pw.enc"))
+        Base64.encode64(raw_pw_data)
+      end
+
+      def wait_for_kvm_termination(hc, timeout = 60, sleeptime = 2)
+        pid = File.read(File.expand_path('kvm.pid', hc.inst_data_dir)).to_i
+
+        # We are doing this weirdness because we couldn't use Process.waitpid
+        # because kvm is not a child process. This driver creates a run.sh script
+        # and runs that which in turn runs kvm.
+        Timeout::timeout(timeout) do
+          begin
+            loop do
+              # Kill -0 does the error checks but doesn't really send a kill signal
+              Process.kill(0, pid)
+              sleep sleeptime
+            end
+          rescue Errno::ESRCH
+            # If we get this error, it means the kvm process has terminated
+          end
+        end
+      end
+
       def run_instance(hc)
         poweron_instance(hc)
       end
-      
+
       def poweron_instance(hc)
+        qemu_command = build_qemu_command(hc)
+        sh(qemu_command)
 
-        # tcp listen ports for KVM monitor and VNC console
-        monitor_tcp_port = pick_tcp_listen_port
-        hc.dump_instance_parameter('monitor.port', monitor_tcp_port)
-
-        # run vm
-        inst = hc.inst
-        cmd = ["%s -m %d -smp %d -name vdc-%s",
-               "-pidfile %s",
-               "-daemonize",
-               "-monitor telnet:127.0.0.1:%d,server,nowait",
-               driver_configuration.qemu_options,
-               ]
-        args=[driver_configuration.qemu_path,
-              inst[:memory_size],
-              inst[:cpu_cores],
-              inst[:uuid],
-              File.expand_path('kvm.pid', hc.inst_data_dir),
-              monitor_tcp_port,
-             ]
-
-        if driver_configuration.vnc_options
-          vnc_tcp_port = pick_tcp_listen_port
-          hc.dump_instance_parameter('vnc.port', vnc_tcp_port)
-          # KVM -vnc port number offset is 5900
-          cmd << '-vnc ' + (driver_configuration.vnc_options.to_s % [vnc_tcp_port - 5900])
-        end
-
-        if driver_configuration.serial_port_options
-          serial_tcp_port = pick_tcp_listen_port
-          hc.dump_instance_parameter('serial.port', serial_tcp_port)
-          cmd << '-serial ' + (driver_configuration.serial_port_options.to_s % [serial_tcp_port])
-        end
-
-        cmd << "-drive file=%s,media=disk,boot=on,index=0,cache=none,if=#{drive_model(hc)}"
-        args << hc.os_devpath
-        cmd << "-drive file=%s,media=disk,index=1,cache=none,if=#{drive_model(hc)}"
-        args << hc.metadata_img_path
-
-        vifs = inst[:vif]
-        if !vifs.empty?
-          vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
-            cmd << "-net nic,vlan=#{vif[:device_index].to_i},macaddr=%s,model=#{nic_model(hc)},addr=%x -net tap,vlan=#{vif[:device_index].to_i},ifname=%s,script=no,downscript=no"
-            args << vif[:mac_addr].unpack('A2'*6).join(':')
-            args << (KVM_NIC_PCI_ADDR_OFFSET + vif[:device_index].to_i)
-            args << vif[:uuid]
-          }
-        end
-        sh(cmd.join(' '), args)
         run_sh = <<RUN_SH
 #!/bin/bash
-#{cmd.join(' ') % args}
+#{qemu_command}
 RUN_SH
 
-        vifs.each { |vif|
+        hc.inst[:vif].each do |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
-            sh("/sbin/ip link set %s up", [vif[:uuid]])
-            sh("#{Dcmgr.conf.brctl_path} addif %s %s", [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
-            run_sh += ("/sbin/ip link set %s up\n" % [vif[:uuid]])
-            run_sh += ("#{Dcmgr.conf.brctl_path} addif %s %s\n" % [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
+            sh("/sbin/ip link set %s up" % [vif_uuid(vif)])
+            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+            attach_vif_cmd = attach_vif_to_bridge(bridge, vif)
+
+            sh(attach_vif_cmd)
+
+            run_sh += ("/sbin/ip link set %s up" % [vif_uuid(vif)])
+            run_sh += (attach_vif_cmd)
           end
-        }
+        end
 
         # Dump as single shell script file to help failure recovery
         # process of the user instance.
@@ -117,8 +196,6 @@ RUN_SH
         rescue => e
           hc.logger.warn("Failed to export run.sh rescue script: #{e}")
         end
-
-        sleep 1
       end
 
       def terminate_instance(hc)
@@ -138,6 +215,7 @@ RUN_SH
         }
       end
 
+      module Standard
       def attach_volume_to_guest(hc)
         # pci_devddr consists of three hex numbers with colon separator.
         #  dom <= 0xffff && bus <= 0xff && val <= 0x1f
@@ -204,6 +282,29 @@ RUN_SH
           raise "Detached disk device still be attached in qemu-kvm: #{pci_devaddr.join(':')}" if pass == false
         }
       end
+      end
+
+      # qemu on RHEL6 uses non-standarnd monitor command names for
+      # drive_add and drive_del.
+      #   __com.redhat_drive_add
+      #   __com.redhat_drive_del
+      module RHEL6
+        def attach_volume_to_guest(hc)
+          connect_monitor(hc) { |t|
+            drive_opts = with_drive_extra_opts("file=#{hc.volume_path(hc.vol)},id=#{hc.vol[:uuid]}-drive", hc.vol)
+            t.cmd("__com.redhat_drive_add #{drive_opts}")
+            t.cmd("device_add " + qemu_drive_device_options(hc, hc.vol))
+          }
+        end
+
+        def detach_volume_from_guest(hc)
+          connect_monitor(hc) { |t|
+            t.cmd("device_del " + hc.vol[:uuid])
+            t.cmd("__com.redhat_drive_del #{hc.vol[:uuid]}-drive")
+          }
+        end
+      end
+      include RHEL6
 
       def check_instance(i)
         kvm_pid_path = File.expand_path("#{i}/kvm.pid", Dcmgr.conf.vm_data_dir)
@@ -243,6 +344,67 @@ RUN_SH
           }
         rescue Errno::ECONNRESET => e
           # succssfully terminated the process
+        end
+      end
+
+      include Hypervisor::MigrationLive
+
+      def run_migration_instance(hc)
+        qemu_command = build_qemu_command(hc)
+
+        migration_tcp_port = pick_tcp_listen_port
+
+        sh(qemu_command + " -incoming tcp:#{driver_configuration.incoming_ip}:#{migration_tcp_port}")
+
+        run_sh = <<RUN_SH
+#!/bin/bash
+#{qemu_command}
+RUN_SH
+
+        hc.inst[:vif].each do |vif|
+          if vif[:ipv4] and vif[:ipv4][:network]
+            sh("/sbin/ip link set %s up" % [vif_uuid(vif)])
+            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+            attach_vif_cmd = attach_vif_to_bridge(bridge, vif)
+
+            sh(attach_vif_cmd)
+
+            run_sh += ("/sbin/ip link set %s up" % [vif_uuid(vif)])
+            run_sh += (attach_vif_cmd)
+          end
+        end
+
+        # Dump as single shell script file to help failure recovery
+        # process of the user instance.
+        begin
+          hc.dump_instance_parameter('run.sh', run_sh)
+          File.chmod(0755, File.expand_path('run.sh', hc.inst_data_dir))
+        rescue => e
+          hc.logger.warn("Failed to export run.sh rescue script: #{e}")
+        end
+
+        {:listen_ip=>driver_configuration.incoming_ip, :port=>migration_tcp_port}
+      end
+
+      def start_migration(hc, dest_params)
+        connect_monitor(hc) do |t|
+          t.cmd("migrate -d tcp:#{dest_params[:listen_ip]}:#{dest_params[:port].to_i}")
+        end
+      end
+
+      def watch_migration(hc)
+        connect_monitor(hc) do |t|
+          while line = t.cmd("info migrate")
+            p line
+            if line =~ /\nMigration status: (\w+)/
+              case $1
+              when 'active'
+                sleep 1
+              when 'completed'
+                break
+              end
+            end
+          end
         end
       end
 
@@ -322,9 +484,131 @@ RUN_SH
         hc.inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
       end
 
+      LINUX_DEVICE_INDEX_MAP={}
+      ('a'..'z').to_a.each_with_index {|i, idx|
+        LINUX_DEVICE_INDEX_MAP[i]=idx
+      }
+      LINUX_DEVICE_INDEX_MAP.freeze
+
+      # calc drive index from guest drive device name.
+      def drive_index(device_name)
+        case device_name.downcase
+        when /sd([a-z]+)/, /vd([a-z]+)/, /xvd([a-z]+)/, /hd([a-z]+)/
+          $1.split('').inject(0) { |r,i| r + LINUX_DEVICE_INDEX_MAP[i] }.to_i
+        else
+          raise "Unsupported device name: #{device_name}"
+        end
+      end
+
+      # Returns -device options for -drive.
+      def qemu_drive_device_options(hc, volume)
+        device_model = if hc.inst[:image][:features][:virtio]
+                         # provides virtio block disk.
+                         'virtio-blk-pci'
+                       else
+                         # attach as IDE disk. The qemu does not
+                         # have normal scsi controller.
+                         'ide-drive'
+                       end
+        drive_idx = drive_index(volume[:guest_device_name])
+
+        option_str = "#{device_model},id=#{volume[:uuid]},drive=#{volume[:uuid]}-drive"
+        if hc.inst[:boot_volume_id] == volume[:uuid]
+          option_str += ',bootindex=0'
+        end
+
+        case device_model
+        when 'virtio-blk-pci'
+          # virtio-blk consumes a pci address per device.
+          option_str += ",bus=pci.0,addr=#{'0x' + ('%x' % (drive_idx + 4))}"
+        when 'ide-drive'
+        end
+
+        option_str
+      end
+
+      def build_qemu_options(hc, monitor_tcp_port, opts={})
+        inst = hc.inst
+        cmd = ["-m %d",
+               "-smp %d",
+               "-name vdc-%s",
+               "-pidfile %s",
+               "-daemonize",
+               "-monitor telnet:127.0.0.1:%d,server,nowait",
+               driver_configuration.qemu_options,
+               ]
+        args=[inst[:memory_size],
+              inst[:cpu_cores],
+              inst[:uuid],
+              File.expand_path('kvm.pid', hc.inst_data_dir),
+              monitor_tcp_port,
+             ]
+
+        if driver_configuration.vnc_options && opts[:vnc_tcp_port]
+          # KVM -vnc port number offset is 5900
+          cmd << '-vnc ' + (driver_configuration.vnc_options.to_s % [opts[:vnc_tcp_port].to_i - 5900])
+        end
+
+        if driver_configuration.serial_port_options && opts[:serial_tcp_port]
+          cmd << '-serial ' + (driver_configuration.serial_port_options.to_s % [opts[:serial_tcp_port].to_i])
+        end
+
+        inst[:volume].each { |vol_id, v|
+          cmd << "-drive " + with_drive_extra_opts("file=%s,id=#{v[:uuid]}-drive,if=none", v)
+          args << hc.volume_path(v)
+          cmd << "-device " + qemu_drive_device_options(hc, v)
+          # attach metadata drive
+          if inst[:boot_volume_id] == v[:uuid]
+            metadata_drive_volume_hash = {guest_device_name: v[:guest_device_name].succ, uuid: 'metadata'}
+            cmd << "-drive " + with_drive_extra_opts("file=#{hc.metadata_img_path},id=metadata-drive,if=none", metadata_drive_volume_hash)
+            # guess secondary drive device name for metadata drive.
+            cmd << "-device " + qemu_drive_device_options(hc, metadata_drive_volume_hash)
+          end
+        }
+
+        vifs = inst[:vif]
+        if !vifs.empty?
+          vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
+            cmd << "-net nic,vlan=#{vif[:device_index].to_i},macaddr=%s,model=#{nic_model(hc)},addr=%x -net tap,vlan=#{vif[:device_index].to_i},ifname=%s,script=no,downscript=no"
+            args << vif[:mac_addr].unpack('A2'*6).join(':')
+            args << (KVM_NIC_PCI_ADDR_OFFSET + vif[:device_index].to_i)
+            args << vif_uuid(vif)
+          }
+        end
+
+        cmd.join(' ') % args
+      end
+
+      def build_qemu_command(hc)
+        # tcp listen ports for KVM monitor and VNC console
+        monitor_tcp_port = pick_tcp_listen_port
+        hc.dump_instance_parameter('monitor.port', monitor_tcp_port)
+
+        opts = {}
+        # run vm
+        inst = hc.inst
+        if driver_configuration.vnc_options
+          opts[:vnc_tcp_port] = pick_tcp_listen_port
+          hc.dump_instance_parameter('vnc.port', opts[:vnc_tcp_port])
+        end
+
+        if driver_configuration.serial_port_options
+          opts[:serial_tcp_port] = pick_tcp_listen_port
+          hc.dump_instance_parameter('serial.port', opts[:serial_tcp_port])
+        end
+
+        "#{driver_configuration.qemu_path} #{build_qemu_options(hc, monitor_tcp_port, opts)}"
+      end
+
       Task::Tasklet.register(self) {
         self.new
       }
+
+      # Add extra options to -drive parameter.
+      # mainly for none=cache does not work some filesystems without O_DIRECT.
+      def with_drive_extra_opts(base, volume)
+        [base, "serial=#{volume[:uuid]}", driver_configuration.local_store.drive_extra_options].compact.join(',')
+      end
     end
   end
 end

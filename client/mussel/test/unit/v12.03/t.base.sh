@@ -32,7 +32,7 @@ function test_base_help_stderr_to_stdout_success() {
 
 function test_base_index() {
   extract_args ${namespace} index
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### show
@@ -40,13 +40,13 @@ function test_base_index() {
 function test_base_show_no_uuid() {
   extract_args ${namespace} show
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_base_show_uuid() {
   extract_args ${namespace} show asdf
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### destroy
@@ -54,13 +54,13 @@ function test_base_show_uuid() {
 function test_base_destroy_no_uuid() {
   extract_args ${namespace} destroy
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 function test_base_destroy_uuid() {
   extract_args ${namespace} destroy asdf
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ### xcreate
@@ -68,7 +68,7 @@ function test_base_destroy_uuid() {
 function test_base_xcreate() {
   extract_args ${namespace} xcreate
   run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

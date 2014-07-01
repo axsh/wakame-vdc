@@ -7,35 +7,97 @@ module Dcmgr::Cli
 class Storage < Base
   namespace :storage
   include Dcmgr::Models
+  include Dcmgr::Constants::StorageNode
 
-  desc "add NODE_ID [options]", "Register a new storage node"
-  method_option :uuid, :type => :string, :desc => "The uuid for the new storage node"
-  method_option :base_path, :type => :string, :required => true, :desc => "Base path to store volume files"
-  method_option :snapshot_base_path, :type => :string, :required => true, :desc => "Base path to store snapshot files"
-  method_option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
-  method_option :force, :type => :boolean, :default=>false, :desc => "Force new entry creation"
-  method_option :transport_type, :type => :string, :default=>'iscsi', :desc => "Transport type [iscsi]"
-  method_option :ipaddr, :type => :string, :required=>true, :desc => "IP address of transport target"
-  method_option :storage_type, :type => :string, :default=>'zfs', :desc => "Storage type [#{StorageNode::SUPPORTED_BACKINGSTORE.join(', ')}]"
-  method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
-  def add(node_id)
-    unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
-      abort("Node ID is not registered yet: #{node_id}")
+  class IscsiOperation < Base
+    namespace :iscsi
+    M = Dcmgr::Models
+
+    def self.basename
+      "#{super()} #{Storage.namespace} #{self.namespace}"
     end
 
-    fields = {:node_id=>node_id,
-              :offering_disk_space_mb=>options[:disk_space],
-              :transport_type=>options[:transport_type],
-              :storage_type=>options[:storage_type],
-              :export_path=>options[:base_path],
-              :snapshot_base_path => options[:snapshot_base_path],
-              :ipaddr=>options[:ipaddr],
-              :display_name=>options[:display_name],
-    }
-    fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
+    desc "add <node id> [options]", "Register a new ISCSI storage node"
+    option :uuid, :type => :string, :desc => "The uuid for the new storage node"
+    option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
+    option :ipaddr, :type => :string, :required => true, :desc => "IP address of transport target"
+    option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
+    def add(node_id)
+      fields = {
+        :node_id=>node_id,
+        :offering_disk_space_mb=>options[:disk_space],
+        :ip_address=>options[:ipaddr],
+        :display_name=>options[:display_name],
+      }
+      fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
 
-    puts super(StorageNode,fields)
+      say super(M::IscsiStorageNode,fields)
+    end
+
+    desc "modify <uuid> [options]", "Modify <uuid> of ISCSI storage node"
+    option :node_id, :type => :string, :desc => "The node ID for the storage node"
+    option :disk_space, :type => :numeric, :desc => "Amount of disk size to be exported (in MB)"
+    option :ipaddr, :type => :string, :desc => "IP address of transport target"
+    option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
+    def modify(uuid)
+      fields = {
+        :node_id=>options[:node_id],
+        :offering_disk_space_mb=>options[:disk_space],
+        :ip_address=>options[:ipaddr],
+        :display_name=>options[:display_name],
+      }
+      super(M::IscsiStorageNode,uuid,fields)
+    end
   end
+
+  desc "iscsi SUBCOMMAND [options]", "Operations for iscsi storage"
+  subcommand :iscsi, IscsiOperation
+
+  class NFSOperation < Base
+    namespace :nfs
+    M = Dcmgr::Models
+
+    def self.basename
+      "#{super()} #{Storage.namespace} #{self.namespace}"
+    end
+
+    desc "add <node id> [options]", "Register a new NFS storage node"
+    option :uuid, :type => :string, :desc => "The uuid for the new storage node"
+    option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
+    option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
+    option :mount_point, :type => :string, :size => 255, :desc => "Mount point path on host node"
+    def add(node_id)
+      fields = {
+        :node_id=>node_id,
+        :offering_disk_space_mb=>options[:disk_space],
+        :display_name=>options[:display_name],
+        :mount_point => options[:mount_point],
+      }
+      fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
+
+      say super(M::NfsStorageNode,fields)
+    end
+
+    desc "modify <uuid> [options]", "Modify <uuid> of NFS storage node"
+    option :node_id, :type => :string, :desc => "The node ID for the storage node"
+    option :disk_space, :type => :numeric, :desc => "Amount of disk size to be exported (in MB)"
+    option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
+    option :mount_point, :type => :string, :size => 255, :desc => "Mount point path on host node"
+    def modify(uuid)
+      fields = {
+        :node_id=>options[:node_id],
+        :offering_disk_space_mb=>options[:disk_space],
+        :display_name=>options[:display_name],
+        :mount_point => options[:mount_point],
+      }
+      # NfsStorageNode is a class table inheritance model. so applys
+      # the find and update operation to the parent class.
+      super(M::StorageNode,uuid,fields)
+    end
+  end
+
+  desc "nfs SUBCOMMAND [options]", "Operations for NFS storage"
+  subcommand :nfs, NFSOperation
 
   desc "del UUID", "Deregister a storage node"
   def del(uuid)
@@ -50,14 +112,16 @@ class Storage < Base
 UUID: <%= st.canonical_uuid %>
 Node ID: <%= st.node_id %>
 Disk space (offerring): <%= st.offering_disk_space_mb %>MB
-Storage: <%= st.storage_type %>
-Transport: <%= st.transport_type %>
-IP Address: <%= st.ipaddr %>
-Export path: <%= st.export_path %>
-Snapshot base path: <%= st.snapshot_base_path %>
+Storage Type: <%= st.storage_type %>
 Create: <%= st.created_at %>
 Update: <%= st.updated_at %>
 __END
+      case st
+      when Dcmgr::Models::IscsiStorageNode
+        puts <<__END
+IP Address: #{st.ip_address}
+__END
+      end
     else
       ds = StorageNode.dataset
       table = [['UUID', 'Node ID', 'Storage', 'Status']]

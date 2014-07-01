@@ -23,12 +23,12 @@ function tearDown() {
 
 function test_load_image_ini() {
   load_image_ini ${suite_path}/image.ini
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_load_image_ini_inifile_not_found() {
   load_image_ini ${suite_path}/unknown.ini
-  assertNotEquals $? 0
+  assertNotEquals 0 $?
 }
 
 ## shunit2

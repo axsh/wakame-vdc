@@ -33,7 +33,7 @@ function test_ping_to_unknown_instances() {
     for unknown_ipaddr in ${unknown_ipaddrs}; do
       [[ ${instance_ipaddr} == ${unknown_ipaddr} ]] && continue
       ssh ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} "ping -c 1 -W 3 ${unknown_ipaddr}"
-      assertNotEquals $? 0
+      assertNotEquals 0 $?
     done
   done
 }

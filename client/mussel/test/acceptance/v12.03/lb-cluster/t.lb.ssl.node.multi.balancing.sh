@@ -31,14 +31,14 @@ sleep_sec=10
 function test_sticky_session_does_not_work() {
   for instance_uuid in $(cat ${instance_uuids_path}); do
     retry_until [[ '"$(curl -fsSkL https://${load_balancer_ipaddr}:${port}/)"' == "${instance_uuid}" ]]
-    assertEquals $? 0
+    assertEquals 0 $?
   done
 
   curl -fsSkL -c ${cookie_path} https://${load_balancer_ipaddr}:${port}/
 
   for instance_uuid in $(cat ${instance_uuids_path}); do
     retry_until [[ '"$(curl -fsSkL -b ${cookie_path} https://${load_balancer_ipaddr}:${port}/)"' == "${instance_uuid}" ]]
-    assertEquals $? 0
+    assertEquals 0 $?
   done
 }
 

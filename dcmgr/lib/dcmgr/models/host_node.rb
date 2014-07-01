@@ -1,24 +1,12 @@
 # -*- coding: utf-8 -*-
 
-require 'isono/models/node_state'
+require 'isono'
 
 module Dcmgr::Models
   class HostNode < BaseNew
     taggable 'hn'
 
-    HYPERVISOR_XEN_34='xen-3.4'
-    HYPERVISOR_XEN_40='xen-4.0'
-    HYPERVISOR_DUMMY='dummy'
-    HYPERVISOR_KVM='kvm'
-    HYPERVISOR_LXC='lxc'
-    HYPERVISOR_ESXI='esxi'
-    HYPERVISOR_OPENVZ='openvz'
-
-    ARCH_X86=:x86.to_s
-    ARCH_X86_64=:x86_64.to_s
-
-    SUPPORTED_ARCH=[ARCH_X86, ARCH_X86_64]
-    SUPPORTED_HYPERVISOR=[HYPERVISOR_DUMMY, HYPERVISOR_KVM, HYPERVISOR_LXC, HYPERVISOR_ESXI, HYPERVISOR_OPENVZ]
+    include Dcmgr::Constants::HostNode
 
     one_to_many :instances
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
@@ -26,15 +14,17 @@ module Dcmgr::Models
     one_to_many :host_node_vnet
     alias :vnet :host_node_vnet
 
+    one_to_many :local_volumes
+
     def_dataset_method(:online_nodes) do
       # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
-      filter(:node_id => r)
+      filter(:node_id => r, :enabled=>true)
     end
 
     def_dataset_method(:offline_nodes) do
       # SELECT `host_nodes`.* FROM `host_nodes` LEFT JOIN `node_states` ON (`host_nodes`.`node_id` = `node_states`.`node_id`) WHERE ((`node_states`.`state` IS NULL) OR (`node_states`.`state` = 'offline'))
-      select_all(:host_nodes).join_table(:left, :node_states, {:host_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'})
+      select_all(:host_nodes).join_table(:left, :node_states, {:host_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'} | {:host_nodes__enabled=>false})
     end
 
     def validate
@@ -73,7 +63,7 @@ module Dcmgr::Models
     end
 
     def status
-      node.nil? ? :offline : node.state
+      node.nil? ? STATUS_OFFLINE : node.state
     end
 
     # Returns true/false if the host node has enough capacity to run
@@ -129,9 +119,28 @@ module Dcmgr::Models
       instances_usage(:cpu_cores)
     end
 
+    def cpu_core_usage_percent()
+      (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100.0
+    end
+
     # Returns reserved memory size used by running/scheduled instances.
     def memory_size_usage
       instances_usage(:memory_size)
+    end
+
+    def memory_size_usage_percent()
+      (memory_size_usage.to_f / offering_memory_size.to_f) * 100.0
+    end
+
+    # Calc all local volume size on this host node.
+    def disk_space_usage
+      instances_dataset.alives.map { |i|
+        i.local_volumes_dataset.sum(:size).to_i
+      }.inject{|r, i| r + i }.to_i
+    end
+
+    def disk_space_usage_percent()
+      (disk_space_usage.to_f / (offering_disk_space_mb * (1024 ** 2)).to_f) * 100.0
     end
 
     # Returns a usage percentage to show admins in quick overviews
@@ -150,6 +159,11 @@ module Dcmgr::Models
     # Returns available memory size.
     def available_memory_size
       self.offering_memory_size - self.memory_size_usage
+    end
+
+    # Returns available memory size.
+    def available_disk_space
+      (self.offering_disk_space_mb * 1024 * 1024) - self.disk_space_usage
     end
 
     # Check the free resource capacity across entire local VDC domain.

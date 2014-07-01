@@ -11,7 +11,7 @@ module Dcmgr
       param :amqp_server_uri
 
       deprecated_warn_for :network, :network_id
-      
+
       DSL do
         def driver(driver_name, &blk)
           @config[:driver_class] = klass = ::Dcmgr::Drivers::NetworkMonitoring.driver_class(driver_name)

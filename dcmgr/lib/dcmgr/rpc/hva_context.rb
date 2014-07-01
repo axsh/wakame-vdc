@@ -6,9 +6,15 @@ require 'isono'
 module Dcmgr
   module Rpc
     class HvaContext
+      ACCEPTED_CLASSES = [
+        HvaHandler,
+        LocalStoreHandler,
+        MigrationHandler,
+        WindowsHandler
+      ]
 
       def initialize(subject)
-        unless [HvaHandler, LocalStoreHandler].member?(subject.class)
+        unless ACCEPTED_CLASSES.member?(subject.class)
           raise "Invalid Class: #{subject.class}"
         end
         @hva = subject
@@ -27,7 +33,33 @@ module Dcmgr
       end
 
       def os_devpath
-        @hva.instance_variable_get(:@os_devpath) || File.expand_path(self.inst[:uuid], self.inst_data_dir)
+        if @hva.instance_variable_get(:@os_devpath)
+          return @hva.instance_variable_get(:@os_devpath)
+        end
+
+        boot_vol = inst[:volume][inst[:boot_volume_id]]
+        raise "Unknown boot volume details: #{inst[:boot_volume_id]}" if boot_vol.nil?
+
+        volume_path(boot_vol)
+      end
+
+      def volume_path(volume_hash)
+        case volume_hash[:volume_type]
+        when 'Dcmgr::Models::LocalVolume'
+          # TODO: more supports for mount label names.
+          case volume_hash[:volume_device][:mount_label]
+          when 'instance'
+            File.join(self.inst_data_dir, volume_hash[:volume_device][:path])
+          else
+            raise "Unsupoorted mount label: #{volume_hash[:volume_device][:mount_label]}"
+          end
+        when 'Dcmgr::Models::IscsiVolume'
+          hypervisor_driver_class.new.iscsi_target_dev_path(volume_hash)
+        when 'Dcmgr::Models::NfsVolume'
+          File.join(volume_hash[:volume_device][:nfs_storage_node][:mount_point], volume_hash[:volume_device][:path])
+        else
+          raise "Unsupported volume type: #{volume_hash[:volume_type]}"
+        end
       end
 
       def metadata_img_path
@@ -60,7 +92,7 @@ module Dcmgr
       def dump_instance_parameter(rel_path, buf)
         # ignore error when try to put file to deleted instance.
         return self unless File.directory?(self.inst_data_dir())
-        
+
         File.open(File.expand_path(rel_path, self.inst_data_dir()), 'w'){ |f|
           f.puts(buf)
         }

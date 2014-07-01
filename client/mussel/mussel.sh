@@ -32,6 +32,7 @@ DCMGR_HOST=${DCMGR_HOST:-localhost}
 DCMGR_PORT=${DCMGR_PORT:-9001}
 DCMGR_BASE_URI=${DCMGR_BASE_URI:-${base_uri:-http://${DCMGR_HOST}:${DCMGR_PORT}/api/${DCMGR_API_VERSION}}}
 DCMGR_RESPONSE_FORMAT=${DCMGR_RESPONSE_FORMAT:-yml}
+DCMGR_CLIENT_ADDR=${DCMGR_CLIENT_ADDR:-$(for i in $(/sbin/ip route get ${DCMGR_HOST} | head -1); do echo ${i}; done | tail -1)}
 
 # main
 

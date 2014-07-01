@@ -29,12 +29,12 @@ function test_create_security_group() {
 	tcp:80,80,ip4:0.0.0.0/0
 	EOS
   security_group_uuid=$(run_cmd security_group create | hash_value id)
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_show_security_group() {
   run_cmd security_group show ${security_group_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_update_security_group_icmp() {
@@ -42,7 +42,7 @@ function test_update_security_group_icmp() {
 	icmp:-1,-1,ip4:0.0.0.0/0
 	EOS
   run_cmd security_group update ${security_group_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_update_security_group_udp() {
@@ -50,7 +50,7 @@ function test_update_security_group_udp() {
 	udp:53,53,ip4:0.0.0.0/0
 	EOS
   run_cmd security_group update ${security_group_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_flush_rule() {
@@ -58,12 +58,12 @@ function test_flush_rule() {
 	#
 	EOS
   run_cmd security_group update ${security_group_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 function test_destroy_security_group() {
   run_cmd security_group destroy ${security_group_uuid}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

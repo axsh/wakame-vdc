@@ -28,7 +28,7 @@ function tearDown() {
 
 function test_install_cassandra() {
   install_cassandra ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

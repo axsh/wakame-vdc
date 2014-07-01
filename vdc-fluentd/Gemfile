@@ -1,0 +1,13 @@
+source 'https://rubygems.org'
+
+gemspec
+
+dolphin_client_root=File.expand_path('../../client/dolphin', __FILE__)
+if ENV['PKGBUILD'].nil? && File.exists?(dolphin_client_root)
+  gem 'dolphin_client', :path=>dolphin_client_root
+end
+
+metric_libs_root=File.expand_path('../../metric_libs', __FILE__)
+if ENV['PKGBUILD'].nil? && File.exists?(metric_libs_root)
+  gem 'metric_libs', :path=>metric_libs_root
+end

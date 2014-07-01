@@ -24,7 +24,7 @@ function tearDown() {
 
 function test_install_nginx() {
   install_nginx ${chroot_dir}
-  assertEquals $? 0
+  assertEquals 0 $?
 }
 
 ## shunit2

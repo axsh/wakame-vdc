@@ -40,6 +40,10 @@ module Dcmgr::Models
       !find(uuid).nil?
     end
 
+    def self.generate_uuid(length=8)
+      Array.new(length) do UUID_TABLE[rand(UUID_TABLE.size)]; end.join
+    end
+
     def self.configure(model)
       model.schema_builders << proc {
         unless has_column?(:uuid)
@@ -58,22 +62,28 @@ module Dcmgr::Models
       end
 
       def before_validation
-        # trim uuid prefix if it is in the self[:uuid]
-        self[:uuid].sub!(/^#{self.class.uuid_prefix}-/, '')
+        # trim uuid prefix if it is in the uuid column.
+        self.uuid.sub!(/^#{self.uuid_prefix}-/, '')
         super
       end
 
       def before_create
-        if !self.class.find(:uuid=>self[:uuid]).nil?
+        # special care for class table inheritance plugin.
+        uuid_model_class = if self.class.respond_to?(:cti_base_model)
+                             self.class.cti_base_model
+                           else
+                             self.class
+                           end
+        if !uuid_model_class.find(:uuid=>self.uuid).nil?
           raise "Duplicate UUID: #{self.canonical_uuid} already exists"
         end
+
         super
       end
-
       def after_initialize
         super
         # set random generated uuid value
-        self[:uuid] ||= Array.new(8) do UUID_TABLE[rand(UUID_TABLE.size)]; end.join
+        self[:uuid] ||= Taggable.generate_uuid
       end
 
       # model hook
@@ -372,7 +382,10 @@ module Dcmgr::Models
       end
 
       def history_dataset
-        @history_ds
+         # case for class_table_inheritable plugin
+        @history_ds ||
+          (superclass.history_dataset if superclass.respond_to?(:history_dataset)) ||
+          raise("@history_dataset is unset")
       end
     end
 
@@ -458,10 +471,15 @@ module Dcmgr::Models
     end
 
     module ClassMethods
-      attr_accessor :track_columns
+      def track_columns
+        # care for class_table_inheritance plugin
+        @track_columns ||
+          (superclass.track_columns if superclass.respond_to?(:track_columns)) ||
+          (@track_columns = Hash.new)
+      end
+
       def track_column_set(event_name, columns)
-        @track_columns = {} if @track_columns.nil?
-        @track_columns[event_name] = columns
+        track_columns[event_name] = columns
       end
     end
 
@@ -495,7 +513,7 @@ module Dcmgr::Models
 
   module Plugins
     M = Dcmgr::Models
-    
+
     module ResourceLabel
       def self.apply(model)
         model.one_to_many :resource_labels, :class=>M::ResourceLabel, :key=>:resource_uuid, :primary_key=>:canonical_uuid, :extend=>M::ResourceLabel::LabelDatasetMethods
@@ -516,7 +534,7 @@ module Dcmgr::Models
         def label(name)
           self.resource_labels_dataset.filter(:name=>name).first
         end
-        
+
         def set_label(name, value, value_type=nil)
           l = label(name)
           if value_type
@@ -526,7 +544,7 @@ module Dcmgr::Models
               l.save_changes
             else
               self.add_resource_label({:name=>name}.merge({value_type.to_sym=>value}))
-            end            
+            end
           else
             if l
               l.value = value
@@ -536,7 +554,7 @@ module Dcmgr::Models
             end
           end
         end
-        
+
         def unset_label(name)
           l = label(name)
           l.destroy if l
@@ -645,7 +663,6 @@ module Dcmgr::Models
       end
       @install_data_hooks
     end
-
 
     private
     def self.inherited(klass)

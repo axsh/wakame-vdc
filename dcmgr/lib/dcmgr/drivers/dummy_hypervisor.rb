@@ -7,6 +7,20 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
+      class Policy < HypervisorPolicy
+        def on_associate_volume(instance, volume)
+          volume.guest_device_name = volume.canonical_uuid
+        end
+      end
+
+      def self.policy
+        Policy.new
+      end
+
+      def self.local_store_class
+        DummyLocalStore
+      end
+
       def initialize
       end
 
@@ -20,9 +34,10 @@ module Dcmgr
 
         vifs.each { |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
-            sh("tunctl -t %s" % [vif[:uuid]])
-            sh("/sbin/ip link set %s up" % [vif[:uuid]])
-            sh("#{Dcmgr.conf.brctl_path} addif %s %s" % [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
+            sh("tunctl -t %s" % [vif_uuid(vif)])
+            sh("/sbin/ip link set %s up" % [vif_uuid(vif)])
+            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+            sh(attach_vif_to_bridge(bridge, vif))
           end
         }
       end
@@ -35,13 +50,14 @@ module Dcmgr
         inst = hc.inst
         vifs = inst[:vif]
 
-        vifs.each { |vif|
+        vifs.each do |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
-            sh("#{Dcmgr.conf.brctl_path} delif %s %s" % [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
-            sh("/sbin/ip link set %s down" % [vif[:uuid]])
-            sh("tunctl -d %s" % [vif[:uuid]])
+            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+            sh(detach_vif_from_bridge(bridge, vif))
+            sh("/sbin/ip link set %s down" % [vif_uuid(vif)])
+            sh("tunctl -d %s" % [vif_uuid(vif)])
           end
-        }
+        end
       end
 
       def reboot_instance(hc)
