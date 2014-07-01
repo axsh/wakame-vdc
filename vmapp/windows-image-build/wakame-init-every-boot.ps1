@@ -101,3 +101,33 @@ Get_Metadata_Mac_Addresses | foreach { Set_Networking_From_Metadata( $_ ) }
 # seems to just ignore the request without thowing any errors.  The simple solution
 # here is just to set everything twice.
 Get_Metadata_Mac_Addresses | foreach { Set_Networking_From_Metadata( $_ ) }
+
+try {
+    # Update hosts file
+    $hpath = "C:\Windows\System32\drivers\etc\hosts"
+    $comment="# Please do not modify lines from here by your hand since wakame-init will place entries from metadata."
+    try {
+	$oldlines = [System.IO.File]::ReadAllLines($hpath)
+        $null | Out-File $hpath -Encoding utf8
+	foreach ( $ln in $oldlines ) {
+	    if ($ln -match "do not modify") { break }
+            $ln | Out-File $hpath -Encoding utf8 -Append
+	}
+    }
+    catch {
+	$Error[0] | Write-Host
+	Write-Host "Creating new hosts file"
+        $null | Out-File $hpath -Encoding utf8
+    }
+    $comment | Out-File $hpath -Encoding utf8 -Append
+    $mdl = Get_MD_Letter
+    (Get-ChildItem "$mdl\meta-data\extra-hosts") | foreach {
+	$hostname = $_
+        $hostip = [System.IO.File]::ReadAllText("$mdl\meta-data\extra-hosts\$hostname").trim()
+	"${hostip} ${hostname}" | Out-File $hpath -Encoding utf8 -Append
+    }
+}
+catch {
+    $Error[0] | Write-Host
+    Write-Host "Error occurred while updating hosts file"
+}
