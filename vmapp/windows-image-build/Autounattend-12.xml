@@ -82,13 +82,15 @@
                 -->
             </UserData>
         </component>
-        <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <SetupUILanguage>
                 <UILanguage>ja-JP</UILanguage>
             </SetupUILanguage>
             <InputLocale>ja-JP</InputLocale>
-            <UILanguage>ja-JP</UILanguage>
+            <LayeredDriver>6</LayeredDriver>
             <SystemLocale>ja-JP</SystemLocale>
+            <UILanguage>ja-JP</UILanguage>
+            <UILanguageFallback>en-US</UILanguageFallback>
             <UserLocale>ja-JP</UserLocale>
         </component>
     </settings>
