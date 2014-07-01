@@ -171,7 +171,7 @@ try {
     $rsaProvider.FromXmlString($XmlPublicKey.InnerXml)
     $ee = $rsaProvider.Encrypt($randpass,$true)
     $mdl = Get_MD_Letter
-    [System.IO.File]::WriteAllBytes("${mdl}\pw.enc",$ee) # TODO, decide path and update this line
+    [System.IO.File]::WriteAllBytes("$mdl\meta-data\pw.enc",$ee)
 
     # Change Administrator password
     $computer=hostname

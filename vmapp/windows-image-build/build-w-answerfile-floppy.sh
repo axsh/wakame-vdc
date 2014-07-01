@@ -238,7 +238,11 @@ boot-with-networking()
 get-decode-password()
 {
     mount-image "$(pwd)" metadata.img 1 "-o ro"
-    if [ -f "mntpoint/pw.enc" ]
+    if [ -f "mntpoint/meta-data/pw.enc" ]
+    then
+	pwtxt="$(openssl rsautl -decrypt -inkey testsshkey -in mntpoint/meta-data/pw.enc -oaep)"
+	echo "$pwtxt"
+    elif [ -f "mntpoint/pw.enc" ] # old location, for checking images from older tests
     then
 	pwtxt="$(openssl rsautl -decrypt -inkey testsshkey -in mntpoint/pw.enc -oaep)"
 	echo "$pwtxt"
