@@ -6,7 +6,6 @@ RSpec.configure do |config|
                   [File.expand_path('../config/dcmgr.conf', __FILE__)])
   Dcmgr.run_initializers("logger", "sequel")
 
-  config.color_enabled = true
   config.formatter = :documentation
 
   config.before(:suite) do
