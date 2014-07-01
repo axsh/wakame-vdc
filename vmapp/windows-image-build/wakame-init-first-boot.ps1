@@ -230,7 +230,8 @@ catch {
 try {
     # Set up script for configuration on each reboot
     $onbootScript = "C:\Windows\Setup\Scripts\wakame-init-every-boot.cmd"
-    schtasks /create /tn "Wakame Init" /tr "$onbootScript" /sc onstart /ru System
+    # /f is required on next line, otherwise schtasks will prompt to overwrite existing task
+    schtasks /create /tn "Wakame Init" /tr "$onbootScript" /sc onstart /ru System /f
 }
 catch {
     $Error[0] | Write-Host
