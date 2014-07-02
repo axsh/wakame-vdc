@@ -17,11 +17,11 @@ Installation Requirements
 
 Download wakame-vdc.repo file and put it to your /etc/yum.repos.d/ repository.
 
-    # curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
+    # curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
 
 For OpenVZ container support, add another repository.
 
-    # curl -o /etc/yum.repos.d/openvz.repo     -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo
+    # curl -o /etc/yum.repos.d/openvz.repo     -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo
 
 Install epel-release.
 

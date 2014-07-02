@@ -139,7 +139,7 @@ module Dcmgr
       end
 
       def read_password_from_metadata_drive(mount_point)
-        raw_pw_data = File.read(File.expand_path("#{mount_point}/pw.enc"))
+        raw_pw_data = File.read(File.expand_path("#{mount_point}/meta-data/pw.enc"))
         Base64.encode64(raw_pw_data)
       end
 
