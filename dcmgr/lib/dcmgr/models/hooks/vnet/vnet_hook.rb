@@ -55,9 +55,15 @@ Dcmgr::Models::NetworkService.after_create do |network_service|
 end
 
 Dcmgr::Models::NetworkRoute.after_create do |network_route|
+  outer_lease = Dcmgr::Models::NetworkVifIpLease[network_route.outer_lease_id]
+  inner_lease = Dcmgr::Models::NetworkVifIpLease[network_route.inner_lease_id]
+
   filter_params(:NetworkRoute, network_route.to_hash, {
-    :interface_uuid => "if-#{network_route.outer_lease.network_vif.uuid}",
-    :ipv4_address => network_route.outer_lease.ipv4,
-    :network_uuid => network_route.outer_lease.network.canonical_uuid
+    :ingress_ipv4_address => outer_lease.ipv4_s,
+    :egress_ipv4_address => inner_lease.ipv4_s,
+    :outer_network_uuid => outer_lease.network.canonical_uuid,
+    :inner_network_uuid => inner_lease.network.canonical_uuid,
+    :outer_network_gw => outer_lease.network.ipv4_gw,
+    :inner_network_gw => inner_lease.network.ipv4_gw
   })
 end

@@ -8,30 +8,19 @@
 
 ## variables
 
-#declare instance_ipaddr=
-
-function needs_vif() { true; }
-function needs_secg() { true; }
-
-#image_id=${image_id:-wmi-centos1d}
 vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
-
 ip_pool_id=${ip_pool_id:-ipp-external}
 
 ## functions
 
+function needs_vif() { true; }
+
 function render_vif_table() {
   cat <<-EOS
 	{
-	"eth0":{"index":"0","network":"${vifs_eth0_network_id}","security_groups":"${security_group_uuid}"},
+	"eth0":{"index":"0","network":"${vifs_eth0_network_id}","security_groups":""},
+	"eth1":{"index":"1","network":"nw-demo8","security_groups":""}
 	}
-	EOS
-}
-
-function render_secg_rule() {
-  cat <<-EOS
-	icmp:-1,-1,ip4:0.0.0.0/0
-	tcp:22,22,ip4:0.0.0.0/0
 	EOS
 }
 

@@ -11,25 +11,22 @@
 
 ## variables
 
-#ssh_user=${ssh_user:-root}
-ip_handle_id=
-network_id=
-
 ## functions
 
 ### step
 
-function test_global_network_create(){
-  network=192.168.2.0
-  gw=192.168.2.1
-  prefix=24
-  domain_name=global
-  network_mode=securitygroup
-  ip_assignment=asc
+function test_attach_external_ip() {
+  network_id=nw-public
+  ip_handle_id=$(run_cmd ip_pool acquire ${ip_pool_id} | hash_value ip_handle_id)
+  assertEquals 0 $?
 
-  network_id=$(run_cmd network create | hash_value network_id)
-  [[ -n ${network_id} ]]
+  network_vif_id=$(run_cmd instance show ${instance_uuid} | hash_value vif_id | head -1)
+  assertEquals 0 $?
 
+  ip_handle_id=${ip_handle_id} run_cmd network_vif attach_external_ip ${network_vif_id}
+  assertEquals 0 $?
+
+  run_cmd network_vif show_external_ip ${network_vif_id}
   assertEquals 0 $?
 }
 
