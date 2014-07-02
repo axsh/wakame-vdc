@@ -271,11 +271,15 @@ module Dcmgr::Models
       end
     end
 
+    # Adding a refresh to these methods so they will work for now.
+    # Really these should be deleted once we remove the vnet code from the
+    # sequel hooks
     def add_security_group(security_group)
       NetworkVifSecurityGroup.create(
         :network_vif => self,
         :security_group => security_group
       )
+      self.refresh
     end
 
     def remove_security_group(security_group)
@@ -284,6 +288,7 @@ module Dcmgr::Models
         :network_vif_id => self.id,
         :security_group_id => security_group.id
       ).first.destroy
+      self.refresh
     end
 
     private
