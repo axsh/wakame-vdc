@@ -2,7 +2,7 @@
 
 module ChainMethods
   def succeed_with(msg)
-    @fail_should_not = msg
+    @fail_not_to = msg
     true
   end
 

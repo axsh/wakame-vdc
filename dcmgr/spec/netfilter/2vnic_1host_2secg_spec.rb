@@ -23,48 +23,48 @@ describe "SGHandler and NetfilterHandler" do
       handler.init_vnic(vnicA_id)
       handler.init_vnic(vnicB_id)
 
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
-      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA])
-      nfa(host).should have_applied_vnic(vnicB).with_secgs([groupB])
-      nfa(host).should have_applied_secg(groupB).with_vnics([vnicB])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([groupA])
+      expect(nfa(host)).to have_applied_secg(groupA).with_vnics([vnicA])
+      expect(nfa(host)).to have_applied_vnic(vnicB).with_secgs([groupB])
+      expect(nfa(host)).to have_applied_secg(groupB).with_vnics([vnicB])
 
       handler.destroy_vnic(vnicB_id, true)
 
-      nfa(host).should_not have_applied_vnic(vnicB)
-      nfa(host).should_not have_applied_secg(groupB)
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
-      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA])
+      expect(nfa(host)).not_to have_applied_vnic(vnicB)
+      expect(nfa(host)).not_to have_applied_secg(groupB)
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([groupA])
+      expect(nfa(host)).to have_applied_secg(groupA).with_vnics([vnicA])
 
       handler.destroy_vnic(vnicA_id, true)
-      nfa(host).should have_nothing_applied
+      expect(nfa(host)).to have_nothing_applied
     end
 
     it "does live security group switching" do
       handler.init_vnic(vnicA_id)
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([groupA])
 
       handler.add_sgs_to_vnic(vnicA_id, [groupB_id])
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA, groupB])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([groupA, groupB])
 
       handler.remove_sgs_from_vnic(vnicA_id, [groupB_id])
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([groupA])
 
       # Nothing should change, nor should there be an error if we try to remove a group we're not in
       handler.remove_sgs_from_vnic(vnicA_id, [groupB_id])
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([groupA])
 
       # vnicA is already in groupA but that shouldn't be a problem. groupA should just be ignored. That's what we're testing here.
       handler.add_sgs_to_vnic(vnicA_id, [groupA_id, groupB_id])
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA, groupB])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([groupA, groupB])
 
       handler.remove_sgs_from_vnic(vnicA_id, [groupA_id, groupB_id])
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([])
 
       handler.add_sgs_to_vnic(vnicA_id, [groupA_id, groupB_id])
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA, groupB])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([groupA, groupB])
 
       handler.destroy_vnic(vnicA_id, true)
-      nfa(host).should have_nothing_applied
+      expect(nfa(host)).to have_nothing_applied
     end
 
     it "starts 2 vnics in the same secg, then moves one out" do
@@ -75,17 +75,17 @@ describe "SGHandler and NetfilterHandler" do
       vnicB.add_security_group(groupA)
       handler.init_vnic(vnicB_id)
 
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
-      nfa(host).should have_applied_vnic(vnicB).with_secgs([groupA])
-      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA, vnicB])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([groupA])
+      expect(nfa(host)).to have_applied_vnic(vnicB).with_secgs([groupA])
+      expect(nfa(host)).to have_applied_secg(groupA).with_vnics([vnicA, vnicB])
 
       handler.remove_sgs_from_vnic(vnicB_id, [groupA_id])
       handler.add_sgs_to_vnic(vnicB_id, [groupB_id])
 
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([groupA])
-      nfa(host).should have_applied_vnic(vnicB).with_secgs([groupB])
-      nfa(host).should have_applied_secg(groupA).with_vnics([vnicA])
-      nfa(host).should have_applied_secg(groupB).with_vnics([vnicB])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([groupA])
+      expect(nfa(host)).to have_applied_vnic(vnicB).with_secgs([groupB])
+      expect(nfa(host)).to have_applied_secg(groupA).with_vnics([vnicA])
+      expect(nfa(host)).to have_applied_secg(groupB).with_vnics([vnicB])
     end
   end
 end

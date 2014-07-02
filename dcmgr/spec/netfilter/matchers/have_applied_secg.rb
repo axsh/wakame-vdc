@@ -73,7 +73,7 @@ module DcmgrSpec::Netfilter::Matchers
       ))
     end
 
-    failure_message_for_should {|nfa| @fail_should}
-    failure_message_for_should_not {|nfa| @fail_should_not}
+    failure_message {|nfa| @fail_should}
+    failure_message_when_negated {|nfa| @fail_not_to}
   end
 end

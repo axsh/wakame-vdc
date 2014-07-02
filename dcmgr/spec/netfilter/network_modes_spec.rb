@@ -27,12 +27,12 @@ describe "SGHandler and NetfilterHandler" do
       handler.init_vnic(vnic_l2o.canonical_uuid)
 
       # Security groups are still applied. Vnics just don't jump to them.
-      nfa(host).should have_applied_vnic(vnic_l2o).with_secgs([])
-      nfa(host).should have_applied_secg(secg).with_vnics([vnic_l2o])
+      expect(nfa(host)).to have_applied_vnic(vnic_l2o).with_secgs([])
+      expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnic_l2o])
 
       handler.destroy_vnic(vnic_l2o.canonical_uuid, true)
-      nfa(host).should_not have_applied_vnic(vnic_l2o)
-      nfa(host).should_not have_applied_secg(secg)
+      expect(nfa(host)).not_to have_applied_vnic(vnic_l2o)
+      expect(nfa(host)).not_to have_applied_secg(secg)
     end
 
     it "passthrough" do
@@ -40,13 +40,13 @@ describe "SGHandler and NetfilterHandler" do
 
       # Again security groups are still applied. The vnic just isn't and
       # therefore doesn't traverse the security group chains.
-      nfa(host).should_not have_applied_vnic(vnic_pt)
-      nfa(host).should have_applied_secg(secg).with_vnics([vnic_pt])
+      expect(nfa(host)).not_to have_applied_vnic(vnic_pt)
+      expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnic_pt])
 
       handler.destroy_vnic(vnic_pt.canonical_uuid, true)
 
-      nfa(host).should_not have_applied_vnic(vnic_pt)
-      nfa(host).should_not have_applied_secg(secg)
+      expect(nfa(host)).not_to have_applied_vnic(vnic_pt)
+      expect(nfa(host)).not_to have_applied_secg(secg)
     end
   end
 end

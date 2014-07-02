@@ -21,35 +21,35 @@ describe "SGHandler and NetfilterHandler" do
     it "should create and delete chains" do
       # Create vnic A
       handler.init_vnic(vnicA_id)
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([secg])
-      nfa(host).should have_applied_secg(secg).with_vnics([vnicA])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([secg])
+      expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnicA])
 
       # Create vnic B
       handler.init_vnic(vnicB_id)
-      nfa(host).should have_applied_vnic(vnicA).with_secgs([secg])
-      nfa(host).should have_applied_vnic(vnicB).with_secgs([secg])
-      nfa(host).should have_applied_secg(secg).with_vnics([vnicA, vnicB])
+      expect(nfa(host)).to have_applied_vnic(vnicA).with_secgs([secg])
+      expect(nfa(host)).to have_applied_vnic(vnicB).with_secgs([secg])
+      expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnicA, vnicB])
 
       # Destroy vnic A
       handler.destroy_vnic(vnicA_id, true)
-      nfa(host).should_not have_applied_vnic(vnicA)
-      nfa(host).should have_applied_vnic(vnicB).with_secgs([secg])
-      nfa(host).should have_applied_secg(secg).with_vnics([vnicB])
+      expect(nfa(host)).not_to have_applied_vnic(vnicA)
+      expect(nfa(host)).to have_applied_vnic(vnicB).with_secgs([secg])
+      expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnicB])
 
       # Destroy vnic B
       handler.destroy_vnic(vnicB_id, true)
-      nfa(host).should have_nothing_applied
+      expect(nfa(host)).to have_nothing_applied
     end
 
     it "deletes isolation rules when destroying vnics" do
       handler.init_vnic(vnicA_id)
       handler.init_vnic(vnicB_id)
 
-      nfa(host).should have_applied_secg(secg).with_vnics([vnicA, vnicB])
+      expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnicA, vnicB])
 
       handler.destroy_vnic(vnicB_id, true)
 
-      nfa(host).should have_applied_secg(secg).with_vnics([vnicA])
+      expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnicA])
     end
   end
 end

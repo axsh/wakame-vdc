@@ -18,14 +18,14 @@ describe "SGHandler and NetfilterHandler" do
     it "should create and delete chains" do
       handler.init_vnic(vnic_id)
 
-      nfa(host).should have_applied_vnic(vnic).with_secgs([secg])
-      nfa(host).should have_applied_secg(secg).with_vnics([vnic])
+      expect(nfa(host)).to have_applied_vnic(vnic).with_secgs([secg])
+      expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnic])
 
       handler.destroy_vnic(vnic_id, true)
 
-      nfa(host).should_not have_applied_vnic(vnic)
-      nfa(host).should_not have_applied_secg(secg)
-      nfa(host).should have_nothing_applied
+      expect(nfa(host)).not_to have_applied_vnic(vnic)
+      expect(nfa(host)).not_to have_applied_secg(secg)
+      expect(nfa(host)).to have_nothing_applied
     end
 
     context "with gateway, dns, dhcp and metadata server set" do
@@ -39,7 +39,7 @@ describe "SGHandler and NetfilterHandler" do
 
       it "applies standard rules for gateway, dhcp and dns" do
         handler.init_vnic(vnic_id)
-        nfa(host).should have_applied_vnic(vnic)
+        expect(nfa(host)).to have_applied_vnic(vnic)
       end
     end
 
@@ -62,8 +62,8 @@ describe "SGHandler and NetfilterHandler" do
       it "Applies security group rules" do
       handler.init_vnic(vnic_id)
 
-      nfa(host).should have_applied_vnic(vnic).with_secgs([secg])
-      nfa(host).should have_applied_secg(secg).with_vnics([vnic]).with_rules([
+      expect(nfa(host)).to have_applied_vnic(vnic).with_secgs([secg])
+      expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnic]).with_rules([
         "-p tcp -s 0.0.0.0/0 --dport 22 -j ACCEPT",
         "-p tcp -s 0.0.0.0/0 --dport 80 -j ACCEPT",
         "-p udp -s 0.0.0.0/0 --dport 53 -j ACCEPT",
@@ -72,16 +72,16 @@ describe "SGHandler and NetfilterHandler" do
 
       handler.destroy_vnic(vnic_id, true)
 
-      nfa(host).should_not have_applied_vnic(vnic)
-      nfa(host).should_not have_applied_secg(secg)
-      nfa(host).should have_nothing_applied
+      expect(nfa(host)).not_to have_applied_vnic(vnic)
+      expect(nfa(host)).not_to have_applied_secg(secg)
+      expect(nfa(host)).to have_nothing_applied
       end
 
       it "does live security switching and updates rules" do
         handler.init_vnic(vnic_id)
 
-        nfa(host).should have_applied_vnic(vnic).with_secgs([secg])
-        nfa(host).should have_applied_secg(secg).with_vnics([vnic]).with_rules([
+        expect(nfa(host)).to have_applied_vnic(vnic).with_secgs([secg])
+        expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnic]).with_rules([
           "-p tcp -s 0.0.0.0/0 --dport 22 -j ACCEPT",
           "-p tcp -s 0.0.0.0/0 --dport 80 -j ACCEPT",
           "-p udp -s 0.0.0.0/0 --dport 53 -j ACCEPT",
@@ -91,22 +91,22 @@ describe "SGHandler and NetfilterHandler" do
         handler.remove_sgs_from_vnic(vnic_id,[secg.canonical_uuid])
         handler.add_sgs_to_vnic(vnic_id,[empty_secg.canonical_uuid])
 
-        nfa(host).should have_applied_vnic(vnic).with_secgs([empty_secg])
-        nfa(host).should have_applied_secg(empty_secg).with_vnics([vnic]).with_rules([])
-        nfa(host).should_not have_applied_secg(secg)
+        expect(nfa(host)).to have_applied_vnic(vnic).with_secgs([empty_secg])
+        expect(nfa(host)).to have_applied_secg(empty_secg).with_vnics([vnic]).with_rules([])
+        expect(nfa(host)).not_to have_applied_secg(secg)
 
         handler.remove_sgs_from_vnic(vnic_id, [empty_secg.canonical_uuid])
         handler.add_sgs_to_vnic(vnic_id, [secg.canonical_uuid, multi_port_secg.canonical_uuid])
 
-        nfa(host).should_not have_applied_secg(empty_secg)
-        nfa(host).should have_applied_vnic(vnic).with_secgs([secg, multi_port_secg])
-        nfa(host).should have_applied_secg(secg).with_vnics([vnic]).with_rules([
+        expect(nfa(host)).not_to have_applied_secg(empty_secg)
+        expect(nfa(host)).to have_applied_vnic(vnic).with_secgs([secg, multi_port_secg])
+        expect(nfa(host)).to have_applied_secg(secg).with_vnics([vnic]).with_rules([
           "-p tcp -s 0.0.0.0/0 --dport 22 -j ACCEPT",
           "-p tcp -s 0.0.0.0/0 --dport 80 -j ACCEPT",
           "-p udp -s 0.0.0.0/0 --dport 53 -j ACCEPT",
           "-p icmp -s 0.0.0.0/0 -j ACCEPT"
         ])
-        nfa(host).should have_applied_secg(multi_port_secg).with_vnics([vnic]).with_rules([
+        expect(nfa(host)).to have_applied_secg(multi_port_secg).with_vnics([vnic]).with_rules([
           "-p tcp -s 0.0.0.0/0 --dport 10:80 -j ACCEPT"
         ])
       end

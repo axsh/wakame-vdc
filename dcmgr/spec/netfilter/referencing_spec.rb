@@ -42,25 +42,25 @@ describe "SGHandler and NetfilterHandler" do
       handler.init_vnic(hostA_vnic1_id)
       handler.init_vnic(hostB_vnic1_id)
 
-      nfa(hostA).should have_applied_vnic(hostA_vnic1).with_secgs([secgA])
-      nfa(hostB).should have_applied_vnic(hostB_vnic1).with_secgs([secgA])
+      expect(nfa(hostA)).to have_applied_vnic(hostA_vnic1).with_secgs([secgA])
+      expect(nfa(hostB)).to have_applied_vnic(hostB_vnic1).with_secgs([secgA])
 
       # It's secgB that should apply the reference rules. Not secgA
-      nfa(hostA).should have_applied_secg(secgA).with_vnics([hostA_vnic1, hostB_vnic1]).with_referencees([]).with_reference_rules([])
-      nfa(hostB).should have_applied_secg(secgA).with_vnics([hostA_vnic1, hostB_vnic1]).with_referencees([]).with_reference_rules([])
+      expect(nfa(hostA)).to have_applied_secg(secgA).with_vnics([hostA_vnic1, hostB_vnic1]).with_referencees([]).with_reference_rules([])
+      expect(nfa(hostB)).to have_applied_secg(secgA).with_vnics([hostA_vnic1, hostB_vnic1]).with_referencees([]).with_reference_rules([])
 
       handler.init_vnic(hostA_vnic2_id)
 
-      nfa(hostA).should have_applied_vnic(hostA_vnic2).with_secgs([secgB])
+      expect(nfa(hostA)).to have_applied_vnic(hostA_vnic2).with_secgs([secgB])
 
-      nfa(hostA).should have_applied_secg(secgA).with_vnics([hostA_vnic1, hostB_vnic1]).with_referencees([]).with_reference_rules([])
-      nfa(hostB).should have_applied_secg(secgA).with_vnics([hostA_vnic1, hostB_vnic1]).with_referencees([]).with_reference_rules([])
+      expect(nfa(hostA)).to have_applied_secg(secgA).with_vnics([hostA_vnic1, hostB_vnic1]).with_referencees([]).with_reference_rules([])
+      expect(nfa(hostB)).to have_applied_secg(secgA).with_vnics([hostA_vnic1, hostB_vnic1]).with_referencees([]).with_reference_rules([])
 
-      nfa(hostA).should have_applied_secg(secgB).with_vnics([hostA_vnic2]).with_referencees([hostA_vnic1, hostB_vnic1]).with_reference_rules([
+      expect(nfa(hostA)).to have_applied_secg(secgB).with_vnics([hostA_vnic2]).with_referencees([hostA_vnic1, hostB_vnic1]).with_reference_rules([
         "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
         "-p tcp -s 10.0.0.3 --dport 22 -j ACCEPT"
       ])
-      nfa(hostB).should_not have_applied_secg(secgB)
+      expect(nfa(hostB)).not_to have_applied_secg(secgB)
 
       handler.remove_sgs_from_vnic(hostB_vnic1_id, [secgA.canonical_uuid])
       handler.add_sgs_to_vnic(hostB_vnic1_id, [secgB.canonical_uuid])
@@ -68,15 +68,15 @@ describe "SGHandler and NetfilterHandler" do
       # hostA_vnic2 => secgB
       # hostB_vnic1 => secgB
 
-      nfa(hostA).should have_applied_secg(secgB).with_vnics([hostA_vnic2, hostB_vnic1]).with_referencees([hostA_vnic1]).with_reference_rules([
+      expect(nfa(hostA)).to have_applied_secg(secgB).with_vnics([hostA_vnic2, hostB_vnic1]).with_referencees([hostA_vnic1]).with_reference_rules([
         "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT"
       ])
-      nfa(hostB).should have_applied_secg(secgB).with_vnics([hostA_vnic2, hostB_vnic1]).with_referencees([hostA_vnic1]).with_reference_rules([
+      expect(nfa(hostB)).to have_applied_secg(secgB).with_vnics([hostA_vnic2, hostB_vnic1]).with_referencees([hostA_vnic1]).with_reference_rules([
         "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT"
       ])
 
-      nfa(hostA).should have_applied_secg(secgA).with_vnics([hostA_vnic1]).with_referencees([]).with_reference_rules([])
-      nfa(hostB).should_not have_applied_secg(secgA)
+      expect(nfa(hostA)).to have_applied_secg(secgA).with_vnics([hostA_vnic1]).with_referencees([]).with_reference_rules([])
+      expect(nfa(hostB)).not_to have_applied_secg(secgA)
 
       handler.remove_sgs_from_vnic(hostA_vnic2_id, [secgB.canonical_uuid])
       handler.add_sgs_to_vnic(hostA_vnic2_id, [secgA.canonical_uuid])
@@ -84,14 +84,14 @@ describe "SGHandler and NetfilterHandler" do
       # hostA_vnic2 => secgA
       # hostB_vnic1 => secgB
 
-      nfa(hostA).should_not have_applied_secg(secgB)
-      nfa(hostB).should have_applied_secg(secgB).with_referencees([hostA_vnic1, hostA_vnic2]).with_reference_rules([
+      expect(nfa(hostA)).not_to have_applied_secg(secgB)
+      expect(nfa(hostB)).to have_applied_secg(secgB).with_referencees([hostA_vnic1, hostA_vnic2]).with_reference_rules([
         "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
         "-p tcp -s 10.0.0.2 --dport 22 -j ACCEPT"
       ])
 
-      nfa(hostA).should have_applied_secg(secgA).with_vnics([hostA_vnic1, hostA_vnic2]).with_referencees([]).with_reference_rules([])
-      nfa(hostB).should_not have_applied_secg(secgA)
+      expect(nfa(hostA)).to have_applied_secg(secgA).with_vnics([hostA_vnic1, hostA_vnic2]).with_referencees([]).with_reference_rules([])
+      expect(nfa(hostB)).not_to have_applied_secg(secgA)
 
       # After we restart the host nodes, their netfilter stuff should still be the same
       nfa(hostA).flush
@@ -99,22 +99,22 @@ describe "SGHandler and NetfilterHandler" do
       handler.init_host(hostA.node_id)
       handler.init_host(hostB.node_id)
 
-      nfa(hostA).should_not have_applied_secg(secgB)
-      nfa(hostB).should have_applied_secg(secgB).with_referencees([hostA_vnic1, hostA_vnic2]).with_reference_rules([
+      expect(nfa(hostA)).not_to have_applied_secg(secgB)
+      expect(nfa(hostB)).to have_applied_secg(secgB).with_referencees([hostA_vnic1, hostA_vnic2]).with_reference_rules([
         "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
         "-p tcp -s 10.0.0.2 --dport 22 -j ACCEPT"
       ])
 
-      nfa(hostA).should have_applied_secg(secgA).with_vnics([hostA_vnic1, hostA_vnic2]).with_referencees([]).with_reference_rules([])
-      nfa(hostB).should_not have_applied_secg(secgA)
+      expect(nfa(hostA)).to have_applied_secg(secgA).with_vnics([hostA_vnic1, hostA_vnic2]).with_referencees([]).with_reference_rules([])
+      expect(nfa(hostB)).not_to have_applied_secg(secgA)
 
-      nfa(hostA).should have_applied_vnic(hostA_vnic1).with_secgs([secgA])
-      nfa(hostA).should have_applied_vnic(hostA_vnic2).with_secgs([secgA])
-      nfa(hostA).should_not have_applied_vnic(hostB_vnic1)
+      expect(nfa(hostA)).to have_applied_vnic(hostA_vnic1).with_secgs([secgA])
+      expect(nfa(hostA)).to have_applied_vnic(hostA_vnic2).with_secgs([secgA])
+      expect(nfa(hostA)).not_to have_applied_vnic(hostB_vnic1)
 
-      nfa(hostB).should have_applied_vnic(hostB_vnic1).with_secgs([secgB])
-      nfa(hostB).should_not have_applied_vnic(hostA_vnic1)
-      nfa(hostB).should_not have_applied_vnic(hostA_vnic2)
+      expect(nfa(hostB)).to have_applied_vnic(hostB_vnic1).with_secgs([secgB])
+      expect(nfa(hostB)).not_to have_applied_vnic(hostA_vnic1)
+      expect(nfa(hostB)).not_to have_applied_vnic(hostA_vnic2)
     end
 
     it "removes ref rules when destroying a vnic" do
@@ -122,14 +122,14 @@ describe "SGHandler and NetfilterHandler" do
       handler.init_vnic(hostA_vnic1_id)
       handler.init_vnic(hostB_vnic1_id)
 
-      nfa(hostA).should have_applied_secg(secgB).with_referencees([hostA_vnic1, hostB_vnic1]).with_reference_rules([
+      expect(nfa(hostA)).to have_applied_secg(secgB).with_referencees([hostA_vnic1, hostB_vnic1]).with_reference_rules([
         "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
         "-p tcp -s 10.0.0.3 --dport 22 -j ACCEPT"
       ])
 
       handler.destroy_vnic(hostB_vnic1_id, true)
 
-      nfa(hostA).should have_applied_secg(secgB).with_referencees([hostA_vnic1]).with_reference_rules([
+      expect(nfa(hostA)).to have_applied_secg(secgB).with_referencees([hostA_vnic1]).with_reference_rules([
         "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT"
       ])
     end
@@ -142,7 +142,7 @@ describe "SGHandler and NetfilterHandler" do
       secgB.rule = "icmp:-1,-1,#{secgA.canonical_uuid}"; secgB.save
       handler.update_sg_rules(secgB.canonical_uuid)
 
-      nfa(hostA).should have_applied_secg(secgB).with_referencees([hostA_vnic1, hostB_vnic1]).with_reference_rules([
+      expect(nfa(hostA)).to have_applied_secg(secgB).with_referencees([hostA_vnic1, hostB_vnic1]).with_reference_rules([
         "-p icmp -s 10.0.0.1 -j ACCEPT",
         "-p icmp -s 10.0.0.3 -j ACCEPT"
       ])
@@ -150,7 +150,7 @@ describe "SGHandler and NetfilterHandler" do
       secgB.rule = "icmp:-1,-1,ip4:0.0.0.0"; secgB.save
       handler.update_sg_rules(secgB.canonical_uuid)
 
-      nfa(hostA).should have_applied_secg(secgB).with_referencees([]).with_reference_rules([]).with_rules([
+      expect(nfa(hostA)).to have_applied_secg(secgB).with_referencees([]).with_reference_rules([]).with_rules([
         "-p icmp -s 0.0.0.0/0 -j ACCEPT"
       ])
     end
@@ -168,7 +168,7 @@ describe "SGHandler and NetfilterHandler" do
       handler.init_vnic(hostA_vnic3.canonical_uuid)
       handler.init_vnic(hostB_vnic3.canonical_uuid)
 
-      nfa(hostB).should have_applied_secg(secgD).with_vnics([hostB_vnic3]).with_referencees(
+      expect(nfa(hostB)).to have_applied_secg(secgD).with_vnics([hostB_vnic3]).with_referencees(
       [hostA_vnic1, hostA_vnic3]
       ).with_reference_rules([
         "-p tcp -s 10.0.0.1 --dport 22 -j ACCEPT",
@@ -179,7 +179,7 @@ describe "SGHandler and NetfilterHandler" do
       secgD.save
       handler.update_sg_rules(secgD.canonical_uuid)
 
-      nfa(hostB).should have_applied_secg(secgD).with_vnics([hostB_vnic3]).with_referencees(
+      expect(nfa(hostB)).to have_applied_secg(secgD).with_vnics([hostB_vnic3]).with_referencees(
       [hostA_vnic3]).with_reference_rules(["-p udp -s 10.0.0.5 --dport 53 -j ACCEPT"])
     end
 
@@ -195,25 +195,25 @@ describe "SGHandler and NetfilterHandler" do
         handler.init_vnic(hostA_vnic4.canonical_uuid)
         handler.init_vnic(hostB_vnic4.canonical_uuid)
 
-        nfa(hostA).should have_applied_vnic(hostA_vnic4).with_secgs([secgE, secgF])
-        nfa(hostA).should have_applied_secg(secgE).with_vnics([hostB_vnic4, hostA_vnic4]
+        expect(nfa(hostA)).to have_applied_vnic(hostA_vnic4).with_secgs([secgE, secgF])
+        expect(nfa(hostA)).to have_applied_secg(secgE).with_vnics([hostB_vnic4, hostA_vnic4]
         ).with_referencees([hostB_vnic4, hostA_vnic4]).with_reference_rules([
           "-p tcp -s 10.0.0.7 --dport 22 -j ACCEPT",
           "-p tcp -s 10.0.0.8 --dport 22 -j ACCEPT"
         ])
-        nfa(hostA).should have_applied_secg(secgF).with_vnics([hostB_vnic4, hostA_vnic4]
+        expect(nfa(hostA)).to have_applied_secg(secgF).with_vnics([hostB_vnic4, hostA_vnic4]
         ).with_referencees([hostB_vnic4, hostA_vnic4]).with_reference_rules([
           "-p udp -s 10.0.0.7 --dport 53 -j ACCEPT",
           "-p udp -s 10.0.0.8 --dport 53 -j ACCEPT"
         ])
 
-        nfa(hostB).should have_applied_vnic(hostB_vnic4).with_secgs([secgE, secgF])
-        nfa(hostB).should have_applied_secg(secgE).with_vnics([hostB_vnic4, hostA_vnic4]
+        expect(nfa(hostB)).to have_applied_vnic(hostB_vnic4).with_secgs([secgE, secgF])
+        expect(nfa(hostB)).to have_applied_secg(secgE).with_vnics([hostB_vnic4, hostA_vnic4]
         ).with_referencees([hostB_vnic4, hostA_vnic4]).with_reference_rules([
           "-p tcp -s 10.0.0.7 --dport 22 -j ACCEPT",
           "-p tcp -s 10.0.0.8 --dport 22 -j ACCEPT"
         ])
-        nfa(hostB).should have_applied_secg(secgF).with_vnics([hostB_vnic4, hostA_vnic4]
+        expect(nfa(hostB)).to have_applied_secg(secgF).with_vnics([hostB_vnic4, hostA_vnic4]
         ).with_referencees([hostB_vnic4, hostA_vnic4]).with_reference_rules([
           "-p udp -s 10.0.0.7 --dport 53 -j ACCEPT",
           "-p udp -s 10.0.0.8 --dport 53 -j ACCEPT"
