@@ -25,6 +25,17 @@ module Dcmgr
           driver_configuration.local_backup_storage_id == backup_object_hash[:backup_storage][:uuid]
       end
 
+      module CreateVolumeInterface
+        def create_volume_from_local_backup(ctx)
+        end
+
+        def create_blank_volume(ctx)
+        end
+
+        def create_volume_from_backup(ctx)
+        end
+      end
+
       def create_volume(ctx, snapshot_file=nil)
         raise NotImplementedError
       end
@@ -40,7 +51,7 @@ module Dcmgr
       module ProvideBackupVolume
         # Create local backup from volume.
         # @param StaContext ctx
-        def backup_volume(ctx)
+        def backup_volume(ctx, progress_callback)
           raise NotImplementedError
         end
 
@@ -48,7 +59,7 @@ module Dcmgr
           raise NotImplementedError
         end
 
-        # @return String path to the backup object key by backup_volume().
+        # @return String path to the backup object.
         #
         # backup_volume(ctx)
         # puts backup_object_key_created(ctx)
