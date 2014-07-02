@@ -10,43 +10,18 @@ module Dcmgr
 
       # API policy information for openvz hypervisor.
       class Policy < HypervisorPolicy
-        DEVNAME_REGEXP=[/^sd([a-z]+)$/,
-                        /^hd([a-z]+)$/
-                       ].freeze
 
         def validate_instance_model(instance)
         end
 
         def validate_volume_model(volume)
-          if !volume.guest_device_name.nil?
-            unless DEVNAME_REGEXP.find { |r| r =~ volume.guest_device_name.downcase }
-              raise ValidationError, "InvalidParameter: guest_device_name #{volume.guest_device_name}"
-            end
-          end
         end
 
         def on_associate_volume(instance, volume)
-          if instance.boot_volume_id == volume.canonical_uuid && volume.guest_device_name.nil?
-            # set device name as boot drive.
-            volume.guest_device_name = 'sda'
-          elsif volume.guest_device_name.nil?
-            devnames = instance.volume_guest_device_names
-            # sdb,vdb,hdb are reserved for metadata drive. extra volumes
-            # should starts from third device number.
-            devnames.push( instance.boot_volume.guest_device_name.succ )
-            volume.guest_device_name = find_candidate_device_name(devnames)
-          end
+          # work around: set device name as boot drive.
+          volume.guest_device_name = 'sda'
         end
 
-        private
-        def find_candidate_device_name(device_names)
-          # sort %w(hdaz hdaa hdc hdz hdn) => ["hdc", "hdn", "hdz", "hdaa", "hdaz"]
-          device_names = device_names.sort{|a,b| a.size == b.size ? a <=> b :  a.size <=> b.size }
-          return nil if device_names.empty?
-          # find candidate device name from unused successor of device_names.
-          #   %w(hdaz hdaa hdc hdz hdn) => hdd (= "hdc".succ)
-          device_names.zip(device_names.dup.tap(&:shift)).inject(device_names.first) {|r,l|  r.succ == l.last ? l.last : r }.succ
-        end
       end
 
       def self.policy
