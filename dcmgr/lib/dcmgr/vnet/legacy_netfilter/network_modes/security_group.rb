@@ -12,11 +12,7 @@ module Dcmgr::VNet::NetworkModes
       # ***work-around***
       # TODO
       # - multi host nic
-      host_addr = begin
-                    Isono::Util.default_gw_ipaddr
-                  rescue => e
-                    nil
-                  end
+      host_addrs = [Dcmgr.conf.logging_service_host_ip].compact
 
       enable_logging = Dcmgr.conf.packet_drop_log
       ipset_enabled = Dcmgr.conf.use_ipset
@@ -25,17 +21,17 @@ module Dcmgr::VNet::NetworkModes
       tasks += self.netfilter_drop_tasks(vnic,node)
 
       # General data link layer tasks
-      if host_addr
+      host_addrs.each {|host_addr|
         tasks << AcceptARPToHost.new(host_addr,vnic[:address],enable_logging,"A arp to_host #{vnic[:uuid]}: ")
-      end
+      }
       tasks << AcceptARPFromGateway.new(network[:ipv4_gw],vnic[:address],enable_logging,"A arp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
       tasks << AcceptARPFromDNS.new(network[:dns_server],vnic[:address],enable_logging,"A arp from_dns #{vnic[:uuid]}: ") unless network[:dns_server].nil?
       tasks << DropIpSpoofing.new(vnic[:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
       tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
       tasks << AcceptGARPFromGateway.new(network[:ipv4_gw],enable_logging,"A garp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
-      if host_addr
+      host_addrs.each {|host_addr|
         tasks << AcceptArpBroadcast.new(host_addr,enable_logging,"A arp bc #{vnic[:uuid]}: ")
-      end
+      }
 
       # General ip layer tasks
       tasks << AcceptIcmpRelatedEstablished.new
@@ -50,9 +46,7 @@ module Dcmgr::VNet::NetworkModes
       tasks += self.netfilter_nat_tasks(vnic,network,node)
 
       # Logging Service
-      if host_addr
-        tasks += self.netfilter_logging_service_tasks(vnic, host_addr)
-      end
+      tasks += self.netfilter_logging_service_tasks(vnic)
 
       # Security group rules
       security_groups.each { |secgroup|
@@ -67,15 +61,18 @@ module Dcmgr::VNet::NetworkModes
       tasks
     end
 
-    def netfilter_logging_service_tasks(vnic, host_ip)
+    def netfilter_logging_service_tasks(vnic)
       tasks = []
-      logging_service_enabled = Dcmgr.conf.use_logging_service
+      logging_service_host_ip = Dcmgr.conf.logging_service_host_ip
       logging_service_ip = Dcmgr.conf.logging_service_ip
+      logging_service_enabled = Dcmgr.conf.use_logging_service
       logging_service_port = Dcmgr.conf.logging_service_port
 
       # Logging Service for inside instance.
-      if logging_service_enabled && !logging_service_ip.nil? && !logging_service_port.nil?
-        tasks << TranslateLoggingAddress.new(vnic[:uuid], host_ip, logging_service_ip, logging_service_port)
+      if logging_service_enabled
+        unless [logging_service_host_ip, logging_service_ip, logging_service_port].any? {|v| v.nil? }
+          tasks << TranslateLoggingAddress.new(vnic[:uuid], logging_service_host_ip, logging_service_ip, logging_service_port)
+        end
       end
       tasks
     end
