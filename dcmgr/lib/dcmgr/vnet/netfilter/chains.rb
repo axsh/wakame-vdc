@@ -137,7 +137,7 @@ module Dcmgr::VNet::Netfilter::Chains
       # We need a rules chain for L2 as well because we have to accept
       # ARP from the ip addresses in the rules
       def vnic_l2_secg_chain(vnic_id)
-        F.vnic_chain(:L2, vnic_id, "d_security")
+        F.vnic_chain(:L2, vnic_id, "d_rules")
       end
 
       def vnic_l3_main_chain(vnic_id)
@@ -157,7 +157,7 @@ module Dcmgr::VNet::Netfilter::Chains
       end
 
       def vnic_l3_secg_chain(vnic_id)
-        F.vnic_chain(:L3, vnic_id, "d_security")
+        F.vnic_chain(:L3, vnic_id, "d_rules")
       end
     end
   end
@@ -180,7 +180,7 @@ module Dcmgr::VNet::Netfilter::Chains
       # This chain is for the future implementation of outbound
       # security group rules.
       def vnic_l3_secg_chain(vnic_id)
-        F.vnic_chain(:L3, vnic_id, "s_security")
+        F.vnic_chain(:L3, vnic_id, "s_rules")
       end
 
       def vnic_l3_dnat_chain(vnic_id)

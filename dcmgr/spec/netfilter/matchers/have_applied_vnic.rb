@@ -9,7 +9,7 @@ module DcmgrSpec::Netfilter::Matchers
         "vdc_#{@vnic_id}_d",
         "vdc_#{@vnic_id}_d_isolation",
         "vdc_#{@vnic_id}_d_ref",
-        "vdc_#{@vnic_id}_d_security",
+        "vdc_#{@vnic_id}_d_rules",
         "vdc_#{@vnic_id}_d_standard",
       ]
     end
@@ -19,7 +19,7 @@ module DcmgrSpec::Netfilter::Matchers
         "vdc_#{@vnic_id}_d",
         "vdc_#{@vnic_id}_d_isolation",
         "vdc_#{@vnic_id}_d_ref",
-        "vdc_#{@vnic_id}_d_security",
+        "vdc_#{@vnic_id}_d_rules",
         "vdc_#{@vnic_id}_d_standard"
       ]
     end
@@ -34,7 +34,7 @@ module DcmgrSpec::Netfilter::Matchers
     def l3_outbound_chains_for_vnic
       [
         "vdc_#{@vnic_id}_s",
-        "vdc_#{@vnic_id}_s_security"
+        "vdc_#{@vnic_id}_s_rules"
       ]
     end
 
@@ -50,7 +50,7 @@ module DcmgrSpec::Netfilter::Matchers
       [
         "vdc_#{@vnic_id}_d_isolation",
         "vdc_#{@vnic_id}_d_ref",
-        "vdc_#{@vnic_id}_d_security",
+        "vdc_#{@vnic_id}_d_rules",
         "vdc_#{@vnic_id}_d_standard",
         "DROP"
       ]
@@ -60,7 +60,7 @@ module DcmgrSpec::Netfilter::Matchers
       [
         "vdc_#{@vnic_id}_d_isolation",
         "vdc_#{@vnic_id}_d_ref",
-        "vdc_#{@vnic_id}_d_security",
+        "vdc_#{@vnic_id}_d_rules",
         "vdc_#{@vnic_id}_d_standard",
         "DROP"
       ]
@@ -75,7 +75,7 @@ module DcmgrSpec::Netfilter::Matchers
 
     def l3_outbound_main_chain_jumps
       [
-        "vdc_#{@vnic_id}_s_security"
+        "vdc_#{@vnic_id}_s_rules"
       ]
     end
 
@@ -169,11 +169,11 @@ module DcmgrSpec::Netfilter::Matchers
       ( @groups.nil? || (
         expect_jumps("ebtables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&
         expect_jumps("ebtables", "vdc_#{@vnic_id}_d_ref", group_chains("ref")) &&
-        expect_jumps("ebtables", "vdc_#{@vnic_id}_d_security", group_chains("d_rules")) &&
+        expect_jumps("ebtables", "vdc_#{@vnic_id}_d_rules", group_chains("d_rules")) &&
         expect_jumps("iptables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&
-        expect_jumps("iptables", "vdc_#{@vnic_id}_d_security", group_chains("d_rules")) &&
+        expect_jumps("iptables", "vdc_#{@vnic_id}_d_rules", group_chains("d_rules")) &&
         expect_jumps("iptables", "vdc_#{@vnic_id}_d_ref", group_chains("ref")) &&
-        expect_jumps("iptables", "vdc_#{@vnic_id}_s_security", group_chains("s_rules"))
+        expect_jumps("iptables", "vdc_#{@vnic_id}_s_rules", group_chains("s_rules"))
       ))
     end
 
