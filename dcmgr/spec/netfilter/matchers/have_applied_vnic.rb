@@ -105,11 +105,16 @@ module DcmgrSpec::Netfilter::Matchers
 
     def l2_inbound_stnd_rules_for_vnic
       gw_ip = @vnic.network && @vnic.network.ipv4_gw
+
+      accept_arp_from_ip = lambda do |ip_src|
+        "--protocol arp --arp-opcode Request --arp-ip-src=#{ip_src} --arp-ip-dst=#{vnic_ip} -j ACCEPT"
+      end
+
       rules = []
 
-      rules << "--protocol arp --arp-opcode Request --arp-ip-src=#{gw_ip} --arp-ip-dst=#{vnic_ip} -j ACCEPT" if gw_ip
-      rules << "--protocol arp --arp-opcode Request --arp-ip-src=#{dns_server} --arp-ip-dst=#{vnic_ip} -j ACCEPT" if dns_server
-      rules << "--protocol arp --arp-opcode Request --arp-ip-src=#{metadata_server} --arp-ip-dst=#{vnic_ip} -j ACCEPT" if metadata_server
+      rules << accept_arp_from_ip.call(gw_ip) if gw_ip
+      rules << accept_arp_from_ip.call(dns_server) if dns_server
+      rules << accept_arp_from_ip.call(metadata_server) if metadata_server
       rules << "--protocol arp --arp-gratuitous --arp-ip-src=#{gw_ip} -j ACCEPT" if gw_ip
       rules << "--protocol arp --arp-opcode Reply --arp-ip-dst=#{vnic_ip} --arp-mac-dst=#{vnic_mac} -j ACCEPT"
       rules << "--protocol IPv4 -j ACCEPT"
@@ -138,7 +143,13 @@ module DcmgrSpec::Netfilter::Matchers
     end
 
     def l3_address_translation_rules
-      metadata_server.nil? ? [] : ["-d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{@vnic.network.metadata_server}:#{@vnic.network.metadata_server_port}"]
+      if metadata_server.nil?
+        []
+      else
+        srv = @vnic.network.metadata_server
+        prt = @vnic.network.metadata_server_port
+        ["-d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{srv}:#{prt}"]
+      end
     end
 
     chain :with_secgs do |secg_array|
@@ -150,12 +161,21 @@ module DcmgrSpec::Netfilter::Matchers
       @vnic = vnic
       @vnic_id = vnic.canonical_uuid
 
+      #
+      # L2 standard stuff
+      #
       expect_chains("ebtables", l2_chains_for_vnic) &&
-      expect_rules_to_contain("ebtables", "FORWARD", ["-o #{@vnic_id} -j vdc_#{@vnic_id}_d", "-i #{@vnic_id} -j vdc_#{@vnic_id}_s"]) &&
+      expect_rules_to_contain("ebtables", "FORWARD", [
+        "-o #{@vnic_id} -j vdc_#{@vnic_id}_d",
+        "-i #{@vnic_id} -j vdc_#{@vnic_id}_s"
+      ]) &&
       expect_jumps("ebtables", "vdc_#{@vnic_id}_d", l2_inbound_main_chain_jumps) &&
       expect_jumps("ebtables", "vdc_#{@vnic_id}_s", l2_outbound_main_chain_jumps) &&
       expect_rules("ebtables", "vdc_#{@vnic_id}_d_standard", l2_inbound_stnd_rules_for_vnic) &&
 
+      #
+      # L3 standard stuff
+      #
       expect_chains("iptables", l3_chains_for_vnic) &&
       expect_rules_to_contain("iptables", "FORWARD", [
         "-m physdev --physdev-is-bridged --physdev-out #{@vnic_id} -j vdc_#{@vnic_id}_d",
@@ -166,6 +186,9 @@ module DcmgrSpec::Netfilter::Matchers
       expect_rules("iptables", "vdc_#{@vnic_id}_d_standard", l3_inbound_stnd_rules_for_vnic) &&
       expect_nat_rules("vdc_#{@vnic_id}_s_dnat", l3_address_translation_rules) &&
 
+      #
+      # Security Groups stuff
+      #
       ( @groups.nil? || (
         expect_jumps("ebtables", "vdc_#{@vnic_id}_d_isolation", group_chains("isolation")) &&
         expect_jumps("ebtables", "vdc_#{@vnic_id}_d_ref", group_chains("ref")) &&
