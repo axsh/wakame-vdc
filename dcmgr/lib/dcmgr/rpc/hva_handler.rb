@@ -317,9 +317,9 @@ module Dcmgr
         if @inst[:volume].values.all?{|v| v[:state].to_s == 'available'}
           # boot instance becase all volumes are ready.
           if @inst[:volume][@inst[:boot_volume_id]][:volume_type] == 'Dcmgr::Model::LocalVolume'
-            job.submit("hva-handle.#{node.node_id}", 'run_local_store', @inst[:uuid])
+            job.submit("hva-handle.#{@node.node_id}", 'run_local_store', @inst[:uuid])
           else
-            job.submit("hva-handle.#{node.node_id}", 'run_vol_store', @inst[:uuid])
+            job.submit("hva-handle.#{@node.node_id}", 'run_vol_store', @inst[:uuid])
           end
         elsif @inst[:state].to_s == 'terminated' || @inst[:volume].values.find{|v| v[:state].to_s == 'deleted' }
           # it cancels all available volumes.
