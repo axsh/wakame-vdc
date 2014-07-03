@@ -307,7 +307,7 @@ module Dcmgr
   end
 
   require 'dcmgr/vnet'
-  module VNet
+  module EdgeNetworking
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
     autoload :SGHandler, 'dcmgr/vnet/sg_handler.rb'
     autoload :VNicInitializer, 'dcmgr/vnet/vnic_initializer.rb'

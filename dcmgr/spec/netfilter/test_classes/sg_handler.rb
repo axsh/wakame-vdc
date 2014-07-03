@@ -2,8 +2,8 @@
 
 module DcmgrSpec::Netfilter
   class SGHandlerTest
-    include Dcmgr::VNet::SGHandler
-    include Dcmgr::VNet::VNicInitializer
+    include Dcmgr::EdgeNetworking::SGHandler
+    include Dcmgr::EdgeNetworking::VNicInitializer
 
     def add_host(hn)
       @hosts ||= {}

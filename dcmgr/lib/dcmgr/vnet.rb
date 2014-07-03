@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
 
     def self.packetfilter_service
       case Dcmgr.conf.sg_implementation

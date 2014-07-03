@@ -2,7 +2,7 @@
 
 module DcmgrSpec::Netfilter
   class NetfilterHandlerTest
-    include Dcmgr::VNet::Netfilter::NetfilterHandler
+    include Dcmgr::EdgeNetworking::Netfilter::NetfilterHandler
 
     def initialize(*args)
       super *args

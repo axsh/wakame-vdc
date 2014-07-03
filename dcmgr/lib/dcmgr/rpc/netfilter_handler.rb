@@ -4,7 +4,7 @@ require 'isono'
 
 module Dcmgr::Rpc
   class NetfilterHandler < EndpointBuilder
-    include Dcmgr::VNet::Netfilter::NetfilterHandler
+    include Dcmgr::EdgeNetworking::Netfilter::NetfilterHandler
 
     def initialize(*args)
       super(*args)
