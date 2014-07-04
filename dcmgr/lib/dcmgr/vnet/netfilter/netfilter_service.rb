@@ -9,7 +9,8 @@ module Dcmgr::VNet::Netfilter
 
     def init_security_group(host, group)
       group_id = group.canonical_uuid
-      logger.info "Telling host '#{host.canonical_uuid}' to initialize security group '#{group_id}'"
+      logger.info "Telling host '%s' to initialize security group '%s'" %
+        [host.canonical_uuid, group_id]
 
       friend_ips = group.vnic_ips
 
@@ -25,7 +26,8 @@ module Dcmgr::VNet::Netfilter
     end
 
     def destroy_security_group(host, group_id)
-      logger.info "Telling host '#{host.canonical_uuid}' to destroy security group '#{group_id}'"
+      logger.info "Telling host '%s' to destroy security group '%s'" %
+        [host.canonical_uuid, group_id]
 
       add_changes(host,
         secg_chains(group_id).map {|chain| chain.destroy} +
@@ -35,7 +37,9 @@ module Dcmgr::VNet::Netfilter
 
     def update_isolation_group(host, group, friend_ips = nil)
       group_id = group.canonical_uuid
-      logger.info "Telling host '#{host.canonical_uuid}' to update isolation group '#{group_id}'"
+      logger.info "Telling host '%s' to update isolation group '%s'" %
+        [host.canonical_uuid, group_id]
+
       friend_ips ||= group.vnic_ips
 
       l2c = I.secg_l2_iso_chain(group_id)
@@ -52,14 +56,17 @@ module Dcmgr::VNet::Netfilter
     end
 
     def init_vnic_on_host(host, vnic)
-      logger.info "Telling host '#{host.canonical_uuid}' to initialize vnic '#{vnic.canonical_uuid}'."
+      logger.info "Telling host '%s' to initialize vnic '%s'." %
+        [host.canonical_uuid, vnic.canonical_uuid]
+
       vnic_map = vnic.to_hash
       return if vnic_map[:network].nil?
       add_changes(host, network_mode(vnic_map).init_vnic(vnic_map))
     end
 
     def destroy_vnic_on_host(host, vnic)
-      logger.info "Telling host '#{host.canonical_uuid}' to destroy vnic '#{vnic.canonical_uuid}'."
+      logger.info "Telling host '%s' to destroy vnic '%s'." %
+        [host.canonical_uuid, vnic.canonical_uuid]
 
       vnic_map = vnic.to_hash
       return if vnic_map[:network].nil?
@@ -68,11 +75,14 @@ module Dcmgr::VNet::Netfilter
 
     def set_vnic_security_groups(host, vnic, group_ids = nil)
       group_ids ||= vnic.security_groups.map { |sg| sg.canonical_uuid}
-      logger.info "Telling host '#{host.canonical_uuid}' to set security groups of vnic '#{vnic.canonical_uuid}' to #{group_ids}."
+      logger.info "Telling host '%s' to set security groups of vnic '%s' to %s." %
+        [host.canonical_uuid, vnic.canonical_uuid, group_ids]
 
       vnic_map = vnic.to_hash
       return if vnic_map[:network].nil?
-      add_changes(host, network_mode(vnic_map).set_vnic_security_groups(vnic_map[:uuid], group_ids))
+
+      nm = network_mode(vnic_map)
+      add_changes(host, nm.set_vnic_security_groups(vnic_map[:uuid], group_ids))
     end
 
     def handle_referencees(host, group, destroyed_vnic = nil)
@@ -114,7 +124,9 @@ module Dcmgr::VNet::Netfilter
       referencers ||= group.referencers
       referencers.each { |ref_g|
         ref_g.online_host_nodes.each { |ref_h|
-          logger.info "Telling host '#{ref_h.canonical_uuid}' to update referencees for group '#{ref_g.canonical_uuid}'."
+          logger.info "Telling host '%s' to update referencees for group '%s'." %
+            [ref_h.canonical_uuid, ref_g.canonical_uuid]
+
           handle_referencees(ref_h, ref_g, destroyed_vnic)
         }
       }
@@ -153,23 +165,33 @@ module Dcmgr::VNet::Netfilter
 
     def parse_rules(sg_rules)
       sg_rules.map { |rule|
-        case rule[:ip_protocol]
+        ip_protocol = rule[:ip_protocol]
+        ip_source   = rule[:ip_source]
+
+        case ip_protocol
         when 'tcp', 'udp'
-          if rule[:ip_fport] == rule[:ip_tport]
-            "-p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_fport]} -j ACCEPT"
+          ip_fport = rule[:ip_fport]
+          ip_tport = rule[:ip_tport]
+
+          if ip_fport == ip_tport
+            "-p #{ip_protocol} -s #{ip_source} --dport #{ip_fport} -j ACCEPT"
           else
-            "-p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_fport]}:#{rule[:ip_tport]} -j ACCEPT"
+            "-p #{ip_protocol} -s #{ip_source} --dport #{ip_fport}:#{ip_tport} -j ACCEPT"
           end
         when 'icmp'
           # icmp
-          #   This extension can be used if `--protocol icmp' is specified. It provides the following option:
+          #   This extension can be used if `--protocol icmp' is specified.
+          #   It provides the following option:
           #   [!] --icmp-type {type[/code]|typename}
-          #     This allows specification of the ICMP type, which can be a numeric ICMP type, type/code pair, or one of the ICMP type names shown by the command
+          #     This allows specification of the ICMP type, which can be a numeric
+          #     ICMP type, type/code pair, or one of the ICMP type names shown by the command
           #      iptables -p icmp -h
-          if rule[:icmp_type] == -1 && rule[:icmp_code] == -1
-            "-p icmp -s #{rule[:ip_source]} -j ACCEPT"
+          icmp_type = rule[:icmp_type]
+          icmp_code = rule[:icmp_code]
+          if icmp_type == -1 && icmp_code == -1
+            "-p icmp -s #{ip_source} -j ACCEPT"
           else
-            "-p icmp -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
+            "-p icmp -s #{ip_source} --icmp-type #{icmp_type}/#{icmp_code} -j ACCEPT"
           end
         end
       }

@@ -27,16 +27,25 @@ module Dcmgr::VNet::Netfilter::NetfilterHandler
             #{bin} -t #{table} -L #{chain} --line-numbers | grep -q vdc_vif-
           done
         ")
-        system("for i in $(iptables -t #{table} -L | grep 'Chain #{prefix}' | cut -d ' ' -f2); do iptables -t #{table} -F $i; done")
-        system("for i in $(iptables -t #{table} -L | grep 'Chain #{prefix}' | cut -d ' ' -f2); do iptables -t #{table} -X $i; done")
+
+        get_l3_chains = "$(iptables -t #{table} -L | grep 'Chain #{prefix}' | cut -d ' ' -f2)"
+
+        system("for i in #{get_l3_chains}; do iptables -t #{table} -F $i; done")
+        system("for i in #{get_l3_chains}; do iptables -t #{table} -X $i; done")
       }
     }
 
+    get_ebtables_chains_cmd = ["$(ebtables -L",
+      "grep 'Bridge chain: #{prefix}'",
+      "cut -d ' ' -f3",
+      "cut -d ',' -f1)"
+    ].join(" | ")
+
     # Flush 'em all
-    system("for i in $(ebtables -L | grep 'Bridge chain: #{prefix}' | cut -d ' ' -f3 | cut -d ',' -f1); do ebtables -F; done")
+    system("for i in #{get_ebtables_chains_cmd}; do ebtables -F; done")
 
     # Kill 'em all
-    system("for i in $(ebtables -L | grep 'Bridge chain: #{prefix}' | cut -d ' ' -f3 | cut -d ',' -f1); do ebtables -X; done")
+    system("for i in #{get_ebtables_chains_cmd}; do ebtables -X; done")
   end
 
   def apply_packetfilter_cmds(cmds)
