@@ -49,7 +49,7 @@ manifest.instance_eval do
     load_module Dcmgr::NodeModules::DebugOpenFlow
     load_module Dcmgr::NodeModules::ServiceOpenFlow
   when 'legacy_netfilter'
-    load_module Dcmgr::NodeModules::ServiceNetfilter
+    load_module Dcmgr::NodeModules::LegacyNetfilter
   when 'netfilter'
     load_netfilter_handler = true
   when 'off'
