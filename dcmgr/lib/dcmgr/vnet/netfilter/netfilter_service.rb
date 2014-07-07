@@ -93,7 +93,11 @@ module Dcmgr::VNet::Netfilter
         rules.map { |r|
           if r[:ip_source] == reffee.canonical_uuid
             reffee_ips = reffee.vnic_ips
-            reffee_ips -= destroyed_vnic.direct_ip_lease.map {|ip| ip.ipv4_s} if destroyed_vnic
+
+            if destroyed_vnic
+              reffee_ips -= destroyed_vnic.direct_ip_lease.map {|ip| ip.ipv4_s}
+            end
+
             reffee_ips.map { |ref_ip|
               parsed_rule = r.dup
               parsed_rule[:ip_source] = ref_ip
