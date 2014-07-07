@@ -5,7 +5,7 @@ module Dcmgr::EdgeNetworking::Netfilter
     include Dcmgr::Logger
     include Dcmgr::EdgeNetworking::Netfilter::Chains
     include Dcmgr::Helpers::NicHelper
-    include Dcmgr::EdgeNetworking::Netfilter::NetfilterTasks
+    include Dcmgr::EdgeNetworking::Netfilter::Tasks
 
     def init_security_group(host, group)
       group_id = group.canonical_uuid

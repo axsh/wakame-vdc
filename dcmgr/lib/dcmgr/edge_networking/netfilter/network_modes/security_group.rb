@@ -4,7 +4,7 @@ module Dcmgr::EdgeNetworking::NetworkModes
 
   class SecurityGroup
     include Dcmgr::EdgeNetworking::Netfilter::Chains
-    include Dcmgr::EdgeNetworking::Netfilter::NetfilterTasks
+    include Dcmgr::EdgeNetworking::Netfilter::Tasks
     include Dcmgr::Helpers::NicHelper
 
     def init_vnic(vnic_map)

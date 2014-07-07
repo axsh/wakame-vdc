@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Dcmgr::EdgeNetworking::Netfilter::NetfilterTasks
+module Dcmgr::EdgeNetworking::Netfilter::Tasks
   def self.included klass
     klass.class_eval do
       include Dcmgr::EdgeNetworking::Netfilter::Chains

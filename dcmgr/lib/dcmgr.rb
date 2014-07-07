@@ -329,7 +329,7 @@ module Dcmgr
     module Netfilter
       autoload :NetfilterService, 'dcmgr/edge_networking/netfilter/netfilter_service'
       autoload :NetfilterHandler, 'dcmgr/edge_networking/netfilter/netfilter_handler'
-      autoload :NetfilterTasks, 'dcmgr/edge_networking/netfilter/netfilter_tasks'
+      autoload :Tasks, 'dcmgr/edge_networking/netfilter/tasks'
       autoload :Chains, 'dcmgr/edge_networking/netfilter/chains'
       #legacy stuff
       autoload :NetfilterCache, 'dcmgr/edge_networking/netfilter/cache'
