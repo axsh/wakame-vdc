@@ -13,7 +13,9 @@ module Dcmgr::EdgeNetworking::SGHandlerCommon
 
   private
   def pf
-    @pf ||= Dcmgr::EdgeNetworking.packetfilter_service
+    # Temporary hack until this gets refactored more
+    @pf ||= Dcmgr::EdgeNetworking::Netfilter::NetfilterService.new
+    #@pf ||= Dcmgr::EdgeNetworking.packetfilter_service
   end
 
   def commit_changes

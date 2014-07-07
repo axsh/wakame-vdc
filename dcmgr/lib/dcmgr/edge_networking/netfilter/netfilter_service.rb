@@ -160,7 +160,7 @@ module Dcmgr::EdgeNetworking::Netfilter
     end
 
     def network_mode(vnic_map)
-      Dcmgr::EdgeNetworking::NetworkModes.get_mode(vnic_map[:network][:network_mode])
+      NetworkModes.get_mode(vnic_map[:network][:network_mode])
     end
 
     def parse_arp_for_rules(sg_rules)

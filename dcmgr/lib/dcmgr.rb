@@ -306,7 +306,6 @@ module Dcmgr
     NAMESPACES=[HostNode, StorageNode, Network, MacAddress, IPAddress]
   end
 
-  require 'dcmgr/edge_networking'
   module EdgeNetworking
     autoload :TaskManagerFactory, 'dcmgr/edge_networking/factories'
     autoload :SGHandler, 'dcmgr/edge_networking/sg_handler.rb'
@@ -315,32 +314,36 @@ module Dcmgr
     autoload :CallIsonoPacketfilter, 'dcmgr/edge_networking/call_isono_packetfilter'
     autoload :PacketfilterService, 'dcmgr/edge_networking/packetfilter_service'
 
-    module NetworkModes
-      module Legacy
-        autoload :SecurityGroup, 'dcmgr/edge_networking/network_modes/legacy/security_group'
-        autoload :PassThrough, 'dcmgr/edge_networking/network_modes/legacy/passthrough'
-        autoload :L2Overlay, 'dcmgr/edge_networking/network_modes/legacy/l2overlay'
-      end
-      autoload :SecurityGroup, 'dcmgr/edge_networking/network_modes/security_group'
-      autoload :PassThrough, 'dcmgr/edge_networking/network_modes/passthrough'
-      autoload :L2Overlay, 'dcmgr/edge_networking/network_modes/l2overlay'
-    end
-
     module Netfilter
+      require 'dcmgr/edge_networking/netfilter/network_mode'
+      module NetworkModes
+        autoload :SecurityGroup, 'dcmgr/edge_networking/netfilter/network_modes/security_group'
+        autoload :PassThrough, 'dcmgr/edge_networking/netfilter/network_modes/passthrough'
+        autoload :L2Overlay, 'dcmgr/edge_networking/netfilter/network_modes/l2overlay'
+      end
+
       autoload :NetfilterService, 'dcmgr/edge_networking/netfilter/netfilter_service'
       autoload :NetfilterHandler, 'dcmgr/edge_networking/netfilter/netfilter_handler'
       autoload :Tasks, 'dcmgr/edge_networking/netfilter/tasks'
       autoload :Chains, 'dcmgr/edge_networking/netfilter/chains'
-      #legacy stuff
-      autoload :NetfilterCache, 'dcmgr/edge_networking/netfilter/cache'
-      autoload :Chain, 'dcmgr/edge_networking/netfilter/chain'
-      autoload :IptablesChain, 'dcmgr/edge_networking/netfilter/chain'
-      autoload :EbtablesChain, 'dcmgr/edge_networking/netfilter/chain'
-      autoload :EbtablesRule, 'dcmgr/edge_networking/netfilter/ebtables_rule'
-      autoload :IptablesRule, 'dcmgr/edge_networking/netfilter/iptables_rule'
-      autoload :NetfilterTaskManager, 'dcmgr/edge_networking/netfilter/task_manager'
-      autoload :VNicProtocolTaskManager, 'dcmgr/edge_networking/netfilter/task_manager'
-      autoload :CacheDumper, 'dcmgr/edge_networking/netfilter/cache_dumper'
+    end
+
+    module LegacyNetfilter
+      module NetworkModes
+        autoload :SecurityGroup, 'dcmgr/edge_networking/network_modes/legacy_netfilter/security_group'
+        autoload :PassThrough, 'dcmgr/edge_networking/network_modes/legacy_netfilter/passthrough'
+        autoload :L2Overlay, 'dcmgr/edge_networking/network_modes/legacy_netfilter/l2overlay'
+      end
+
+      autoload :CacheDumper, 'dcmgr/edge_networking/legacy_netfilter/cache_dumper'
+      autoload :NetfilterTaskManager, 'dcmgr/edge_networking/legacy_netfilter/task_manager'
+      autoload :VNicProtocolTaskManager, 'dcmgr/edge_networking/legacy_netfilter/task_manager'
+      autoload :IptablesChain, 'dcmgr/edge_networking/legacy_netfilter/chain'
+      autoload :EbtablesChain, 'dcmgr/edge_networking/legacy_netfilter/chain'
+      autoload :EbtablesRule, 'dcmgr/edge_networking/legacy_netfilter/ebtables_rule'
+      autoload :IptablesRule, 'dcmgr/edge_networking/legacy_netfilter/iptables_rule'
+      autoload :NetfilterCache, 'dcmgr/edge_networking/legacy_netfilter/cache'
+      autoload :Chain, 'dcmgr/edge_networking/legacy_netfilter/chain'
     end
 
     module OpenFlow
