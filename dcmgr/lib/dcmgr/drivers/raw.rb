@@ -290,7 +290,7 @@ module Dcmgr
 
       def create_volume_from_local_backup(ctx)
         common_setup(ctx)
-        deploy_volume_from_backup_object(ctx, backup_real_path(backup_key))
+        deploy_volume_from_backup_object(ctx, backup_real_path(@backup_object[:object_key]))
       end
       
       def create_blank_volume(ctx)
