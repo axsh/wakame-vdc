@@ -11,8 +11,10 @@ module Dcmgr::EdgeNetworking::SGHandler
   # This is called when a hva host is restarted. Service netfilter itself
   # will ask sg_handler to initialize all of its vnics.
   def init_host(node_id)
-    host = M::HostNode.find(:node_id => node_id) || raise("Couldn't find a host node with id: '#{node_id}'.")
-    logger.info "Telling host '#{host.canonical_uuid}' to initialize all its vnics and their security groups."
+    host = M::HostNode.find(:node_id => node_id) ||
+      raise("Couldn't find a host node with id: '#{node_id}'.")
+    logger.info "Telling host '%s' to initialize all its vnics and their security groups." %
+      host.canonical_uuid
 
     host.security_groups.each { |sg|
       pf.init_security_group(host, sg)
@@ -88,7 +90,13 @@ module Dcmgr::EdgeNetworking::SGHandler
       group_id = group.canonical_uuid
 
       group.online_host_nodes.each { |host_node|
-        no_more_vnics_left_in_group = group.network_vif_dataset.filter(:instance => host_node.instances_dataset).exclude(:instance => vnic.instance).empty?
+        no_more_vnics_left_in_group = (
+          host_insts = host_node.instances_dataset
+          my_inst = vnic.instance
+
+          group_vnics = group.network_vif_dataset.filter(instance: host_insts)
+          group_vnics.exclude(:instance => vnic.instance).empty?
+        )
 
         if no_more_vnics_left_in_group
           pf.destroy_security_group(host_node, group_id)
