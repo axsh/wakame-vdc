@@ -639,8 +639,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     else
       bko_list.each { |volume, bo|
         on_after_commit do
-          Dcmgr.messaging.submit("sta-handle.#{volume.storage_node.node_id}", 'backup_image',
-                                 volume.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+          if boot_bko == bo
+            Dcmgr.messaging.submit("sta-handle.#{volume.storage_node.node_id}", 'backup_image',
+                                   volume.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+          else
+            Dcmgr.messaging.submit("sta-handle.#{volume.storage_node.node_id}", 'backup_volume',
+                                   volume.canonical_uuid, bo.canonical_uuid)
+          end
         end
       }
     end
