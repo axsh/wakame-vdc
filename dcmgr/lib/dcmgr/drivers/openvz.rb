@@ -8,6 +8,26 @@ module Dcmgr
       include Dcmgr::Logger
       include Dcmgr::Helpers::NicHelper
 
+      # API policy information for openvz hypervisor.
+      class Policy < HypervisorPolicy
+
+        def validate_instance_model(instance)
+        end
+
+        def validate_volume_model(volume)
+        end
+
+        def on_associate_volume(instance, volume)
+          # work around: set device name as boot drive.
+          volume.guest_device_name = 'sda'
+        end
+
+      end
+
+      def self.policy
+        Policy.new
+      end
+
       def self.local_store_class
         LinuxLocalStore
       end
