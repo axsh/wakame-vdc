@@ -14,7 +14,7 @@ launch_host_node1=${launch_host_node:-hn-demo1}
 launch_host_node2=${migration_host_node:-hn-demo2}
 migration_host_node1=${migration_host_node:-hn-demo2}
 migration_host_node2=${launch_host_node:-hn-demo1}
-blank_volume_size=${blank_volume_size:-10}
+blank_volume_size=${blank_volume_size:-10M}
 
 ## hook functions
 

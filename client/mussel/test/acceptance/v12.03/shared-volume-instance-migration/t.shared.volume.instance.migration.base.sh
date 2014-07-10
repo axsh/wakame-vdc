@@ -12,7 +12,7 @@
 ## variables
 launch_host_node=${launch_host_node:-hn-demo1}
 migration_host_node=${migration_host_node:-hn-demo2}
-blank_volume_size=${blank_volume_size:-10}
+blank_volume_size=${blank_volume_size:-10M}
 
 ## hook functions
 
@@ -50,7 +50,7 @@ function test_migration_shared_volume_instance(){
 
   # sleep process id
   process_id=$(sleep_process_id)
-  [[ -n "${process_id}" ]]
+  test -n "${process_id}"
   assertEquals 0 $?
   echo "sleep process id: ${process_id}"
 
@@ -61,7 +61,7 @@ function test_migration_shared_volume_instance(){
 
   # check the process.
   new_process_id=$(sleep_process_id)
-  [[ -n "${new_process_id}" ]]
+  test -n "${new_process_id}"
   assertEquals 0 $?
   echo "sleep process id: ${new_process_id}"
   assertEquals ${process_id} ${new_process_id}
@@ -92,11 +92,13 @@ function test_migration_shared_volume_instance(){
   retry_until "document_pair? volume ${volume_uuid} state attached"
   assertEquals 0 $?
 
+  remote_sudo=$(remote_sudo)
+
   # blank device path 
   blank_dev_path=$(blank_dev_path)
-  [[ -n "${blank_dev_path}" ]]
+  test -n "${blank_dev_path}"
   assertEquals 0 $?
-  [[ -n "${blank_dev_path}" ]] || return
+  test -n "${blank_dev_path}" || return
 
   # check the attach second volume.
   ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
@@ -121,16 +123,15 @@ function test_migration_shared_volume_instance(){
   assertEquals 0 $?
 
   # terminate the instance.
-  run_cmd instance destroy ${instance_uuid} >/dev/null
-  assertEquals 0 $?
+  destroy_instance
 }
 
 # API test for shared volume instance with second blank volume migration.
 #
 # 1. boot shared volume instance with second blank volume.
 # 2. migration the instance.
-# 3. check the process.
-# 4. check the second blank disk.
+# 3. check the second blank disk.
+# 4. check the process.
 # 5. poweroff the instance.
 # 6. poweron the instance.
 # 7. terminate the instance.
@@ -141,13 +142,28 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
   create_instance
 
   # second blank volume
-  run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
+  run_cmd instance show_volumes ${instance_uuid} | ydump > ${last_result_path}
   assertEquals 0 $?
 
-  local volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
+  local volume_uuid=$(yfind '1/:uuid:' < ${last_result_path})
   test -n "${volume_uuid}"
   assertEquals 0 $?
   echo ${volume_uuid}
+
+  remote_sudo=$(remote_sudo)
+
+  # blank device path
+  blank_dev_path=$(blank_dev_path)
+  test -n "${blank_dev_path}"
+  assertEquals 0 $?
+  test -n "${blank_dev_path}" || return
+  echo ${blank_dev_path}
+
+  # check the second blank disk.
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} lsblk -d ${blank_dev_path}
+	EOS
+  assertEquals 0 $?
 
   # bind sleep process
   bind_sleep_process
@@ -155,22 +171,9 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
 
   # sleep process id
   process_id=$(sleep_process_id)
-  [[ -n "${process_id}" ]]
+  test -n "${process_id}"
   assertEquals 0 $?
   echo "sleep process id: ${process_id}"
-
-  # # blank device path 
-  # blank_dev_path=$(blank_dev_path)
-  # [[ -n "${blank_dev_path}" ]]
-  # assertEquals 0 $?
-  # [[ -n "${blank_dev_path}" ]] || return
-  # echo ${blank_dev_path}
-
-  # # check the second blank disk.
-  # ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-  # 	${remote_sudo} lsblk -d ${blank_dev_path}
-  # 	EOS
-  # assertEquals 0 $?
 
   # migration the instance.
   host_node_id=${migration_host_node} run_cmd instance move ${instance_uuid} >/dev/null
@@ -179,16 +182,16 @@ function test_migration_shared_volume_instance_with_second_blank_volume(){
 
   # check the process.
   new_process_id=$(sleep_process_id)
-  [[ -n "${new_process_id}" ]]
+  test -n "${new_process_id}"
   assertEquals 0 $?
   echo "sleep process id: ${new_process_id}"
   assertEquals ${process_id} ${new_process_id}
 
-  # # check the second blank disk.
-  # ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
-  # 	${remote_sudo} lsblk -d ${blank_dev_path}
-  # 	EOS
-  # assertEquals 0 $?
+  # check the second blank disk.
+  ssh -t ${ssh_user}@${instance_ipaddr} -i ${ssh_key_pair_path} <<-EOS
+	${remote_sudo} lsblk -d ${blank_dev_path}
+	EOS
+  assertEquals 0 $?
 
   # poweroff the instance.
   run_cmd instance poweroff ${instance_uuid} >/dev/null
