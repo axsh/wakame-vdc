@@ -119,9 +119,6 @@ module Dcmgr
     autoload :Ec2Metadata, 'dcmgr/endpoints/metadata'
     autoload :Helpers, 'dcmgr/endpoints/helpers'
     autoload :ResponseGenerator, 'dcmgr/endpoints/response_generator'
-    module V1112
-      autoload :CoreAPI, 'dcmgr/endpoints/11.12/core_api'
-    end
     module V1203
       autoload :CoreAPI, 'dcmgr/endpoints/12.03/core_api'
       module Responses
