@@ -42,9 +42,4 @@ map '/api' do
   map '/12.03' do
     run Dcmgr::Endpoints::V1203::CoreAPI.new
   end
-  map '/11.12' do
-    run Dcmgr::Endpoints::V1112::CoreAPI.new
-  end
-
-  run Dcmgr::Endpoints::V1112::CoreAPI.new
 end
