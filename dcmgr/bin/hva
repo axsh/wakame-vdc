@@ -32,6 +32,7 @@ end
 Dcmgr.run_initializers('logger')
 
 manifest = DEFAULT_MANIFEST.dup
+load_netfilter_handler = false
 manifest.instance_eval do
   node_name 'hva'
   node_instance_id "#{Socket.gethostname}"
@@ -47,12 +48,14 @@ manifest.instance_eval do
   when 'openflow'
     load_module Dcmgr::NodeModules::DebugOpenFlow
     load_module Dcmgr::NodeModules::ServiceOpenFlow
+  when 'legacy_netfilter'
+    load_module Dcmgr::NodeModules::ServiceNetfilter
+  when 'netfilter'
+    load_netfilter_handler = true
   when 'off'
     # Don't load openflow nor netfilter
   when 'openvnet'
     # Do not do anything, or something might be added...
-  when 'netfilter'
-    load_module Dcmgr::NodeModules::ServiceNetfilter
   else
     raise "Configuration error: '#{Dcmgr.conf.edge_networking}' is not " +
           "a valid option for edge_networking. Valid options are 'openflow'," +
@@ -70,5 +73,7 @@ start(manifest) do
   endpoint "windows-handle.#{@node.node_id}", Dcmgr::Rpc::WindowsHandler
   endpoint "hva-handle.#{@node.node_id}", Dcmgr::Rpc::HvaHandler
   endpoint "local-store-handle.#{@node.node_id}", Dcmgr::Rpc::LocalStoreHandler
+  endpoint "packetfilter-handle.#{@node.node_id}", Dcmgr::Rpc::NetfilterHandler if load_netfilter_handler
   endpoint "migration-handle.#{@node.node_id}", Dcmgr::Rpc::MigrationHandler
 end
+

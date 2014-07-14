@@ -6,7 +6,7 @@ module Dcmgr::VNet::NetworkModes
   # but no user defined security group rules.
   class L2Overlay < SecurityGroup
 
-    def set_vnic_security_groups(vnic_id, secg_ids)
+    def netfilter_secgroup_tasks(secgroup)
       []
     end
 

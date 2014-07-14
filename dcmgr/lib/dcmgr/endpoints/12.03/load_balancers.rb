@@ -260,10 +260,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       # The instance security group has no rules. It's just there to allow
       # communication between the LB and its instances
       lb_inst_secg_id = create_security_group([])
-
-      set_vif_sg(:add, uuid, lb_inst_secg_id)
-      set_vif_sg(:add, lb.global_vif.canonical_uuid, lb_inst_secg_id)
       M::SecurityGroup[lb_inst_secg_id].set_label(lb.label, uuid)
+
+      on_after_commit do
+        set_vif_sg(:add, uuid, lb_inst_secg_id)
+        set_vif_sg(:add, lb.global_vif.canonical_uuid, lb_inst_secg_id)
+      end
     end
 
     config_vifs = (request_vifs + hold_vifs).uniq

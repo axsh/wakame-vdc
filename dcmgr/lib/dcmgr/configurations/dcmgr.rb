@@ -303,6 +303,7 @@ module Dcmgr
       # default instance poweroff behavior
       param :default_force_poweroff_instance, :default => true
 
+      param :sg_implementation, :default => 'netfilter'
       param :enable_instance_poweron_readiness_validation, :default => true
 
       def after_initialize
@@ -318,6 +319,9 @@ module Dcmgr
         if @config[:mac_address_vendor_id].nil? || @config[:mac_address_vendor_id] !~ /^[\dA-Fa-f]{6}$/
           errors << "Invalid mac_address_vendor_id: #{@config[:mac_address_vendor_id]}"
         end
+
+        sg_imps = ["netfilter", "off"]
+        errors << "Invalid sg_implementation. Must be one of the following: [#{sg_imps.join(", ")}]" unless sg_imps.member?(@config[:sg_implementation])
 
         unless @config[:create_volume_max_size].is_a?(Integer)
           errors << "create_volume_max_size must be a decimal value: #{@config[:create_volume_max_size]}"

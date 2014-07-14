@@ -4,6 +4,14 @@ require 'dcmgr/endpoints/12.03/responses/network_vif'
 require 'dcmgr/endpoints/12.03/responses/network_vif_monitor'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
+  def get_group_ids_from_string_or_array(string_or_array)
+    case string_or_array
+    when String
+      [string_or_array]
+    when Array
+      string_or_array
+    end
+  end
 
   get '/:vif_id' do
     # description "Retrieve details about a vif"
@@ -14,43 +22,36 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
   put '/:vif_id/add_security_group' do
     vnic = find_by_uuid(:NetworkVif, params[:vif_id])
-    group = find_by_uuid(:SecurityGroup, params[:security_group_id])
-    # I am using UnknownUUIDResource and not UnknownSecurityGroup because I want to throw the same error that's thrown
-    # by find_by_uuid if the group wasn't found in the database.
-    raise E::UnknownUUIDResource, params[:security_group_id].to_s unless group && group.account_id == vnic.account_id
 
-    if vnic.security_groups.member?(group)
-      raise E::DuplicatedSecurityGroup, "'#{params[:security_group_id]}' is already assigned to '#{params[:vif_id]}'"
-    end
+    # Both single and multiple SG allocation are supported
+    group_ids = get_group_ids_from_string_or_array(params[:security_group_id])
+    groups = group_ids.map {|gid| find_by_uuid(:SecurityGroup, gid) }
+    groups.each { |group|
+      # I am using UnknownUUIDResource and not UnknownSecurityGroup because I want to throw the same error that's thrown
+      # by find_by_uuid if the group wasn't found in the database.
+      raise E::UnknownUUIDResource, params[:security_group_id].to_s unless group && group.account_id == vnic.account_id
 
-    vnic.add_security_group(group)
-    on_after_commit do
-      Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_joined",:args=>[vnic.canonical_uuid])
-      Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/joined_group",:args=>[group.canonical_uuid])
+      if vnic.security_groups.member?(group)
+        raise E::DuplicatedSecurityGroup, "'#{params[:security_group_id]}' is already assigned to '#{params[:vif_id]}'"
+      end
+    }
 
-      group.referencees.each { |ref_sg|
-        Dcmgr.messaging.event_publish("#{ref_sg.canonical_uuid}/referencer_added",:args=>[group.canonical_uuid])
-      }
-    end
+    Dcmgr.messaging.submit("sg_handler", "add_sgs_to_vnic", params[:vif_id], group_ids)
 
-    respond_with(R::NetworkVif.new(find_by_uuid(:NetworkVif, params[:vif_id])).generate)
+    #TODO: Figure out the right response since the groups will be changed in an asynchoronous method
+    respond_with(R::NetworkVif.new(vnic).generate)
   end
 
   put '/:vif_id/remove_security_group' do
     vnic = find_by_uuid(:NetworkVif, params[:vif_id])
-    group = vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(params[:security_group_id]) ).first
+    group_ids = get_group_ids_from_string_or_array(params[:security_group_id])
 
-    raise E::UnknownSecurityGroup, "'#{params[:security_group_id]}' is not assigned to '#{params[:vif_id]}'" unless group
+    group_ids.each { |gid|
+      group_set = vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(gid))
+      raise E::UnknownSecurityGroup, "'#{params[:security_group_id]}' is not assigned to '#{params[:vif_id]}'" if group_set.empty?
+    }
 
-    vnic.remove_security_group(group)
-    on_after_commit do
-      Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_left",:args=>[vnic.canonical_uuid])
-      Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/left_group",:args=>[group.canonical_uuid])
-
-      group.referencees.each { |ref_sg|
-        Dcmgr.messaging.event_publish("#{ref_sg.canonical_uuid}/referencer_removed",:args=>[group.canonical_uuid])
-      }
-    end
+    Dcmgr.messaging.submit("sg_handler", "remove_sgs_from_vnic", params[:vif_id], group_ids)
 
     respond_with(R::NetworkVif.new(find_by_uuid(:NetworkVif, params[:vif_id])).generate)
   end

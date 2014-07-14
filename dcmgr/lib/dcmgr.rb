@@ -134,6 +134,7 @@ module Dcmgr
 
   module NodeModules
     autoload :StaCollector, 'dcmgr/node_modules/sta_collector'
+    autoload :SGHandler, 'dcmgr/node_modules/sg_handler'
     autoload :StaTgtInitializer, 'dcmgr/node_modules/sta_tgt_initializer'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :NatboxCollector, 'dcmgr/node_modules/natbox_collector'
@@ -201,6 +202,7 @@ module Dcmgr
     autoload :StaHandler, 'dcmgr/rpc/sta_handler'
     autoload :HvaContext, 'dcmgr/rpc/hva_context'
     autoload :LocalStoreHandler, 'dcmgr/rpc/local_store_handler'
+    autoload :NetfilterHandler, 'dcmgr/rpc/netfilter_handler'
     autoload :MigrationHandler, 'dcmgr/rpc/migration_handler'
     autoload :WindowsHandler, 'dcmgr/rpc/windows_handler'
   end
@@ -307,14 +309,29 @@ module Dcmgr
   require 'dcmgr/vnet'
   module VNet
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
+    autoload :SGHandler, 'dcmgr/vnet/sg_handler.rb'
+    autoload :VNicInitializer, 'dcmgr/vnet/vnic_initializer.rb'
+    autoload :SGHandlerCommon, 'dcmgr/vnet/sg_handler_common.rb'
+    autoload :CallIsonoPacketfilter, 'dcmgr/vnet/call_isono_packetfilter'
+    autoload :PacketfilterService, 'dcmgr/vnet/packetfilter_service'
 
     module NetworkModes
+      module Legacy
+        autoload :SecurityGroup, 'dcmgr/vnet/network_modes/legacy/security_group'
+        autoload :PassThrough, 'dcmgr/vnet/network_modes/legacy/passthrough'
+        autoload :L2Overlay, 'dcmgr/vnet/network_modes/legacy/l2overlay'
+      end
       autoload :SecurityGroup, 'dcmgr/vnet/network_modes/security_group'
       autoload :PassThrough, 'dcmgr/vnet/network_modes/passthrough'
       autoload :L2Overlay, 'dcmgr/vnet/network_modes/l2overlay'
     end
 
     module Netfilter
+      autoload :NetfilterService, 'dcmgr/vnet/netfilter/netfilter_service'
+      autoload :NetfilterHandler, 'dcmgr/vnet/netfilter/netfilter_handler'
+      autoload :NetfilterTasks, 'dcmgr/vnet/netfilter/netfilter_tasks'
+      autoload :Chains, 'dcmgr/vnet/netfilter/chains'
+      #legacy stuff
       autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'
       autoload :Chain, 'dcmgr/vnet/netfilter/chain'
       autoload :IptablesChain, 'dcmgr/vnet/netfilter/chain'

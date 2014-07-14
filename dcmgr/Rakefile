@@ -7,12 +7,43 @@ require 'dcmgr/rubygems'
 require 'rake/clean'
 CLOBBER.include("vendor/bundle/**/*", "*.gem")
 
+begin
+  require 'rspec/core/rake_task'
+  RSpec::Core::RakeTask.new(:spec)
+  task :default => :spec
+rescue LoadError => e
+  # do nothing
+end
+
 task :environment do
   require 'dcmgr'
   Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                   ['/etc/wakame-vdc/dcmgr.conf',
                    File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
                   ])
+end
+
+namespace :test do
+  config_dir = "spec/config/"
+  require 'dcmgr'
+  Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
+    [File.expand_path("#{config_dir}/dcmgr.conf", Dcmgr::DCMGR_ROOT)]
+  )
+  namespace :db do
+    task :init => [] do
+      Dcmgr.run_initializers('logger', 'sequel')
+
+      Sequel.extension :migration
+      Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 9999)
+    end
+
+    task :drop => [] do
+      Dcmgr.run_initializers('logger', 'sequel')
+
+      Sequel.extension :migration
+      Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 0)
+    end
+  end
 end
 
 namespace :db do

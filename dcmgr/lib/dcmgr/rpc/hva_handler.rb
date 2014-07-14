@@ -61,6 +61,10 @@ module Dcmgr
           return
         end
 
+        @inst[:vif].each { |vnic|
+          self.job.run("sg_handler","destroy_vnic",vnic[:uuid], state_update)
+        }
+
         ignore_error {
           @hva_ctx.logger.info("teminating instance")
           task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -626,7 +630,6 @@ module Dcmgr
         @hva_ctx.logger.info("Turning soft power off")
          task_session.invoke(@hva_ctx.hypervisor_driver_class,
                              :soft_poweroff_instance, [@hva_ctx])
-        destroy_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned soft power off")
       }
 

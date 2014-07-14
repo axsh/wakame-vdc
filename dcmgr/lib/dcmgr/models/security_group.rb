@@ -10,6 +10,7 @@ module Dcmgr::Models
     plugin Plugins::ResourceLabel
 
     many_to_many :network_vif, :join_table=>:network_vif_security_groups
+    alias :vnics :network_vif
     many_to_many :referencees, :class => self, :join_table => :security_group_references,:left_key => :referencer_id, :right_key => :referencee_id
     many_to_many :referencers, :class => self, :join_table => :security_group_references,:right_key => :referencer_id, :left_key => :referencee_id
 
@@ -62,6 +63,25 @@ module Dcmgr::Models
       nd
     end
 
+    def host_nodes
+      self.network_vif.map {|vif| vif.instance && vif.instance.host_node}.uniq
+    end
+
+    def online_host_nodes
+      HostNode.dataset.online_nodes.filter(
+        :instances => Instance.filter(
+          :network_vif => self.network_vif_dataset
+        )
+      ).all
+    end
+
+    def vnic_ips
+      network_vif.map {|vif|
+        lease = vif.direct_ip_lease.first
+        lease && lease.ipv4
+      }.compact
+    end
+
     def rules_array
       rules = []
       rule.to_s.each_line { |line|
@@ -72,6 +92,18 @@ module Dcmgr::Models
       }
 
       rules.compact
+    end
+
+    def rules_array_no_ref
+      rules_array.delete_if {|rule|
+        !IPAddress.valid_ipv4?(rule[:ip_source].split("/").first)
+      }
+    end
+
+    def rules_array_only_ref
+      rules_array.delete_if {|rule|
+        IPAddress.valid_ipv4?(rule[:ip_source].split("/").first)
+      }
     end
 
     def handle_refs(action = :create)
