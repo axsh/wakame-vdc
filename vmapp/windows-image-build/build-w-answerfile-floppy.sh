@@ -355,7 +355,10 @@ case "$cmd" in
 	[[ "$3" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
 	tar-up-windows-logs "$3"
 	;;
-    -mtu)
+    -mm*) # mount metadata
+	mount-image "$(pwd)" metadata.img 1
+	;;
+    -mtu) # *m*ount windows image, *t*ar log files, *u*mount
 	[[ "$3" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
         mount-tar-umount "$3"
 	;;
