@@ -233,9 +233,9 @@ install-windows-from-iso()
     for fn in FinalStepsForInstall.cmd \
 		  Unattend-for-first-boot.xml \
 		  wakame-init-first-boot.ps1 \
+		  sysprep-for-backup.cmd \
 		  SetupComplete-firstboot.cmd \
 		  SetupComplete-install.cmd \
-		  run-sysprep.cmd \
 		  wakame-init-every-boot.cmd \
 		  wakame-init-every-boot.ps1 ; do
 	sudo cp "$SCRIPT_DIR/$fn" "./mnt/"

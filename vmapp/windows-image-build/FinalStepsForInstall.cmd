@@ -21,7 +21,5 @@ REM wakame-init-first-boot.ps1 installs these with schtasks.exe
 copy a:\wakame-init-every-boot.cmd c:\Windows\Setup\Scripts\
 copy a:\wakame-init-every-boot.ps1 c:\Windows\Setup\Scripts\
 
-REM Sysprep Helper Script
-copy a:\run-sysprep.cmd c:\Windows\Setup\Scripts\
-
-
+REM Sysprep Helper Script for User
+copy a:\sysprep-for-backup.cmd c:\Windows\Setup\Scripts\
