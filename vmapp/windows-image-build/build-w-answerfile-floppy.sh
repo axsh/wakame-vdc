@@ -91,6 +91,13 @@ configure-metadata-disk()
     umount-image
 }
 
+boot-and-log-kvm-boot()
+{
+    echo "$@" >"thisrun/kvm-boot-cmdline-$(date +%y%m%d-%H%M%S)"
+    "$@"  >>./kvm.stdout 2>>./kvm.stderr &
+    echo "$!" >thisrun/kvm.pid
+}
+
 mount-image()
 {
     local installdir="$1"
@@ -157,6 +164,7 @@ tar-up-windows-logs()
     [ -d mntpoint/Windows ] || reportfail "Windows disk image not mounted"
     target="$1"
     tar czvf "$target" -C mntpoint "${windowsLogs[@]}"
+    cp $(pwd)/qemu-vlan0.pcap "${target%.tar.gz}.pcap"
 }
 
 mount-tar-umount()
@@ -284,26 +292,30 @@ install-windows-from-iso()
 boot-without-networking()
 {
     configure-metadata-disk
-    setsid >>./kvm.stdout 2>>./kvm.stderr \
-	   kvm $(boot-common-params) \
-	   -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
-	   -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
-	   -net nic,vlan=0,macaddr=$MACADDR \
-	   -net socket,vlan=0,mcast=230.0.$UD.1:12341 &
-    echo "$!" >thisrun/kvm.pid
+    mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
+    boot-and-log-kvm-boot kvm $(boot-common-params) \
+			  -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
+			  -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
+			  -net nic,vlan=0,macaddr=$MACADDR \
+			  -net dump,vlan=0 \
+			  -net socket,vlan=0,mcast=230.0.$UD.1:12341
 }
 
 boot-with-networking()
 {
     configure-metadata-disk
-    setsid >>./kvm.stdout 2>>./kvm.stderr \
-	   kvm $(boot-common-params) \
-	   -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
-	   -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
-	   -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
-	   -net user,vlan=0${portforward} &
-    echo "$!" >thisrun/kvm.pid
+    mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
+    boot-and-log-kvm-boot kvm $(boot-common-params) \
+			  -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
+			  -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
+			  -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
+			  -net dump,vlan=0 \
+			  -net user,vlan=0${portforward}
 }
+
+# from: http://blog.vmsplice.net/2011/04/how-to-capture-vm-network-traffic-using.html
+# $ qemu -net nic,model=e1000 -net dump,file=/tmp/vm0.pcap -net user
+# $ /usr/sbin/tcpdump -nr /tmp/vm0.pcap
 
 get-decode-password()
 {
