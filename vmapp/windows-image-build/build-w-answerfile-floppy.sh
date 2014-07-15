@@ -211,16 +211,26 @@ install-windows-from-iso()
     # Create 30GB image
     rm -f "$WINIMG"
     qemu-img create -f raw "$WINIMG" 30G
-    
-    setsid >>./kvm.stdout 2>>./kvm.stderr \
-	   kvm $(boot-common-params) \
-	   -fda "$FLP" \
-	   -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
-	   -drive file="$SCRIPT_DIR/virtio-win-0.1-74.iso",index=3,media=cdrom \
-	   -boot d \
-	   -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
-	   -net user,vlan=0${portforward} &
-    echo "$!" >thisrun/kvm.pid
+
+    if [ "$NATNET" = "" ] ; then
+	boot-and-log-kvm-boot kvm $(boot-common-params) \
+			      -fda "$FLP" \
+			      -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
+			      -drive file="$SCRIPT_DIR/$VIRTIOISO",index=3,media=cdrom \
+			      -boot d \
+			      -net nic,vlan=0,macaddr=$MACADDR \
+			      -net socket,vlan=0,mcast=230.0.$UD.1:12341
+    else
+	mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
+	boot-and-log-kvm-boot kvm $(boot-common-params) \
+			      -fda "$FLP" \
+			      -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
+			      -drive file="$SCRIPT_DIR/$VIRTIOISO",index=3,media=cdrom \
+			      -boot d \
+			      -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
+			      -net dump,vlan=0 \
+			      -net user,vlan=0${portforward}
+    fi
 }
 
 boot-without-networking()
@@ -336,15 +346,15 @@ case "$cmd" in
 	echo "3-tar-the-image" >thisrun/nextstep
 	;;
     3-tar-the-image)
-	md5sum "$WINIMG" >"$WINIMG".md5
-	tar czSvf "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
+	time md5sum "$WINIMG" >"$WINIMG".md5
+	time tar czSvf "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
 	cp -al "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz thisrun
 	mount-tar-umount thisrun/after-gen0-sysprep.tar.gz
 	echo "1001-gen0-first-boot" >thisrun/nextstep
 	;;
     1001-gen*-first-boot)
 	mount-tar-umount thisrun/before-$cmd.tar.gz
-	boot-without-networking
+	[ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	echo "1002-confirm-gen$genCount-shutdown-get-pw" >thisrun/nextstep
 	;;
     1002-confirm-gen*-shutdown-get-pw)
@@ -354,7 +364,7 @@ case "$cmd" in
 	echo "1003-gen$genCount-second-boot" >thisrun/nextstep
 	;;
     1003-gen*-second-boot)
-	boot-without-networking
+	[ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	echo "1003b-record-logs-at-ctr-alt-delete-prompt1-gen$genCount" >thisrun/nextstep
 	;;
     1003b-record-logs-at-ctr-alt-delete-prompt1-gen*)
@@ -365,7 +375,7 @@ case "$cmd" in
     1004-confirm-gen*-shutdown)
 	[ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
 	mount-tar-umount thisrun/after-$cmd.tar.gz
-	boot-without-networking
+	[ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	echo "1004b-record-logs-at-ctr-alt-delete-prompt2-gen$genCount" >thisrun/nextstep
 	echo "Rebooting"
 	;;
