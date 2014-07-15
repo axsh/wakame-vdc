@@ -229,7 +229,6 @@ install-windows-from-iso()
     mkfs.vfat "$FLP"
     mkdir -p "./mnt"
     sudo mount -t vfat -o loop $FLP "./mnt"
-    sudo cp keyfile "./mnt/"
     sudo cp "$SCRIPT_DIR/$ANSFILE" "./mnt/Autounattend.xml"
     for fn in FinalStepsForInstall.cmd \
 		  Unattend-for-first-boot.xml \
@@ -241,7 +240,20 @@ install-windows-from-iso()
 		  wakame-init-every-boot.ps1 ; do
 	sudo cp "$SCRIPT_DIR/$fn" "./mnt/"
     done
-    
+
+    # Here we are inserting code at the start of the script that runs
+    # sysprep so that it first sets the product key.  An alternative
+    # would have been to set it in the answer file, but we are trying
+    # to keep the answer file as simple as possible.  Another
+    # alternative seemed to be to use FinalStepsForInstall.cmd, but
+    # for some reason that did not work.
+    prodkey="$(cat keyfile)" || reportfail "File named \"keyfile\" with MAK product key must be in the current directory"
+    {
+	echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $prodkey"
+	echo
+	cat "$SCRIPT_DIR/run-sysprep.cmd"
+    } | sudo tee ./mnt/run-sysprep.cmd
+
     sudo umount "./mnt"
     
     # Create 30GB image
