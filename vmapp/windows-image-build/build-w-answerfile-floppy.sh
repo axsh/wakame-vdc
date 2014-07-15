@@ -14,15 +14,33 @@ try()
 }
 
 usage() {
-    cat <<EOF
+    cat <<'EOF'
 
-First parameter should be 2008 or 2012.
-Second parameter is one of the following commands:
-  -install
-  -test
-  -testoff
-  -mount
-  -umount
+A quick guide for using this script to make Windows images is in
+README.md.  This script also has other features for experimenting with
+Windows images.  In order to use these, it is probably necessary read
+through it to understand the script and its limitations.  However, for
+quick hints, the intended use is as follows:
+
+1) Follow instruction in README.md
+2) keep calling $SDIR/build-w-answerfile-floppy.sh 2008 -next
+
+This will cycle the window image through first boot, second boot,
+shutdown, reboot, sysprep, shutdown, and then start again with first
+boot, etc.  At various points, the script will output Windows log
+files and network packet dumps to a directory named run-{2008,2012}-*.
+The first set of log files have "gen0" in the log file names.  After
+the next first boot, "gen1" becomes part of the log file names, etc.,
+so that each cycle from first-boot to sysprep gets uniquely named
+files.  It is easer to make sense of all the log files if the
+directory is sorted by date.
+
+Note the following environment are used:
+BOOTDATE (defaults to 2014-04-01)
+MACADDR (defaults to 52-54-00-11-a0-5b)
+FIRSTBOOT (defaults to "", i.e. do not put in meta-data/first-boot)
+AUTOACTIVATE (defaults to "", i.e. do not put in meta-data/auto-activate)
+NATNET (defaults to "", i.e. disconnect from Internet)
 EOF
     exit
 }
@@ -348,13 +366,6 @@ genCount="${cmd#*gen}"
 genCount="${genCount%%-*}"
 
 case "$cmd" in
-    -install)
-	install-windows-from-iso
-	;;
-    -save-logs)
-	[[ "$3" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
-	tar-up-windows-logs "$3"
-	;;
     -mm*) # mount metadata
 	mount-image "$(pwd)" metadata.img 1
 	;;
@@ -392,6 +403,7 @@ case "$cmd" in
 	    ln -s "$trythis" thisrun
 	    echo "1-install" >thisrun/nextstep
 	    echo "$(date +%y%m%d-%H%M%S)" >thisrun/timestamp
+	    echo "This directory will make more sense if you sort by the files by date: ls -lt" >thisrun/README
 	    break
 	done
 	;;
