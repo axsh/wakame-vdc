@@ -144,6 +144,8 @@ confirm-sysprep-shutdown()
 
 set -x
 
+VIRTIOISO="virtio-win-0.1-74.iso"  # version of virtio disk and network drivers known to work
+
 case "$1" in
     *8*)
 	WINIMG=win-2008.raw
@@ -317,10 +319,11 @@ case "$cmd" in
 	;;
     ### from here start new framework
     0-init)
-	[ -f "$SCRIPT_DIR/$WINISO" ] || reportfail "Must first copy $WINISO to $SCRIPT_DIR"
+	for iso in "$WINISO" "$VIRTIOISO" ; do
+	    [ -f "$SCRIPT_DIR/$iso" ] || reportfail "Must first copy $iso to $SCRIPT_DIR"
+	done
 	[ -f ./keyfile ] || reportfail "Must first create the file ./keyfile with 5X5 product key"
-	for (( i=0 ; i<10000 ; i++ ))
-	do
+	for (( i=0 ; i<10000 ; i++ )) ; do
 	    trythis="$(printf "run-$LABEL-%03d" $i)"
 	    [ -d "$trythis" ] && continue
 	    mkdir "$trythis"
