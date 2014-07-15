@@ -78,6 +78,7 @@ function Set_Networking_From_Metadata( $macAddr )
 	$metaIpv4 = Read_Metadata("network\interfaces\macs\$macAddr\local-ipv4s")
 	$metaMask = Read_Metadata("network\interfaces\macs\$macAddr\x-netmask")
 	$metaGateway = Read_Metadata("network\interfaces\macs\$macAddr\x-gateway")
+	$metaDNS = Read_Metadata("network\interfaces\macs\$macAddr\x-dns")
 	$wmi = Get-WmiObject win32_networkadapterconfiguration -filter "MACAddress = '$macAddrColons'"
 	if ($wmi -eq $null) {
 	    write-host "Could not find interface with MAC=$macAddrColons"
@@ -85,7 +86,10 @@ function Set_Networking_From_Metadata( $macAddr )
 	    write-host "Setting interface for ${macAddrColons}: IP=$metaIpv4, mask=$metaMask, gateway=$metaGateway"
 	    $wmi.EnableStatic($metaIpv4, $metaMask)
 	    $wmi.SetGateways($metaGateway, 1)
-	    # $wmi.SetDNSServerSearchOrder("10.0.0.100")
+	    if ( $metaDNS -ne "" )
+	    {		
+		$wmi.SetDNSServerSearchOrder($metaDNS)
+	    }
 	}
     }
     catch {
