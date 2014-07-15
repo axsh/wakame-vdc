@@ -57,6 +57,40 @@ if [ "$MACADDR" == "" ] ; then
     MACADDR="52-54-00-11-a0-5b"
 fi
 
+configure-metadata-disk()
+{
+    [ -f metadata.img ] || reportfail "metadata.img file not found in current directory"
+    mount-image "$(pwd)" metadata.img 1 || reportfail "mounting of metadata.img failed"
+    sudo bash -c 'echo "DEMO1-VM" >mntpoint/meta-data/local-hostname'
+    
+    # networking interfaces
+    sudo bash -c "mkdir mntpoint/meta-data/network/interfaces/macs/$MACADDR"
+    sudo bash -c "echo 10.0.2.15 >mntpoint/meta-data/network/interfaces/macs/$MACADDR/local-ipv4s"
+    sudo bash -c "echo 255.255.0.0 >mntpoint/meta-data/network/interfaces/macs/$MACADDR/x-netmask"
+    sudo bash -c "echo 10.0.2.2 >mntpoint/meta-data/network/interfaces/macs/$MACADDR/x-gateway"
+    sudo bash -c "echo 8.8.8.8 >mntpoint/meta-data/network/interfaces/macs/$MACADDR/x-dns"
+    
+    # hosts file
+    sudo bash -c 'mkdir mntpoint/meta-data/extra-hosts'
+    sudo bash -c 'echo 192.168.2.22 >mntpoint/meta-data/extra-hosts/twotwo'
+    sudo bash -c 'echo 192.168.2.23 >mntpoint/meta-data/extra-hosts/twothree'
+    
+    if [ "$FIRSTBOOT" = "" ]; then
+	rm -f mntpoint/meta-data/first-boot
+    else
+	touch mntpoint/meta-data/first-boot
+	touch thisrun/first-boot-set-$(date +%y%m%d-%H%M%S)"
+    fi
+
+    if [ "$AUTOACTIVATE" = "" ]; then
+	rm -f mntpoint/meta-data/auto-activate
+    else
+	touch mntpoint/meta-data/auto-activate
+	touch thisrun/auto-activate-set-$(date +%y%m%d-%H%M%S)"
+    fi
+    umount-image
+}
+
 mount-image()
 {
     local installdir="$1"
@@ -237,7 +271,7 @@ install-windows-from-iso()
 
 boot-without-networking()
 {
-    # Special case for testing already built image, keep off from internet
+    configure-metadata-disk
     setsid >>./kvm.stdout 2>>./kvm.stderr \
 	   kvm $(boot-common-params) \
 	   -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
@@ -249,7 +283,7 @@ boot-without-networking()
 
 boot-with-networking()
 {
-    # Special case for testing already built image
+    configure-metadata-disk
     setsid >>./kvm.stdout 2>>./kvm.stderr \
 	   kvm $(boot-common-params) \
 	   -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
