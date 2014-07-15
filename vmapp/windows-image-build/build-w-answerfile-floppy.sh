@@ -39,7 +39,7 @@ fi
 
 boot-date-param()
 {
-    [ "$BOOTDATE" != "now" ] && echo "-rtc $BOOTDATE"
+    [ "$BOOTDATE" != "now" ] && echo "-rtc base=$BOOTDATE"
 }
 
 boot-common-params()
