@@ -42,6 +42,17 @@ boot-date-param()
     [ "$BOOTDATE" != "now" ] && echo "-rtc $BOOTDATE"
 }
 
+boot-common-params()
+{
+    echo -m 2000 -smp 1 \
+	 -no-kvm-pit-reinjection \
+	 -vnc :$VNC \
+	 -drive file="$WINIMG",id=windows2012-GEN-drive,cache=none,aio=native,if=none \
+	 -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
+	 -usbdevice tablet  \
+	 -k ja $(boot-date-param)
+}
+
 if [ "$MACADDR" == "" ] ; then
     MACADDR="52-54-00-11-a0-5b"
 fi
@@ -202,19 +213,13 @@ install-windows-from-iso()
     qemu-img create -f raw "$WINIMG" 30G
     
     setsid >>./kvm.stdout 2>>./kvm.stderr \
-	   kvm -m 2000 -smp 1 \
+	   kvm $(boot-common-params) \
 	   -fda "$FLP" \
 	   -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
 	   -drive file="$SCRIPT_DIR/virtio-win-0.1-74.iso",index=3,media=cdrom \
 	   -boot d \
-	   -no-kvm-pit-reinjection \
-	   -vnc :$VNC \
-	   -drive file="$WINIMG",id=windows2012-GEN-drive,cache=none,aio=native,if=none \
-	   -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
 	   -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
-	   -net user,vlan=0${portforward} \
-	   -usbdevice tablet  \
-	   -k ja $(boot-date-param) &
+	   -net user,vlan=0${portforward} &
     echo "$!" >thisrun/kvm.pid
 }
 
@@ -222,17 +227,11 @@ boot-without-networking()
 {
     # Special case for testing already built image, keep off from internet
     setsid >>./kvm.stdout 2>>./kvm.stderr \
-	   kvm -m 2000 -smp 1 \
-	   -no-kvm-pit-reinjection \
-	   -vnc :$VNC \
-	   -drive file="$WINIMG",id=windows2012-GEN-drive,cache=none,aio=native,if=none \
-	   -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
+	   kvm $(boot-common-params) \
 	   -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
 	   -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
 	   -net nic,vlan=0,macaddr=$MACADDR \
-	   -net socket,vlan=0,mcast=230.0.$UD.1:12341 \
-	   -usbdevice tablet  \
-	   -k ja $(boot-date-param) &
+	   -net socket,vlan=0,mcast=230.0.$UD.1:12341 &
     echo "$!" >thisrun/kvm.pid
 }
 
@@ -240,17 +239,11 @@ boot-with-networking()
 {
     # Special case for testing already built image
     setsid >>./kvm.stdout 2>>./kvm.stderr \
-	   kvm -m 2000 -smp 1 \
-	   -no-kvm-pit-reinjection \
-	   -vnc :$VNC \
-	   -drive file="$WINIMG",id=windows2012-GEN-drive,cache=none,aio=native,if=none \
-	   -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
+	   kvm $(boot-common-params) \
 	   -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
 	   -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
 	   -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
-	   -net user,vlan=0${portforward} \
-	   -usbdevice tablet  \
-	   -k ja $(boot-date-param) &
+	   -net user,vlan=0${portforward} &
     echo "$!" >thisrun/kvm.pid
 }
 
