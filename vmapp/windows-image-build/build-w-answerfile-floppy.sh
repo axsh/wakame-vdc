@@ -47,8 +47,8 @@ boot-common-params()
     echo -m 2000 -smp 1 \
 	 -no-kvm-pit-reinjection \
 	 -vnc :$VNC \
-	 -drive file="$WINIMG",id=windows2012-GEN-drive,cache=none,aio=native,if=none \
-	 -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
+	 -drive file="$WINIMG",id=windows-drive,cache=none,aio=native,if=none \
+	 -device virtio-blk-pci,drive=windows-drive,bootindex=0,bus=pci.0,addr=0x4 \
 	 -usbdevice tablet  \
 	 -k ja $(boot-date-param)
 }
