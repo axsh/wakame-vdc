@@ -242,6 +242,18 @@ catch {
     Write-Host "Error occurred while setting up script for configuration on each reboot"
 }
 
+if (Test-Path ("$mdl\meta-data\auto-activate"))
+{
+    try {
+	Write-Host "Trying auto activation"
+	cscript //b c:\windows\system32\slmgr.vbs /ato
+    }
+    catch {
+	$Error[0] | Write-Host
+	Write-Host "Error occurred during auto activation"
+    }
+}
+
 "Finishing wakame-init-first-boot.ps1...about to do Stop-Computer" | Write-Host
 
 # shutdown

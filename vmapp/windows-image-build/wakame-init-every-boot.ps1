@@ -136,6 +136,18 @@ catch {
     Write-Host "Error occurred while updating hosts file"
 }
 
+if (Test-Path ("$mdl\meta-data\auto-activate"))
+{
+    try {
+	Write-Host "Trying auto activation"
+	cscript //b c:\windows\system32\slmgr.vbs /ato
+    }
+    catch {
+	$Error[0] | Write-Host
+	Write-Host "Error occurred during auto activation"
+    }
+}
+
 if (Test-Path ("$mdl\meta-data\first-boot"))
 {
     # A zero byte pw.enc file will indicate to HVA that the image (now
