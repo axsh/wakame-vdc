@@ -27,6 +27,25 @@ EOF
     exit
 }
 
+if [ "$BOOTDATE" == "" ] ; then
+    # By default, set the date to something later than the files in
+    # the Windows Server 2012 ISO.  All the files in the ISO seem to
+    # be dated 2014-03-18.  Setting after this but earlier than
+    # today's date makes it possible to do experiments with KVM faking
+    # dates but still be using dates that would be plausible to
+    # Windows and Microsoft's activaion server.
+    BOOTDATE="2014-04-01"
+fi
+
+boot-date-param()
+{
+    [ "$BOOTDATE" != "now" ] && echo "-rtc $BOOTDATE"
+}
+
+if [ "$MACADDR" == "" ] ; then
+    MACADDR="52-54-00-11-a0-5b"
+fi
+
 mount-image()
 {
     local installdir="$1"
@@ -192,10 +211,10 @@ install-windows-from-iso()
 	   -vnc :$VNC \
 	   -drive file="$WINIMG",id=windows2012-GEN-drive,cache=none,aio=native,if=none \
 	   -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
-	   -net nic,vlan=0,model=virtio,macaddr=52-54-00-11-a0-5b \
+	   -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
 	   -net user,vlan=0${portforward} \
 	   -usbdevice tablet  \
-	   -k ja &
+	   -k ja $(boot-date-param) &
     echo "$!" >thisrun/kvm.pid
 }
 
@@ -210,10 +229,10 @@ boot-without-networking()
 	   -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
 	   -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
 	   -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
-	   -net nic,vlan=0,macaddr=52-54-00-11-a0-5b \
+	   -net nic,vlan=0,macaddr=$MACADDR \
 	   -net socket,vlan=0,mcast=230.0.$UD.1:12341 \
 	   -usbdevice tablet  \
-	   -k ja &
+	   -k ja $(boot-date-param) &
     echo "$!" >thisrun/kvm.pid
 }
 
@@ -228,10 +247,10 @@ boot-with-networking()
 	   -device virtio-blk-pci,id=windows2012-GEN,drive=windows2012-GEN-drive,bootindex=0,bus=pci.0,addr=0x4 \
 	   -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
 	   -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
-	   -net nic,vlan=0,model=virtio,macaddr=52-54-00-11-a0-5b \
+	   -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
 	   -net user,vlan=0${portforward} \
 	   -usbdevice tablet  \
-	   -k ja &
+	   -k ja $(boot-date-param) &
     echo "$!" >thisrun/kvm.pid
 }
 
