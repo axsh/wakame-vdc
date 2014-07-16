@@ -150,6 +150,7 @@ module Dcmgr
     autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
     autoload :ResourceCollector, 'dcmgr/node_modules/resource_collector'
     autoload :Monitor, 'dcmgr/node_modules/monitor'
+    autoload :HaManager, 'dcmgr/node_modules/ha_manager'
     autoload :AlarmCollector, 'dcmgr/node_modules/alarm_collector'
     autoload :AlarmConfigUpdater, 'dcmgr/node_modules/alarm_config_updater'
   end
