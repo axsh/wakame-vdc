@@ -13,12 +13,6 @@ class TestStorageNode <  Test::Unit::TestCase
     [:v1203].each { |api_ver|
       assert_nothing_raised() {
         storage_node = api_class(api_ver).find(:first).results.first
-
-        if api_ver == :v1112
-          assert_raise(NoMethodError) { storage_node.node_id }
-        else
-          assert_not_nil(storage_node.node_id)
-        end
       }
     }
   end
