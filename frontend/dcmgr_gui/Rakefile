@@ -9,39 +9,3 @@ CLOBBER.include("vendor/bundle/**/*")
 DcmgrGui::Application.load_tasks
 
 $LOAD_PATH.unshift File.expand_path('../../../dcmgr/lib', __FILE__)
-
-desc "build gem packages"
-task :gem do
-  require 'rubygems'
-  require 'rake/gempackagetask'
-  require 'dcmgr/version'
-  
-  spec = Gem::Specification.new do |s|
-    s.platform = Gem::Platform::RUBY
-    s.version = Dcmgr::VERSION
-    s.authors = ['axsh Ltd.']
-    s.email = ['dev@axsh.net']
-    s.name = 'wakame-vdc-webui'
-    s.summary = "Wakame-VDC: UI frontend"
-    s.description = 'Datacenter Hypervisor'
-    s.required_ruby_version = '>= 2.0.0'
-
-    s.files = Dir['app/**/*.{rb,erb}','lib/**/*.rb',
-                  'config/**/*.{rb,yml}', 'db/**/*.rb',
-                  'extras/**/*.rb', 'public/**/*.*',
-                  'lib/**/*.{rb,rake}', 'test/**/*.rb',
-                  'vendor/plugins/**/*.*', 'tmp/',
-                  'script/*', 'test/**/*.rb', 'doc/**/*.*'] +
-      %w(Rakefile config.ru LICENSE NOTICE INSTALL.txt INSTALL-API.txt tmp)
-
-    s.add_dependency "rails", '3.0.20'
-    s.add_dependency 'mysql2', '0.3.12'
-    s.add_dependency 'sequel','3.47.0'
-    s.add_dependency 'json'
-    s.add_dependency 'oauth', '0.4.7'
-    s.add_dependency 'thor'
-  end
-  
-  File.open("#{spec.name}.gemspec", 'w'){|f| f.write(spec.to_ruby) }
-  sh "gem build #{spec.name}.gemspec"
-end
