@@ -4,7 +4,7 @@ module Dcmgr::Models
   class BackupStorage < BaseNew
     taggable 'bkst'
 
-    STORAGE_TYPES=[:local, :webdav, :s3, :iijgio, :ifs].freeze
+    STORAGE_TYPES=[:local, :webdav, :s3, :ifs].freeze
     one_to_many :backup_objects
 
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id

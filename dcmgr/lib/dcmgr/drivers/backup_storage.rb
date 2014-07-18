@@ -64,8 +64,6 @@ module Dcmgr::Drivers
         LocalStorage
       when 's3'
         S3Storage
-      when 'iijgio'
-        IIJGIOStorage
       when 'ifs'
         IfsStorage
       when 'webdav'
