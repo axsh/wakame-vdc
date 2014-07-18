@@ -352,7 +352,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
 
         # common parameters
-        ['guest_device_name', 'display_name', 'description'].each { |pname|
+        ['display_name', 'description'].each { |pname|
           if !vparam[pname].blank?
             vol.send("#{pname}=", vparam[pname])
           end
@@ -587,7 +587,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     boot_bko = nil
     bko_list = []
 
-    if params[:all]
+    if params['all'] && params['all'] == 'true'
       instance.volumes_dataset.attached.each { |v|
         bo = v.create_backup_object(@account) do |b|
           b.state = C::BackupObject::STATE_PENDING
@@ -599,8 +599,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         if instance.boot_volume_id == v.canonical_uuid
           boot_bko = bo
         end
-
-        bko_list << bo
+        bko_list << [v, bo]
       }
     else
       # only takes backup for the boot volume. (default behavior)
@@ -611,7 +610,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
       end
       boot_bko = bo
-      bko_list << bo
+      bko_list << [instance.boot_volume, bo]
     end
 
     image = instance.image.entry_clone do |i|
@@ -623,16 +622,37 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       i.account_id = @account.canonical_uuid
       i.backup_object_id = boot_bko.canonical_uuid
-      i.state = C::Image::STATE_PENDING
+      i.state = C::Image::STATE_CREATING
+      
+      i.volumes = bko_list.dup.delete_if { |volume, bo|
+        boot_bko == bo
+      }.map { |volume, bo|
+        {:backup_object_id => bo.canonical_uuid}
+      }
     end
 
-    on_after_commit do
-      Dcmgr.messaging.submit("local-store-handle.#{instance.host_node.node_id}", 'backup_image',
-                             instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+    if instance.boot_volume.local_volume?
+      on_after_commit do
+        Dcmgr.messaging.submit("local-store-handle.#{instance.host_node.node_id}", 'backup_image',
+                               instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+      end
+    else
+      bko_list.each { |volume, bo|
+        on_after_commit do
+          if boot_bko == bo
+            Dcmgr.messaging.submit("sta-handle.#{volume.storage_node.node_id}", 'backup_image',
+                                   volume.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+          else
+            Dcmgr.messaging.submit("sta-handle.#{volume.storage_node.node_id}", 'backup_volume',
+                                   volume.canonical_uuid, bo.canonical_uuid)
+          end
+        end
+      }
     end
+
     respond_with({:instance_id=>instance.canonical_uuid,
-                   :backup_object_id => bo.canonical_uuid,
                    :image_id => image.canonical_uuid,
+                   :backup_object_ids => ([boot_bko.canonical_uuid] + image.volumes.map { |hash| hash[:backup_object_id] })
                  })
   end
 

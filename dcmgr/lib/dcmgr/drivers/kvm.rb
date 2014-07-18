@@ -83,9 +83,6 @@ module Dcmgr
         param :serial_port_options, :default=>'telnet:127.0.0.1:%d,server,nowait'
         param :vnc_options, :default=>'127.0.0.1:%d'
         param :incoming_ip
-
-        param :windows_configuring_status_sleeptime, default: 2
-        param :windows_configuring_status_timeout, default: 60
       end
 
       # 0x0-2 are reserved by KVM.
@@ -111,21 +108,26 @@ module Dcmgr
 
         begin
           wait_for_kvm_termination(hc,
-            driver_configuration.windows_configuring_status_timeout,
-            driver_configuration.windows_configuring_status_sleeptime
+            Dcmgr.conf.windows.password_generation_timeout,
+            Dcmgr.conf.windows.password_generation_sleeptime
           )
         rescue Timeout::Error
           raise "Windows took too long generating a password. Waited %s seconds." %
-            driver_configuration.windows_configuring_status_timeout
+            Dcmgr.conf.windows.password_generation_timeout
         end
         logger.info "Windows finished configuring. " +
                     "Reading its password hash from metadata drive"
 
-        mount_point = "#{hc.inst_data_dir}/tmp_metadata_mnt"
-        FileUtils.mkdir(mount_point)
+        mount_point = "#{hc.inst_data_dir}/tmp"
+        FileUtils.mkdir(mount_point) unless File.exists?(mount_point)
 
-        mount_metadata_drive(hc, mount_point)
+        mount_metadata_drive(hc, mount_point, "-o rw")
         password_hash = read_password_from_metadata_drive(mount_point)
+
+        # We delete this file so Windows will not regenerate the administrator
+        # password on reboot
+        File.delete(File.expand_path("#{mount_point}/meta-data/first-boot"))
+
         umount_metadata_drive(hc, mount_point)
 
         logger.info "Read Windows password from matadata drive. " +
@@ -137,7 +139,7 @@ module Dcmgr
       end
 
       def read_password_from_metadata_drive(mount_point)
-        raw_pw_data = File.read(File.expand_path("#{mount_point}/pw.enc"))
+        raw_pw_data = File.read(File.expand_path("#{mount_point}/meta-data/pw.enc"))
         Base64.encode64(raw_pw_data)
       end
 

@@ -224,6 +224,7 @@ module Dcmgr
           'ami-manifest-path' => nil,
           'ancestor-ami-ids' => nil,
           'block-device-mapping/root' => '/dev/sda',
+          'first-boot' => '', # Simple flag so windows instances know to generate a new password
           'hostname' => @inst[:hostname],
           'instance-action' => @inst[:state],
           'instance-id' => @inst[:uuid],
@@ -299,14 +300,27 @@ module Dcmgr
                             Task::TaskSession.current
                           end
       end
+
+      def failed_instance_launch_rollback
+        ignore_error { terminate_instance(false) }
+        ignore_error { finalize_instance() }
+      end
+
+      def event
+        @event ||= Isono::NodeModules::EventChannel.new(@node)
+      end
     end
 
-      include Helpers
+    include Helpers
 
       def wait_volumes_available
         if @inst[:volume].values.all?{|v| v[:state].to_s == 'available'}
           # boot instance becase all volumes are ready.
-          job.submit("hva-handle.#{node.node_id}", 'run_local_store', @inst[:uuid])
+          if @inst[:volume][@inst[:boot_volume_id]][:volume_type] == 'Dcmgr::Model::LocalVolume'
+            job.submit("hva-handle.#{@node.node_id}", 'run_local_store', @inst[:uuid])
+          else
+            job.submit("hva-handle.#{@node.node_id}", 'run_vol_store', @inst[:uuid])
+          end
         elsif @inst[:state].to_s == 'terminated' || @inst[:volume].values.find{|v| v[:state].to_s == 'deleted' }
           # it cancels all available volumes.
           rpc.request("hva-collector", 'finalize_instance', @inst[:uuid], Time.now.utc)
@@ -357,23 +371,17 @@ module Dcmgr
         # Windows uses passwords instead of RSA keypairs. Therefore we need to
         # have windows generate the encrypted password and put it in the database
         if @hva_ctx.inst[:image][:os_type] == Dcmgr::Constants::Image::OS_TYPE_WINDOWS
-          encrypted_password = task_session.invoke(
-            @hva_ctx.hypervisor_driver_class,
-            :get_windows_password_hash,
-            [@hva_ctx]
-          )
-
-          rpc.request(
-            'hva-collector',
-            'update_instance',
-            @inst_id,
-            {encrypted_password: encrypted_password}
-          )
+          # We wait for windows to shut down and then read its password and call poweron
+          # That's why we don't set the state to running nor install security groups yet.
+          # This stuff will happen when we call poweron later.
+          job.submit("windows-handle.#{@node.node_id}", "launch_windows", @inst)
+        else
+          # Node specific instance_started event for netfilter and general
+          # instance_started event for openflow
+          update_instance_state({:state=>:running}, ['hva/instance_started'])
         end
 
-        # Node specific instance_started event for netfilter and general
-        # instance_started event for openflow
-        update_instance_state({:state=>:running}, ['hva/instance_started'])
+        create_instance_vnics(@inst)
 
         @inst[:volume].values.each { |v|
           update_volume_state(
@@ -382,12 +390,7 @@ module Dcmgr
             'hva/volume_attached'
           )
         }
-
-        create_instance_vnics(@inst)
-      }, proc {
-        ignore_error { terminate_instance(false) }
-        ignore_error { finalize_instance() }
-      }
+      }, proc { failed_instance_launch_rollback }
 
       job :run_vol_store, proc {
         # create hva context
@@ -647,9 +650,6 @@ module Dcmgr
         }
       }
 
-      def event
-        @event ||= Isono::NodeModules::EventChannel.new(@node)
-      end
     end
   end
 end

@@ -271,6 +271,21 @@ module Dcmgr::Models
       end
     end
 
+    def add_security_group(security_group)
+      NetworkVifSecurityGroup.create(
+        :network_vif => self,
+        :security_group => security_group
+      )
+    end
+
+    def remove_security_group(security_group)
+      Dcmgr::Logger.logger.info("remove_security_group. network_vif: #{self.inspect} security_group: #{security_group.inspect}")
+      NetworkVifSecurityGroup.filter(
+        :network_vif_id => self.id,
+        :security_group_id => security_group.id
+      ).first.destroy
+    end
+
     private
     def normalize_mac_addr(str)
       str = str.downcase.gsub(/[^0-9a-f]/, '')

@@ -441,8 +441,9 @@ module Dcmgr
       end
 
       def archive_from_snapshot(ctx, snapshot_path, &blk)
-        chksum_path = File.expand_path('md5', ctx.inst_data_dir)
-        size_path = File.expand_path('size', ctx.inst_data_dir)
+        tmpdir = Dir.mktmpdir(nil, ctx.inst_data_dir)
+        chksum_path = File.expand_path('md5', tmpdir)
+        size_path = File.expand_path('size', tmpdir)
 
         fstat = File.stat(snapshot_path)
         fstat.instance_eval do
@@ -478,8 +479,7 @@ module Dcmgr
 
         blk.call(cmd_tuple, chksum_path, size_path)
       ensure
-        File.unlink(chksum_path) rescue nil
-        File.unlink(size_path) rescue nil
+        FileUtils.remove_entry_secure(tmpdir)
       end
 
     end

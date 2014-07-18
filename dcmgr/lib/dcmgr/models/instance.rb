@@ -16,12 +16,6 @@ module Dcmgr::Models
       hv_class = Dcmgr::Drivers::Hypervisor.driver_class(instance.hypervisor)
       hv_class.policy.on_associate_volume(instance, volume)
       true
-    }, :after_add=>lambda { |instance, volume|
-      # update cached association object.
-      volume.instance(:reload=>true)
-    }, :after_remove=>lambda { |instance, volume|
-      # update cached association object.
-      volume.instance(:reload=>true)
     }
     alias :volume :volumes
     one_to_many :local_volumes, :class=>Volume, :read_only=>true do |ds|
@@ -29,13 +23,7 @@ module Dcmgr::Models
       #   WHERE volumes.id = l1.id
       Volume.left_join(:local_volumes, :instance_id=>self.pk).filter(:local_volumes__id=>:volumes__id)
     end
-    one_to_many :network_vif, :after_add=>lambda { |instance, vif|
-      # update cached association object.
-      vif.instance(:reload=>true)
-    }, :after_remove=>lambda { |instance, vif|
-      # update cached association object.
-      vif.instance(:reload=>true)
-    }
+    one_to_many :network_vif
     alias :instance_nic :network_vif
     alias :nic :network_vif
     many_to_one :ssh_key_pair
@@ -48,6 +36,7 @@ module Dcmgr::Models
     subset(:lives, {:terminated_at => nil})
     subset(:alives, {:terminated_at => nil})
     subset(:runnings, {:state => STATE_RUNNING})
+    subset(:running_or_initializing, {:state => [STATE_RUNNING, STATE_INITIALIZING]})
     subset(:stops, {:state => STATE_STOPPED})
 
     # lists the instances which alives and died within

@@ -33,7 +33,7 @@ EOF
 (
   cd ${vdc_data}/images
 
-  if [[ ! -z "${remove_md5}" ]]; then
+  if [[ -n "${remove_md5}" ]]; then
     # remove md5sum cache files.
     rm -f *.md5
   fi
