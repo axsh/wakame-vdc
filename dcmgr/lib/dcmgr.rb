@@ -231,7 +231,6 @@ module Dcmgr
     autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
     autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
     autoload :Tgt,          'dcmgr/drivers/tgt'
-    autoload :Comstar,      'dcmgr/drivers/comstar'
     autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
     autoload :DummyLocalStore, 'dcmgr/drivers/dummy_local_store.rb'
     autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
