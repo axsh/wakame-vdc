@@ -55,9 +55,6 @@ cat ${VDC_ROOT}/debian/control | debcontrol_depends | xargs apt-get -y --force-y
     ./debian/rules clean
     ./debian/rules build
   }
-
-  cd $VDC_ROOT/tests/cucumber
-  bundle install --path=vendor/bundle
 )
 
 exit 0
