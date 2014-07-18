@@ -137,7 +137,6 @@ module Dcmgr
     autoload :StaTgtInitializer, 'dcmgr/node_modules/sta_tgt_initializer'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :NatboxCollector, 'dcmgr/node_modules/natbox_collector'
-    autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
     autoload :DebugOpenFlow, 'dcmgr/node_modules/debug_openflow'
     autoload :ServiceNatbox, 'dcmgr/node_modules/service_natbox'
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
