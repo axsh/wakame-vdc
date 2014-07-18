@@ -216,7 +216,6 @@ module Dcmgr
   module Drivers
     autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
     autoload :LocalStorage, 'dcmgr/drivers/local_storage'
-    autoload :S3Storage, 'dcmgr/drivers/s3_storage'
     autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
     autoload :DummyHypervisor, 'dcmgr/drivers/dummy_hypervisor'
     autoload :LinuxHypervisor, 'dcmgr/drivers/linux_hypervisor'

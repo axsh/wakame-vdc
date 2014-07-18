@@ -62,8 +62,6 @@ module Dcmgr::Drivers
       case storage_type.to_s
       when 'local'
         LocalStorage
-      when 's3'
-        S3Storage
       when 'ifs'
         IfsStorage
       when 'webdav'
