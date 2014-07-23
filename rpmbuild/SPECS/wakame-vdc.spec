@@ -325,14 +325,6 @@ Requires: %{oname} = %{version}-%{release}
 %description vdcsh
 <insert long description, indented with spaces>
 
-# tests-cucumber
-%package tests-cucumber
-Summary: tests-cucumber
-Group: Development/Languages
-Requires: %{oname} = %{version}-%{release}
-%description tests-cucumber
-<insert long description, indented with spaces>
-
 ## rpmbuild -bp
 %prep
 [ -d %{name}-%{version} ] && rm -rf %{name}-%{version}
@@ -411,10 +403,8 @@ ln -s /etc/%{oname}/admin/admin.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/fro
 # vdcsh
 [ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d
 [ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder  ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder
-[ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/cucumber ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/cucumber
 rsync -aHA `pwd`/tests/vdc.sh   ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
 rsync -aHA `pwd`/tests/vdc.sh.d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
-rsync -aHA `pwd`/tests/cucumber ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
 
 # log directory
 mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}
@@ -484,11 +474,6 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %{prefix}/%{oname}/tests/builder/
 %dir %{prefix}/%{oname}/tests
 %attr(0600, root, root) %{prefix}/%{oname}/tests/vdc.sh.d/pri.pem
-
-%files tests-cucumber
-%defattr(-,root,root)
-%dir %{prefix}/%{oname}/tests/cucumber
-%{prefix}/%{oname}/tests/cucumber/
 
 %files debug-config
 %defattr(-,root,root)

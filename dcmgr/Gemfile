@@ -33,8 +33,6 @@ gem 'rack-cors', :require => 'rack/cors'
 gem 'multi_json'
 gem 'sshkey', '1.3.1'
 
-gem 'cucumber'
-
 gem 'thin'
 gem 'em-http-request'
 
