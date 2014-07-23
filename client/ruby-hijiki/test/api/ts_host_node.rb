@@ -13,12 +13,6 @@ class TestHostNode <  Test::Unit::TestCase
     [:v1203].each { |api_ver|
       assert_nothing_raised() {
         host_node = api_class(api_ver).find(:first).results.first
-
-        if api_ver == :v1112
-          assert_equal(nil, host_node.node_id)
-        else
-          assert_not_equal(nil, host_node.node_id)
-        end
       }
     }
   end
