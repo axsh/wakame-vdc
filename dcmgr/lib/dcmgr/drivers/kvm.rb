@@ -450,7 +450,7 @@ RUN_SH
       # Randomly choose unused local tcp port number.
       def pick_tcp_listen_port
         # Support only for Linux netstat output.
-        l=`/bin/netstat -nlt`.split("\n")
+        l=`/bin/netstat -nat`.split("\n")
         # take out two header lines.
         l.shift
         l.shift
