@@ -452,8 +452,7 @@ RUN_SH
         # Support only for Linux netstat output.
         l=`/bin/netstat -nat`.split("\n")
         # take out two header lines.
-        l.shift
-        l.shift
+        l.shift 2
 
         listen_ports = {}
 
