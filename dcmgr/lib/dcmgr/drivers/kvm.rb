@@ -459,14 +459,9 @@ RUN_SH
 
         l.each { |n|
           m = n.split(/\s+/)
-          if m[0] == 'tcp'
-            ip, port = m[3].split(':')
-            listen_ports[port.to_i]=ip
-          elsif m[0] == 'tcp6'
-            ary = m[3].split(':')
-            port = ary.pop
-            listen_ports[port.to_i]=ary.join(':')
-          end
+          ary = m[3].split(':')
+          port = ary.pop
+          listen_ports[port.to_i]=ary.join(':')
         }
 
 
