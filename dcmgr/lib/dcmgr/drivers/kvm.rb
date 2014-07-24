@@ -461,7 +461,7 @@ RUN_SH
           m = n.split(/\s+/)
           ary = m[3].split(':')
           port = ary.pop
-          listen_ports[port.to_i]=ary.join(':')
+          listen_ports[port.to_i]=0
         }
 
 
