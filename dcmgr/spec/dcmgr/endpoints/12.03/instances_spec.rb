@@ -18,6 +18,16 @@ describe "instances" do
            }]
         end
       end
+
+      context "with 3 instances in the database" do
+        before(:all) do
+          3.times { Fabricate(:instance) }
+        end
+
+        it "shows all 3 instances in the database" do
+          expect(body.first["total"]).to eq 3
+        end
+      end
     end
   end
 end
