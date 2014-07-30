@@ -31,6 +31,10 @@ module Dcmgr
             mi = monitor_item_class.new(*args)
             @config[:monitor_items][name] = mi
           end
+
+          def conditions(&blk)
+            @config[:conditions] = blk
+          end
         end
       end
 
