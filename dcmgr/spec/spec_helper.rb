@@ -10,6 +10,20 @@ require 'dcmgr'
 RSpec.configure do |c|
   c.formatter = :documentation
   c.color     = true
+
+  c.before(:suite) do
+    DatabaseCleaner.strategy = :truncation
+    DatabaseCleaner.clean_with :truncation
+  end
+
+  c.before(:each) do
+    DatabaseCleaner.start
+    Fabrication.clear_definitions
+  end
+
+  c.after(:each) do
+    DatabaseCleaner.clean
+  end
 end
 
 Dcmgr.load_conf(

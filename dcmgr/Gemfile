@@ -64,4 +64,5 @@ gem 'http', '0.5.0'
 
 group :test do
   gem 'rspec'
+  gem 'database_cleaner'
 end
