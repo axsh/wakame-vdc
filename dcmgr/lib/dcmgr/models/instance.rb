@@ -171,6 +171,7 @@ module Dcmgr::Models
     # this is for internal use.
     def to_hash
       h = super
+
       h.merge!({:image=>image.to_hash,
                  :host_node=> (host_node.nil? ? nil : host_node.to_hash),
                  :instance_nics=>instance_nic.map {|n| n.to_hash },
@@ -180,6 +181,11 @@ module Dcmgr::Models
                  :volume=>{},
                  :ssh_key_data => self.ssh_key_pair ? self.ssh_key_pair.to_hash : nil,
               })
+
+      h[:image][:backup_object] = image.backup_object.to_hash
+      h[:image][:backup_object][:backup_storage] = image.backup_object.backup_storage.to_hash
+      h[:image][:backup_object][:uri] = image.backup_object.uri
+
       if self.volume
         self.volume.each { |v|
           h[:volume][v.canonical_uuid] = v.to_hash.tap { |h|
@@ -192,6 +198,7 @@ module Dcmgr::Models
           }
         }
       end
+
       if self.instance_nic
         self.instance_nic.each { |vif|
           ent = vif.to_hash.merge({
