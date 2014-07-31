@@ -182,9 +182,11 @@ module Dcmgr::Models
                  :ssh_key_data => self.ssh_key_pair ? self.ssh_key_pair.to_hash : nil,
               })
 
-      h[:image][:backup_object] = image.backup_object.to_hash
-      h[:image][:backup_object][:backup_storage] = image.backup_object.backup_storage.to_hash
-      h[:image][:backup_object][:uri] = image.backup_object.uri
+      if image.backup_object
+        h[:image][:backup_object] = image.backup_object.to_hash
+        h[:image][:backup_object][:backup_storage] = image.backup_object.backup_storage.to_hash
+        h[:image][:backup_object][:uri] = image.backup_object.uri
+      end
 
       if self.volume
         self.volume.each { |v|
