@@ -33,8 +33,6 @@ module Dcmgr
           Dcmgr::Drivers::Tgt
         when "sun_iscsi"
           Dcmgr::Drivers::SunIscsi
-        when "comstar"
-          Dcmgr::Drivers::Comstar
         when "indelible_iscsi"
           Dcmgr::Drivers::IndelibleIscsi
         else

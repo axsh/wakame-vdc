@@ -213,8 +213,6 @@ module Dcmgr
   module Drivers
     autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
     autoload :LocalStorage, 'dcmgr/drivers/local_storage'
-    autoload :S3Storage, 'dcmgr/drivers/s3_storage'
-    autoload :IIJGIOStorage, 'dcmgr/drivers/iijgio_storage'
     autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
     autoload :DummyHypervisor, 'dcmgr/drivers/dummy_hypervisor'
     autoload :LinuxHypervisor, 'dcmgr/drivers/linux_hypervisor'
@@ -228,7 +226,6 @@ module Dcmgr
     autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
     autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
     autoload :Tgt,          'dcmgr/drivers/tgt'
-    autoload :Comstar,      'dcmgr/drivers/comstar'
     autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
     autoload :DummyLocalStore, 'dcmgr/drivers/dummy_local_store.rb'
     autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
