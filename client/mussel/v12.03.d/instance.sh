@@ -28,6 +28,7 @@ task_create() {
     $(add_param ssh_key_id          string) \
     $(add_param user_data          strfile) \
     $(add_param vifs               strfile) \
+    $(add_param host_node_id        string) \
    ) \
    $(add_args_param volumes) \
    $(base_uri)/${namespace}s.$(suffix)
