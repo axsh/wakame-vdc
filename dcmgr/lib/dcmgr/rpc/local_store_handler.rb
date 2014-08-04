@@ -207,11 +207,17 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
 
-        raise "Invalid instance state (expected running): #{@inst[:state]}" unless ['running', 'halted'].member?(@inst[:state].to_s)
-        #raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
+        accepted_states = [C::Instance::STATE_RUNNING, C::Instance::STATE_HALTED]
+        unless accepted_states.member?(@inst[:state].to_s)
+          raise "Invalid instance state. Expected one of '%s'. Got '%s'" %
+            [accepted_states.join(','), @inst[:state]]
+        end
 
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating})
-        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating})
+        rpc.request('sta-collector', 'update_backup_object',
+          @backupobject_id, {state: C::BackupObject::STATE_CREATING})
+
+        rpc.request('hva-collector', 'update_image',
+          @image_id, {state: C::Image::STATE_CREATING})
 
         begin
           snap_filename = @hva_ctx.os_devpath
@@ -226,9 +232,10 @@ module Dcmgr
                           })
             when :progress
               # update upload progress of backup object
-              rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:progress=>value[0]}) do |req|
-                req.oneshot = true
-              end
+              rpc.request('sta-collector', 'update_backup_object',
+                @backupobject_id, {:progress=>value[0]}) do |req|
+                  req.oneshot = true
+                end
             else
               raise "Unknown callback command: #{cmd}"
             end
@@ -245,18 +252,25 @@ module Dcmgr
           raise
         end
 
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
-        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available})
-        @hva_ctx.logger.info("Uploaded new image successfully: #{@image_id} #{@backupobject_id}")
+        rpc.request('sta-collector', 'update_backup_object',
+          @backupobject_id, {state: C::BackupObject::STATE_AVAILABLE})
 
+        rpc.request('hva-collector', 'update_image',
+          @image_id, {state: C::Image::STATE_AVAILABLE})
+
+        @hva_ctx.logger.info("Uploaded new image successfully: #{@image_id} #{@backupobject_id}")
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc}) do |req|
-          req.oneshot = true
-        end
-        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc}) do |req|
-          req.oneshot = true
-        end
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id,
+          {state: C::BackupObject::STATE_DELETED, deleted_at: Time.now.utc}) do |req|
+            req.oneshot = true
+          end
+
+        rpc.request('hva-collector', 'update_image', @image_id,
+          {state: C::Image::STATE_DELETED, deleted_at: Time.now.utc}) do |req|
+            req.oneshot = true
+          end
+
         @hva_ctx.logger.error("Failed to run backup_image: #{@image_id}, #{@backupobject_id}")
       }
 

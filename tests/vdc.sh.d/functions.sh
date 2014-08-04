@@ -123,21 +123,6 @@ function set_default_variables() {
   #shopt -s expand_aliases
 }
 
-function exec_scenario() {
-  cd $prefix_path/tests/cucumber
-  [ -z "${without_bundle_install}" ] && bundle install --path=.vendor/bundle
-  if [ -z "${scenario}" ]; then
-    # Perform all tests if no scenario is specified
-    bundle exec cucumber
-  elif [ -f features/${scenario}/autotest.sh ]; then
-    # Execute autotest.sh if there is one
-    prefix_path=${prefix_path} features/${scenario}/autotest.sh
-  else
-    # Execute all feature files in the scenario directory if there is no autotest.sh
-    bundle exec cucumber -r features features/${scenario}
-  fi
-}
-
 function abort() {
   echo $* >&2
   exit 1

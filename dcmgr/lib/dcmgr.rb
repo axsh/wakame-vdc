@@ -119,9 +119,6 @@ module Dcmgr
     autoload :Ec2Metadata, 'dcmgr/endpoints/metadata'
     autoload :Helpers, 'dcmgr/endpoints/helpers'
     autoload :ResponseGenerator, 'dcmgr/endpoints/response_generator'
-    module V1112
-      autoload :CoreAPI, 'dcmgr/endpoints/11.12/core_api'
-    end
     module V1203
       autoload :CoreAPI, 'dcmgr/endpoints/12.03/core_api'
       module Responses
@@ -130,6 +127,12 @@ module Dcmgr
         autoload :ResourceLabel, 'dcmgr/endpoints/12.03/helpers/resource_label'
       end
     end
+  end
+
+  module Metadata
+    require 'dcmgr/metadata'
+
+    autoload :AWS, 'dcmgr/metadata/aws'
   end
 
   module NodeModules
@@ -216,8 +219,6 @@ module Dcmgr
   module Drivers
     autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
     autoload :LocalStorage, 'dcmgr/drivers/local_storage'
-    autoload :S3Storage, 'dcmgr/drivers/s3_storage'
-    autoload :IIJGIOStorage, 'dcmgr/drivers/iijgio_storage'
     autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
     autoload :DummyHypervisor, 'dcmgr/drivers/dummy_hypervisor'
     autoload :LinuxHypervisor, 'dcmgr/drivers/linux_hypervisor'
@@ -231,7 +232,6 @@ module Dcmgr
     autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
     autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
     autoload :Tgt,          'dcmgr/drivers/tgt'
-    autoload :Comstar,      'dcmgr/drivers/comstar'
     autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
     autoload :DummyLocalStore, 'dcmgr/drivers/dummy_local_store.rb'
     autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'

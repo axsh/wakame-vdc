@@ -28,6 +28,7 @@ task_create() {
     $(add_param ssh_key_id          string) \
     $(add_param user_data          strfile) \
     $(add_param vifs               strfile) \
+    $(add_param host_node_id        string) \
    ) \
    $(add_args_param volumes) \
    $(base_uri)/${namespace}s.$(suffix)
@@ -44,6 +45,7 @@ task_backup() {
     $(add_param display_name string) \
     $(add_param is_cacheable string) \
     $(add_param is_public    string) \
+    $(add_param all    string) \
    ) \
    $(base_uri)/${namespace}s/${uuid}/backup.$(suffix)
 }

@@ -15,21 +15,39 @@ task :environment do
                   ])
 end
 
+task :test_environment do
+  require 'dcmgr'
+  Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
+                  [File.expand_path('spec/minimal_dcmgr.conf', Dcmgr::DCMGR_ROOT)])
+end
+
+def database_up
+  Dcmgr.run_initializers('logger', 'sequel')
+
+  Sequel.extension :migration
+  Sequel::Migrator.apply(Sequel::DATABASES.first,
+                         File.expand_path('config/db/migrations', Dcmgr::DCMGR_ROOT),
+                         9999)
+end
+
+def database_down
+  Dcmgr.run_initializers('logger', 'sequel')
+
+  Sequel.extension :migration
+  Sequel::Migrator.apply(Sequel::DATABASES.first,
+                         File.expand_path('config/db/migrations', Dcmgr::DCMGR_ROOT),
+                         0)
+end
+
 namespace :db do
   desc 'Up all database migrations'
   task :up => [ :environment ] do
-    Dcmgr.run_initializers('logger', 'sequel')
-
-    Sequel.extension :migration
-    Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 9999)
+    database_up
   end
 
   desc 'Down all database migrations'
   task :down => [ :environment ] do
-    Dcmgr.run_initializers('logger', 'sequel')
-
-    Sequel.extension :migration
-    Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 0)
+    database_down
   end
 
   task :init => [:up] do
@@ -38,6 +56,19 @@ namespace :db do
 
   task :drop => [:down] do
     STDERR.puts "WARN: deprecated task. Please use db:down."
+  end
+end
+
+namespace :test do
+  namespace :db do
+    task :up => [ :test_environment ] do
+      database_up
+    end
+
+    desc 'Down all database migrations'
+    task :down => [ :test_environment ] do
+      database_down
+    end
   end
 end
 
@@ -52,87 +83,4 @@ BUNDLE_PATH: vendor/bundle
 END_
 _ENDCMD
   sh "bundle install"
-end
-
-desc 'build gem packages'
-task :gem do
-  require 'rubygems'
-  require 'rake/gempackagetask'
-  require 'dcmgr/version'
-
-  spec = Gem::Specification.new do |s|
-    s.platform = Gem::Platform::RUBY
-    s.version = Dcmgr::VERSION
-    s.authors = ['axsh Ltd.']
-    s.email = ['dev@axsh.net']
-    s.homepage = 'http://wakame.jp/'
-    s.name = 'wakame-vdc-dcmgr'
-    s.summary = "Wakame-VDC: Server modules"
-    s.description = 'Datacenter Hypervisor'
-    s.require_path = 'lib'
-    s.required_ruby_version = '>= 2.0.0'
-
-    s.files = Dir['config/**/*.rb', 'lib/**/*.rb', 'web/api/public/**/*.*',
-                  'web/metadata/public/**/*.*'] +
-      %w(Rakefile LICENSE NOTICE
-         web/api/config.ru web/metadata/config.ru config/dcmgr.conf.example)
-
-    s.bindir='bin'
-    s.executables = %w(collector)
-
-    s.add_dependency "isono", "0.2.19"
-    s.add_dependency "log4r"
-    s.add_dependency "extlib", '0.9.16'
-    s.add_dependency "configuration"
-    s.add_dependency "ruby-hmac"
-    s.add_dependency "ipaddress", '0.8.0'
-    s.add_dependency "rack", ">= 1.3.2"
-    s.add_dependency "sinatra", "1.4.3"
-    s.add_dependency "json", ">= 1.8.0"
-    s.add_dependency "sequel", "3.47.0"
-    s.add_dependency "mysql2", "0.3.12"
-    s.add_dependency "net-dhcp", ">= 1.1.1"
-    s.add_dependency "bit-struct", ">= 0.13.7"
-    s.add_dependency "racket", ">= 1.0.11"
-
-    s.add_development_dependency 'bacon'
-    s.add_development_dependency 'rake'
-  end
-
-  File.open("#{spec.name}.gemspec", 'w'){|f| f.write(spec.to_ruby) }
-  sh "gem build #{spec.name}.gemspec"
-
-  spec = Gem::Specification.new do |s|
-    s.platform = Gem::Platform::RUBY
-    s.version = Dcmgr::VERSION
-    s.authors = ['axsh Ltd.']
-    s.email = ['dev@axsh.net']
-    s.homepage = 'http://wakame.jp/'
-    s.name = 'wakame-vdc-agents'
-    s.summary = "Wakame-VDC: Agent modules"
-    s.description = 'Datacenter Hypervisor'
-    s.require_path = 'lib'
-    s.required_ruby_version = '>= 2.0.0'
-
-    s.files = Dir['config/**/*.rb', 'lib/**/*.rb'] +
-      %w(Rakefile LICENSE NOTICE
-         config/hva.conf.example config/nsa.conf.example)
-
-    s.bindir='bin'
-    s.executables = %w(hva sta nsa)
-
-    s.add_dependency "isono", "0.2.19"
-    s.add_dependency "log4r"
-    s.add_dependency "extlib", '0.9.16'
-    s.add_dependency "configuration"
-    s.add_dependency "ruby-hmac"
-    s.add_dependency "ipaddress", '0.8.0'
-    s.add_dependency "open4"
-
-    s.add_development_dependency 'bacon'
-    s.add_development_dependency 'rake'
-  end
-
-  File.open("#{spec.name}.gemspec", 'w'){|f| f.write(spec.to_ruby) }
-  sh "gem build #{spec.name}.gemspec"
 end
