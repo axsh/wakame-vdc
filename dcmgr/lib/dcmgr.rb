@@ -129,6 +129,12 @@ module Dcmgr
     end
   end
 
+  module Metadata
+    require 'dcmgr/metadata'
+
+    autoload :AWS, 'dcmgr/metadata/aws'
+  end
+
   module NodeModules
     autoload :StaCollector, 'dcmgr/node_modules/sta_collector'
     autoload :StaTgtInitializer, 'dcmgr/node_modules/sta_tgt_initializer'
