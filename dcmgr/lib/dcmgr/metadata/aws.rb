@@ -5,6 +5,9 @@ module Dcmgr::Metadata
     def get_items
       vnic = @inst[:instance_nics].first
 
+      request_params = @inst[:request_params]
+      instance_spec = request_params.respond_to?(:[]) && request_params[:instance_spec_id]
+
       # Appendix B: Metadata Categories
       # http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/index.html?AESDG-chapter-instancedata.html
       metadata_items = {
@@ -17,7 +20,7 @@ module Dcmgr::Metadata
         'hostname' => @inst[:hostname],
         'instance-action' => @inst[:state],
         'instance-id' => @inst[:uuid],
-        'instance-type' => @inst[:request_params][:instance_spec_id] || @inst[:image][:instance_model_name],
+        'instance-type' => instance_spec || @inst[:image][:instance_model_name],
         'kernel-id' => nil,
         'local-hostname' => @inst[:hostname],
         'local-ipv4' => @inst[:ips].first,
@@ -56,9 +59,11 @@ module Dcmgr::Metadata
           "network/interfaces/macs/#{mac}/x-metric" => vnic[:ipv4][:network][:metric],
         })
       }
+
       Dcmgr::Configurations.hva.metadata.path_list.each {|k,v|
         metadata_items.merge!({"#{k}" => v})
       }
+
       if @inst[:ssh_key_data]
         metadata_items.merge!({
           "public-keys/0=#{@inst[:ssh_key_data][:uuid]}" => @inst[:ssh_key_data][:public_key],
