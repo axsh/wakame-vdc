@@ -8,26 +8,6 @@ module Dcmgr
   module Helpers
     module ZabbixJsonRpc
 
-      def self.included(klass)
-        klass.__send__(:include, InstanceMethod)
-      end
-      
-      module InstanceMethod
-        def rpc_request(method, params)
-          logger.debug("JSON-RPC Request: #{method}: #{params}")
-          res = json_rpc_connection.request(method, params)
-          logger.debug("JSON-RPC Response: #{method}: #{res.json_body}")
-          raise res.error_message if res.error?
-
-          res
-        end
-
-        def json_rpc_connection
-          # override in your class which returns
-          # ZabbixJsonRpc::Connection object.
-        end
-      end
-      
       # Net::HTTP based JSON-RPC 2.0 + Zabbix Authentication Utility.
       class Connection
         def initialize(uri, user, password)
