@@ -3,7 +3,7 @@
 #------------------------
 
 # iSCSI target
-# comstart, sun_iscsi, linux_iscsi
+# sun_iscsi, linux_iscsi
 config.iscsi_target = 'linux_iscsi'
 
 # Initiator address is IP or ALL

@@ -2,18 +2,6 @@
 local:
   driver: "local"
   display_name: "Local Store"
-s3:
-  driver: "s3"
-  display_name: "Amazon S3"
-  bucket: ""
-  access_key: ""
-  secret_key: ""
-iijgio:
-  driver: "iijgio"
-  display_name: "IIJ GIO FV/S"
-  bucket: ""
-  access_key: ""
-  secret_key: ""
 ifs:
   driver: "ifs"
   display_name: "Indelible FS"
