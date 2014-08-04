@@ -26,26 +26,7 @@ module Dcmgr
       end
 
       def load_conf(conf_class, files)
-        path = files.find { |i| File.exists?(i) }
-        abort("ERROR: Failed to load #{files.inspect}.") if path.nil?
-
-        begin
-          ::Dcmgr.instance_eval do
-            # Set the dynamic config name method. For example:
-            # loading hva.conf will create Dcmgr::Configurations.hva method
-            conf_name = path.split('/').last.split('.').first
-            conf_name.downcase!
-            conf_name.tr!(' ', '_')
-
-            Dcmgr::Configurations.load_conf(conf_name, conf_class.load(path))
-          end
-        rescue NoMethodError => e
-          abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
-        rescue Fuguta::Configuration::ValidationError => e
-          abort("Validation Error: #{path}\n  " +
-                e.errors.join("\n  ")
-                )
-        end
+        Dcmgr::Configurations.load_conf(conf_class, files)
       end
 
       def run_initializers(*files)
