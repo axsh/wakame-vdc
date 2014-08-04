@@ -15,6 +15,9 @@ module Dcmgr
           For hva.conf:   Dcmgr::Configurations.hva
           For dcmgr.conf: Dcmgr::Configurations.dcmgr
           etc.
+
+          Dcmgr.conf was used at:
+          #{caller.first}
         }
 
         respond_to?(:logger) ? logger.warn(depr_msg) : puts(depr_msg)
