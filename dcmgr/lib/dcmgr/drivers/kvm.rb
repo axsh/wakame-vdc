@@ -108,12 +108,12 @@ module Dcmgr
 
         begin
           wait_for_kvm_termination(hc,
-            Dcmgr.conf.windows.password_generation_timeout,
-            Dcmgr.conf.windows.password_generation_sleeptime
+            Dcmgr::Configurations.hva.windows.password_generation_timeout,
+            Dcmgr::Configurations.hva.windows.password_generation_sleeptime
           )
         rescue Timeout::Error
           raise "Windows took too long generating a password. Waited %s seconds." %
-            Dcmgr.conf.windows.password_generation_timeout
+            Dcmgr::Configurations.hva.windows.password_generation_timeout
         end
         logger.info "Windows finished configuring. " +
                     "Reading its password hash from metadata drive"
@@ -307,7 +307,7 @@ RUN_SH
       include RHEL6
 
       def check_instance(i)
-        kvm_pid_path = File.expand_path("#{i}/kvm.pid", Dcmgr.conf.vm_data_dir)
+        kvm_pid_path = File.expand_path("#{i}/kvm.pid", Dcmgr::Configurations.hva.vm_data_dir)
         unless File.exists?(kvm_pid_path)
           raise "Unable to find the kvm.pid file: #{i}"
         end
