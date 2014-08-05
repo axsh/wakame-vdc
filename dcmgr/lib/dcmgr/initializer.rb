@@ -20,7 +20,7 @@ module Dcmgr
           #{caller.first}
         }
 
-        respond_to?(:logger) ? logger.warn(depr_msg) : puts(depr_msg)
+        puts(depr_msg)
 
         Dcmgr::Configurations.last
       end
