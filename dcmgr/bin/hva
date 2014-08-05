@@ -26,6 +26,7 @@ manifest.instance_eval do
 
   load_module Isono::NodeModules::NodeHeartbeat
   load_module Dcmgr::NodeModules::InstanceMonitor
+  load_module Dcmgr::NodeModules::AlarmConfigUpdater
 
   if Dcmgr::Configurations.hva.enabled_feature_resource_monitor
     load_module Dcmgr::NodeModules::Monitor
@@ -42,8 +43,6 @@ manifest.instance_eval do
   when 'openvnet'
     # Do not do anything, or something might be added...
   end
-
-  load_module Dcmgr::NodeModules::AlarmConfigUpdater
 end
 
 Isono.at_disconnected do
