@@ -11,24 +11,12 @@ require 'socket'
 
 include Isono::Runner::RpcServer
 
-path = [ENV['CONF_PATH'].to_s,
-        '/etc/wakame-vdc/hva.conf',
-        File.expand_path('config/hva.conf', Dcmgr::DCMGR_ROOT)
-       ].find { |i| File.exists?(i) }
+Dcmgr::Configurations.load_conf Dcmgr::Configurations::Hva, [
+  ENV['CONF_PATH'].to_s,
+  '/etc/wakame-vdc/hva.conf',
+  File.expand_path('config/hva.conf', Dcmgr::DCMGR_ROOT)
+]
 
-abort("ERROR: Failed to load hva.conf") if path.nil?
-
-begin
-  Dcmgr.instance_eval {
-    @conf = Dcmgr::Configurations::Hva.load(path)
-  }
-rescue NoMethodError => e
-  abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
-rescue Fuguta::Configuration::ValidationError => e
-  abort("Validation Error: #{path}\n  " +
-        e.errors.join("\n  ")
-        )
-end
 Dcmgr.run_initializers('logger')
 
 manifest = DEFAULT_MANIFEST.dup
