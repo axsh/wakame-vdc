@@ -30,7 +30,7 @@ module Dcmgr
       end
 
       def run_initializers(*files)
-        if Dcmgr::Configurations.last.nil?
+        unless Dcmgr::Configurations.loaded?
           raise "Complete the configuration prior to run_initializers()."
         end
 

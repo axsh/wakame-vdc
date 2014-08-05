@@ -34,6 +34,11 @@ module Dcmgr
       end
     end
 
+    def self.loaded?
+      ! @conf.nil?
+    end
+
+    # This method's only here to support the deprecated Dcmgr.conf method
     def self.last
       @conf && @conf[:last]
     end
