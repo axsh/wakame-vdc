@@ -35,16 +35,12 @@ manifest.instance_eval do
   when 'openflow'
     load_module Dcmgr::NodeModules::DebugOpenFlow
     load_module Dcmgr::NodeModules::ServiceOpenFlow
+  when 'netfilter'
+    load_module Dcmgr::NodeModules::ServiceNetfilter
   when 'off'
     # Don't load openflow nor netfilter
   when 'openvnet'
     # Do not do anything, or something might be added...
-  when 'netfilter'
-    load_module Dcmgr::NodeModules::ServiceNetfilter
-  else
-    raise "Configuration error: '#{Dcmgr.conf.edge_networking}' is not " +
-          "a valid option for edge_networking. Valid options are 'openflow'," +
-          " 'netfilter', 'legacy_netfilter' and 'off'"
   end
 
   load_module Dcmgr::NodeModules::AlarmConfigUpdater
