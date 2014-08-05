@@ -20,7 +20,10 @@ Dcmgr::Configurations.load Dcmgr::Configurations::Sta, [
 
 Dcmgr.run_initializers('logger')
 
-logger.info("Driver configuration: backing store=#{Dcmgr.conf.backing_store_driver}, target=#{Dcmgr.conf.iscsi_target_driver}")
+logger.info "Driver configuration: backing store=%s, target=%s" % [
+  Dcmgr::Configurations.sta.backing_store_driver,
+  Dcmgr::Configurations.sta.iscsi_target_driver
+]
 
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
