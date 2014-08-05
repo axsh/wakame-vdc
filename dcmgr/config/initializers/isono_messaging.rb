@@ -6,10 +6,10 @@ require 'dcmgr/messaging_client'
 
 Dcmgr.class_eval {
   def self.messaging
-    @messaging_client || set_messging_client
+    @messaging_client || set_messaging_client
   end
 
-  def self.set_messging_client
+  def self.set_messaging_client
     raise "reactor is not running" unless EM.reactor_running?
 
     amqp_server_uri = Dcmgr::Configurations.dcmgr.amqp_server_uri
