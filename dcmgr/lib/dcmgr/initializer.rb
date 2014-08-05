@@ -26,6 +26,16 @@ module Dcmgr
       end
 
       def load_conf(conf_class, files)
+        depr_msg = %{
+          Dcmgr.load_conf is DEPRECATED!
+          Use Dcmgr::Configurations.load instead
+
+          Dcmgr.load_conf was used at:
+          #{caller.first}
+        }
+
+        puts(depr_msg)
+
         Dcmgr::Configurations.load(conf_class, files)
       end
 
