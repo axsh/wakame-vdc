@@ -44,7 +44,7 @@ module Dcmgr
 
       # Lookup bridge device name from given DC network name.
       def bridge_if_name(dc_network_map)
-        local_conf = Dcmgr.conf.dc_networks[dc_network_map[:name]]
+        local_conf = Dcmgr::Configurations.hva.dc_networks[dc_network_map[:name]]
         if dc_network_map[:vlan_lease]
           dc_network_map[:uuid]
         else
@@ -53,7 +53,7 @@ module Dcmgr
       end
 
       def vif_uuid_pretty(uuid)
-        case Dcmgr.conf.edge_networking
+        case Dcmgr::Configurations.hva.edge_networking
         when 'openvnet' then uuid.gsub("vif-", "if-")
         else                 uuid
         end

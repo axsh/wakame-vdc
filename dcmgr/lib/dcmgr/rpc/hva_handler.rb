@@ -84,7 +84,7 @@ module Dcmgr
         # cleanup vm data folder
         ignore_error {
           unless @hva_ctx.hypervisor_driver_class.to_s == 'Dcmgr::Drivers::ESXi'
-            FileUtils.rm_r(File.expand_path("#{@inst_id}", Dcmgr.conf.vm_data_dir))
+            FileUtils.rm_r(File.expand_path("#{@inst_id}", Dcmgr::Configurations.hva.vm_data_dir))
           end
         }
       end
@@ -502,7 +502,7 @@ module Dcmgr
       end
 
       def bridge_if(dc_network_name)
-        dcn = Dcmgr.conf.dc_networks[dc_network_name]
+        dcn = Dcmgr::Configurations.hva.dc_networks[dc_network_name]
         raise "Unknown DC network: #{dc_network_name}" if dcn.nil?
         dcn.bridge
       end

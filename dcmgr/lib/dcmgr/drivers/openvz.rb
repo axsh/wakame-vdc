@@ -265,7 +265,7 @@ module Dcmgr
         ve_metadata_path = "#{hc.inst_data_dir}/metadata"
         hn_metadata_path = "#{hc.config.ve_root}/#{hc.ctid}/metadata"
 
-        if Dcmgr.conf.edge_networking == 'openvnet'
+        if Dcmgr::Configurations.hva.edge_networking == 'openvnet'
           render_template('template-vnet.mount', hc.ct_mount_path, binding)
           render_template('template-vnet.umount', hc.ct_umount_path, binding)
         else

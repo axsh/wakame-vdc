@@ -61,7 +61,7 @@ module Dcmgr
           network = hc.rpc.request('hva-collector', 'get_network', vnic[:network_id])
 
           network_name = network[:dc_network][:name]
-          dcn = Dcmgr.conf.dc_networks[network_name]
+          dcn = Dcmgr::Configurations.hva.dc_networks[network_name]
           if dcn.nil?
             raise "Missing local configuration for the network: #{network_name}"
           end
