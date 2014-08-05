@@ -83,6 +83,41 @@ module Dcmgr
         param :serial_port_options, :default=>'telnet:127.0.0.1:%d,server,nowait'
         param :vnc_options, :default=>'127.0.0.1:%d'
         param :incoming_ip
+        # Default OS reserved range is 32768-61000 according to /proc/sys/net/ipv4/ip_local_port_range.
+        param :tcp_listen_port_range, :default=>'28500-32767'
+
+        def tcp_listen_port_range_begin
+          @config[:tcp_listen_port_range_begin].to_i
+        end
+
+        def tcp_listen_port_range_end
+          @config[:tcp_listen_port_range_end].to_i
+        end
+
+        TCP_PORT_MAX=0xFFFF.to_i
+        def validate(errors)
+          if @config[:tcp_listen_port_range]
+            if @config[:tcp_listen_port_range] =~ /(\d+)-(\d+)/
+              @config[:tcp_listen_port_range_begin] = $1.to_i
+              @config[:tcp_listen_port_range_end] = $2.to_i
+            end
+          end
+
+          if !(@config[:tcp_listen_port_range_begin].is_a?(Integer) &&
+               (0..TCP_PORT_MAX).include?(@config[:tcp_listen_port_range_begin].to_i))
+            errors << "Invalid tcp_listen_port_range_begin: #{@config[:tcp_listen_port_range_begin]}"
+          end
+          if !(@config[:tcp_listen_port_range_end].is_a?(Integer) &&
+               (0..TCP_PORT_MAX).include?(@config[:tcp_listen_port_range_end].to_i))
+            errors << "Invalid tcp_listen_port_range_end: #{@config[:tcp_listen_port_range_end]}"
+          end
+          if !(@config[:tcp_listen_port_range_begin].to_i < @config[:tcp_listen_port_range_end].to_i)
+            # swap values
+            t = @config[:tcp_listen_port_range_begin].to_i
+            @config[:tcp_listen_port_range_begin] = @config[:tcp_listen_port_range_end].to_i
+            @config[:tcp_listen_port_range_end] = t
+          end
+        end
       end
 
       # 0x0-2 are reserved by KVM.
@@ -445,8 +480,6 @@ RUN_SH
         end
       end
 
-      TCP_PORT_MAX=65535
-      PORT_OFFSET=9000
       # Randomly choose unused local tcp port number.
       def pick_tcp_listen_port
         # Support only for Linux netstat output.
@@ -463,9 +496,9 @@ RUN_SH
           listen_ports[port.to_i]=0
         }
 
-
         begin
-          new_port = (PORT_OFFSET + rand(TCP_PORT_MAX - PORT_OFFSET))
+          new_port = driver_configuration.tcp_listen_port_range_begin +
+            rand(driver_configuration.tcp_listen_port_range_end - driver_configuration.tcp_listen_port_range_begin)
         end until(!listen_ports.has_key?(new_port))
         new_port
       end
