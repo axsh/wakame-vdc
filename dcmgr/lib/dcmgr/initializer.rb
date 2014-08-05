@@ -26,7 +26,7 @@ module Dcmgr
       end
 
       def load_conf(conf_class, files)
-        Dcmgr::Configurations.load_conf(conf_class, files)
+        Dcmgr::Configurations.load(conf_class, files)
       end
 
       def run_initializers(*files)

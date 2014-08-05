@@ -11,7 +11,7 @@ require 'socket'
 
 include Isono::Runner::RpcServer
 
-Dcmgr::Configurations.load_conf Dcmgr::Configurations::Hva, [
+Dcmgr::Configurations.load Dcmgr::Configurations::Hva, [
   ENV['CONF_PATH'].to_s,
   '/etc/wakame-vdc/hva.conf',
   File.expand_path('config/hva.conf', Dcmgr::DCMGR_ROOT)

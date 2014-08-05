@@ -17,7 +17,7 @@ module Dcmgr
       @conf[:last] = conf
     end
 
-    def self.load_conf(conf_class, files)
+    def self.load(conf_class, files)
       path = files.find { |i| File.exists?(i) }
       abort("ERROR: Failed to load #{files.inspect}.") if path.nil?
 
