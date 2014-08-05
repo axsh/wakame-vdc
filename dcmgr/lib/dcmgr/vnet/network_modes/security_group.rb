@@ -12,10 +12,10 @@ module Dcmgr::VNet::NetworkModes
       # ***work-around***
       # TODO
       # - multi host nic
-      host_addrs = [Dcmgr.conf.logging_service_host_ip].compact
+      host_addrs = [Dcmgr::Configurations.hva.logging_service_host_ip].compact
 
-      enable_logging = Dcmgr.conf.packet_drop_log
-      ipset_enabled = Dcmgr.conf.use_ipset
+      enable_logging = Dcmgr::Configurations.hva.packet_drop_log
+      ipset_enabled = Dcmgr::Configurations.hva.use_ipset
 
       # Drop all traffic that isn't explicitely accepted
       tasks += self.netfilter_drop_tasks(vnic,node)
@@ -63,10 +63,10 @@ module Dcmgr::VNet::NetworkModes
 
     def netfilter_logging_service_tasks(vnic)
       tasks = []
-      logging_service_host_ip = Dcmgr.conf.logging_service_host_ip
-      logging_service_ip = Dcmgr.conf.logging_service_ip
-      logging_service_enabled = Dcmgr.conf.use_logging_service
-      logging_service_port = Dcmgr.conf.logging_service_port
+      logging_service_host_ip = Dcmgr::Configurations.hva.logging_service_host_ip
+      logging_service_ip = Dcmgr::Configurations.hva.logging_service_ip
+      logging_service_enabled = Dcmgr::Configurations.hva.use_logging_service
+      logging_service_port = Dcmgr::Configurations.hva.logging_service_port
 
       # Logging Service for inside instance.
       if logging_service_enabled
@@ -82,7 +82,7 @@ module Dcmgr::VNet::NetworkModes
 
       # Nat tasks
       unless vnic[:nat_ip_lease].nil?
-        tasks << StaticNatLog.new(vnic[:address], vnic[:nat_ip_lease], "SNAT #{vnic[:uuid]}", "DNAT #{vnic[:uuid]}") if Dcmgr.conf.packet_drop_log
+        tasks << StaticNatLog.new(vnic[:address], vnic[:nat_ip_lease], "SNAT #{vnic[:uuid]}", "DNAT #{vnic[:uuid]}") if Dcmgr::Configurations.hva.packet_drop_log
         tasks << StaticNat.new(vnic[:address], vnic[:nat_ip_lease], clean_mac(vnic[:mac_addr]))
       end
 
@@ -94,8 +94,8 @@ module Dcmgr::VNet::NetworkModes
 
     def netfilter_isolation_tasks(vnic,friends,node)
       tasks = []
-      enable_logging = Dcmgr.conf.packet_drop_log
-      ipset_enabled = Dcmgr.conf.use_ipset
+      enable_logging = Dcmgr::Configurations.hva.packet_drop_log
+      ipset_enabled = Dcmgr::Configurations.hva.use_ipset
 
       friend_ips = friends.map { |friend| friend[:address] }.compact
 
@@ -122,7 +122,7 @@ module Dcmgr::VNet::NetworkModes
     end
 
     def netfilter_drop_tasks(vnic,node)
-      enable_logging = Dcmgr.conf.packet_drop_log
+      enable_logging = Dcmgr::Configurations.hva.packet_drop_log
 
       #TODO: Add logging to ip drops
       [DropIpFromAnywhere.new, DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: "),DropArpToHost.new]
@@ -130,7 +130,7 @@ module Dcmgr::VNet::NetworkModes
     end
 
     def netfilter_arp_isolation_tasks(vnic,friends,node)
-      enable_logging = Dcmgr.conf.packet_drop_log
+      enable_logging = Dcmgr::Configurations.hva.packet_drop_log
 
       friend_ips = friends.map { |friend| friend[:address] }.compact
 

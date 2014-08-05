@@ -31,11 +31,11 @@ module Dcmgr
 
       # Retrive configuration section for this or child class.
       def self.driver_configuration
-        Dcmgr.conf.hypervisor_driver(self)
+        Dcmgr::Configurations.hva.hypervisor_driver(self)
       end
 
       def driver_configuration
-        Dcmgr.conf.hypervisor_driver(self.class)
+        self.class.driver_configuration
       end
 
       def run_instance(hc)

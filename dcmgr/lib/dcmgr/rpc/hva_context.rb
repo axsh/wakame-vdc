@@ -75,7 +75,7 @@ module Dcmgr
       end
 
       def inst_data_dir
-        File.expand_path("#{inst_id}", Dcmgr.conf.vm_data_dir)
+        File.expand_path("#{inst_id}", Dcmgr::Configurations.hva.vm_data_dir)
       end
 
       def hypervisor_driver_class

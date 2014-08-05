@@ -28,7 +28,8 @@ module Dcmgr
 
       module SkipCheckHelper
         def self.stamp_path(instance_uuid)
-          File.expand_path("#{instance_uuid}/skip_check.stamp", Dcmgr.conf.vm_data_dir)
+          File.expand_path("#{instance_uuid}/skip_check.stamp",
+                           Dcmgr::Configurations.hva.vm_data_dir)
         end
 
         def self.skip_check?(instance_uuid)
