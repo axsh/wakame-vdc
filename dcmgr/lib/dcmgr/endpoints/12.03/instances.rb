@@ -157,7 +157,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
 
     if params[:service_type]
-      Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
+      Dcmgr::Configurations.dcmgr.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
       ds = ds.filter(:service_type=>params[:service_type])
     end
 

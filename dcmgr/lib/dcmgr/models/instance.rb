@@ -41,7 +41,7 @@ module Dcmgr::Models
 
     # lists the instances which alives and died within
     # term_period sec.
-    def_dataset_method(:alives_and_termed) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+    def_dataset_method(:alives_and_termed) { |term_period=Dcmgr::Configurations.dcmgr.recent_terminated_instance_period|
       filter("terminated_at IS NULL OR terminated_at >= ?", (Time.now.utc - term_period))
     }
 
