@@ -315,7 +315,7 @@ module Dcmgr::Models
       vendor_id = if vif_template[:vendor_id]
                     vif_template[:vendor_id]
                   else
-                    Dcmgr.conf.mac_address_vendor_id
+                    Dcmgr::Configurations.dcmgr.mac_address_vendor_id
                   end
       nic = NetworkVif.new({ :account_id => self.account_id })
       nic.instance = self
