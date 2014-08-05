@@ -51,7 +51,7 @@ class Network < Base
   method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :desc => "The account ID to own this"
   method_option :metric, :type => :numeric, :default=>100, :desc => "Routing priority order of this network segment"
   method_option :network_mode, :type => :string, :default=>'securitygroup', :desc => "Network mode: #{NETWORK_MODES.join(', ')}"
-  method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+  method_option :service_type, :type => :string, :default=>Dcmgr::Configurations.dcmgr.default_service_type, :desc => "Service type of the network. (#{Dcmgr::Configurations.dcmgr.service_types.keys.sort.join(', ')})"
   method_option :display_name, :type => :string, :required => true, :desc => "Display name of the network"
   method_option :ip_assignment, :type => :string, :default=>'asc', :desc => "How to assign the IP address of the network"
   def add
@@ -81,7 +81,7 @@ class Network < Base
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :desc => "The account ID to own this"
   method_option :network_mode, :type => :string, :desc => "Network mode: #{NETWORK_MODES.join(', ')}"
-  method_option :service_type, :type => :string, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+  method_option :service_type, :type => :string, :desc => "Service type of the network. (#{Dcmgr::Configurations.dcmgr.service_types.keys.sort.join(', ')})"
   method_option :display_name, :type => :string, :desc => "Display name of the network"
   def modify(uuid)
     validate_ipv4_range if options[:ipv4_network]
@@ -372,7 +372,7 @@ __END
 
       network || Error.raise("Could not find appropriate network for leasing an IP.", 100)
 
-      st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)
+      st = Dcmgr::Scheduler.service_type(Dcmgr::Configurations.dcmgr.default_service_type)
       lease = st.ip_address.schedule({:network => network, :ip_pool => ip_pool})
 
       puts "#{lease.ip_handle.canonical_uuid} #{lease.ipv4_s}"
