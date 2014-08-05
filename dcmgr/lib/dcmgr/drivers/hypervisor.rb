@@ -20,9 +20,9 @@ module Dcmgr
           end
         end
 
+        CFM = Fuguta::Configuration::ConfigurationMethods
         def after_initialize
           super
-          CFM = Fuguta::Configuration::ConfigurationMethods
           lsc = self.class.configuration_source_class.local_store_class
 
           @config[:local_store] = CFM.find_configuration_class(lsc).new(self)
