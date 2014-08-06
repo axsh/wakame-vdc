@@ -16,28 +16,10 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @hva_ctx.logger.info("Booting #{@inst_id}")
         raise "Invalid instance state: #{@inst[:state]}" unless %w(migrating).member?(@inst[:state].to_s)
-        #if !@inst[:volume].values.all? {|v| v[:state].to_s == 'attached' }
-        ##
-        #end
 
-        # setup vm data folder
-        FileUtils.mkdir(@hva_ctx.inst_data_dir) unless File.exists?(@hva_ctx.inst_data_dir)
-
-        # volume: available -> attaching
-        @inst[:volume].each {|volume_id, v|
-          unless @hva_ctx.inst[:volume][volume_id]
-            raise "Unknown volume ID for #{@hva_ctx.inst_id}: #{volume_id}"
-          end
-
-          unless @hva_ctx.inst[:volume][volume_id][:is_local_volume]
-            @hva_ctx.logger.info("Attaching #{volume_id} to host node #{@node.node_id}")
-
-            task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                                :attach_volume_to_host, [@hva_ctx, volume_id])
-          end
-        }
-
-        # run vm
+        # incoming VM does not have to deal with chaging instance &
+        # volume state.
+        setup_shared_volume_instance
         setup_metadata_drive
 
         check_interface

@@ -246,6 +246,25 @@ module Dcmgr
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end
+
+      def setup_shared_volume_instance(&blk)
+        # setup vm data folder
+        FileUtils.mkdir(@hva_ctx.inst_data_dir) unless File.exists?(@hva_ctx.inst_data_dir)
+
+        # Attach all volumes as host node device.
+        @inst[:volume].each {|volume_id, v|
+          unless @hva_ctx.inst[:volume][volume_id]
+            raise "Unknown volume ID for #{@hva_ctx.inst_id}: #{volume_id}"
+          end
+
+          blk.call(volume_id, v) if blk
+          unless @hva_ctx.inst[:volume][volume_id][:is_local_volume]
+            @hva_ctx.logger.info("Attaching #{volume_id} to host node #{@node.node_id}")
+            task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                                :attach_volume_to_host, [@hva_ctx, volume_id])
+          end
+        }
+      end
     end
 
     include Helpers
@@ -341,25 +360,11 @@ module Dcmgr
           next
         end
 
-        # setup vm data folder
-        FileUtils.mkdir(@hva_ctx.inst_data_dir) unless File.exists?(@hva_ctx.inst_data_dir)
-
-        # volume: available -> attaching
-        @inst[:volume].each {|volume_id, v|
-          unless @hva_ctx.inst[:volume][volume_id]
-            raise "Unknown volume ID for #{@hva_ctx.inst_id}: #{volume_id}"
-          end
-
+        setup_shared_volume_instance() do |volume_id, v|
+          # volume state 'available' -> 'attaching'
           rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:attaching, :attached_at=>nil})
-          @hva_ctx.logger.info("Attaching #{volume_id} to #{@inst_id}")
+        end
 
-          unless @hva_ctx.inst[:volume][volume_id][:is_local_volume]
-            task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                                :attach_volume_to_host, [@hva_ctx, volume_id])
-          end
-        }
-
-        # run vm
         setup_metadata_drive
 
         check_interface
