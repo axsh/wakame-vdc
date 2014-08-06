@@ -21,6 +21,11 @@ describe Dcmgr::Metadata::AWS do
         expect(items['instance-id']).to eq inst.canonical_uuid
         expect(items['instance-type']).to eq inst.image.instance_model_name
         expect(items['local-hostname']).to eq inst.hostname
+        #expect(items['local-ipv4']).to eq ...
+        expect(items['mac']).to eq inst.nic.first.pretty_mac_addr
+        expect(items['public-hostname']).to eq inst.hostname
+        #expect(items['public-ipv4']).to eq ...
+        expect(items['x-account-id']).to eq inst.account_id
       end
     end
 
