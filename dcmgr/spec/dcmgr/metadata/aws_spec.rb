@@ -9,7 +9,9 @@ describe Dcmgr::Metadata::AWS do
 
     context 'with all settings to make it work' do
       let(:inst) do
-        Fabricate(:instance, request_params: {})
+        Fabricate(:instance, request_params: {}) do
+          network_vif(count: 2) { Fabricate(:network_vif) }
+        end
       end
 
       it 'sets metadata items that mimic the aws metadata layout' do
