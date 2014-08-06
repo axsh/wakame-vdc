@@ -16,6 +16,9 @@ describe Dcmgr::Metadata::AWS do
         expect(items['ami-id']).to eq inst.image.canonical_uuid
         expect(items['hostname']).to eq inst.hostname
         expect(items['instance-action']).to eq inst.state
+        expect(items['instance-id']).to eq inst.canonical_uuid
+        expect(items['instance-type']).to eq inst.image.instance_model_name
+        expect(items['local-hostname']).to eq inst.hostname
       end
     end
 
