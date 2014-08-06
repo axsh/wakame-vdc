@@ -44,7 +44,7 @@ module Dcmgr
 
       # Lookup bridge device name from given DC network name.
       def bridge_if_name(dc_network_map)
-        local_conf = Dcmgr.conf.dc_networks[dc_network_map[:name]]
+        local_conf = Dcmgr::Configurations.hva.dc_networks[dc_network_map[:name]]
         if dc_network_map[:vlan_lease]
           dc_network_map[:uuid]
         else
@@ -53,7 +53,7 @@ module Dcmgr
       end
 
       def vif_uuid_pretty(uuid)
-        case Dcmgr.conf.edge_networking
+        case Dcmgr::Configurations.hva.edge_networking
         when 'openvnet' then uuid.gsub("vif-", "if-")
         else                 uuid
         end
@@ -70,16 +70,16 @@ module Dcmgr
 
       def vsctl(option)
         list = {:attach => 'add-port', :detach => 'del-port', :create_bridge => 'add-br', :delete_bridge => 'del-br'}
-        "#{Dcmgr.conf.vsctl_path} #{list[option]}"
+        "#{Dcmgr::Configurations.hva.vsctl_path} #{list[option]}"
       end
 
       def brctl(option)
         list = {:attach => 'addif', :detach => 'delif', :create_bridge => 'addbr', :delete_bridge => 'delbr'}
-        "#{Dcmgr.conf.brctl_path} #{list[option]}"
+        "#{Dcmgr::Configurations.hva.brctl_path} #{list[option]}"
       end
 
       def get_bridge_cmd(bridge, vif, option)
-        case Dcmgr.conf.edge_networking
+        case Dcmgr::Configurations.hva.edge_networking
         when 'openvnet' then
           "#{vsctl(option)} #{bridge} #{vif_uuid(vif)}"
         else
@@ -96,16 +96,17 @@ module Dcmgr
       end
 
       def minimize_stp_forward_delay(bridge)
-        case Dcmgr.conf.edge_networking
+        case Dcmgr::Configurations.hva.edge_networking
         when 'openvnet' then
-          "#{Dcmgr.conf.vsctl_path} add bridge #{bridge} other_config stp-forward-delay 4"
+          "%s add bridge #{bridge} other_config stp-forward-delay 4" %
+            [Dcmgr::Configurations.hva.vsctl_path]
         else
-          "#{Dcmgr.conf.brctl_path} setfd #{bridge} 0"
+          "#{Dcmgr::Configurations.hva.brctl_path} setfd #{bridge} 0"
         end
       end
 
       def add_bridge_cmd(bridge)
-        case Dcmgr.conf.edge_networking
+        case Dcmgr::Configurations.hva.edge_networking
         when 'openvnet' then
           "#{vsctl(:create_bridge)} #{bridge}"
         else

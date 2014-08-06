@@ -11,15 +11,15 @@ require 'thor'
 require 'thor/group'
 require 'erb'
 
-Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
-                [ENV['CONF_PATH'].to_s,
-                 '/etc/wakame-vdc/dcmgr.conf',
-                 File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
-                ])
+Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr, [
+  ENV['CONF_PATH'].to_s,
+  '/etc/wakame-vdc/dcmgr.conf',
+  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
+]
 
 Dcmgr.run_initializers('logger', 'sequel')
 
-if Dcmgr.conf.dcmgr_dcell_node_uri
+if Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_uri
   require 'dcell'
 
   #
@@ -31,9 +31,9 @@ if Dcmgr.conf.dcmgr_dcell_node_uri
 
   DCell.start(:addr => "tcp://127.0.0.1:#{port}",
     :registry => {
-      :adapter => Dcmgr.conf.dcell_adapter,
-      :host => Dcmgr.conf.dcell_host,
-      :port => Dcmgr.conf.dcell_port
+      :adapter => Dcmgr::Configurations.dcmgr.dcell_adapter,
+      :host => Dcmgr::Configurations.dcmgr.dcell_host,
+      :port => Dcmgr::Configurations.dcmgr.dcell_port
     }
   )
   Dcmgr.run_initializers('vnet_hook')

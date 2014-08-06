@@ -15,7 +15,7 @@ module Dcmgr::Cli
 
       no_tasks do
         def self.service_types
-          Dcmgr.conf.service_types.keys.sort
+          Dcmgr::Configurations.dcmgr.service_types.keys.sort
         end
 
         def self.add_shared_options
@@ -34,7 +34,7 @@ module Dcmgr::Cli
             desc: "The root device of image"
           option :state, type: :string, default: "available",
             desc: "The state for the new machine image"
-          option :service_type, type: :string, :default=>Dcmgr.conf.default_service_type,
+          option :service_type, type: :string, :default=>Dcmgr::Configurations.dcmgr.default_service_type,
             desc: "Service type of the machine image. (#{service_types.join(', ')})"
           option :display_name, type: :string, required: true,
             desc: "Display name of the machine image"
@@ -103,7 +103,7 @@ module Dcmgr::Cli
     method_option :description, :type => :string, :desc => "An arbitrary description of the new machine image"
     method_option :file_format, :type => :string, :desc => "The file format for the new machine image"
     method_option :root_device, :type => :string, :desc => "The root device of image"
-    method_option :service_type, :type => :string, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :service_type, :type => :string, :desc => "Service type of the machine image. (#{Dcmgr::Configurations.dcmgr.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :desc => "Display name of the machine image"
     method_option :backup_object_id, :type => :string, :desc => "Backup object for the machine image"
     method_option :is_cacheable, :type => :boolean, :desc =>"A flag that determines whether the new machine image is cacheable or not"

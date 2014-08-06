@@ -78,7 +78,7 @@ module Dcmgr::Models
         return ip_lease.network_vif if ip_lease
       end
 
-      m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
+      m = MacLease.lease(Dcmgr::Configurations.dcmgr.mac_address_vendor_id)
 
       vif_data = {
         :account_id => self.account_id,

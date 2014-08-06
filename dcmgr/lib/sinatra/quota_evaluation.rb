@@ -166,7 +166,7 @@ module Sinatra
         tuple = QuotaEvaluation.quota_defs[quota_key]
         raise ArgumentError, "#{quota_key} is unknown quota key. (Defined at around #{caller[3]})" unless tuple
 
-        return self if Dcmgr.conf.skip_quota_evaluation
+        return self if Dcmgr::Configurations.dcmgr.skip_quota_evaluation
 
         condparam = blk ? EndpointCondition.parse(&blk) : EndpointCondition.new
 

@@ -11,7 +11,7 @@ module Dcmgr::Cli
     method_option :public_key, :type => :string, :desc => "The path to the public key", :required => true
     method_option :private_key, :type => :string, :desc => "The path to the private key"
     method_option :description, :type => :string, :desc => "Description for this key pair"
-    method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type for the key pair. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :service_type, :type => :string, :default=>Dcmgr::Configurations.dcmgr.default_service_type, :desc => "Service type for the key pair. (#{Dcmgr::Configurations.dcmgr.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :required => true, :desc => "Display name for the key pair"
     def add
       private_key_path = File.expand_path(options[:private_key]) if options[:private_key]
@@ -54,7 +54,7 @@ module Dcmgr::Cli
     desc "modify UUID [options]", "Modify an existing key pair"
     method_option :account_id, :type => :string, :desc => "The UUID of the account this key pair belongs to"
     method_option :description, :type => :string, :desc => "Description for this key pair"
-    method_option :service_type, :type => :string, :desc => "Service type of the key pair. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :service_type, :type => :string, :desc => "Service type of the key pair. (#{Dcmgr::Configurations.dcmgr.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :desc => "Display name for the key pair"
     def modify(uuid)
       super(M::SshKeyPair,uuid,options)

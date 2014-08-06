@@ -26,9 +26,7 @@ RSpec.configure do |c|
   end
 end
 
-Dcmgr.load_conf(
-  Dcmgr::Configurations::Dcmgr,
+Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr,
   [File.expand_path('../minimal_dcmgr.conf', __FILE__)]
-)
 
 Dcmgr.run_initializers('sequel')

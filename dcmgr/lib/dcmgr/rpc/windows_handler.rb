@@ -5,9 +5,10 @@ module Dcmgr::Rpc
 
     include HvaHandler::Helpers
 
-    concurrency Dcmgr.conf.windows.thread_concurrency.to_i
-    job_thread_pool Isono::ThreadPool.new(Dcmgr.conf.windows.thread_concurrency.to_i,
-                                          "WindowsHandle")
+    thread_concurrency = Dcmgr::Configurations.hva.windows.thread_concurrency.to_i
+
+    concurrency(thread_concurrency)
+    job_thread_pool Isono::ThreadPool.new(thread_concurrency, "WindowsHandle")
 
     job :launch_windows, proc {
       @hva_ctx = HvaContext.new(self)

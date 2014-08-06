@@ -37,6 +37,7 @@ module Dcmgr
   Const = Constants
 
   autoload :Logger, 'dcmgr/logger'
+  require 'dcmgr/configurations'
   module Configurations
     autoload :Hva, 'dcmgr/configurations/hva'
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'

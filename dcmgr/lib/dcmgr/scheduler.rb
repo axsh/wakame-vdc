@@ -21,7 +21,7 @@ module Dcmgr
              else
                service_type_obj
              end
-        if Dcmgr.conf.service_types[st.to_s].nil?
+        if Dcmgr::Configurations.dcmgr.service_types[st.to_s].nil?
           raise "Unknown service type: #{service_type_obj}"
         end
         @service_type = st.to_s
@@ -59,7 +59,7 @@ module Dcmgr
 
       private
       def conf
-        Dcmgr.conf.service_types[@service_type]
+        Dcmgr::Configurations.dcmgr.service_types[@service_type]
       end
     end
 
