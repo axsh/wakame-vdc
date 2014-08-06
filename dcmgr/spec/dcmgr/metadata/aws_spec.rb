@@ -14,6 +14,10 @@ describe Dcmgr::Metadata::AWS do
         end
       end
 
+      def nic_item(nic, item)
+        items["network/interfaces/macs/#{nic.pretty_mac_addr}/#{item}"]
+      end
+
       it 'sets metadata items that mimic the aws metadata layout' do
         expect(items['ami-id']).to eq inst.image.canonical_uuid
         expect(items['hostname']).to eq inst.hostname
@@ -26,6 +30,10 @@ describe Dcmgr::Metadata::AWS do
         expect(items['public-hostname']).to eq inst.hostname
         #expect(items['public-ipv4']).to eq ...
         expect(items['x-account-id']).to eq inst.account_id
+
+        inst.nic.each do |n|
+          expect(nic_item(n, 'local-hostname')).to eq inst.hostname
+        end
       end
     end
 
