@@ -11,10 +11,7 @@ describe Dcmgr::Metadata::AWS do
       expect(items['instance-action']).to eq inst.state
       expect(items['instance-id']).to eq inst.canonical_uuid
       expect(items['local-hostname']).to eq inst.hostname
-      expect(items['local-ipv4']).to be nil
-      expect(items['mac']).to eq inst.nic.first.pretty_mac_addr
       expect(items['public-hostname']).to eq inst.hostname
-      expect(items['public-ipv4']).to be nil
       expect(items['x-account-id']).to eq inst.account_id
     end
   end
@@ -22,6 +19,63 @@ describe Dcmgr::Metadata::AWS do
   shared_examples 'aws metadata for instance without instance-spec in request params' do
     it 'uses Models::Image#instance_model_name for instance-type' do
       expect(items['instance-type']).to eq inst.image.instance_model_name
+    end
+  end
+
+  shared_examples 'aws metadata for instance with vnics' do
+    it '\'mac\' holds the mac address of the first vnic' do
+      expect(items['mac']).to eq inst.nic.first.pretty_mac_addr
+    end
+  end
+
+  #shared_examples 'aws metadata for instance with ip_leases' do
+  #  def nic_item(nic, item)
+  #    items["network/interfaces/macs/#{nic.pretty_mac_addr}/#{item}"]
+  #  end
+
+  #  it 'adds aws metadata for every vnic that the instance has' do
+  #    inst.nic.each do |n|
+  #      security_groups = n.security_groups.map { |sg| sg.canonical_uuid }.join(' ')
+  #      ip = IPAddress::IPv4.new....
+
+  #      #
+  #      # Standard AWS stuff
+  #      #
+  #      expect(nic_item(n, 'local-hostname')).to eq inst.hostname
+  #      #expect(nic_item(n, 'local-ipv4s')).to eq 
+  #      expect(nic_item(n, 'mac')).to eq n.pretty_mac_addr
+  #      #expect(nic_item(n, 'public-ipv4s')).to eq 
+  #      expect(nic_item(n, 'security-groups')).to eq security_groups
+
+  #      #
+  #      # Wakame extensions
+  #      #
+  #      expect(nic_item(n, 'x-dns')).to eq n.network.dns_server
+  #      expect(nic_item(n, 'x-gateway')).to eq n.network.ipv4_gw
+  #      expect(nic_item(n, 'x-netmask')).to eq ip.prefix.to_ip.to_s
+  #      expect(nic_item(n, 'x-network')).to eq n.network.ipv4_network
+  #      expect(nic_item(n, 'x-broadcast')).to eq ip.broadcast.to_s
+  #      expect(nic_item(n, 'x-metric')).to eq n.network.metric
+  #    end
+  #  end
+  #end
+
+  shared_examples 'aws metadata for instance without ip leases' do
+    it 'has no ip related metadata' do
+      expect(items['local-ipv4']).to be nil
+      expect(items['public-ipv4']).to be nil
+    end
+
+    it 'has no network/interfaces/* metadata entries' do
+      expect(nic_items).to be_empty
+    end
+  end
+
+  shared_examples 'aws metadata for instance without ssh keypair' do
+    it 'has no ssh key related metadata' do
+      expect(items['public-keys/']).to be nil
+      expect(items['public-keys/0']).to be nil
+      expect(items['public-keys/0/openssh-key']).to be nil
     end
   end
 
@@ -40,22 +94,11 @@ describe Dcmgr::Metadata::AWS do
         end
       end
 
-      #def nic_item(nic, item)
-      #  items["network/interfaces/macs/#{nic.pretty_mac_addr}/#{item}"]
-      #end
-
       it_behaves_like 'aws top level metadata'
+      it_behaves_like 'aws metadata for instance with vnics'
+      it_behaves_like 'aws metadata for instance without ip leases'
       it_behaves_like 'aws metadata for instance without instance-spec in request params'
-
-      it 'has no vnic related metadata' do
-        expect(nic_items).to be_empty
-      end
-
-      it 'has no ssh key related metadata' do
-        expect(items['public-keys/']).to be nil
-        expect(items['public-keys/0']).to be nil
-        expect(items['public-keys/0/openssh-key']).to be nil
-      end
+      it_behaves_like 'aws metadata for instance without ssh keypair'
     end
 
     context "without request_params set" do
