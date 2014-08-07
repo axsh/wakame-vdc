@@ -84,25 +84,11 @@ module Dcmgr
         param :vnc_options, :default=>'127.0.0.1:%d'
         param :incoming_ip
         # Default OS reserved range is 32768-61000 according to /proc/sys/net/ipv4/ip_local_port_range.
-        param :tcp_listen_port_range, :default=>'28500-32767'
-
-        def tcp_listen_port_range_begin
-          @config[:tcp_listen_port_range_begin].to_i
-        end
-
-        def tcp_listen_port_range_end
-          @config[:tcp_listen_port_range_end].to_i
-        end
+        param :tcp_listen_port_range_begin, :default=>28500
+        param :tcp_listen_port_range_end, :default=>32767
 
         TCP_PORT_MAX=0xFFFF.to_i
         def validate(errors)
-          if @config[:tcp_listen_port_range]
-            if @config[:tcp_listen_port_range] =~ /(\d+)-(\d+)/
-              @config[:tcp_listen_port_range_begin] = $1.to_i
-              @config[:tcp_listen_port_range_end] = $2.to_i
-            end
-          end
-
           if !(@config[:tcp_listen_port_range_begin].is_a?(Integer) &&
                (0..TCP_PORT_MAX).include?(@config[:tcp_listen_port_range_begin].to_i))
             errors << "Invalid tcp_listen_port_range_begin: #{@config[:tcp_listen_port_range_begin]}"
