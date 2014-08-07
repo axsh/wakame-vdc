@@ -7,16 +7,21 @@ describe Dcmgr::Metadata::AWS do
   describe "#get_items" do
     subject(:items) { Dcmgr::Metadata::AWS.new(inst.to_hash).get_items }
 
-    context 'with all settings to make it work' do
+    context 'with an instance with no keypair and two vnics that don\'t have ips' do
       let(:inst) do
         Fabricate(:instance, request_params: {}) do
           network_vif(count: 2) { Fabricate(:network_vif) }
         end
       end
 
-      def nic_item(nic, item)
-        items["network/interfaces/macs/#{nic.pretty_mac_addr}/#{item}"]
+      let(:nic_items) do
+        nic_key_regex = /^network\/interfaces\/macs\//
+        items.select { |k,v| k.to_s.match(nic_key_regex) }
       end
+
+      #def nic_item(nic, item)
+      #  items["network/interfaces/macs/#{nic.pretty_mac_addr}/#{item}"]
+      #end
 
       it 'sets metadata items that mimic the aws metadata layout' do
         expect(items['ami-id']).to eq inst.image.canonical_uuid
@@ -25,15 +30,17 @@ describe Dcmgr::Metadata::AWS do
         expect(items['instance-id']).to eq inst.canonical_uuid
         expect(items['instance-type']).to eq inst.image.instance_model_name
         expect(items['local-hostname']).to eq inst.hostname
-        #expect(items['local-ipv4']).to eq ...
+        expect(items['local-ipv4']).to be nil
         expect(items['mac']).to eq inst.nic.first.pretty_mac_addr
         expect(items['public-hostname']).to eq inst.hostname
-        #expect(items['public-ipv4']).to eq ...
+        expect(items['public-ipv4']).to be nil
         expect(items['x-account-id']).to eq inst.account_id
 
-        inst.nic.each do |n|
-          expect(nic_item(n, 'local-hostname')).to eq inst.hostname
-        end
+        expect(nic_items).to be_empty
+
+        expect(items['public-keys/']).to be nil
+        expect(items['public-keys/0']).to be nil
+        expect(items['public-keys/0/openssh-key']).to be nil
       end
     end
 
