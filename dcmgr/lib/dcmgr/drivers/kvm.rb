@@ -483,8 +483,8 @@ RUN_SH
         }
 
         begin
-          new_port = driver_configuration.tcp_listen_port_range_begin +
-            rand(driver_configuration.tcp_listen_port_range_end - driver_configuration.tcp_listen_port_range_begin)
+          new_port =
+            Random.rand(driver_configuration.tcp_listen_port_range_begin .. driver_configuration.tcp_listen_port_range_end)
         end until(!listen_ports.has_key?(new_port))
         new_port
       end
