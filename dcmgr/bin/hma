@@ -6,7 +6,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'dcmgr/configurations/hma'
-require 'dcmgr/node_modules/instance_ha'
+require 'dcmgr/node_modules/ha_manager'
 require 'isono'
 require 'fuguta'
 require 'socket'
@@ -14,23 +14,13 @@ require 'socket'
 include Isono::Runner::RpcServer
 include Dcmgr::Logger
 
-path = [ENV['CONF_PATH'].to_s, '/etc/wakame-vdc/hma.conf', File.expand_path('config/hma.conf', Dcmgr::DCMGR_ROOT)].find { |i| File.exists?(i) }
-abort("ERROR: Failed to load hma.conf") if path.nil?
+Dcmgr::Configurations.load Dcmgr::Configurations::Hva, [
+  ENV['CONF_PATH'].to_s,
+  '/etc/wakame-vdc/hma.conf',
+  File.expand_path('config/hma.conf', Dcmgr::DCMGR_ROOT)
+]
 
-begin
-  Dcmgr.instance_eval {
-    @conf = Dcmgr::Configurations::Hma.load(path)
-  }
-rescue NoMethodError => e
-  abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
-rescue Fuguta::Configuration::ValidationError => e
-  abort("Validation Error: #{path}\n  " +
-        e.errors.join("\n  ")
-        )
-end
 Dcmgr.run_initializers('logger')
-
-#logger.info("Driver configuration: backing store=#{Dcmgr.conf.backing_store_driver}, target=#{Dcmgr.conf.iscsi_target_driver}")
 
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
