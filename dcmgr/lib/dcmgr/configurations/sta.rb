@@ -6,6 +6,12 @@ module Dcmgr
   module Configurations
     class Sta < Fuguta::Configuration
 
+      usual_paths [
+        ENV['CONF_PATH'].to_s,
+        '/etc/wakame-vdc/sta.conf',
+        File.expand_path('config/sta.conf', ::Dcmgr::DCMGR_ROOT)
+      ]
+
       DSL do
         # backing_store_driver configuration section.
         def backing_store_driver(driver_type, &blk)
