@@ -2,19 +2,43 @@
 
 module Dcmgr
   module Configurations
-    # Set the dynamic config name method. For example:
-    # loading hva.conf will create Dcmgr::Configurations.hva method
-    def self.create_conf_methods(name, conf)
+
+    module Shorthand
+      # This module is used to define shorthand access to configuration methods.
+      # Once dcmgr.conf is loaded, you can access it this way:
+      #
+      # include Dcmgr::Configurations::Shorthand
+      #
+      # dcmgr_conf
+      #
+      # ie. dcmgr_conf.db_uri == Dcmgr::Configurations.dcmgr.db_uri
+
+      def load_conf(conf_class, files = nil)
+        ::Dcmgr::Configurations.load(conf_class, files)
+      end
+    end
+
+    def self.create_shorthand(name, conf)
       @conf ||= Hash.new { |hash, key| raise "'#{key}' was not loaded." }
       @conf[name] = conf
 
-      metaclass = class << self; self; end
-      metaclass.instance_eval do
-        define_method(name) { conf }
+      #metaclass = class << self; self; end
+      #metaclass.instance_eval do
+      #  define_method(name) { conf }
+      #end
+      Shorthand.instance_eval do
+        define_method("#{name}_conf") { conf }
       end
 
       # Required for the deprecated Dcmgr.conf syntax
       @conf[:last] = conf
+    end
+
+    # This allows us to access the configurations as if they're methods of
+    # Dcmgr::Configurations.
+    # For example: Dcmgr::Configurations.dcmgr will access dcmgr.conf
+    def self.method_missing(method_name, *args)
+      @conf[method_name]
     end
 
     def self.load(conf_class, files = nil)
@@ -28,7 +52,7 @@ module Dcmgr
       begin
         conf_name = conf_class.name.split("::").last.downcase
 
-        create_conf_methods(conf_name, conf_class.load(path))
+        create_shorthand(conf_name, conf_class.load(path))
       rescue NoMethodError => e
         abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
       rescue Fuguta::Configuration::ValidationError => e
