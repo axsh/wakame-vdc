@@ -166,7 +166,7 @@ catch {
 try {
     # Generate password
     Add-Type -AssemblyName System.Web
-    $randpass = [System.Web.Security.Membership]::GeneratePassword(12,2).ToCharArray()
+    $randpass = [System.Web.Security.Membership]::GeneratePassword(10,2).ToCharArray()
     $Encode = New-Object "System.Text.UTF8Encoding"
     $randpasstxt = $Encode.GetString([byte[]] $randpass)
 
