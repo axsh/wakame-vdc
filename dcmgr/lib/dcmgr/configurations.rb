@@ -22,10 +22,6 @@ module Dcmgr
       @conf ||= Hash.new { |hash, key| raise "'#{key}' was not loaded." }
       @conf[name] = conf
 
-      #metaclass = class << self; self; end
-      #metaclass.instance_eval do
-      #  define_method(name) { conf }
-      #end
       Shorthand.instance_eval do
         define_method("#{name}_conf") { conf }
       end
