@@ -10,7 +10,7 @@ module Dcmgr
       usual_paths [
         ENV['CONF_PATH'].to_s,
         '/etc/wakame-vdc/bksta.conf',
-        File.expand_path('config/bksta.conf', Dcmgr::DCMGR_ROOT)
+        File.expand_path('config/bksta.conf', ::Dcmgr::DCMGR_ROOT)
       ]
 
       # AMQP broker to be connected.
