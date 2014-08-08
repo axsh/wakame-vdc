@@ -7,16 +7,12 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'isono'
 
+Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr
 
-#TODO: The same list of paths is defined in config-dcmgr.ru
-# Move it to the Fuguta class
-Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr, [
-  ENV['CONF_PATH'].to_s,
-  '/etc/wakame-vdc/dcmgr.conf',
-  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
-]
-
-Dcmgr.run_initializers('logger', 'sequel', 'isono_messaging', 'sequel_class_method_hook')
+Dcmgr.run_initializers('logger',
+                       'sequel',
+                       'isono_messaging',
+                       'sequel_class_method_hook')
 
 conf = Dcmgr::Configurations.dcmgr
 

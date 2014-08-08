@@ -6,6 +6,12 @@ module Dcmgr
   module Configurations
     class Hva < Fuguta::Configuration
 
+      usual_paths [
+        ENV['CONF_PATH'].to_s,
+        '/etc/wakame-vdc/hva.conf',
+        File.expand_path('config/hva.conf', ::Dcmgr::DCMGR_ROOT)
+      ]
+
       class DcNetwork < Fuguta::Configuration
         param :interface
         param :bridge

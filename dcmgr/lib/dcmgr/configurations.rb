@@ -17,9 +17,13 @@ module Dcmgr
       @conf[:last] = conf
     end
 
-    def self.load(conf_class, files)
-      path = files.find { |i| File.exists?(i) }
-      abort("ERROR: Failed to load #{files.inspect}.") if path.nil?
+    def self.load(conf_class, files = nil)
+      path = if files
+        path = files.find { |i| File.exists?(i) }
+        abort("ERROR: Failed to load #{files.inspect}.") if path.nil?
+
+        path
+      end
 
       begin
         conf_name = conf_class.name.split("::").last.downcase
