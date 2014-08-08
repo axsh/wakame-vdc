@@ -29,7 +29,7 @@ function Get_MD_Letter()
 	    # set first free drive letter found with code from:
 	    # http://stackoverflow.com/questions/12488030/getting-a-free-drive-letter
 	    $script:MDLetter = (ls function:[e-z]: -n | ?{ !(test-path $_) } | select -First 1)
-	    write-host "Using drive letter $script:MDLetter"
+	    Write-Host "Using drive letter $script:MDLetter"
 	    $phash = @{DriveLetter="$script:MDLetter" ;}
 	    Set-WmiInstance -input $metavol -Arguments $phash
 	}
@@ -83,9 +83,9 @@ function Set_Networking_From_Metadata( $macAddr )
 	$metaDNS = Read_Metadata("network\interfaces\macs\$macAddr\x-dns")
 	$wmi = Get-WmiObject win32_networkadapterconfiguration -filter "MACAddress = '$macAddrColons'"
 	if ($wmi -eq $null) {
-	    write-host "Could not find interface with MAC=$macAddrColons"
+	    Write-Host "Could not find interface with MAC=$macAddrColons"
 	} else {
-	    write-host "Setting interface for ${macAddrColons}: IP=$metaIpv4, mask=$metaMask, gateway=$metaGateway"
+	    Write-Host "Setting interface for ${macAddrColons}: IP=$metaIpv4, mask=$metaMask, gateway=$metaGateway"
 	    $wmi.EnableStatic($metaIpv4, $metaMask)
 	    $wmi.SetGateways($metaGateway, 1)
 	    if ( $metaDNS -ne "" )

@@ -22,7 +22,7 @@ function sshpubkey2xml( $sshkeystr )
     if ($lengthAll -ne ($fp3[2]+1)) {
 	throw "Length fields inside ssh key do not add up correctly."
     }
-    $Encode = new-object "System.Text.UTF8Encoding"
+    $Encode = New-Object "System.Text.UTF8Encoding"
     $f1info = $keydata[ $fp1[1]..$fp1[2] ]
     $f1text = $Encode.GetString([byte[]] $f1info)
     if ($f1text -ne "ssh-rsa") {
@@ -73,7 +73,7 @@ function Get_MD_Letter()
 	    # set first free drive letter found with code from:
 	    # http://stackoverflow.com/questions/12488030/getting-a-free-drive-letter
 	    $script:MDLetter = (ls function:[e-z]: -n | ?{ !(test-path $_) } | select -First 1)
-	    write-host "Using drive letter $script:MDLetter"
+	    Write-Host "Using drive letter $script:MDLetter"
 	    $phash = @{DriveLetter="$script:MDLetter" ;}
 	    Set-WmiInstance -input $metavol -Arguments $phash
 	}
@@ -127,9 +127,9 @@ function Set_Networking_From_Metadata( $macAddr )
 	$metaDNS = Read_Metadata("network\interfaces\macs\$macAddr\x-dns")
 	$wmi = Get-WmiObject win32_networkadapterconfiguration -filter "MACAddress = '$macAddrColons'"
 	if ($wmi -eq $null) {
-	    write-host "Could not find interface with MAC=$macAddrColons"
+	    Write-Host "Could not find interface with MAC=$macAddrColons"
 	} else {
-	    write-host "Setting interface for ${macAddrColons}: IP=$metaIpv4, mask=$metaMask, gateway=$metaGateway"
+	    Write-Host "Setting interface for ${macAddrColons}: IP=$metaIpv4, mask=$metaMask, gateway=$metaGateway"
 	    $wmi.EnableStatic($metaIpv4, $metaMask)
 	    $wmi.SetGateways($metaGateway, 1)
 	    if ( $metaDNS -ne "" )
