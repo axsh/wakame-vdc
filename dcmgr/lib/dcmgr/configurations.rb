@@ -18,7 +18,7 @@ module Dcmgr
       end
     end
 
-    def self.create_shorthand(name, conf)
+    def self.store_conf(name, conf)
       @conf ||= Hash.new { |hash, key| raise "'#{key}' was not loaded." }
       @conf[name.to_sym] = conf
 
@@ -48,7 +48,7 @@ module Dcmgr
       begin
         conf_name = conf_class.name.split("::").last.downcase
 
-        create_shorthand(conf_name, conf_class.load(path))
+        store_conf(conf_name, conf_class.load(path))
       rescue NoMethodError => e
         abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
       rescue Fuguta::Configuration::ValidationError => e
