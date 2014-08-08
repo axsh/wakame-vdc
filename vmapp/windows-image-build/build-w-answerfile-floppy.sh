@@ -41,6 +41,7 @@ MACADDR (defaults to 52-54-00-11-a0-5b)
 FIRSTBOOT (defaults to "", i.e. do not put in meta-data/first-boot)
 AUTOACTIVATE (defaults to "", i.e. do not put in meta-data/auto-activate)
 NATNET (defaults to "", i.e. disconnect from Internet)
+PROXY (defaults to "", i.e. do not put in meta-data/auto-activate-proxy)
 EOF
     exit
 }
@@ -106,6 +107,12 @@ configure-metadata-disk()
 	sudo touch mntpoint/meta-data/auto-activate
 	sudo touch "thisrun/auto-activate-set-$(date +%y%m%d-%H%M%S)"
     fi
+
+    if [ "$PROXY" = "" ]; then
+	sudo rm -f mntpoint/meta-data/auto-activate-proxy
+    else
+	echo "$PROXY" | sudo tee mntpoint/meta-data/auto-activate-proxy
+	sudo touch "thisrun/auto-activate-proxy-set-$(date +%y%m%d-%H%M%S)"
     fi
     umount-image
 }

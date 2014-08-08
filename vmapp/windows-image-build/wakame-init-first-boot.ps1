@@ -252,8 +252,18 @@ catch {
 if (Test-Path ("$mdl\meta-data\auto-activate"))
 {
     try {
+	$proxy = ""
+	if (Test-Path ("$mdl\meta-data\auto-activate-proxy")) {
+	    $proxy = Read_Metadata("auto-activate-proxy")
+	    Write-Host "Setting proxy to $proxy."
+	    netsh.exe winhttp set proxy $proxy 2>&1 | Write-Host
+	}
+	netsh.exe winhttp show proxy 2>&1 | Write-Host
 	Write-Host "Trying auto activation"
-	cscript //b c:\windows\system32\slmgr.vbs /ato
+	cscript.exe //b c:\windows\system32\slmgr.vbs /ato 2>&1 | Write-Host
+	if ($proxy -ne "") {
+	    netsh.exe winhttp reset proxy 2>&1 | Write-Host
+	}
     }
     catch {
 	$Error[0] | Write-Host
