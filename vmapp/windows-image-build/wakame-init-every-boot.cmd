@@ -1,4 +1,4 @@
-REM Splitting out error output to separate log because of PowerShell bug:
+REM Be aware of the following in case writing to stdout causes errors:
 REM http://www.leeholmes.com/blog/2008/07/30/workaround-the-os-handles-position-is-not-what-filestream-expected/
 
-PowerShell -ExecutionPolicy Unrestricted C:\Windows\Setup\Scripts\wakame-init-every-boot.ps1 >>"C:\Windows\Setup\Scripts\wakame.log.txt" 2>>"C:\Windows\Setup\Scripts\wakame.log.err"
+PowerShell -ExecutionPolicy Unrestricted C:\Windows\Setup\Scripts\wakame-init-every-boot.ps1 2>&1 >>"C:\Windows\Setup\Scripts\wakame-every-boot.log"

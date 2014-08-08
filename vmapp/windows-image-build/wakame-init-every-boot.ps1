@@ -9,7 +9,7 @@ function Get_MD_Letter()
     {
 	# Output initial disk status for debugging online/offline status
 	"Testing 111" | Write-Host
-	"list disk" | diskpart.exe | Write-Host
+	"list disk" | diskpart.exe 2>&1 | Write-Host
 	"Testing 222" | Write-Host
 	$vers = $PSVersionTable.PSVersion.Major
 	"PowerShell Version: $($vers)" | Write-Host
@@ -51,7 +51,7 @@ function Get_MD_Letter()
 	}
     	# Output resulting disk status for debugging online/offline status
 	"Testing 333" | Write-Host
-	"list disk" | diskpart.exe | Write-Host
+	"list disk" | diskpart.exe 2>&1 | Write-Host
 	"Testing 444" | Write-Host
     }
     $script:MDLetter
