@@ -58,11 +58,11 @@ function Get_MD_Letter()
 	$vers = $PSVersionTable.PSVersion.Major
 	"PowerShell Version: $($vers)" | Write-Host
 	if ($vers -gt 2) {
-	    # This does work with the version 2 PowerShell on Windows
-	    # Server 2008, but may be unnecessary because the
-	    # metadata disk is online by default.  Can't find any
-	    # documentation to say why it should behave differently
-	    # from Windows Server 2012.
+	    # Get-Disk is not defined for version 2 PowerShell, so
+	    # this will not work for Windows Server 2008. However, it
+	    # seems to be unnecessary because the metadata disk is
+	    # online by default.  It is needed to bring disks on
+	    # Windows Server 2012 online.
 	    "Bringing all disks online" | Write-Host
 	    Get-Disk | ? IsOffline | Set-Disk -IsOffline:$false  # make sure all disks are online
 	}
@@ -84,12 +84,14 @@ function Get_MD_Letter()
 	    throw $msg
 	}
 	# Make sure Metadata drive is not mounted readonly
-	Get-Disk | foreach {
-            $adisk =  $_
-	    $_ | Get-Partition | foreach {
-		if ($_.DriveLetter -eq $script:MDLetter.trim(":")) {
-		    write-host "setting to readable: $adisk)"
-		    $adisk | Set-Disk -isreadonly:$false
+	if ($vers -gt 2) {  ## also not needed for Windows Server 2008
+	    Get-Disk | foreach {
+		$adisk =  $_
+		$_ | Get-Partition | foreach {
+		    if ($_.DriveLetter -eq $script:MDLetter.trim(":")) {
+			Write-Host "setting to readable: $adisk)"
+			$adisk | Set-Disk -isreadonly:$false
+		    }
 		}
 	    }
 	}
