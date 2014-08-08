@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'dcmgr/rubygems'
+require 'dcmgr'
+require 'dcmgr/configurations/hma'
+require 'dcmgr/node_modules/ha_manager'
+require 'isono'
+require 'fuguta'
+require 'socket'
+
+include Isono::Runner::RpcServer
+include Dcmgr::Logger
+
+Dcmgr::Configurations.load Dcmgr::Configurations::Hma, [
+  ENV['CONF_PATH'].to_s,
+  '/etc/wakame-vdc/hma.conf',
+  File.expand_path('config/hma.conf', Dcmgr::DCMGR_ROOT)
+]
+
+Dcmgr.run_initializers('logger')
+
+manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
+manifest.instance_eval do
+  node_name 'hma'
+  node_instance_id "#{Socket.gethostname}"
+
+  load_module Isono::NodeModules::NodeHeartbeat
+  load_module Dcmgr::NodeModules::HaManager
+end
+
+Isono.at_disconnected do
+  EM.stop { exit }
+end
+
+start(manifest) do
+end

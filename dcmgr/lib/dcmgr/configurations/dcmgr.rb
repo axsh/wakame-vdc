@@ -230,30 +230,6 @@ module Dcmgr
         end
       end
 
-      class InstanceHA < Fuguta::Configuration
-        param :monitor_frequency_sec, :default=>10
-        param :monitor_script_path, :default=>nil
-
-        def validate(errors)
-          if !@config[:monitor_script_path].nil? &&
-              !File.executable?(@config[:monitor_script_path].to_s)
-            errors << "Invalid executable path for monitor_script_path: #{@config[:monitor_script_path]}"
-          end
-
-          @config[:monitor_frequency_sec] = @config[:monitor_frequency_sec].to_i
-          if @config[:monitor_frequency_sec].to_i < 1
-            errors << "monitor_frequency_sec must be more than 0: #{@config[:monitor_frequency_sec]}"
-          end
-        end
-      end
-
-      DSL do
-        def instance_ha(&blk)
-          @config[:instance_ha].parse_dsl(&blk) if blk
-          self
-        end
-      end
-
       # Database connection string
       deprecated_warn_param :database_url
       param :database_uri
@@ -312,8 +288,9 @@ module Dcmgr
 
       param :enable_instance_poweron_readiness_validation, :default => true
 
+      deprecated_warn_param :instance_ha
+
       def after_initialize
-        @config[:instance_ha] = InstanceHA.new(self)
       end
       private :after_initialize
 
