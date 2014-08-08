@@ -9,8 +9,10 @@ module Dcmgr
       include Dcmgr::Logger
       C = Dcmgr::Constants
 
-      concurrency Dcmgr.conf.local_store.thread_concurrency.to_i
-      job_thread_pool Isono::ThreadPool.new(Dcmgr.conf.local_store.thread_concurrency.to_i, "LocalStore")
+      thread_concurrency = Dcmgr::Configurations.hva.local_store.thread_concurrency.to_i
+
+      concurrency(thread_concurrency)
+      job_thread_pool Isono::ThreadPool.new(thread_concurrency, "LocalStore")
 
       def each_all_local_volumes(&blk)
         @inst[:volume].values.find_all { |v|

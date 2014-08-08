@@ -19,7 +19,7 @@ module Dcmgr::Models
         # needs to be able to add arbitrary service type name when
         # dcmgr.conf misses the definition for the name.
         def before_validation
-          self.service_type ||= Dcmgr.conf.default_service_type
+          self.service_type ||= Dcmgr::Configurations.dcmgr.default_service_type
           super
         end
       end

@@ -50,7 +50,7 @@ module Dcmgr
           [@ctx.inst[:image][:uuid], @ctx.inst[:image][:backup_object][:uri]]
 
         # cmd_tuple has ["", []] array.
-        cmd_tuple = if Dcmgr.conf.local_store.enable_image_caching && opts[:cache]
+        cmd_tuple = if Dcmgr::Configurations.hva.local_store.enable_image_caching && opts[:cache]
                       FileUtils.mkdir_p(vmimg_cache_dir) unless File.exist?(vmimg_cache_dir)
                       download_to_local_cache(backup_object, volume)
                       logger.debug("Copying #{vmimg_cache_path(@volume[:volume_device][:path])} to #{volume_path}")
@@ -88,7 +88,7 @@ module Dcmgr
           }
         when :gz
           cmd_tuple[0] << "| %s | #{pv_command} cp --sparse=always /dev/stdin %s"
-          cmd_tuple[1] += [Dcmgr.conf.local_store.gunzip_command,
+          cmd_tuple[1] += [Dcmgr::Configurations.hva.local_store.gunzip_command,
                            volume_path]
           shell.run!(*cmd_tuple)
         when :tar
@@ -310,11 +310,11 @@ module Dcmgr
       protected
 
       def vmimg_cache_dir
-        Dcmgr.conf.local_store.image_cache_dir
+        Dcmgr::Configurations.hva.local_store.image_cache_dir
       end
 
       def download_tmp_dir
-        Dcmgr.conf.local_store.work_dir || '/var/tmp'
+        Dcmgr::Configurations.hva.local_store.work_dir || '/var/tmp'
       end
 
       def vmimg_tmp_path(basename)
@@ -322,7 +322,7 @@ module Dcmgr
       end
 
       def vmimg_cache_path(basename)
-        if Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable]
+        if Dcmgr::Configurations.hva.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable]
           File.expand_path(basename, vmimg_cache_dir)
         else
           File.expand_path(basename, download_tmp_dir)
@@ -382,7 +382,7 @@ module Dcmgr
         else
           invoke_task(@bkst_drv_class,
                       :download, [bo, vmimg_cache_path(volume[:volume_device][:path])])
-          if Dcmgr.conf.local_store.enable_cache_checksum
+          if Dcmgr::Configurations.hva.local_store.enable_cache_checksum
             logger.debug("calculating checksum of #{vmimg_cache_path(volume[:volume_device][:path])}")
             sh("md5sum #{vmimg_cache_path(volume[:volume_device][:path])} | awk '{print $1}' > #{vmimg_cache_path(volume[:volume_device][:path])}.md5")
           end
@@ -391,7 +391,7 @@ module Dcmgr
 
       def delete_local_cache()
         cached_images =  (Dir.glob(vmimg_cache_path("*")) - Dir.glob(vmimg_cache_path("*.md5")))
-        if cached_images.size > Dcmgr.conf.local_store.max_cached_images
+        if cached_images.size > Dcmgr::Configurations.hva.local_store.max_cached_images
           cached_image = cached_images.sort {|a,b|
             File.mtime(a) <=> File.mtime(b)
           }.first
@@ -460,7 +460,7 @@ module Dcmgr
                       ["tar -cS -C %s %s | #{pv_command} | %s", [File.dirname(snapshot_path),
                                                                  File.basename(snapshot_path),
                                                                  fstat.block_size,
-                                                                 Dcmgr.conf.local_store.gzip_command]]
+                                                                 Dcmgr::Configurations.hva.local_store.gzip_command]]
                     when :tar
                       ["tar -cS -C %s %s | #{pv_command}", [File.dirname(snapshot_path),
                                                             File.basename(snapshot_path),
@@ -468,7 +468,7 @@ module Dcmgr
                     when :gz
                       ["cp -p --sparse=always %s /dev/stdout | #{pv_command} | %s",[snapshot_path,
                                                                                     fstat.size,
-                                                                                    Dcmgr.conf.local_store.gzip_command]]
+                                                                                    Dcmgr::Configurations.hva.local_store.gzip_command]]
                     else
                       ["cp -p --sparse=always %s /dev/stdout | #{pv_command}", [snapshot_path, fstat.size]]
                     end

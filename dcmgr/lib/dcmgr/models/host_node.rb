@@ -163,7 +163,7 @@ module Dcmgr::Models
       # * stopped_instance_usage_factor == 0.5 means that 50% of
       # resources for stopped instances are reserved and rest of 50%
       # may fail to start again.
-      usage_factor = (Dcmgr.conf.stopped_instance_usage_factor || 1.0).to_f
+      usage_factor = (Dcmgr::Configurations.dcmgr.stopped_instance_usage_factor || 1.0).to_f
 
       offer_cpu, offer_mem = self.online_nodes.select { [sum(:offering_cpu_cores), sum(:offering_memory_size)] }.naked.first.values.map {|i| i || 0 }
       avail_mem_size = offer_mem - ((alives_mem_size - stopped_mem_size) + (stopped_mem_size * usage_factor).floor)

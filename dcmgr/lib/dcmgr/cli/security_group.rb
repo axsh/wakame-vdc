@@ -26,7 +26,7 @@ module Dcmgr::Cli
     method_option :account_id, :type => :string, :desc => "The UUID of the account this security group belongs to.", :required => true
     method_option :description, :type => :string, :desc => "The description for this new security group."
     method_option :rule, :type => :string, :desc => "Path to the rule text file. (\"-\" is from STDIN)"
-    method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the sercurity group. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :service_type, :type => :string, :default=>Dcmgr::Configurations.dcmgr.default_service_type, :desc => "Service type of the sercurity group. (#{Dcmgr::Configurations.dcmgr.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :required => true, :desc => "Display name of the security group"
     def add
       fields = options.dup
@@ -72,7 +72,7 @@ __END
     method_option :account_id, :type => :string, :desc => "The UUID of the account this security group belongs to."
     method_option :description, :type => :string, :desc => "The description for this new security group."
     method_option :rule, :type => :string, :desc => "Path to the rule text file. (\"-\" is from STDIN)"
-    method_option :service_type, :type => :string, :desc => "Service type of the security group. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :service_type, :type => :string, :desc => "Service type of the security group. (#{Dcmgr::Configurations.dcmgr.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :desc => "Display name of the security group"
     def modify(uuid)
       fields = options.dup

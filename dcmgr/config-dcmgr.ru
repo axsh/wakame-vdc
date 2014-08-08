@@ -6,10 +6,14 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'rack/cors'
 
-Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
-                ['/etc/wakame-vdc/dcmgr.conf',
-                 File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
-                ])
+#TODO: The same list of paths is defined in bin/collector
+# Move it to the Fuguta class
+Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr, [
+  ENV['CONF_PATH'].to_s,
+  '/etc/wakame-vdc/dcmgr.conf',
+  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
+]
+
 Dcmgr.run_initializers('logger', 'sequel', 'isono', 'job_queue.sequel', 'sequel_class_method_hook')
 
 if defined?(::Unicorn)
@@ -27,13 +31,14 @@ map '/api' do
   end
 
   #TODO refactor
-  if Dcmgr.conf.dcmgr_dcell_node_uri
+  if Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_uri
     require 'dcell'
-    DCell.start(:id => Dcmgr.conf.dcmgr_dcell_node_id, :addr => "tcp://#{Dcmgr.conf.dcmgr_dcell_node_uri}",
+    DCell.start(:id => Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_id,
+      :addr => "tcp://#{Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_uri}",
       :registry => {
-        :adapter => Dcmgr.conf.dcell_adapter,
-        :host => Dcmgr.conf.dcell_host,
-        :port => Dcmgr.conf.dcell_port
+        :adapter => Dcmgr::Configurations.dcmgr.dcell_adapter,
+        :host => Dcmgr::Configurations.dcmgr.dcell_host,
+        :port => Dcmgr::Configurations.dcmgr.dcell_port
       }
     )
     Dcmgr.run_initializers('vnet_hook')

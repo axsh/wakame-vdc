@@ -9,28 +9,40 @@ module Dcmgr
 
     module ClassMethods
       def conf
-        @conf
+        depr_msg = %{
+          Dcmgr.conf is DEPRECATED!
+          Use the new Dcmgr::Configurations methods instead. Example:
+          For hva.conf:   Dcmgr::Configurations.hva
+          For dcmgr.conf: Dcmgr::Configurations.dcmgr
+          etc.
+
+          Dcmgr.conf was used at:
+          #{caller.first}
+        }
+
+        puts(depr_msg)
+
+        Dcmgr::Configurations.last
       end
 
       def load_conf(conf_class, files)
-        path = files.find { |i| File.exists?(i) }
-        abort("ERROR: Failed to load #{path}.") if path.nil?
+        depr_msg = %{
+          Dcmgr.load_conf is DEPRECATED!
+          Use Dcmgr::Configurations.load instead
 
-        begin
-          ::Dcmgr.instance_eval {
-            @conf = conf_class.load(path)
-          }
-        rescue NoMethodError => e
-          abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
-        rescue Fuguta::Configuration::ValidationError => e
-          abort("Validation Error: #{path}\n  " +
-                e.errors.join("\n  ")
-                )
-        end
+          Dcmgr.load_conf was used at:
+          #{caller.first}
+        }
+
+        puts(depr_msg)
+
+        Dcmgr::Configurations.load(conf_class, files)
       end
 
       def run_initializers(*files)
-        raise "Complete the configuration prior to run_initializers()." if @conf.nil?
+        unless Dcmgr::Configurations.loaded?
+          raise "Complete the configuration prior to run_initializers()."
+        end
 
         @files ||= []
         if files.length == 0

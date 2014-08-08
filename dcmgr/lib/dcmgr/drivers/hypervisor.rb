@@ -20,19 +20,22 @@ module Dcmgr
           end
         end
 
+        CFM = Fuguta::Configuration::ConfigurationMethods
         def after_initialize
           super
-          @config[:local_store] = Fuguta::Configuration::ConfigurationMethods.find_configuration_class(self.class.configuration_source_class.local_store_class).new(self)
+          lsc = self.class.configuration_source_class.local_store_class
+
+          @config[:local_store] = CFM.find_configuration_class(lsc).new(self)
         end
       end
 
       # Retrive configuration section for this or child class.
       def self.driver_configuration
-        Dcmgr.conf.hypervisor_driver(self)
+        Dcmgr::Configurations.hva.hypervisor_driver(self)
       end
 
       def driver_configuration
-        Dcmgr.conf.hypervisor_driver(self.class)
+        self.class.driver_configuration
       end
 
       def run_instance(hc)

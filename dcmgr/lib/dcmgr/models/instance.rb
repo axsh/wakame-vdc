@@ -41,7 +41,7 @@ module Dcmgr::Models
 
     # lists the instances which alives and died within
     # term_period sec.
-    def_dataset_method(:alives_and_termed) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+    def_dataset_method(:alives_and_termed) { |term_period=Dcmgr::Configurations.dcmgr.recent_terminated_instance_period|
       filter("terminated_at IS NULL OR terminated_at >= ?", (Time.now.utc - term_period))
     }
 
@@ -315,7 +315,7 @@ module Dcmgr::Models
       vendor_id = if vif_template[:vendor_id]
                     vif_template[:vendor_id]
                   else
-                    Dcmgr.conf.mac_address_vendor_id
+                    Dcmgr::Configurations.dcmgr.mac_address_vendor_id
                   end
       nic = NetworkVif.new({ :account_id => self.account_id })
       nic.instance = self

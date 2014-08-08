@@ -17,7 +17,7 @@ module Dcmgr::Cli
     method_option :allocation_size, :type => :numeric, :desc => "The allcated file size of the backup object."
     method_option :checksum, :type => :string, :required=>true, :desc => "The checksum of the backup object."
     method_option :description, :type => :string, :desc => "Description of the backup storage"
-    method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the backup object. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :service_type, :type => :string, :default=>Dcmgr::Configurations.dcmgr.default_service_type, :desc => "Service type of the backup object. (#{Dcmgr::Configurations.dcmgr.service_types.keys.sort.join(', ')})"
     method_option :container_format, :type => :string, :default=>'none', :desc => "The container format of the backup object.(#{CONTAINER_FORMAT.keys.join(', ')})"
     method_option :progress, :type => :numeric, :desc => "Progress of the backup object. (0.0 - 100.0)"
     def add
@@ -42,7 +42,7 @@ module Dcmgr::Cli
     method_option :allocation_size, :type => :numeric, :desc => "The allcated file size of the backup object."
     method_option :checksum, :type => :string, :desc => "The checksum of the backup object."
     method_option :description, :type => :string, :desc => "Description of the backup storage"
-    method_option :service_type, :type => :string, :desc => "Service type of the backup object. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :service_type, :type => :string, :desc => "Service type of the backup object. (#{Dcmgr::Configurations.dcmgr.service_types.keys.sort.join(', ')})"
     method_option :container_format, :type => :string, :desc => "The container format of the backup object.(#{CONTAINER_FORMAT.keys.join(', ')})"
     method_option :progress, :type => :numeric, :desc => "Progress of the backup object. (0.0 - 100.0)"
     def modify(uuid)
