@@ -6,6 +6,13 @@ require 'fuguta'
 module Dcmgr
   module Configurations
     class Bksta < Fuguta::Configuration
+
+      usual_paths [
+        ENV['CONF_PATH'].to_s,
+        '/etc/wakame-vdc/bksta.conf',
+        File.expand_path('config/bksta.conf', Dcmgr::DCMGR_ROOT)
+      ]
+
       # AMQP broker to be connected.
       param :amqp_server_uri
 
