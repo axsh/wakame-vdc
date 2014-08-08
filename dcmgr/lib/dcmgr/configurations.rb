@@ -34,8 +34,12 @@ module Dcmgr
       end
     end
 
-    def self.loaded?
-      ! @conf.nil?
+    def self.loaded?(name = nil)
+      if name.nil?
+        ! @conf.nil?
+      else
+        @conf.has_key?(name.to_s)
+      end
     end
 
     # This method's only here to support the deprecated Dcmgr.conf method

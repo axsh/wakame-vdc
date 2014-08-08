@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 
 require 'sequel'
-db = Sequel.connect(Dcmgr::Configurations.dcmgr.database_uri)
+
+cfg = if Dcmgr::Configurations.loaded?(:dcmgr)
+  Dcmgr::Configurations.dcmgr
+elsif Dcmgr::Configurations.loaded?(:nwmongw)
+  Dcmgr::Configurations.nwmongw
+else
+  abort "No config file with database information loaded."
+end
+
+db = Sequel.connect(cfg.database_uri)
 
 # Force to set "READ COMMITTED" isolation level.
 # This mode is supported by both InnoDB and MySQL Cluster backends.
