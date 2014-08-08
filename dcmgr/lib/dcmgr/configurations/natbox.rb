@@ -8,6 +8,12 @@ module Dcmgr
 
     class Natbox < Fuguta::Configuration
 
+      usual_paths [
+        ENV['CONF_PATH'].to_s,
+        '/etc/wakame-vdc/natbox.conf',
+        File.expand_path('config/natbox.conf', Dcmgr::DCMGR_ROOT)
+      ]
+
       class DcNetwork < Fuguta::Configuration
         param :interface
         param :bridge
