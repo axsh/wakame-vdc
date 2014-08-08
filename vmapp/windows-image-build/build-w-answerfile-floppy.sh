@@ -94,17 +94,18 @@ configure-metadata-disk()
     sudo bash -c 'echo 192.168.2.23 >mntpoint/meta-data/extra-hosts/twothree'
     
     if [ "$FIRSTBOOT" = "" ]; then
-	rm -f mntpoint/meta-data/first-boot
+	sudo rm -f mntpoint/meta-data/first-boot
     else
-	touch mntpoint/meta-data/first-boot
-	touch thisrun/first-boot-set-$(date +%y%m%d-%H%M%S)"
+	sudo touch mntpoint/meta-data/first-boot
+	sudo touch "thisrun/first-boot-set-$(date +%y%m%d-%H%M%S)"
     fi
 
     if [ "$AUTOACTIVATE" = "" ]; then
-	rm -f mntpoint/meta-data/auto-activate
+	sudo rm -f mntpoint/meta-data/auto-activate
     else
-	touch mntpoint/meta-data/auto-activate
-	touch thisrun/auto-activate-set-$(date +%y%m%d-%H%M%S)"
+	sudo touch mntpoint/meta-data/auto-activate
+	sudo touch "thisrun/auto-activate-set-$(date +%y%m%d-%H%M%S)"
+    fi
     fi
     umount-image
 }
