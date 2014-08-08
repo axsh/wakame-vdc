@@ -12,6 +12,12 @@ module Dcmgr
 
       deprecated_warn_for :network, :network_id
 
+      usual_paths [
+        ENV['CONF_PATH'].to_s,
+        '/etc/wakame-vdc/nwmongw.conf',
+        File.expand_path('config/nwmongw.conf', ::Dcmgr::DCMGR_ROOT)
+      ]
+
       DSL do
         def driver(driver_name, &blk)
           @config[:driver_class] = klass = ::Dcmgr::Drivers::NetworkMonitoring.driver_class(driver_name)
