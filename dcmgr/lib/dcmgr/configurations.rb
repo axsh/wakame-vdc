@@ -20,7 +20,7 @@ module Dcmgr
 
     def self.create_shorthand(name, conf)
       @conf ||= Hash.new { |hash, key| raise "'#{key}' was not loaded." }
-      @conf[name] = conf
+      @conf[name.to_sym] = conf
 
       Shorthand.instance_eval do
         define_method("#{name}_conf") { conf }
@@ -62,7 +62,7 @@ module Dcmgr
       if name.nil?
         ! @conf.nil?
       else
-        @conf.has_key?(name.to_s)
+        @conf.has_key?(name.to_sym)
       end
     end
 
