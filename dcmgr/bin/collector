@@ -8,22 +8,21 @@ require 'dcmgr'
 require 'isono'
 
 Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr
+Dcmgr::Configurations::Dcmgr.include_helper(self)
 
 Dcmgr.run_initializers('logger',
                        'sequel',
                        'isono_messaging',
                        'sequel_class_method_hook')
 
-conf = Dcmgr::Configurations.dcmgr
-
-if dcell_node_uri = conf.collector_dcell_node_uri
+if dcell_node_uri = dcmgr_conf.collector_dcell_node_uri
   require 'dcell'
-  DCell.start(:id => conf.collector_dcell_node_id,
+  DCell.start(:id => dcmgr_conf.collector_dcell_node_id,
     :addr => "tcp://#{dcell_node_uri}",
     :registry => {
-      :adapter => conf.dcell_adapter,
-      :host => conf.dcell_host,
-      :port => conf.dcell_port
+      :adapter => dcmgr_conf.dcell_adapter,
+      :host => dcmgr_conf.dcell_host,
+      :port => dcmgr_conf.dcell_port
     }
   )
   Dcmgr.run_initializers('vnet_hook')
