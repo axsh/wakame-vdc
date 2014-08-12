@@ -45,6 +45,13 @@ module Dcmgr
     def self.last
       @conf && @conf[:last]
     end
+
+    # This allows us to access the configurations as if they're methods of
+    # Dcmgr::Configurations.
+    # For example: Dcmgr::Configurations.dcmgr will access dcmgr.conf
+    def self.method_missing(method_name, *args)
+      @conf[method_name]
+    end
   end
 end
 
