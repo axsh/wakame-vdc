@@ -7,23 +7,23 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'isono'
 
-include Dcmgr::Configurations::Shorthand
-
-load_conf Dcmgr::Configurations::Dcmgr
+Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr
 
 Dcmgr.run_initializers('logger',
                        'sequel',
                        'isono_messaging',
                        'sequel_class_method_hook')
 
-if dcell_node_uri = dcmgr_conf.collector_dcell_node_uri
+conf = Dcmgr::Configurations.dcmgr
+
+if dcell_node_uri = conf.collector_dcell_node_uri
   require 'dcell'
-  DCell.start(:id => dcmgr_conf.collector_dcell_node_id,
+  DCell.start(:id => conf.collector_dcell_node_id,
     :addr => "tcp://#{dcell_node_uri}",
     :registry => {
-      :adapter => dcmgr_conf.dcell_adapter,
-      :host => dcmgr_conf.dcell_host,
-      :port => dcmgr_conf.dcell_port
+      :adapter => conf.dcell_adapter,
+      :host => conf.dcell_host,
+      :port => conf.dcell_port
     }
   )
   Dcmgr.run_initializers('vnet_hook')
