@@ -39,6 +39,7 @@ module Dcmgr
   autoload :Logger, 'dcmgr/logger'
   require 'dcmgr/configurations'
   module Configurations
+    autoload :Base, 'dcmgr/configurations/base'
     autoload :Hva, 'dcmgr/configurations/hva'
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
     autoload :Sta, 'dcmgr/configurations/sta'
