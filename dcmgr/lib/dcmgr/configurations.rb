@@ -2,39 +2,14 @@
 
 module Dcmgr
   module Configurations
-
-    module Shorthand
-      # This module is used to define shorthand access to configuration methods.
-      # Once dcmgr.conf is loaded, you can access it this way:
-      #
-      # include Dcmgr::Configurations::Shorthand
-      #
-      # dcmgr_conf
-      #
-      # ie. dcmgr_conf.db_uri == Dcmgr::Configurations.dcmgr.db_uri
-
-      def load_conf(conf_class, files = nil)
-        ::Dcmgr::Configurations.load(conf_class, files)
-      end
-    end
-
+    # Set the dynamic config name method. For example:
+    # loading hva.conf will create Dcmgr::Configurations.hva method
     def self.store_conf(name, conf)
       @conf ||= Hash.new { |hash, key| raise "'#{key}' was not loaded." }
       @conf[name.to_sym] = conf
 
-      Shorthand.instance_eval do
-        define_method("#{name}_conf") { conf }
-      end
-
       # Required for the deprecated Dcmgr.conf syntax
       @conf[:last] = conf
-    end
-
-    # This allows us to access the configurations as if they're methods of
-    # Dcmgr::Configurations.
-    # For example: Dcmgr::Configurations.dcmgr will access dcmgr.conf
-    def self.method_missing(method_name, *args)
-      @conf[method_name]
     end
 
     def self.load(conf_class, files = nil)

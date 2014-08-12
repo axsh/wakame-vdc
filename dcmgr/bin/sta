@@ -12,15 +12,13 @@ require 'socket'
 include Isono::Runner::RpcServer
 include Dcmgr::Logger
 
-include Dcmgr::Configurations::Shorthand
-
-load_conf Dcmgr::Configurations::Sta
+Dcmgr::Configurations.load Dcmgr::Configurations::Sta
 
 Dcmgr.run_initializers('logger')
 
 logger.info "Driver configuration: backing store=%s, target=%s" % [
-  sta_conf.backing_store_driver,
-  sta_conf.iscsi_target_driver
+  Dcmgr::Configurations.sta.backing_store_driver,
+  Dcmgr::Configurations.sta.iscsi_target_driver
 ]
 
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
