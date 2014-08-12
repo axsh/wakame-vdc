@@ -12,11 +12,7 @@ require 'socket'
 include Isono::Runner::RpcServer
 include Dcmgr::Logger
 
-Dcmgr::Configurations.load Dcmgr::Configurations::Sta, [
-  ENV['CONF_PATH'].to_s,
-  '/etc/wakame-vdc/sta.conf',
-  File.expand_path('config/sta.conf', Dcmgr::DCMGR_ROOT)
-]
+Dcmgr::Configurations.load Dcmgr::Configurations::Sta
 
 Dcmgr.run_initializers('logger')
 

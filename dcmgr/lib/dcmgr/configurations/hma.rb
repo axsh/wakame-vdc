@@ -4,12 +4,20 @@ require "fuguta"
 
 module Dcmgr
   module Configurations
-    class Hma < Fuguta::Configuration
+    class Hma < Base
+
+      usual_paths [
+        ENV['CONF_PATH'].to_s,
+        '/etc/wakame-vdc/hma.conf',
+        File.expand_path('config/hma.conf', ::Dcmgr::DCMGR_ROOT)
+      ]
+
+
       class MonitorTarget < Fuguta::Configuration
         def after_initialize
           @config[:monitor_items] = {}
         end
-        
+
         DSL do
           def monitor_item(name, klass_sym, *args)
             monitor_item_class = ::Dcmgr::NodeModules::HaManager::MonitorItem.const_get(klass_sym)

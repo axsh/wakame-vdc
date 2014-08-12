@@ -11,11 +11,7 @@ require 'thor'
 require 'thor/group'
 require 'erb'
 
-Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr, [
-  ENV['CONF_PATH'].to_s,
-  '/etc/wakame-vdc/dcmgr.conf',
-  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
-]
+Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr
 
 Dcmgr.run_initializers('logger', 'sequel')
 

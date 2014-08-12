@@ -25,7 +25,7 @@ module Dcmgr
         Dcmgr::Configurations.last
       end
 
-      def load_conf(conf_class, files)
+      def load_conf(conf_class, files = nil)
         depr_msg = %{
           Dcmgr.load_conf is DEPRECATED!
           Use Dcmgr::Configurations.load instead

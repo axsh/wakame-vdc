@@ -12,11 +12,7 @@ require 'fuguta'
 include Isono::Runner::RpcServer
 
 
-Dcmgr::Configurations.load Dcmgr::Configurations::Natbox, [
-  ENV['CONF_PATH'].to_s,
-  '/etc/wakame-vdc/natbox.conf',
-  File.expand_path('config/natbox.conf', Dcmgr::DCMGR_ROOT)
-]
+Dcmgr::Configurations.load Dcmgr::Configurations::Natbox
 
 Dcmgr.run_initializers('logger')
 

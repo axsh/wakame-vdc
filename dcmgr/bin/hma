@@ -14,11 +14,7 @@ require 'socket'
 include Isono::Runner::RpcServer
 include Dcmgr::Logger
 
-Dcmgr::Configurations.load Dcmgr::Configurations::Hma, [
-  ENV['CONF_PATH'].to_s,
-  '/etc/wakame-vdc/hma.conf',
-  File.expand_path('config/hma.conf', Dcmgr::DCMGR_ROOT)
-]
+Dcmgr::Configurations.load Dcmgr::Configurations::Hma
 
 Dcmgr.run_initializers('logger')
 

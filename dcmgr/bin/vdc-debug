@@ -11,15 +11,15 @@ require 'thor'
 require 'thor/group'
 require 'erb'
 
-# Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
-Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
-                ['/etc/wakame-vdc/dcmgr.conf',
-                 File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
-                ])
+Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr
+
 Dcmgr.run_initializers('logger')
 
 class DebugCli < Thor
-  register(Dcmgr::Cli::Debug::Vnet,  Dcmgr::Cli::Debug::Vnet.namespace, "vnet sub-command", "Operations for virtual network information")
+  register(Dcmgr::Cli::Debug::Vnet,
+           Dcmgr::Cli::Debug::Vnet.namespace,
+           "vnet sub-command",
+           "Operations for virtual network information")
 end
 
 class ServiceDebug < Isono::NodeModules::Base
