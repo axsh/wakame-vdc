@@ -4,7 +4,7 @@ require "fuguta"
 
 module Dcmgr
   module Configurations
-    class Sta < Fuguta::Configuration
+    class Sta < Base
 
       usual_paths [
         ENV['CONF_PATH'].to_s,

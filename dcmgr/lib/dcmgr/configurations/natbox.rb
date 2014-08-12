@@ -6,7 +6,7 @@ module Dcmgr
 
   module Configurations
 
-    class Natbox < Fuguta::Configuration
+    class Natbox < Base
 
       usual_paths [
         ENV['CONF_PATH'].to_s,
