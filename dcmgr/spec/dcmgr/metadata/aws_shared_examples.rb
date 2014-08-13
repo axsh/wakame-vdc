@@ -26,11 +26,11 @@ end
 
 shared_examples 'aws metadata for instance with ip leases' do
   def nic_item(nic, item)
-    items["network/interfaces/macs/#{nic.pretty_mac_addr}/#{item}"]
+    items["network/interfaces/macs/#{nic.pretty_mac_addr('-')}/#{item}"]
   end
 
   it 'sets \'local-ipv4\' to the first ip lease of the first vnic' do
-    expect(items['local-ipv4']).to be inst.nic.first.ip.first.ipv4_s
+    expect(items['local-ipv4']).to eq inst.nic.first.ip.first.ipv4_s
   end
 
   #TODO: Nat tests?
@@ -38,14 +38,15 @@ shared_examples 'aws metadata for instance with ip leases' do
   it 'adds aws metadata for every vnic that the instance has' do
     inst.nic.each do |n|
       security_groups = n.security_groups.map { |sg| sg.canonical_uuid }.join(' ')
+      first_direct_ip = n.direct_ip_lease.first
+      ipv4_network = n.network.ipv4_ipaddress
+
       #
       # Standard AWS stuff
       #
-
-      # It adds *only* the first ip lease of every vnic!
-      expect(nic_item(n, 'local-ipv4s')).to eq n.direct_lease.ipv4
-
       expect(nic_item(n, 'local-hostname')).to eq inst.hostname
+      # It adds *only* the first ip lease of every vnic!
+      expect(nic_item(n, 'local-ipv4s')).to eq first_direct_ip.ipv4
       expect(nic_item(n, 'mac')).to eq n.pretty_mac_addr
       expect(nic_item(n, 'security-groups')).to eq security_groups
 
@@ -54,9 +55,9 @@ shared_examples 'aws metadata for instance with ip leases' do
       #
       expect(nic_item(n, 'x-dns')).to eq n.network.dns_server
       expect(nic_item(n, 'x-gateway')).to eq n.network.ipv4_gw
-      expect(nic_item(n, 'x-netmask')).to eq ip.prefix.to_ip.to_s
-      expect(nic_item(n, 'x-network')).to eq n.network.ipv4_network
-      expect(nic_item(n, 'x-broadcast')).to eq ip.broadcast.to_s
+      expect(nic_item(n, 'x-netmask')).to eq ipv4_network.netmask
+      expect(nic_item(n, 'x-network')).to eq ipv4_network.to_s
+      expect(nic_item(n, 'x-broadcast')).to eq ipv4_network.broadcast.to_s
       expect(nic_item(n, 'x-metric')).to eq n.network.metric
     end
   end
