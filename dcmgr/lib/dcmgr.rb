@@ -39,6 +39,7 @@ module Dcmgr
   autoload :Logger, 'dcmgr/logger'
   require 'dcmgr/configurations'
   module Configurations
+    autoload :Base, 'dcmgr/configurations/base'
     autoload :Hva, 'dcmgr/configurations/hva'
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
     autoload :Sta, 'dcmgr/configurations/sta'
@@ -141,7 +142,6 @@ module Dcmgr
     autoload :StaTgtInitializer, 'dcmgr/node_modules/sta_tgt_initializer'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :NatboxCollector, 'dcmgr/node_modules/natbox_collector'
-    autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
     autoload :DebugOpenFlow, 'dcmgr/node_modules/debug_openflow'
     autoload :ServiceNatbox, 'dcmgr/node_modules/service_natbox'
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
@@ -154,6 +154,7 @@ module Dcmgr
     autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
     autoload :ResourceCollector, 'dcmgr/node_modules/resource_collector'
     autoload :Monitor, 'dcmgr/node_modules/monitor'
+    autoload :HaManager, 'dcmgr/node_modules/ha_manager'
     autoload :AlarmCollector, 'dcmgr/node_modules/alarm_collector'
     autoload :AlarmConfigUpdater, 'dcmgr/node_modules/alarm_config_updater'
   end

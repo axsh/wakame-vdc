@@ -4,13 +4,19 @@ require "fuguta"
 
 module Dcmgr
   module Configurations
-    class Nwmongw < Fuguta::Configuration
+    class Nwmongw < Base
       # Database connection string
       param :database_uri
       # AMQP broker to be connected.
       param :amqp_server_uri
 
       deprecated_warn_for :network, :network_id
+
+      usual_paths [
+        ENV['CONF_PATH'].to_s,
+        '/etc/wakame-vdc/nwmongw.conf',
+        File.expand_path('config/nwmongw.conf', ::Dcmgr::DCMGR_ROOT)
+      ]
 
       DSL do
         def driver(driver_name, &blk)

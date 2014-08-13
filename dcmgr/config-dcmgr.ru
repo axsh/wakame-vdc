@@ -6,15 +6,13 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'rack/cors'
 
-#TODO: The same list of paths is defined in bin/collector
-# Move it to the Fuguta class
-Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr, [
-  ENV['CONF_PATH'].to_s,
-  '/etc/wakame-vdc/dcmgr.conf',
-  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
-]
+Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr
 
-Dcmgr.run_initializers('logger', 'sequel', 'isono', 'job_queue.sequel', 'sequel_class_method_hook')
+Dcmgr.run_initializers('logger',
+                       'sequel',
+                       'isono',
+                       'job_queue.sequel',
+                       'sequel_class_method_hook')
 
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'
@@ -26,7 +24,11 @@ map '/api' do
   use Rack::Cors do
     allow do
       origins '*'
-      resource '*', :headers => :any, :methods => [:get, :post, :put, :delete, :options]
+      resource '*', :headers => :any, :methods => [:get,
+                                                   :post,
+                                                   :put,
+                                                   :delete,
+                                                   :options]
     end
   end
 
