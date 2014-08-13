@@ -5,13 +5,14 @@ require "fuguta"
 module Dcmgr
   module Configurations
     # Configuration loader for dcmgr.conf.
-    class Dcmgr < Base
+    class Dcmgr < Fuguta::Configuration
 
       usual_paths [
         ENV['CONF_PATH'].to_s,
         '/etc/wakame-vdc/dcmgr.conf',
         File.expand_path('config/dcmgr.conf', ::Dcmgr::DCMGR_ROOT)
       ]
+
 
       class Scheduler < Fuguta::Configuration
         alias_param  :scheduler, :scheduler_class
