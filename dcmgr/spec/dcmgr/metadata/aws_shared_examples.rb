@@ -82,3 +82,9 @@ shared_examples 'aws metadata for instance without ssh keypair' do
   end
 end
 
+shared_examples 'aws metadata for instance with ssh keypair' do
+  it 'has a public key set in the metadata' do
+    expect(items['public-keys/0/openssh-key']).to eq inst.ssh_key_pair.public_key
+  end
+end
+

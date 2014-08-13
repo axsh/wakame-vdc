@@ -43,7 +43,18 @@ describe Dcmgr::Metadata::AWS do
       it_behaves_like 'aws metadata for instance without ssh keypair'
     end
 
-    context "without request_params set" do
+    context "with an instance with a ssh keypair set" do
+      let(:inst) do
+        Fabricate(:instance, request_params: {}) do
+          ssh_key_pair { Fabricate(:ssh_key_pair) }
+        end
+      end
+
+      it_behaves_like 'aws top level metadata'
+      it_behaves_like 'aws metadata for instance with ssh keypair'
+    end
+
+    context "with an instance without request_params set" do
       let(:inst) { Fabricate(:instance) }
 
       it 'doesn\'t crash' do
