@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#TODO: Investigate invalid mac error that comes up some time
-
 Fabricator(:network_vif, class_name: Dcmgr::Models::NetworkVif) do
   mac_addr { Fabricate(:mac_lease).mac_addr.to_s(16) }
 end
