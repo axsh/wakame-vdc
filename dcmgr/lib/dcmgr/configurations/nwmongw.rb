@@ -4,7 +4,7 @@ require "fuguta"
 
 module Dcmgr
   module Configurations
-    class Nwmongw < Base
+    class Nwmongw < Fuguta::Configuration
       # Database connection string
       param :database_uri
       # AMQP broker to be connected.
