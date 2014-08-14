@@ -22,6 +22,15 @@ module Dcmgr
     }
   }
 
+  module NodeApi
+    module Core
+      autoload :Base, 'dcmgr/node_api/core/base'
+      autoload :Network, 'dcmgr/node_api/core/network'
+    end
+
+    autoload :Plugins, 'dcmgr/node_api/plugin'
+  end
+
   module Constants
     autoload :Instance, 'dcmgr/constants/instance'
     autoload :Network, 'dcmgr/constants/network'
