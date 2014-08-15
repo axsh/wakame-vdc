@@ -26,6 +26,7 @@ describe "instances" do
 
         it "shows all 3 instances in the database" do
           expect(body.first["total"]).to eq 3
+          expect(body.first["results"].size).to eq 3
         end
       end
     end
