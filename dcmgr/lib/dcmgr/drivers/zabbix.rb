@@ -5,6 +5,7 @@ require 'net/http'
 require 'net/https'
 require 'multi_json'
 require 'dcmgr/helpers/zabbix_json_rpc'
+require 'dcmgr/configurations'
 
 module Dcmgr::Drivers
   class Zabbix < NetworkMonitoring
@@ -26,7 +27,10 @@ module Dcmgr::Drivers
     end
 
     def configuration
-      Dcmgr.conf.driver || raise("driver(:Zabbix) section is undefined")
+      if Dcmgr::Configurations.nwmongw.driver_class != Zabbix::Configuration
+        raise("Configuration for #{self.class} is not loaded")
+      end
+      Dcmgr::Configurations.nwmongw.driver
     end
 
     def connection
