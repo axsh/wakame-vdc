@@ -5,8 +5,6 @@ Wakame-vdc
 
 Wakame-vdc is an IaaS (Infrastructure as a Service) cloud computing framework, facilitating the provisioning and management of a heterogeneous virtualized infrastructure. Wakame-vdc virtualizes the entire data center; servers, storage, and networking. Wakame-vdc is managed via a native Web Interface, the Wakame-vdc CLI, or the powerful Wakame-vdc API.
 
-See details for http://wakame.jp/wiki/ (in English)
-
 Quick Start
 -----------
 
