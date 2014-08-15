@@ -8,6 +8,13 @@ module Dcmgr::NodeApi::Core
       attr_accessor :plugins
     end
 
+    def run_hooks(timing, method_name)
+      Dcmgr::NodeApi::Core::Base.plugins.each do |plugin|
+        plugin_class = plugin.const_get("#{self.class.name.split("::").last}")
+        plugin_class.send("#{timing}_#{method_name}")
+      end
+    end
+
     def self.inherited(klass)
       klass.instance_eval do
         @@method_names = [:create, :destroy, :update]
@@ -19,17 +26,9 @@ module Dcmgr::NodeApi::Core
             alias_method "_#{method_name}".to_sym, method_name
 
             define_method(method_name) do |params|
-              Dcmgr::NodeApi::Core::Base.plugins.each do |plugin|
-                plugin_class = plugin.const_get("#{self.class.name.split("::").last}")
-                plugin_class.send("before_#{method_name}")
-              end
-
+              run_hooks(:before, method_name)
               send("_#{method_name}", params)
-
-              Dcmgr::NodeApi::Core::Base.plugins.each do |plugin|
-                plugin_class = plugin.const_get("#{self.class.name.split("::").last}")
-                plugin_class.send("after_#{method_name}")
-              end
+              run_hooks(:after, method_name)
             end
           end
         end
