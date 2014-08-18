@@ -5,9 +5,11 @@ require 'spec_helper'
 describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
   describe "#schedule" do
     subject(:inst) do
-      Fabricate(:instance, request_params: {"vifs" => vifs_parameter}).tap do |i|
-        Dcmgr::Scheduler::Network::VifsRequestParam.new.schedule(i)
-      end
+      i = Fabricate(:instance, request_params: {"vifs" => vifs_parameter})
+
+      Dcmgr::Scheduler::Network::VifsRequestParam.new.schedule(i)
+
+      i
     end
 
     let!(:mac_range) { Fabricate(:mac_range) }
@@ -34,7 +36,7 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
 
       it "schedules a single network interface for the instance" do
         expect(inst.network_vif.size).to eq 1
-        expect(inst.network_vif.first.network).to be network
+        expect(inst.network_vif.first.network).to eq network
       end
 
     end
