@@ -21,7 +21,6 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
     end
 
     let!(:mac_range) { Fabricate(:mac_range) }
-    let(:network) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
 
     context "with a malformed vifs parameter" do
       let(:vifs_parameter) { "JOSSEFIEN!" }
@@ -32,6 +31,7 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
     end
 
     context "with a single entry in the vifs parameter" do
+      let(:network) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
       let(:vifs_parameter) do
         { "eth0" => {"index" => 0, "network" => network.canonical_uuid } }
       end
@@ -39,6 +39,24 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
       it "schedules a single network interface for the instance" do
         expect(inst.network_vif.size).to eq 1
         expect(inst.network_vif.first.network).to eq network
+      end
+    end
+
+    context "with a two entries in the vifs parameter" do
+      let(:network1) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
+      let(:network2) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
+
+      let(:vifs_parameter) do
+        eth0 = {"index" => 0, "network" => network1.canonical_uuid }
+        eth1 = {"index" => 1, "network" => network2.canonical_uuid }
+
+        { "eth0" => eth0, "eth1" => eth1 }
+      end
+
+      it "schedules two network interfaces for the instance" do
+        expect(inst.network_vif.size).to eq 2
+        expect(inst.network_vif.first.network).to eq network1
+        expect(inst.network_vif.last.network).to  eq network2
       end
     end
 
