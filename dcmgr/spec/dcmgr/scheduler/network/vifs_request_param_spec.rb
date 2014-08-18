@@ -4,7 +4,7 @@ require 'spec_helper'
 
 Dir["#{File.dirname(__FILE__)}/vifs_request_param_examples/*.rb"].each {|f| require f }
 
-describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
+describe Dcmgr::Scheduler::Network::VifsRequestParam do
   def set_dhcp_range(network)
     nw_ipv4 = IPAddress::IPv4.new("#{network.ipv4_network}/#{network.prefix}")
 
