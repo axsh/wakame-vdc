@@ -30,6 +30,14 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
       end
     end
 
+    context "with an empty vifs parameter" do
+      let(:vifs_parameter) { Hash.new }
+
+      it "schedules an instance with no network interfaces" do
+        expect(inst.network_vif).to be_empty
+      end
+    end
+
     context "with a single entry in the vifs parameter" do
       let(:network) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
       let(:vifs_parameter) do
