@@ -13,15 +13,15 @@ shared_examples "two vifs" do
     end
 
     it "schedules two network interfaces for the instance" do
-      expect(inst.network_vif.size).to eq 2
+      expect(subject.network_vif.size).to eq 2
     end
 
     it "schedules the first network interface in network1" do
-      expect(inst.network_vif.first.network).to eq network1
+      expect(subject.network_vif.first.network).to eq network1
     end
 
     it "schedules the first network interface in network2" do
-      expect(inst.network_vif.last.network).to eq network2
+      expect(subject.network_vif.last.network).to eq network2
     end
   end
 end

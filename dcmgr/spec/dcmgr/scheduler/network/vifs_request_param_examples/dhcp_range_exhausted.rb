@@ -8,8 +8,6 @@ shared_examples "dhcp range exhausted" do
       { "eth0" => {"index" => 0, "network" => network.canonical_uuid } }
     end
 
-    subject { lambda { inst } }
-
     it { is_expected.to raise_error Dcmgr::Models::OutOfIpRange }
   end
 end

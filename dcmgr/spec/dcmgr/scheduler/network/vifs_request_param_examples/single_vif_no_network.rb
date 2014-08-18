@@ -7,11 +7,11 @@ shared_examples "single vif no network" do
     end
 
     it "schedules a single network interface for the instance" do
-      expect(inst.network_vif.size).to eq 1
+      expect(subject.network_vif.size).to eq 1
     end
 
     it "doesn't schedule a network for the interface" do
-      expect(inst.network_vif.first.network).to be nil
+      expect(subject.network_vif.first.network).to be nil
     end
   end
 end

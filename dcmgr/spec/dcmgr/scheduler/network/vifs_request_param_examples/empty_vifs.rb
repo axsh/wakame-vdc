@@ -5,7 +5,7 @@ shared_examples "empty vifs" do
     let(:vifs_parameter) { Hash.new }
 
     it "schedules an instance with no network interfaces" do
-      expect(inst.network_vif).to be_empty
+      expect(subject.network_vif).to be_empty
     end
   end
 end

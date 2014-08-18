@@ -8,11 +8,11 @@ shared_examples "single vif" do
     end
 
     it "schedules a single network interface for the instance" do
-      expect(inst.network_vif.size).to eq 1
+      expect(subject.network_vif.size).to eq 1
     end
 
     it "schedules the interface in the network we specified" do
-      expect(inst.network_vif.first.network).to eq network
+      expect(subject.network_vif.first.network).to eq network
     end
   end
 end
