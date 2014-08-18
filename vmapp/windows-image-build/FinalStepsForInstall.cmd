@@ -23,3 +23,6 @@ copy a:\wakame-init-every-boot.ps1 c:\Windows\Setup\Scripts\
 
 REM Sysprep Helper Script for User
 copy a:\sysprep-for-backup.cmd c:\Windows\Setup\Scripts\
+
+REM used by the a:\wakame-init-*-boot.ps1 scripts
+copy a:\wakame-functions.ps1 c:\Windows\Setup\Scripts\
