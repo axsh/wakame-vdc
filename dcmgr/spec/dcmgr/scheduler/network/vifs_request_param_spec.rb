@@ -11,6 +11,15 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
     end
 
     let!(:mac_range) { Fabricate(:mac_range) }
+    let(:network) { Fabricate(:network) }
+
+    let!(:dhcp_range) do
+      nw_ipv4 = IPAddress::IPv4.new("#{network.ipv4_network}/#{network.prefix}")
+
+      Fabricate(:dhcp_range, network: network,
+                             range_begin: nw_ipv4.first,
+                             range_end: nw_ipv4.last)
+    end
 
     context "with a malformed vifs parameter" do
       let(:vifs_parameter) { "JOSSEFIEN!" }
@@ -19,8 +28,6 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
     end
 
     context "with a single entry in the vifs parameter" do
-      let(:network) { Fabricate(:network) }
-
       let(:vifs_parameter) do
         { "eth0" => {"index" => 0, "network" => network.canonical_uuid } }
       end
