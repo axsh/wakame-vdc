@@ -2,6 +2,8 @@
 
 require 'spec_helper'
 
+Dir["#{File.dirname(__FILE__)}/vifs_request_param_examples/*.rb"].each {|f| require f }
+
 describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
   def set_dhcp_range(network)
     nw_ipv4 = IPAddress::IPv4.new("#{network.ipv4_network}/#{network.prefix}")
@@ -22,74 +24,20 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
 
     before { Fabricate(:mac_range) }
 
-    context "with a malformed vifs parameter" do
-      let(:vifs_parameter) { "JOSSEFIEN!" }
+    #
+    # Sad paths
+    #
 
-      it "raises an error" do
-        expect { inst }.to raise_error Dcmgr::Scheduler::NetworkSchedulingError
-      end
-    end
+    include_examples "malformed vifs"
+    include_examples "dhcp range exhausted"
 
-    context "with an empty vifs parameter" do
-      let(:vifs_parameter) { Hash.new }
+    #
+    # Happy paths
+    #
 
-      it "schedules an instance with no network interfaces" do
-        expect(inst.network_vif).to be_empty
-      end
-    end
-
-    context "with a single entry in the vifs parameter" do
-      let(:network) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
-      let(:vifs_parameter) do
-        { "eth0" => {"index" => 0, "network" => network.canonical_uuid } }
-      end
-
-      it "schedules a single network interface for the instance" do
-        expect(inst.network_vif.size).to eq 1
-      end
-
-      it "schedules the interface in the network we specified" do
-        expect(inst.network_vif.first.network).to eq network
-      end
-    end
-
-    context "with two entries in the vifs parameter and different networks" do
-      let(:network1) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
-      let(:network2) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
-
-      let(:vifs_parameter) do
-        eth0 = {"index" => 0, "network" => network1.canonical_uuid }
-        eth1 = {"index" => 1, "network" => network2.canonical_uuid }
-
-        { "eth0" => eth0, "eth1" => eth1 }
-      end
-
-      it "schedules two network interfaces for the instance" do
-        expect(inst.network_vif.size).to eq 2
-      end
-
-      it "schedules the first network interface in network1" do
-        expect(inst.network_vif.first.network).to eq network1
-      end
-
-      it "schedules the first network interface in network2" do
-        expect(inst.network_vif.last.network).to eq network2
-      end
-    end
-
-    context "with a single entry with no network in the vifs parameter" do
-      let(:vifs_parameter) do
-        { "eth0" => {"index" => 0 } }
-      end
-
-      it "schedules a single network interface for the instance" do
-        expect(inst.network_vif.size).to eq 1
-      end
-
-      it "doesn't schedule a network for the interface" do
-        expect(inst.network_vif.first.network).to be nil
-      end
-    end
-
+    include_examples "empty vifs"
+    include_examples "single vif"
+    include_examples "two vifs"
+    include_examples "single vif no network"
   end
 end
