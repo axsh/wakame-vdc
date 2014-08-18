@@ -30,6 +30,7 @@ describe Dcmgr::Scheduler::Network::VifsRequestParam do
 
     include_examples "malformed vifs"
     include_examples "dhcp range exhausted"
+    include_examples "wrong network"
 
     #
     # Happy paths
