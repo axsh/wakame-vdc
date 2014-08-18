@@ -26,7 +26,9 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
     context "with a malformed vifs parameter" do
       let(:vifs_parameter) { "JOSSEFIEN!" }
 
-      it { is_expected.to raise_error Dcmgr::Scheduler::NetworkSchedulingError }
+      it "raises an error" do
+        expect { inst }.to raise_error Dcmgr::Scheduler::NetworkSchedulingError
+      end
     end
 
     context "with a single entry in the vifs parameter" do
