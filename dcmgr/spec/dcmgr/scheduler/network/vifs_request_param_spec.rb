@@ -3,6 +3,14 @@
 require 'spec_helper'
 
 describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
+  def set_dhcp_range(network)
+    nw_ipv4 = IPAddress::IPv4.new("#{network.ipv4_network}/#{network.prefix}")
+
+    Fabricate(:dhcp_range, network: network,
+                           range_begin: nw_ipv4.first,
+                           range_end: nw_ipv4.last)
+  end
+
   describe "#schedule" do
     subject(:inst) do
       i = Fabricate(:instance, request_params: {"vifs" => vifs_parameter})
@@ -13,15 +21,7 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
     end
 
     let!(:mac_range) { Fabricate(:mac_range) }
-    let(:network) { Fabricate(:network) }
-
-    let!(:dhcp_range) do
-      nw_ipv4 = IPAddress::IPv4.new("#{network.ipv4_network}/#{network.prefix}")
-
-      Fabricate(:dhcp_range, network: network,
-                             range_begin: nw_ipv4.first,
-                             range_end: nw_ipv4.last)
-    end
+    let(:network) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
 
     context "with a malformed vifs parameter" do
       let(:vifs_parameter) { "JOSSEFIEN!" }
@@ -40,7 +40,7 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
         expect(inst.network_vif.size).to eq 1
         expect(inst.network_vif.first.network).to eq network
       end
-
     end
+
   end
 end
