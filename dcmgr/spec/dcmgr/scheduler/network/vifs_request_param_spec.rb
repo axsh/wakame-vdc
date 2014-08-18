@@ -20,7 +20,7 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
       i
     end
 
-    let!(:mac_range) { Fabricate(:mac_range) }
+    before { Fabricate(:mac_range) }
 
     context "with a malformed vifs parameter" do
       let(:vifs_parameter) { "JOSSEFIEN!" }
@@ -45,7 +45,7 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
       end
     end
 
-    context "with a two entries in the vifs parameter and different networks" do
+    context "with two entries in the vifs parameter and different networks" do
       let(:network1) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
       let(:network2) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
 
