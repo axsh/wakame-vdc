@@ -5,7 +5,7 @@ require 'spec_helper'
 describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
   describe "#schedule" do
     subject(:inst) do
-      Fabricate(:instance, request_params: {vifs: vifs_parameter}).tap do |i|
+      Fabricate(:instance, request_params: {"vifs" => vifs_parameter}).tap do |i|
         Dcmgr::Scheduler::Network::VifsRequestParam.new.schedule(i)
       end
     end
