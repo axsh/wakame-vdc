@@ -3,82 +3,26 @@ Wakame-vdc
 
 [![Code Climate](https://codeclimate.com/github/axsh/wakame-vdc.png)](https://codeclimate.com/github/axsh/wakame-vdc)
 
-Wakame-vdc is the Data Center Level Hypervisor.
+Wakame-vdc is an IaaS (Infrastructure as a Service) cloud computing framework, facilitating the provisioning and management of a heterogeneous virtualized infrastructure. Wakame-vdc virtualizes the entire data center; servers, storage, and networking. Wakame-vdc is managed via a native Web Interface, the Wakame-vdc CLI, or the powerful Wakame-vdc API.
 
-See details for http://wakame.jp/wiki/ (in English)
+Quick Start
+-----------
 
-Features:
+[Install on RHEL/CentOS through yum.](https://github.com/axsh/wakame-vdc/tree/master/rpmbuild/README.md)
 
-* Operation
- * Web GUI
- * RESTful API
+[Try Wakame-vdc pre-installed in VirtualBox.](http://wakameusersgroup.org/demo_image.html)
 
-* Hypervisor
- * KVM
- * VMware ESXi
- * LXC
- * OpenVZ
+Contact us
+----------
 
-* Network
- * Security Group (L3)
- * Distributed Firewall
- * Distributed NAT
- * Global IP Address
- * Open vSwitch (OpenFlow) + Trema Based Controller
+The best way to contact us is to send a mail to the [Wakame Users Group](https://groups.google.com/forum/?hl=en-GB#!forum/wakame-ug) on Google Groups. Please don't hesitate to ask us any questions. We realise Wakame-vdc is difficult to set up and that our documentation is very limited at this time. If you want to try it out, we'll do our best to help you. There's no such thing as a stupid question.
 
-* Storage
- * Local Disk Drive Management
- * Virtual SAN (Indelible FS)
- * Tired Snapshot Management
- * Machine Image Transferring between Data Centers
+If you happen to be in Tokyo, you can also attend one of our Wakame Users Group events. They are open to everybody. Further details on http://wakameusersgroup.org.
 
-* Monitoring
- * Instance Monitor (Zabbix)
- * Performance Monitor
- * Message Monitor (fluentd)
+Wiki
+----
 
-* Notification (Dolphin)
-
-* Management
- * Per Account Quota
-
-Install
--------
-
-* RPM (RHEL6/CentOS6)
- * https://github.com/axsh/wakame-vdc/tree/master/rpmbuild
-
-Required Components
---------------------
-
-* RabbitMQ (>= 2.7.1)
-* MySQL (>= 5.1.66)
-* nginx (>= 1.0.15)
-* Ruby (>= 2.0.0)
-* RubyGems (>= 1.8.23)
-
-
-Building a Development Environment
-----------------------------------
-
-Ubuntu 10.04
-
-    $ sudo apt-get install git-core
-    $ sudo gem install bundler
-    $ sudo ln -s  /var/lib/gems/1.8/bin/bundle /usr/local/bin/
-    $ git clone git://github.com/axsh/wakame-vdc.git
-    $ cd ./wakame-vdc/
-    $ sudo -s
-    # ./tests/vdc.sh install
-    # ./tests/vdc.sh run
-
-RHEL6/CentOS6
-
-    # yum install -y git
-    # git clone git://github.com/axsh/wakame-vdc.git
-    # cd ./wakame-vdc/
-    # ./tests/vdc.sh install::rhel
-    # ./tests/vdc.sh run
+Further details about Wakame-vdc can be found on our [wiki](https://github.com/axsh/wakame-vdc/wiki).
 
 Users
 -----
@@ -86,9 +30,11 @@ Users
 * Kyushu Electric Power Co., Ltd. ( http://www.kyuden.co.jp/en_index.html )
 * National Institute of Informatics ( http://www.nii.ac.jp/en/ )
 * NTT PC Communications ( http://www.nttpc.co.jp/english/ )
+  - [NTT PC Web Arena VPS Cloud](http://web.arena.ne.jp/vps-cloud/)
 * Kyocera Communication Systems Co., Ltd. ( http://www.kccs.co.jp/english/ )
+  - [KCCS GreenOffice Unified Cloud](https://gouc.datacenter.ne.jp)
 
-If you already use this software, please let me know. Thank you.
+If you already use this software, please let us know. Thank you.
 
 Contributors
 ------------
