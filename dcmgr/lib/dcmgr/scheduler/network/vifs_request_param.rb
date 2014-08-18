@@ -14,6 +14,8 @@ module Dcmgr
         def schedule(instance)
           index = 0
 
+            p "mwan"
+
           Dcmgr::Scheduler::Network.check_vifs_parameter_format(instance.request_params["vifs"])
 
           instance.request_params['vifs'].each { |name, param|

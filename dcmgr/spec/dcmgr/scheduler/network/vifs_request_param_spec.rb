@@ -38,11 +38,14 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
 
       it "schedules a single network interface for the instance" do
         expect(inst.network_vif.size).to eq 1
+      end
+
+      it "schedules the interface in the network we specified" do
         expect(inst.network_vif.first.network).to eq network
       end
     end
 
-    context "with a two entries in the vifs parameter" do
+    context "with a two entries in the vifs parameter and different networks" do
       let(:network1) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
       let(:network2) { Fabricate(:network).tap {|n| set_dhcp_range(n)} }
 
@@ -55,8 +58,14 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
 
       it "schedules two network interfaces for the instance" do
         expect(inst.network_vif.size).to eq 2
+      end
+
+      it "schedules the first network interface in network1" do
         expect(inst.network_vif.first.network).to eq network1
-        expect(inst.network_vif.last.network).to  eq network2
+      end
+
+      it "schedules the first network interface in network2" do
+        expect(inst.network_vif.last.network).to eq network2
       end
     end
 
