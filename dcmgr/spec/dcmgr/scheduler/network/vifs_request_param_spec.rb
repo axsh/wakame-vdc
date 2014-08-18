@@ -10,6 +10,8 @@ describe "Dcmgr::Scheduler::Network::VifsRequestParam" do
       end
     end
 
+    let!(:mac_range) { Fabricate(:mac_range) }
+
     context "with a malformed vifs parameter" do
       let(:vifs_parameter) { "JOSSEFIEN!" }
 
