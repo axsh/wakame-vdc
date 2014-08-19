@@ -286,6 +286,7 @@ BuildArch: noarch
 Summary: Configuration set for sta VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
+Requires: pv
 %description  sta-vmapp-config
 <insert long description, indented with spaces>
 
