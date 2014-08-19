@@ -2,5 +2,6 @@
 
 require 'spec_helper'
 
-describe 'vnet_isolation' do
+describe 'vnet_create' do
+  Mussel.exec("network create")
 end
