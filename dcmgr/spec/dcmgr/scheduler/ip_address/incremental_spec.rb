@@ -57,6 +57,42 @@ describe Dcmgr::Scheduler::IPAddress::Incremental do
           expect(subject.direct_ip_lease.first.ipv4).to eq "192.168.0.10"
         end
       end
+
+      context "with a default gateway set in the dhcp range" do
+        context "as the first address" do
+          let(:network) do
+            n = Fabricate(:network, ipv4_network: "192.168.0.0",
+                                    ipv4_gw: "192.168.0.1")
+
+            set_dhcp_range(n, "192.168.0.1", "192.168.0.5")
+
+            n
+          end
+
+          it "should be skipped when scheduling ip addresses for vnics" do
+            expect(subject.direct_ip_lease.first.ipv4).to eq "192.168.0.2"
+          end
+        end
+
+        context "in the middle of the range" do
+          let(:network) do
+            n = Fabricate(:network, ipv4_network: "192.168.0.0",
+                                    ipv4_gw: "192.168.0.3")
+
+            set_dhcp_range(n, "192.168.0.1", "192.168.0.5")
+
+            n
+          end
+
+          before do
+            2.times { incremental.schedule Fabricate(:network_vif, network: network) }
+          end
+
+          it "should be skipped when scheduling ip addresses for vnics" do
+            expect(subject.direct_ip_lease.first.ipv4).to eq "192.168.0.4"
+          end
+        end
+      end
     end
   end
 end
