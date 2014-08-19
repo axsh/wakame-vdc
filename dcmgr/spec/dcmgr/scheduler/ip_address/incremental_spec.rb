@@ -20,12 +20,10 @@ describe Dcmgr::Scheduler::IPAddress::Incremental do
 
     describe "happy paths" do
       subject do
-        incremental.schedule(options)
+        incremental.schedule(network_vif)
 
         network_vif
       end
-
-      let(:options) { network_vif }
 
       include_examples "first ip in range"
       include_examples "one range full, one empty"
