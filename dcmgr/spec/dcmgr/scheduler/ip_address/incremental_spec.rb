@@ -20,17 +20,16 @@ describe Dcmgr::Scheduler::IPAddress::Incremental do
     end
 
     describe "happy paths" do
-      subject do
-        Dcmgr::Scheduler::IPAddress::Incremental.new.schedule(options)
-        network_vif
+      subject { network_vif }
+      before { Dcmgr::Scheduler::IPAddress::Incremental.new.schedule(options) }
+
+      let(:network) do
+        n = Fabricate(:network, ipv4_network: "192.168.0.0")
+        set_dhcp_range(n)
+        n
       end
 
       context "when options is a NetworkVif with its network set" do
-        let(:network) do
-          n = Fabricate(:network, ipv4_network: "192.168.0.0")
-          set_dhcp_range(n)
-          n
-        end
         let(:options) { network_vif }
 
         it "assigns the first address in the network" do
