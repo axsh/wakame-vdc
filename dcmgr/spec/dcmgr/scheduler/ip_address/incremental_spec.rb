@@ -29,6 +29,7 @@ describe Dcmgr::Scheduler::IPAddress::Incremental do
       include_examples "one range full, one empty"
       include_examples "gateway in dhcp range"
       include_examples "wraparound dhcp range"
+      include_examples "reassign released addresses"
     end
   end
 end
