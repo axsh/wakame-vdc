@@ -20,7 +20,7 @@ shared_examples "wraparound dhcp range" do
     end
 
     it "assigns the first open ip lease" do
-      expect(subject.direct_ip_lease.first.ipv4).to eq "192.168.0.3"
+      expect(subject).to eq "192.168.0.3"
     end
   end
 end

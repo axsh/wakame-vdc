@@ -13,7 +13,7 @@ shared_examples "gateway in dhcp range" do
       end
 
       it "is skipped when scheduling ip addresses for vnics" do
-        expect(subject.direct_ip_lease.first.ipv4).to eq "192.168.0.2"
+        expect(subject).to eq "192.168.0.2"
       end
     end
 
@@ -32,7 +32,7 @@ shared_examples "gateway in dhcp range" do
       end
 
       it "is skipped when scheduling ip addresses for vnics" do
-        expect(subject.direct_ip_lease.first.ipv4).to eq "192.168.0.4"
+        expect(subject).to eq "192.168.0.4"
       end
     end
   end

@@ -22,7 +22,7 @@ describe Dcmgr::Scheduler::IPAddress::Incremental do
       subject do
         incremental.schedule(network_vif)
 
-        network_vif
+        network_vif.direct_ip_lease.first.ipv4
       end
 
       include_examples "first ip in range"

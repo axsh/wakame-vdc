@@ -16,7 +16,7 @@ shared_examples "one range full, one empty" do
     end
 
     it "assigns the first available address in the empty range" do
-      expect(subject.direct_ip_lease.first.ipv4).to eq "192.168.0.10"
+      expect(subject).to eq "192.168.0.10"
     end
   end
 end

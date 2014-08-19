@@ -9,7 +9,7 @@ shared_examples "first ip in range" do
     end
 
     it "assigns the first address in the network" do
-      expect(subject.direct_ip_lease.first.ipv4).to eq "192.168.0.1"
+      expect(subject).to eq "192.168.0.1"
     end
   end
 end
