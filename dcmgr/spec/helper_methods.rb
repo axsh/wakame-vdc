@@ -22,4 +22,12 @@ module NetworkHelper
   def ipv4_to_u32(ipv4)
     IPAddress::IPv4.new(ipv4).to_u32
   end
+
+  def network_vif_from_ip_lease(ipv4)
+    ipv4 = ipv4_to_u32(ipv4) if ipv4.is_a?(String)
+
+    lease = Dcmgr::Models::NetworkVifIpLease.alives.where(ipv4: ipv4).first
+
+    lease.network_vif
+  end
 end
