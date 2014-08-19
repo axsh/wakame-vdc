@@ -29,9 +29,9 @@ shared_examples "wraparound dhcp range" do
     let(:vnic3_ipv4, &create_and_schedule_vif)
 
     it "assigns the released ip addresses in incremental order" do
-      expect(subject).to eq "192.168.0.3"
-      expect(vnic2_ipv4).to eq "192.168.0.5"
-      expect(vnic3_ipv4).to eq "192.168.0.12"
+      expect(vnic2_ipv4).to eq "192.168.0.3"
+      expect(vnic3_ipv4).to eq "192.168.0.5"
+      expect(subject).to eq "192.168.0.12"
     end
   end
 end
