@@ -12,7 +12,7 @@ describe Dcmgr::Scheduler::IPAddress::Incremental do
     let(:incremental) { Dcmgr::Scheduler::IPAddress::Incremental.new }
 
     describe "sad paths" do
-      subject { lambda { incremental.new.schedule(options) } }
+      subject { lambda { incremental.schedule(options) } }
 
       include_examples "fail argument checks"
       include_examples "dhcp range exhausted"
