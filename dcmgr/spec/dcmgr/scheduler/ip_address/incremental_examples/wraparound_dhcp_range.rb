@@ -15,23 +15,23 @@ shared_examples "wraparound dhcp range" do
       network_vif_from_ip_lease("192.168.0.12").destroy
       network_vif_from_ip_lease("192.168.0.3").destroy
       network_vif_from_ip_lease("192.168.0.5").destroy
+
+      incremental.schedule(network_vif)
+      incremental.schedule(network_vif_2)
+      incremental.schedule(network_vif_3)
     end
 
-    create_and_schedule_vif = proc do
-      n = Fabricate(:network_vif, network: network)
+    let(:network_vif_2) { Fabricate(:network_vif, network: network) }
+    let(:network_vif_3) { Fabricate(:network_vif, network: network) }
 
-      incremental.schedule(n)
-
-      n.direct_ip_lease.first.ipv4
+    def ip_of(vif)
+      vif.direct_ip_lease.first.ipv4
     end
-
-    let(:vnic2_ipv4, &create_and_schedule_vif)
-    let(:vnic3_ipv4, &create_and_schedule_vif)
 
     it "assigns the released ip addresses in incremental order" do
-      expect(vnic2_ipv4).to eq "192.168.0.3"
-      expect(vnic3_ipv4).to eq "192.168.0.5"
-      expect(subject).to eq "192.168.0.12"
+      expect(ip_of network_vif).to eq "192.168.0.3"
+      expect(ip_of network_vif_2).to eq "192.168.0.5"
+      expect(ip_of network_vif_3).to eq "192.168.0.12"
     end
   end
 end
