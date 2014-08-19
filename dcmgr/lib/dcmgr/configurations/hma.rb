@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require "fuguta"
+require 'dcmgr/node_modules/ha_manager'
 
 module Dcmgr
   module Configurations
@@ -19,9 +20,18 @@ module Dcmgr
         end
 
         DSL do
-          def monitor_item(name, klass_sym, *args)
-            monitor_item_class = ::Dcmgr::NodeModules::HaManager::MonitorItem.const_get(klass_sym)
-            mi = monitor_item_class.new(*args)
+          def monitor_item(name, klass_sym, &blk)
+            if @config[:monitor_items].has_key?(name)
+              raise "monitor item name '#{name}' is duplicated."
+            end
+            monitor_item_class = ::Dcmgr::NodeModules::HaManager::MonitorItem.const_get(klass_sym, false)
+            # each MonitorItem class has Configuration constant.
+            begin
+              conf_class = monitor_item_class.const_get(:Configuration, false)
+            rescue NameError => e
+              raise "#{monitor_item_class} is missing configuration class."
+            end
+            mi = monitor_item_class.new(conf_class.new(@subject).parse_dsl(&blk))
             @config[:monitor_items][name] = mi
           end
 
