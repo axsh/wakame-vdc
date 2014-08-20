@@ -140,14 +140,6 @@ module Dcmgr::Models
     end
 
     private
-    def before_destroy
-      if !Instance.alives.filter(:image_id=>self.canonical_uuid).empty?
-        raise "There are one or more running instances refers this record."
-      end
-
-      super
-    end
-
     def before_validation
       # symbolize feature's key
       self.features.keys.each { |k|
