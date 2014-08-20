@@ -12,7 +12,7 @@ module VdcVnetSpec
 
       def create(params)
         system("#{params}") if params
-        aa = system("#{MUSSEL} #{class_name} create")
+        JSON.parse(`#{MUSSEL} #{class_name} create`)
       end
     end
   end
