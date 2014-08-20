@@ -482,6 +482,8 @@ RUN_SH
           listen_ports[port.to_i]=0
         }
 
+        logger.debug("used local tcp port numbers: #{listen_ports.keys}")
+
         begin
           new_port =
             Random.rand(driver_configuration.tcp_listen_port_range_begin .. driver_configuration.tcp_listen_port_range_end)
