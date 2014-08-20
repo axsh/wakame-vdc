@@ -5,7 +5,8 @@ require 'bundler'
 Bundler.setup(:default)
 Bundler.require(:test)
 
-Dir["#{File.dirname(__FILE__)}/helpers/*.rb"].each {|f| require f }
+$LOAD_PATH << File.expand_path("./helpers", File.dirname(__FILE__))
+require 'vdc_vnet_spec'
 
 RSpec.configure do |c|
   c.formatter = :documentation
