@@ -167,19 +167,23 @@ module Dcmgr::Models
 
     def before_destroy
       maclease = MacLease.find(:mac_addr=>self.mac_addr.hex)
+
       if maclease
         maclease.destroy
       else
         logger.info "Warning: Mac address lease for '#{self.mac_addr}' not found in database."
       end
+
       release_ip_lease
-      if self.instance.service_type == Dcmgr::Constants::LoadBalancer::SERVICE_TYPE
+
+      if self.instance && self.instance.service_type == Dcmgr::Constants::LoadBalancer::SERVICE_TYPE
         groups = self.security_groups
         self.remove_all_security_groups
         groups.each {|g| g.destroy}
       else
         self.remove_all_security_groups
       end
+
       self.network_routes.each {|i| i.destroy }
       self.network_services.each {|i| i.destroy }
       self.network_vif_monitors.each {|i| i.destroy }

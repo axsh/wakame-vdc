@@ -7,6 +7,8 @@ Bundler.require(:test)
 
 require 'dcmgr'
 
+require_relative 'helper_methods'
+
 RSpec.configure do |c|
   c.formatter = :documentation
   c.color     = true
