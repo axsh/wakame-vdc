@@ -482,7 +482,7 @@ RUN_SH
           listen_ports[port.to_i]=0
         }
 
-        logger.debug("used local tcp port numbers: #{listen_ports.keys}")
+        logger.debug("Local TCP ports being used: #{listen_ports.keys}")
 
         begin
           new_port =
