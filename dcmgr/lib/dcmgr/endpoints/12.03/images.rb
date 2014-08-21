@@ -42,7 +42,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
            when *IMAGE_META_STATE
              case params[:state]
              when 'alive'
-               ds.lives
+               ds.alives
              when 'alive_with_deleted'
                ds.alives_and_deleted(Dcmgr::Configurations.dcmgr.recent_terminated_instance_period)
              else

@@ -123,7 +123,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
            when *INSTANCE_META_STATE
              case params[:state]
              when 'alive'
-               ds.lives
+               ds.alives
              when 'alive_with_terminated'
                ds.alives_and_termed
              when 'without_terminated'
