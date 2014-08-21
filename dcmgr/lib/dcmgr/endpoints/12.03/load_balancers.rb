@@ -21,7 +21,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
              when 'alive'
                ds.lives
              when 'alive_with_deleted'
-               ds.alives_and_deleted
+               ds.alives_and_deleted(Dcmgr::Configurations.dcmgr.recent_terminated_instance_period)
              else
                raise E::InvalidParameter, :state
              end

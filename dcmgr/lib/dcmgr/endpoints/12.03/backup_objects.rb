@@ -16,7 +16,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
              when 'alive'
                ds.alives
              when 'alive_with_deleted'
-               ds.alives_and_deleted
+               ds.alives_and_deleted(Dcmgr::Configurations.dcmgr.recent_terminated_instance_period)
              else
                raise E::InvalidParameter, :state
              end
