@@ -96,7 +96,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
     raise(E::UnknownNetwork, nil) unless network
     raise(E::NetworkNotInDcNetwork, nil) unless ip_pool.has_dc_network(network.dc_network)
 
-    st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)
+    st = Dcmgr::Scheduler.service_type(Dcmgr::Configurations.dcmgr.default_service_type)
     lease = st.ip_address.schedule({:network => network, :ip_pool => ip_pool})
 
     respond_with({ :ip_handle_id => lease.ip_handle.canonical_uuid,

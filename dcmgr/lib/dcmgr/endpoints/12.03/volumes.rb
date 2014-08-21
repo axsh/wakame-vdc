@@ -84,8 +84,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     if !params[:backup_object_id].blank?
       bo = vs = find_by_uuid(:BackupObject, params[:backup_object_id])
     elsif !params[:volume_size].blank?
-      if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
-          !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
+      if !(Dcmgr::Configurations.dcmgr.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
+          !(params[:volume_size].to_i >= Dcmgr::Configurations.dcmgr.create_volume_min_size.to_i)
         raise E::InvalidVolumeSize, params[:volume_size]
       end
     else

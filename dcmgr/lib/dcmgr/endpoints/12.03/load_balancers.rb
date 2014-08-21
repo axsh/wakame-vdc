@@ -69,7 +69,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     secure_port = connect_port
     secure_protocol = secure_protocol(inbounds)
 
-    lb_conf = Dcmgr.conf.service_types['lb']
+    lb_conf = Dcmgr::Configurations.dcmgr.service_types['lb']
     allow_list = params[:allow_list] || ['0.0.0.0']
 
     raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
