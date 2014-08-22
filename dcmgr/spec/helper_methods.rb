@@ -19,6 +19,13 @@ module NetworkHelper
                            range_end: r_end)
   end
 
+  def destroy_dhcp_range(network, r_begin, r_end)
+    range = Dcmgr::Models::DhcpRange.find(network: network,
+                                          range_begin: ipv4_to_u32(r_begin),
+                                          range_end: ipv4_to_u32(r_end))
+    range.destroy
+  end
+
   def ipv4_to_u32(ipv4)
     IPAddress::IPv4.new(ipv4).to_u32
   end
