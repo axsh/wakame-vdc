@@ -39,7 +39,7 @@ module Dcmgr
       end
 
       class Windows < Fuguta::Configuration
-        param :thread_concurrency, :default=>2
+        param :thread_concurrency, default: 10
 
         param :password_generation_sleeptime, default: 2
         param :password_generation_timeout, default: 60 * 15
