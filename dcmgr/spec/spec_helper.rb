@@ -14,7 +14,7 @@ RSpec.configure do |c|
   c.color     = true
 
   c.before(:suite) do
-    DatabaseCleaner.strategy = :truncation
+    DatabaseCleaner.strategy = :transaction
     DatabaseCleaner.clean_with :truncation
   end
 
