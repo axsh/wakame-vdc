@@ -6,17 +6,10 @@ Bundler.setup(:default)
 Bundler.require(:test)
 
 $LOAD_PATH << File.expand_path("./helpers", File.dirname(__FILE__))
-require 'vdc_vnet_spec'
+require 'mussel'
 
-def self.feature(*args, &blk)
-  describe(*args, &blk)
-end
-
-class << RSpec::Core::ExampleGroup
-  def scenario(*args, &blk)
-    it(*args, &blk)
-  end
-end
+RSpec::Core::ExampleGroup.define_example_group_method :feature
+RSpec::Core::ExampleGroup.define_example_method :scenario
 
 RSpec.configure do |c|
   c.formatter = :documentation

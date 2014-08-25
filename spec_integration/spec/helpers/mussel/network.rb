@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module VdcVnetSpec
+module Mussel
   class Network < Base
   end
 end

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module VdcVnetSpec
+module Mussel
   MUSSEL_PATH='/opt/axsh/wakame-vdc/client/mussel'
   MUSSEL = "#{MUSSEL_PATH}/mussel.sh"
 
@@ -13,6 +13,11 @@ module VdcVnetSpec
       def create(params)
         system("#{params}") if params
         JSON.parse(`#{MUSSEL} #{class_name} create`)
+      end
+
+      def destroy(params)
+        system("#{params}") if params
+        JSON.parse(`#{MUSSEL} #{class_name} destroy`)
       end
     end
   end
