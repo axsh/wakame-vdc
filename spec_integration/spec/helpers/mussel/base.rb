@@ -7,18 +7,30 @@ module Mussel
   class Base
     class << self
       def class_name
-        self.name.split("::").last.downcase
+        self.name.split("::").last.underscore
       end
 
       def create(params)
-        system("#{params}") if params
-        JSON.parse(`#{MUSSEL} #{class_name} create`)
+        JSON.parse(`#{parse_params(params)} #{MUSSEL} #{class_name} create`)
       end
 
       def destroy(params)
-        system("#{params}") if params
-        JSON.parse(`#{MUSSEL} #{class_name} destroy`)
+        JSON.parse(`#{parse_params(params)} #{MUSSEL} #{class_name} destroy`)
+      end
+
+      def parse_params(params)
+        str = ""
+        params.keys.each do |k|
+          str = "#{str} #{k}=#{params[k]}"
+        end
+        str
       end
     end
+  end
+
+  class SshKeyPair < Base
+  end
+
+  class DcNetwork < Base
   end
 end

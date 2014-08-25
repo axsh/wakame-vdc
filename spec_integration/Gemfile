@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'rspec'
 gem 'fabrication'
 gem "rake"
 gem "net-ssh"
@@ -8,3 +7,9 @@ gem "net-ssh-multi"
 gem "net-scp"
 gem "ipaddress"
 gem "pry-nav"
+gem "activesupport"
+
+group :test do
+  gem 'rspec'
+end
+
