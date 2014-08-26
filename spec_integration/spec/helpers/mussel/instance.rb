@@ -9,8 +9,7 @@ module Mussel
     def self.create(params)
       setup_vif(params)
       create_ssh_key_pair
-      instance = super(params)
-      wait_instance
+      instance = wait_instance(super(params))
 
       instance
     end
@@ -32,7 +31,12 @@ module Mussel
       params[:vifs] = output_vifsfile
     end
 
-    def self.wait_instance
+    def self.wait_instance(instance)
+      loop do
+        sleep(1)
+        break if not show(instance.id).vif.empty?
+      end
+      show(instance.id)
     end
   end
 
