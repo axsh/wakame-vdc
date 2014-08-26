@@ -37,4 +37,4 @@ Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr,
 Dcmgr::Configurations.load Dcmgr::Configurations::Hva,
   [File.expand_path('../minimal_hva.conf', __FILE__)]
 
-Dcmgr.run_initializers('sequel')
+Dcmgr.run_initializers('sequel', 'logger')
