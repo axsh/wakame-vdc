@@ -82,7 +82,9 @@ describe "instances" do
       end
 
       it "has sent a message to collector to schedule the new instance" do
-        expect(Dcmgr.messaging).to have_received(:submit)
+        expect(Dcmgr.messaging).to have_received(:submit).with("scheduler",
+                                                               "schedule_instance",
+                                                               body['id'])
       end
     end
   end
