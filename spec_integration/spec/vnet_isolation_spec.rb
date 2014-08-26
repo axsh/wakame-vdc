@@ -23,18 +23,20 @@ feature 'vnet_isolation' do
     :image_id_lbnode => "wmi-lbnode1d64",
     :cpu_cores => 1,
     :hypervisor => "kvm",
-    :memory_size => 1024,
-    :ssh_key_id => "ssh-demo"
+    :memory_size => 1024
   }}
 
   scenario "creates a network and an instance" do
     network = Mussel::Network.create(network_params)
 
-    instance_1 = Mussel::Instance.create(instance_params.merge({
-      :vifs => {'eth0'=>{'index'=>'0','network'=>"#{network['id']}"}}
-    }))
+    instance_params[:vifs] = {'eth0'=>{'index'=>'0','network'=>"#{network['id']}"}}
+    setup_vif(instance_params)
+    create_ssh_key_pair(instance_params)
 
-    #expect(instance_1.ssh_to(instance_2)).to eq true
+    instance_1 = Mussel::Instance.create(instance_params)
+
+    Mussel::Instance.destroy(instance_1)
+
     expect(network).not_to eq nil
   end
 end
