@@ -206,6 +206,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
+  before do
+    # skip all PUT requests if it was terminated.
+    if request.put? && !params[:id].nil?
+      @lb = find_by_uuid(:LoadBalancer, params[:id])
+      if !@lb.nil? && @lb.state == C::LoadBalancer::STATE_TERMINATED
+        raise E::InvalidLoadBalancerState, "#{@lb.canonical_uuid} is terminated"
+      end
+    end
+    true
+  end
+
   put '/:id/register' do
     raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
 

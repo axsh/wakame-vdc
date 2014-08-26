@@ -1,0 +1,10 @@
+monitor_target {
+  monitor_item("ping1", :Script, File.expand_path("script/ping_monitor.sh", Dcmgr::DCMGR_ROOT))
+  monitor_item("zabbix1", :ZabbixAPI, :api_uri=>'http://localhost/zabbix/api_jsonrpc.php', :api_user=>'zabbix', :api_password=>'zabbix', :trigger_name=>'down public interface')
+
+  conditions {
+    #last_ntimes_failure(10, "zabbix1")
+    op_and(last_ntimes_failure(5, "zabbix1"), last_ntimes_failure(3, "ping1"))
+  }
+}
+

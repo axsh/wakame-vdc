@@ -7,13 +7,18 @@ Bundler.require(:test)
 
 require 'dcmgr'
 
+require_relative 'helper_methods'
+
 RSpec.configure do |c|
   c.formatter = :documentation
   c.color     = true
 
   c.before(:suite) do
-    DatabaseCleaner.strategy = :truncation
+    # We truncate the database once before running the entire suite
     DatabaseCleaner.clean_with :truncation
+
+    # We cleanup any data after tests using transactions since it's a lot faster
+    DatabaseCleaner.strategy = :transaction
   end
 
   c.before(:each) do
