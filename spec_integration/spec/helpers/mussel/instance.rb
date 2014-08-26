@@ -9,15 +9,17 @@ module Mussel
     def self.create(params)
       setup_vif(params)
       create_ssh_key_pair
-      super(params)
+      instance = super(params)
       wait_instance
+
+      instance
     end
 
     def self.create_ssh_key_pair
       @mussel_instance_id = @mussel_instance_id + 1
       output_keyfile="#{@ssh_key_pair_path}/key_pair.#{$$}_#{@mussel_instance_id}"
       system("ssh-keygen -N '' -f #{output_keyfile} -C #{output_keyfile}")
-      ret = SshKeyPair.create({
+      SshKeyPair.create({
         :description => output_keyfile,
         :public_key => "#{output_keyfile}.pub"
       })
@@ -31,6 +33,11 @@ module Mussel
     end
 
     def self.wait_instance
+    end
+  end
+
+  module Responses
+    class Instance < Base
     end
   end
 end

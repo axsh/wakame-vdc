@@ -12,7 +12,8 @@ module Mussel
       end
 
       def create(params)
-        JSON.parse(`#{parse_params(params)} #{MUSSEL} #{class_name} create`)
+        http_response = JSON.parse(`#{parse_params(params)} #{MUSSEL} #{class_name} create`)
+        Responses.const_get(class_name.camelize).new(http_response)
       end
 
       def destroy(params)
@@ -37,5 +38,16 @@ module Mussel
   end
 
   class DcNetwork < Base
+  end
+
+  module Responses
+    class Base < OpenStruct
+    end
+
+    class SshKeyPair < Base
+    end
+
+    class DcNetwork < Base
+    end
   end
 end

@@ -2,6 +2,7 @@
 
 require 'pry'
 require 'json'
+require 'ostruct'
 require 'active_support/inflector'
 
 require_relative 'mussel/base'
