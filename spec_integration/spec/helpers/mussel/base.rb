@@ -22,7 +22,7 @@ module Mussel
       def parse_params(params)
         str = response_format
         params.keys.each do |k|
-          "#{str} #{k}=#{params[k]}"
+          str = "#{str} #{k}=#{params[k]}"
         end
         str
       end

@@ -25,7 +25,7 @@ module Mussel
 
     def self.setup_vif(params)
       output_vifsfile="#{@vifs_path}/vifs.#{$$}_#{@mussel_instance_id}"
-      `echo "#{params[:vifs].to_s.gsub("=>",":").gsub(/\"/,"\\\\\\\"")}" > #{output_vifsfile}`
+      File.write(output_vifsfile, params[:vifs].to_s.gsub("=>",":"))
       params.delete(:vifs)
       params[:vifs] = output_vifsfile
     end
