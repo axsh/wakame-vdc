@@ -9,15 +9,27 @@ describe "instances" do
     use_database_cleaner_strategy_for_this_context :truncation
 
     let(:account) { Fabricate(:account) }
+
     let(:online_kvm_host_node) do
       Fabricate(:host_node, hypervisor: C::HostNode::HYPERVISOR_KVM)
     end
 
+    let(:image) do
+      backup_object = Fabricate(:backup_object)
+
+      Fabricate(:image) do
+        backup_object_id backup_object.canonical_uuid
+      end
+    end
+
+
     before(:each)  do
       # Stub out all Isono related methods
       stub_dcmgr_syncronized_message_ready
-      stub_online_host_nodes
-      stub_dcmgr_messaging
+      stub_online_host_nodes M::HostNode.where(id: online_kvm_host_node.id)
+      msg_double = stub_dcmgr_messaging
+
+      allow(msg_double).to receive(:submit)
 
       post("instances",
            params,
@@ -30,14 +42,6 @@ describe "instances" do
     #
 
     context "with only the required parameters" do
-      let(:image) do
-        backup_object = Fabricate(:backup_object)
-
-        Fabricate(:image) do
-          backup_object_id backup_object.canonical_uuid
-        end
-      end
-
       let(:params) do
         {
           image_id: image.canonical_uuid,
