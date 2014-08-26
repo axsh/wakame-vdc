@@ -11,6 +11,21 @@ require_relative 'helper_methods'
 
 DEFAULT_DATABASE_CLEANER_STRATEGY = :transaction
 
+# Transaction is the fasted database cleaner strategy by far but the drawback is
+# that it won't execute on_after_commit blocks in the code being tested. When we
+# want to include those blocks in our tests, we will have to use another strategy.
+#
+# Tests that include those blocsk can use this method to temporarily change it.
+def use_database_cleaner_strategy_for_this_context(strategy)
+  before(:context) do
+    DatabaseCleaner.strategy = strategy
+  end
+
+  after(:context) do
+    DatabaseCleaner.strategy = DEFAULT_DATABASE_CLEANER_STRATEGY
+  end
+end
+
 RSpec.configure do |c|
   c.formatter = :documentation
   c.color     = true
