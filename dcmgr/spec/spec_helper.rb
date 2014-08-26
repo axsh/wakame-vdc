@@ -15,7 +15,7 @@ DEFAULT_DATABASE_CLEANER_STRATEGY = :transaction
 # that it won't execute on_after_commit blocks in the code being tested. When we
 # want to include those blocks in our tests, we will have to use another strategy.
 #
-# Tests that include those blocsk can use this method to temporarily change it.
+# Tests that include those blocks can use this method to temporarily change it.
 def use_database_cleaner_strategy_for_this_context(strategy)
   before(:context) do
     DatabaseCleaner.strategy = strategy
