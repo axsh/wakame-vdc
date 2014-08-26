@@ -9,6 +9,8 @@ require 'dcmgr'
 
 require_relative 'helper_methods'
 
+DEFAULT_DATABASE_CLEANER_STRATEGY = :transaction
+
 RSpec.configure do |c|
   c.formatter = :documentation
   c.color     = true
@@ -18,7 +20,7 @@ RSpec.configure do |c|
     DatabaseCleaner.clean_with :truncation
 
     # We cleanup any data after tests using transactions since it's a lot faster
-    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.strategy = DEFAULT_DATABASE_CLEANER_STRATEGY
   end
 
   c.before(:each) do

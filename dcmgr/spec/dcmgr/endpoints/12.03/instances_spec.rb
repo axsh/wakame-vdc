@@ -6,6 +6,19 @@ describe "instances" do
   C = Dcmgr::Constants
 
   describe "POST" do
+    before(:context) do
+      # For this tests we need to use the truncation strategy because the code being
+      # tested here includes on_after_commit blocks. These don't get executed when
+      # the strategy is transaction.
+      DatabaseCleaner.strategy = :truncation
+    end
+
+    after(:context) do
+      # Once we're done we set it back to the default database cleaner strategy
+      # At the time of writing that would be transaction
+      DatabaseCleaner.strategy = DEFAULT_DATABASE_CLEANER_STRATEGY
+    end
+
     let(:online_kvm_host_node) do
       Fabricate(:host_node, hypervisor: C::HostNode::HYPERVISOR_KVM)
     end
@@ -18,7 +31,12 @@ describe "instances" do
       allow(::Dcmgr).to receive(:syncronized_message_ready).and_return(true)
 
       mock_online_nodes = M::HostNode.where(id: online_kvm_host_node.id)
-      allow(M::HostNode).to receive(:online_nodes).and_return mock_online_nodes
+      allow(M::HostNode).to receive(:online_nodes).and_return(mock_online_nodes)
+
+      msg_double = double("messaging")
+      allow(msg_double).to receive(:submit)
+
+      allow(::Dcmgr).to receive(:messaging).and_return(msg_double)
 
       #
       # Make the post request
@@ -61,6 +79,10 @@ describe "instances" do
       it "has created a new instance in the database" do
         uuid = body['id']
         expect(M::Instance[uuid]).not_to be_nil
+      end
+
+      it "has sent a message to collector to schedule the new instance" do
+        expect(Dcmgr.messaging).to have_received(:submit)
       end
     end
   end
