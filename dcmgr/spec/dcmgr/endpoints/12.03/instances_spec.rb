@@ -57,6 +57,11 @@ describe "instances" do
         expect(body['cpu_cores']).to eq 1
         expect(body['memory_size']).to eq 256
       end
+
+      it "has created a new instance in the database" do
+        uuid = body['id']
+        expect(M::Instance[uuid]).not_to be_nil
+      end
     end
   end
 
