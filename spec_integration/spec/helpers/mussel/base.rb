@@ -3,6 +3,7 @@
 module Mussel
   MUSSEL_PATH='/opt/axsh/wakame-vdc/client/mussel'
   MUSSEL = "#{MUSSEL_PATH}/mussel.sh"
+  RESPONSE_FORMAT='json'
 
   class Base
     class << self
@@ -19,11 +20,15 @@ module Mussel
       end
 
       def parse_params(params)
-        str = ""
+        str = response_format
         params.keys.each do |k|
-          str = "#{str} #{k}=#{params[k]}"
+          "#{str} #{k}=#{params[k]}"
         end
         str
+      end
+
+      def response_format
+        "DCMGR_RESPONSE_FORMAT=#{RESPONSE_FORMAT}"
       end
     end
   end

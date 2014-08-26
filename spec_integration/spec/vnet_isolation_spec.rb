@@ -24,14 +24,15 @@ feature 'vnet_isolation' do
     :cpu_cores => 1,
     :hypervisor => "kvm",
     :memory_size => 1024,
-    :ssh_key_id => "ssh-demo",
+    :ssh_key_id => "ssh-demo"
   }}
 
   scenario "creates a network and an instance" do
     network = Mussel::Network.create(network_params)
-    instance_1 = Mussel::Instance.create(instance_params.merge(
-      :vifs => "{'eth0':{'index':'0','network':'#{network['id']}'}}"
-    ))
+
+    instance_1 = Mussel::Instance.create(instance_params.merge({
+      :vifs => {'eth0'=>{'index'=>'0','network'=>"#{network['id']}"}}
+    }))
 
     #expect(instance_1.ssh_to(instance_2)).to eq true
     expect(network).not_to eq nil
