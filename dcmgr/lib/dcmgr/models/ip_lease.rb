@@ -38,7 +38,7 @@ module Dcmgr::Models
       if network_vif.instance
         st = Dcmgr::Scheduler.service_type(network_vif.instance)
       else
-        st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)
+        st = Dcmgr::Scheduler.service_type(Dcmgr::Configurations.dcmgr.default_service_type)
       end
 
       st.ip_address.schedule(network_vif)

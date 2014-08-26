@@ -173,7 +173,7 @@ module Dcmgr::Models
     end
 
     def add_vnet(network)
-      m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
+      m = MacLease.lease(Dcmgr::Configurations.dcmgr.mac_address_vendor_id)
       hn_vnet = HostNodeVnet.new
       hn_vnet.host_node = self
       hn_vnet.network = network
