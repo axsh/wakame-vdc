@@ -20,6 +20,11 @@ module Mussel
         JSON.parse(`#{response_format} #{MUSSEL} #{class_name} destroy #{uuid}`)
       end
 
+      def update(uuid, params)
+        http_response = JSON.parse(`#{parse_params(params)} #{MUSSEL} #{class_name} update #{uuid}`)
+        Responses.const_get(class_name.camelize).new(http_response)
+      end
+
       def show(uuid)
         http_response = JSON.parse(`#{response_format} #{MUSSEL} #{class_name} show #{uuid}`)
         Responses.const_get(class_name.camelize).new(http_response)
