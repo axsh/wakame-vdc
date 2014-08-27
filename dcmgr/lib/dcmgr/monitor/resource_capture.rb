@@ -23,13 +23,13 @@ module Dcmgr
         h = {}
         list.each {|i|
           begin
-            pidfile = "#{Dcmgr.conf.vm_data_dir}/#{i[:uuid]}/kvm.pid"
+            pidfile = "#{Dcmgr::Configurations.hva.vm_data_dir}/#{i[:uuid]}/kvm.pid"
             raise "Unable to find the pid file: #{i[:uuid]}" unless File.exists?(pidfile)
             logger.debug("Find pidfile: #{pidfile}")
 
             kvmpid = File.read(pidfile)
             logger.debug("#{i[:uuid]} pid: #{kvmpid}")
-            tryagain(opts={:timeout=>Dcmgr.conf.capture.timeout_sec, :retry=>Dcmgr.conf.capture.retry_count}) do
+            tryagain(opts={:timeout=>Dcmgr::Configurations.hva.capture.timeout_sec, :retry=>Dcmgr::Configurations.hva.capture.retry_count}) do
               h["#{i[:uuid]}"] = parse_pidstat(metric_name, exec_pidstat(metric_name, kvmpid.to_i))
             end
             h["#{i[:uuid]}"]["time"] = Time.at(h["#{i[:uuid]}"]["time"].to_i)
