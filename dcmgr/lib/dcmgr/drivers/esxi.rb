@@ -74,12 +74,12 @@ module Dcmgr
       def self.settings(ctx)
         if @esxi_options.nil?
           @esxi_options = {
-            :host => Dcmgr.conf.esxi_ipaddress,
-            :user => Dcmgr.conf.esxi_username,
-            :password => Dcmgr.conf.esxi_password,
-            :insecure => Dcmgr.conf.esxi_insecure,
-            :datastore => Dcmgr.conf.esxi_datastore,
-            :datacenter => Dcmgr.conf.esxi_datacenter,
+            :host => Dcmgr::Configurations.hva.esxi_ipaddress,
+            :user => Dcmgr::Configurations.hva.esxi_username,
+            :password => Dcmgr::Configurations.hva.esxi_password,
+            :insecure => Dcmgr::Configurations.hva.esxi_insecure,
+            :datastore => Dcmgr::Configurations.hva.esxi_datastore,
+            :datacenter => Dcmgr::Configurations.hva.esxi_datacenter,
           }
 
           @esxi_options.each { |k,v|
