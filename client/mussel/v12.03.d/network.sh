@@ -21,7 +21,7 @@ task_create() {
     $(add_param service_dhcp) \
     $(add_param account_id) \
   ) \
-  $(base_uri)/${namespace}s
+  $(base_uri)/${namespace}s.$(suffix)
 }
 
 task_destroy() {
