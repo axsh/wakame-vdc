@@ -11,8 +11,9 @@ feature 'Basic Virtual Network Operations' do
   end
 
   scenario 'Confirm that set once parameters can not be changed' do
-    pending 'not implemented, yet.'
-    fail
+    create_virtual_network_nw_demo1
+    confirm_parameter_immutability
+    delete_virtual_network
   end
 
   scenario 'Create instance to virtual network (Dynamic IP address)' do
@@ -74,5 +75,11 @@ feature 'Basic Virtual Network Operations' do
   def delete_virtual_network
     ret = Mussel::Network.destroy(@network.id)
     expect(ret.first).to eq @network.id
+  end
+
+  def confirm_parameter_immutability
+    ret = Mussel::Network.update(@network.id, {network: '10.100.9.0'})
+    expect(ret.id).to eq @network.id
+    expect(ret.ipv4_network).not_to eq '10.100.9.0'
   end
 end
