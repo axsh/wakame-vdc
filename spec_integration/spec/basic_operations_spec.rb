@@ -40,16 +40,8 @@ feature 'Basic Virtual Network Operations' do
     fail
   end
 
-  let(:dc_network_params) do
-    {
-      name: 'vnettest',
-      offering_network_mode: 'l2overlay',
-      allow_new_network: 1
-    }
-  end
-
   let(:dc_network) do
-    @dc_network || @dc_network = Mussel::DcNetwork.create(dc_network_params)
+    @dc_network || @dc_network = Mussel::DcNetwork.index.select {|i| i.name == 'vnet'}.first
   end
 
   let(:nw_demo1_params) do
@@ -75,9 +67,12 @@ feature 'Basic Virtual Network Operations' do
 
   def confirm_network_parameters_through_wakame_vdc_api
     expect(@network).not_to eq nil
+    expect(@network.ipv4_network).to eq nw_demo1_params[:network]
+    expect(@network.ipv4_gw).to eq nw_demo1_params[:gw]
   end
 
   def delete_virtual_network
-    Mussel::Network.destroy(@network.id)
+    ret = Mussel::Network.destroy(@network.id)
+    expect(ret.first).to eq @network.id
   end
 end
