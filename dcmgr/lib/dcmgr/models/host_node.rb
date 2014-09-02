@@ -72,7 +72,7 @@ module Dcmgr::Models
     def check_capacity(instance)
       raise ArgumentError unless instance.is_a?(Instance)
 
-      using_cpu_cores, using_memory_size = self.instances_dataset.lives.select { [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map {|i| i || 0}
+      using_cpu_cores, using_memory_size = self.instances_dataset.alives.select { [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map {|i| i || 0}
 
       (self.offering_cpu_cores >= using_cpu_cores + instance.cpu_cores) &&
         (self.offering_memory_size >= using_memory_size + instance.memory_size)
@@ -150,7 +150,7 @@ module Dcmgr::Models
 
     # Check the free resource capacity across entire local VDC domain.
     def self.check_domain_capacity?(cpu_cores, memory_size, num=1)
-      ds = Instance.dataset.lives.filter(:host_node => HostNode.online_nodes)
+      ds = Instance.dataset.alives.filter(:host_node => HostNode.online_nodes)
       alives_cpu_cores, alives_mem_size = ds.select{[sum(:cpu_cores), sum(:memory_size)]}.naked.first.values.map { |i| i || 0 }
       stopped_cpu_cores, stopped_mem_size = ds.filter(:state=>'stopped').select{ [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map { |i| i || 0 }
       # instance releases the resources during stopped state normally. however admins may
@@ -173,7 +173,7 @@ module Dcmgr::Models
     end
 
     def add_vnet(network)
-      m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
+      m = MacLease.lease(Dcmgr::Configurations.dcmgr.mac_address_vendor_id)
       hn_vnet = HostNodeVnet.new
       hn_vnet.host_node = self
       hn_vnet.network = network
@@ -193,7 +193,7 @@ module Dcmgr::Models
 
     protected
     def instances_usage(colname)
-      instances_dataset.lives.sum(colname).to_i
+      instances_dataset.alives.sum(colname).to_i
     end
   end
 end

@@ -199,7 +199,7 @@ module Dcmgr::Endpoints::V1203
         #   1. query string
         #   2. service type section in dcmgr.conf
         #   3. same location as original backup object.
-        bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[resource_service_type].backup_storage_id
+        bkst_uuid = params[:backup_storage_id] || Dcmgr::Configurations.dcmgr.service_types[resource_service_type].backup_storage_id
         if bkst_uuid
           M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
         else

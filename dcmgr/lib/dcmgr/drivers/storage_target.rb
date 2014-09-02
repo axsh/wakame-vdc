@@ -10,11 +10,11 @@ module Dcmgr
 
       # Retrive configuration section for this or child class.
       def self.driver_configuration
-        Dcmgr.conf.sotrage_target
+        Dcmgr::Configurations.sta.sotrage_target
       end
 
       def driver_configuration
-        Dcmgr.conf.storage_target
+        Dcmgr::Configurations.sta.storage_target
       end
 
       def create(ctx)

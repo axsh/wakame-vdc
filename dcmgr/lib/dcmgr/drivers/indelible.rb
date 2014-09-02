@@ -19,10 +19,10 @@ module Dcmgr::Drivers
 
     def initialize()
       super
-      @webapi_port = Dcmgr.conf.backing_store.webapi_port
-      @webapi_ip   = Dcmgr.conf.backing_store.webapi_ip
-      indelible_volume = Dcmgr.conf.backing_store.indelible_volume
-      wakame_volumes_dir = Dcmgr.conf.backing_store.wakame_volumes_dir
+      @webapi_port = driver_configuration.webapi_port
+      @webapi_ip   = driver_configuration.webapi_ip
+      indelible_volume = driver_configuration.indelible_volume
+      wakame_volumes_dir = driver_configuration.wakame_volumes_dir
 
       @vol_path = "#{indelible_volume}/#{wakame_volumes_dir}"
     end

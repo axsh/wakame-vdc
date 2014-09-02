@@ -11,11 +11,11 @@ module Dcmgr
       include Dcmgr::Helpers::ByteUnit
 
       def backing_store
-        @backing_store = Dcmgr::Drivers::BackingStore.driver_class(Dcmgr.conf.backing_store_driver).new
+        @backing_store = Dcmgr::Drivers::BackingStore.driver_class(Dcmgr::Configurations.sta.backing_store_driver).new
       end
 
       def storage_target
-        @storage_target = Dcmgr::Drivers::StorageTarget.driver_class(Dcmgr.conf.storage_target_driver).new
+        @storage_target = Dcmgr::Drivers::StorageTarget.driver_class(Dcmgr::Configurations.sta.storage_target_driver).new
       end
 
       def setup_and_export_volume_new
@@ -70,7 +70,7 @@ module Dcmgr
             # download backup data from backup storage. then create
             # volume from the snapshot.
             begin
-              snap_tmp_path = File.expand_path("#{@volume[:uuid]}.tmp", Dcmgr.conf.tmp_dir)
+              snap_tmp_path = File.expand_path("#{@volume[:uuid]}.tmp", Dcmgr::Configurations.sta.tmp_dir)
               begin
                 # download backup object to the tmporary place.
                 backup_storage = Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])

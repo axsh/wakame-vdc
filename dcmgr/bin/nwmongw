@@ -16,7 +16,7 @@ class MonitoringGateway < Isono::NodeModules::Base
   initialize_hook do
     event = Isono::NodeModules::EventChannel.new(node)
     @worker = Isono::ThreadPool.new(1)
-    @driver = Dcmgr.conf.driver_class.new
+    @driver = Dcmgr::Configurations.nwmongw.driver_class.new
 
     event.subscribe('hva/instance_started', '#') do |args|
       @worker.pass {
