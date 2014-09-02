@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 def setup_vif(params)
-  output_vifsfile="#{@vifs_path}/vifs.#{$$}_#{@mussel_instance_id}"
+  output_vifsfile="#{File.dirname(__FILE__)}/vifs.#{$$}"
   File.write(output_vifsfile, params[:vifs].to_s.gsub("=>",":"))
   params.delete(:vifs)
   params[:vifs] = output_vifsfile

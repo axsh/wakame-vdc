@@ -17,13 +17,16 @@ feature 'Basic Virtual Network Operations' do
   end
 
   scenario 'Create instance to virtual network (Dynamic IP address)' do
-    pending 'not implemented, yet.'
+    pending 'Unsupported feature.'
     fail
   end
 
   scenario 'Create instance to virtual network (Static IP address)' do
-    pending 'not implemented, yet.'
-    fail
+    create_virtual_network_nw_demo1
+    start_new_instance_with_ipv4_address_10_105_0_10
+    confirm_instance_with_expected_configuration
+    terminate_instance
+    delete_virtual_network
   end
 
   scenario 'Virtual network can not be deleted if there is instance' do
@@ -62,6 +65,16 @@ feature 'Basic Virtual Network Operations' do
     }
   end
 
+  let(:instance_params) do
+    {
+      image_id: "wmi-centos1d64",
+      image_id_lbnode: "wmi-lbnode1d64",
+      cpu_cores: 1,
+      hypervisor: "kvm",
+      memory_size: 1024
+    }
+  end
+
   def create_virtual_network_nw_demo1
     @network = Mussel::Network.create(nw_demo1_params)
   end
@@ -81,5 +94,27 @@ feature 'Basic Virtual Network Operations' do
     ret = Mussel::Network.update(@network.id, {network: '10.100.9.0'})
     expect(ret.id).to eq @network.id
     expect(ret.ipv4_network).not_to eq '10.100.9.0'
+  end
+
+  def start_new_instance_with_ipv4_address_10_105_0_10
+    instance_params[:vifs] = {
+      'eth0' => {'index'=>'0', 'network'=>@network.id, 'ipv4_addr'=>'10.105.0.10'}
+    }
+
+    setup_vif(instance_params)
+    create_ssh_key_pair(instance_params)
+
+    @instance = Mussel::Instance.create(instance_params)
+  end
+
+  def confirm_instance_with_expected_configuration
+    expect(@instance.vifs.first).not_to eq nil
+    expect(@instance.vifs.first['network']).to eq @network.id
+    expect(@instance.vifs.first['ipv4_addr']).to eq '10.105.0.10'
+  end
+
+  def terminate_instance
+    ret = Mussel::Instance.destroy(@instance)
+    expect(ret.first).to eq @instance.id
   end
 end
