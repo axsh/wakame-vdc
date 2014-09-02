@@ -27,8 +27,8 @@ module Dcmgr::Drivers
     end
 
     def configuration
-      if Dcmgr::Configurations.nwmongw.driver_class != Zabbix::Configuration
-        raise("Configuration for #{self.class} is not loaded")
+      if !Dcmgr::Configurations.nwmongw.driver.is_a?(Zabbix::Configuration)
+        raise("Unsupported driver: #{Dcmgr::Configurations.nwmongw.driver_class}")
       end
       Dcmgr::Configurations.nwmongw.driver
     end
