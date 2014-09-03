@@ -30,8 +30,11 @@ feature 'Basic Virtual Network Operations' do
   end
 
   scenario 'Virtual network can not be deleted if there is instance' do
-    pending 'not implemented, yet.'
-    fail
+    create_virtual_network_nw_demo1
+    start_new_instance_with_ipv4_address_10_105_0_10
+    network_delete_fail_if_instance_exist
+    terminate_instance
+    delete_virtual_network
   end
 
   scenario 'Instance works properly after restart (PowerOff/PowerOn)' do
@@ -128,4 +131,8 @@ feature 'Basic Virtual Network Operations' do
     expect(ret.first).to eq @instance.id
   end
 
+  def network_delete_fail_if_instance_exist
+    ret = Mussel::Network.destroy(@network.id)
+    expect(ret.empty?).to eq true
+  end
 end
