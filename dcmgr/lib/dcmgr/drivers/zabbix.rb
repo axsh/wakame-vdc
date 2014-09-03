@@ -10,10 +10,9 @@ require 'dcmgr/configurations'
 module Dcmgr::Drivers
   class Zabbix < NetworkMonitoring
     include Dcmgr::Logger
-    include Fuguta::Configuration::ConfigurationMethods
     include Dcmgr::Helpers::ZabbixJsonRpc
 
-    def_configuration do
+    class Configuration < NetworkMonitoring::Configuration
       param :api_uri
       param :api_user
       param :api_password
