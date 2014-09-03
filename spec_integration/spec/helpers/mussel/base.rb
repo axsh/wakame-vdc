@@ -60,6 +60,7 @@ module Mussel
     end
 
     class Collection
+      # TODO pagination
       def self.generate(klass, array)
         array.map { |i| Responses.const_get(klass).new(i) }
       end

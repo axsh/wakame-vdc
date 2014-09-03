@@ -44,6 +44,12 @@ feature 'Basic Virtual Network Operations' do
     fail
   end
 
+  let(:nw_manage) do
+    @nw_manage || @nw_manage = Mussel::Network.index.select do |n|
+      n.dc_network['name'] == 'management'
+    end.first
+  end
+
   let(:dc_network) do
     @dc_network || @dc_network = Mussel::DcNetwork.index.select {|i| i.name == 'vnet'}.first
   end
@@ -97,24 +103,29 @@ feature 'Basic Virtual Network Operations' do
   end
 
   def start_new_instance_with_ipv4_address_10_105_0_10
+    # instance_params[:vifs] = {
+    #   'eth0' => {'index'=>'0', 'network'=>@network.id, 'ipv4_addr'=>'10.105.0.10', 'mac_addr'=>'525400000002'},
+    #   'eth1' => {'index'=>'1', 'network'=>nw_manage.id, 'ipv4_addr'=>'10.1.0.10', 'mac_addr'=>'525400000012'}
+    # }
     instance_params[:vifs] = {
-      'eth0' => {'index'=>'0', 'network'=>@network.id, 'ipv4_addr'=>'10.105.0.10', 'mac_addr'=>'525400000001'}
+      'eth0' => {'index'=>'0', 'network'=>@network.id},
+      'eth1' => {'index'=>'1', 'network'=>nw_manage.id}
     }
 
     setup_vif(instance_params)
     create_ssh_key_pair(instance_params)
 
-    @instance = Mussel::Instance.create(instance_params)
+    @instance = wait_instance(Mussel::Instance.create(instance_params), nw_manage.id)
   end
 
   def confirm_instance_with_expected_configuration
-    expect(@instance.vifs.first).not_to eq nil
-    expect(@instance.vifs.first['network']).to eq @network.id
-    expect(@instance.vifs.first['ipv4_addr']).to eq '10.105.0.10'
+    expect(@instance.vif.first).not_to eq nil
+    expect(@instance.vif.first['network_id']).to eq @network.id
   end
 
   def terminate_instance
     ret = Mussel::Instance.destroy(@instance)
     expect(ret.first).to eq @instance.id
   end
+
 end
