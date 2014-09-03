@@ -98,7 +98,7 @@ feature 'Basic Virtual Network Operations' do
 
   def start_new_instance_with_ipv4_address_10_105_0_10
     instance_params[:vifs] = {
-      'eth0' => {'index'=>'0', 'network'=>@network.id, 'ipv4_addr'=>'10.105.0.10'}
+      'eth0' => {'index'=>'0', 'network'=>@network.id, 'ipv4_addr'=>'10.105.0.10', 'mac_addr'=>'525400000001'}
     }
 
     setup_vif(instance_params)
