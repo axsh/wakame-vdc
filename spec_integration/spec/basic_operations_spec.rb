@@ -55,6 +55,15 @@ feature 'Basic Virtual Network Operations' do
   scenario 'Change instance IP address of primary insterface' do
     pending 'not implemented, yet.'
     fail
+    create_virtual_network_nw_demo1
+    start_new_instance_with_ipv4_address_10_105_0_10
+    confirm_instance_ipv4_address
+    power_off_instance
+    change_instance_ipv4_address
+    power_on_instance
+    confirm_instance_ipv4_address
+    terminate_instance
+    delete_virtual_network
   end
 
   let(:nw_manage) do
@@ -174,5 +183,17 @@ feature 'Basic Virtual Network Operations' do
 
   def power_on_instance
     Mussel::Instance.power_on(@instance)
+  end
+
+  def confirm_instance_ipv4_address
+    ip = nil
+    Net::SSH.start(ip, 'root', :keys => [@key_files[@instance.id]]) do |ssh|
+      ip = ssh.exec!("ifconfig eth0 | grep 'inet addr:' | sed -e 's/^.*inet addr://' -e 's/ .*//'")
+    end
+    expect(ip).to eq '10.105.0.2'
+  end
+
+  def change_instance_ipv4_address
+    # TODO create endpoint to change instance ipv4 address
   end
 end
