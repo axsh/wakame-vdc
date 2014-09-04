@@ -1,0 +1,73 @@
+# -*-Shell-script-*-
+#
+#
+#
+
+# include files
+
+. ${BASH_SOURCE[0]%/*}/functions
+
+# function
+
+function request_header() {
+  echo -H Content-Type:application/json
+
+  if [[ -n "${notification_id}" ]]; then
+    echo -H X-Notification-Id:${notification_id}
+  fi
+
+  if [[ -n "${message_type}" ]]; then
+    echo -H X-Message-Type:${message_type}
+  fi
+}
+
+function base_uri() {
+  echo ${DOLPHIN_BASE_URI}
+}
+
+function cmd_index() {
+  local namespace=$1 cmd=$2 uuid=$3
+
+  call_api -X GET $(base_uri)/${namespace}s
+}
+
+function cmd_xcreate() {
+  local namespace=$1
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  call_api -X POST ${MUSSEL_CUSTOM_DATA} $(base_uri)/${namespace}
+}
+
+function cmd_destroy() {
+  local namespace=$1 cmd=$2 uuid=$3
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  call_api -X DELETE $(base_uri)/${namespace}
+}
+
+function cmd_put() {
+  local namespace=$1 cmd=$2 uuid=$3
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  call_api -X PUT $(base_uri)/${namespace}
+}
+
+function run_cmd() {
+  local namespace=$1 cmd=$2
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  local namespace_path=${BASH_SOURCE[0]%/*}/dolphin.d/${namespace}.sh
+  [[ -f "${namespace_path}" ]] || {
+    echo "[ERROR] no such namespace '${namespace}'" >&2
+    return 1
+  }
+
+  . ${namespace_path}
+  invoke_task $*
+}
+
