@@ -4,6 +4,10 @@ require 'spec_helper'
 
 feature 'Basic Virtual Network Operations' do
 
+  before(:all) do
+    @key_files = {}
+  end
+
   scenario 'Create and Delete virtual network' do
     create_virtual_network_nw_demo1
     confirm_network_parameters_through_wakame_vdc_api
@@ -38,8 +42,14 @@ feature 'Basic Virtual Network Operations' do
   end
 
   scenario 'Instance works properly after restart (PowerOff/PowerOn)' do
-    pending 'not implemented, yet.'
-    fail
+    create_virtual_network_nw_demo1
+    start_new_instance_with_ipv4_address_10_105_0_10
+    ssh_to_instance
+    power_off_instance
+    power_on_instance
+    ssh_to_instance
+    terminate_instance
+    delete_virtual_network
   end
 
   scenario 'Change instance IP address of primary insterface' do
@@ -116,9 +126,10 @@ feature 'Basic Virtual Network Operations' do
     }
 
     setup_vif(instance_params)
-    create_ssh_key_pair(instance_params)
+    output_keyfile = create_ssh_key_pair(instance_params)
 
     @instance = wait_instance(Mussel::Instance.create(instance_params), nw_manage.id)
+    @key_files[@instance.id] = output_keyfile
   end
 
   def confirm_instance_with_expected_configuration
@@ -134,5 +145,34 @@ feature 'Basic Virtual Network Operations' do
   def network_delete_fail_if_instance_exist
     ret = Mussel::Network.destroy(@network.id)
     expect(ret.empty?).to eq true
+  end
+
+  # TODO refactor
+  def ssh_to_instance
+    stdout = ""
+    ip = extract_ip_address(@instance, nw_manage.id)
+    ret = Net::SSH.start(ip, 'root', :keys => [@key_files[@instance.id]]) do |ssh|
+      stdout = ssh.exec!('hostname')
+    end
+    stdout.chomp!
+    expect("i-#{stdout}").to eq @instance.id
+  end
+
+  def power_off_instance
+    Mussel::Instance.power_off(@instance)
+
+    i = nil
+    loop do
+      i = Mussel::Instance.show(@instance.id)
+      p "instance state: #{i.state}"
+      break if i.state == 'halted'
+      sleep(1)
+    end
+
+    expect(i.state).to eq 'halted'
+  end
+
+  def power_on_instance
+    Mussel::Instance.power_on(@instance)
   end
 end

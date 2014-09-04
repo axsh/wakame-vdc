@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+SSH_OPTS = "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
 def setup_vif(params)
   output_vifsfile="#{File.dirname(__FILE__)}/vifs.#{$$}"
   File.write(output_vifsfile, params[:vifs].to_s.gsub("=>",":"))
@@ -15,6 +17,7 @@ def create_ssh_key_pair(params)
     :public_key => "#{output_keyfile}.pub"
   })
   params[:ssh_key_id] = ssh_key_pair.id
+  output_keyfile
 end
 
 def wait_instance(instance, network_uuid)
@@ -29,10 +32,7 @@ def wait_instance(instance, network_uuid)
 
   instance = Mussel::Instance.show(instance.id)
   p instance.inspect
-  target_vif = instance.vif.select do |v|
-    v['network_id'] == network_uuid
-  end.first
-  ip = target_vif['ipv4']['address']
+  ip = extract_ip_address(instance, network_uuid)
 
   loop do
     sleep(1)
@@ -42,4 +42,10 @@ def wait_instance(instance, network_uuid)
   end
 
   instance
+end
+
+def extract_ip_address(instance, network_uuid)
+  instance.vif.select do |v|
+    v['network_id'] == network_uuid
+  end.first['ipv4']['address']
 end
