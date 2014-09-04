@@ -3,14 +3,14 @@
 SSH_OPTS = "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 def setup_vif(params)
-  output_vifsfile="#{File.dirname(__FILE__)}/vifs.#{$$}"
+  output_vifsfile="#{File.dirname(__FILE__)}/vifs.#{$$}.#{Time.now.strftime("%Y%m%d%H%M%S")}"
   File.write(output_vifsfile, params[:vifs].to_s.gsub("=>",":"))
   params.delete(:vifs)
   params[:vifs] = output_vifsfile
 end
 
 def create_ssh_key_pair(params)
-  output_keyfile="#{File.dirname(__FILE__)}/key_pair.#{$$}"
+  output_keyfile="#{File.dirname(__FILE__)}/key_pair.#{$$}.#{Time.now.strftime("%Y%m%d%H%M%S")}"
   system("ssh-keygen -N '' -f #{output_keyfile} -C #{output_keyfile}")
   ssh_key_pair = Mussel::SshKeyPair.create({
     :description => output_keyfile,
