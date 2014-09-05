@@ -607,20 +607,22 @@ RUN_SH
       end
 
       def build_qemu_command(hc)
-        opts = {}
         # Finds three TCP listen ports at a time.
         #   QEMU monitor port, VNC console, Serial console.
-        monitor_tcp_port, opts[:vnc_tcp_port], opts[:serial_tcp_port] =
+        monitor_tcp_port, vnc_tcp_port, serial_tcp_port =
           find_unused_tcp_listen_ports(3)
         hc.dump_instance_parameter('monitor.port', monitor_tcp_port)
 
         # run vm
         inst = hc.inst
+        opts = {}
         if driver_configuration.vnc_options
+          opts[:vnc_tcp_port] = vnc_tcp_port
           hc.dump_instance_parameter('vnc.port', opts[:vnc_tcp_port])
         end
 
         if driver_configuration.serial_port_options
+          opts[:serial_tcp_port] = serial_tcp_port
           hc.dump_instance_parameter('serial.port', opts[:serial_tcp_port])
         end
 
