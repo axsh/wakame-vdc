@@ -384,6 +384,14 @@ get-decode-password()
     umount-image 2>/dev/null 1>/dev/null
 }
 
+updatescripts-raw()
+{
+    for fn in "${scriptArray[@]}" ; do
+	sudo cp "$SCRIPT_DIR/$fn" ./mntpoint/Windows/Setup/Scripts
+    done
+    cp ./mntpoint/Windows/Setup/Scripts/SetupComplete-firstboot.cmd \
+       ./mntpoint/Windows/Setup/Scripts/SetupComplete.cmd
+}
 
 if [ "$2" == "-next" ]
 then
@@ -402,6 +410,12 @@ case "$cmd" in
     -mtu) # *m*ount windows image, *t*ar log files, *u*mount
 	[[ "$3" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
         mount-tar-umount "$3"
+	;;
+    -updatescripts) # push latest scripts into existing untared seed image
+	partitionNumber=2
+	mount-image "$(pwd)" "$WINIMG" $partitionNumber
+	updatescripts-raw
+	umount-image
 	;;
     -mountrw)
 	partitionNumber=2
