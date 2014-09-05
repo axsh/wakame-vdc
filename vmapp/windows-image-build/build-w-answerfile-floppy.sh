@@ -403,6 +403,10 @@ case "$cmd" in
 	[[ "$3" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
         mount-tar-umount "$3"
 	;;
+    -mountrw)
+	partitionNumber=2
+	mount-image "$(pwd)" "$WINIMG" $partitionNumber
+	;;
     -mount)
 	partitionNumber=2
 	mount-image "$(pwd)" "$WINIMG" $partitionNumber "-o ro"
