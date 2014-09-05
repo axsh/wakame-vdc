@@ -384,6 +384,28 @@ get-decode-password()
     umount-image 2>/dev/null 1>/dev/null
 }
 
+final-seed-image-packaging()
+{
+    loopstatus="$(sudo losetup -a)"
+    [ "$loopstatus" = "" ] || reportfail "This code requires taht no other loop devices be in use: $loopstatus"
+    initialtar="$(echo ./thisrun/windows-*tar.gz)"
+    seedtar="windows${LABEL}r2.x84_64.kvm.md.raw.tar.gz"
+    [ -f "$initialtar" ] || reportfail "Initial tar file not found in ./thisrun/"
+    try cd ./thisrun
+    [ -d final-seed-image ] && reportfail "Seed image already packaged"
+    mkdir ./final-seed-image
+    try cd ./final-seed-image
+    time try tar xzvf ../windows-*tar.gz
+    [ -f "$WINIMG" ] || reportfail "No Windows image found in the tar file"
+    try mv "$WINIMG" "${seedtar%.tar.gz}"
+
+    try sudo kpartx -av "${seedtar%.tar.gz}"
+    try sudo ntfslabel /dev/mapper/loop0p1 root
+    try sudo kpartx -dv /dev/loop0
+    try sudo losetup -d /dev/loop0
+    time try tar czvSf "$seedtar" "${seedtar%.tar.gz}"
+}
+
 updatescripts-raw()
 {
     for fn in "${scriptArray[@]}" ; do
@@ -436,6 +458,9 @@ case "$cmd" in
 	;;
     -pw)
 	get-decode-password
+	;;
+    -package | -pack*)
+	final-seed-image-packaging
 	;;
     ### from here start new framework
     0-init)
