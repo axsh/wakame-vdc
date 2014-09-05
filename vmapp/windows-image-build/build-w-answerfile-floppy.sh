@@ -519,6 +519,10 @@ case "$cmd" in
     -kill*kvm)
 	kill-kvm
 	;;
+    -cleanup)
+	umount-image
+	kill-kvm
+	;;
     -package | -pack*)
 	final-seed-image-packaging
 	;;
