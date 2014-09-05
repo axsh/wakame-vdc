@@ -4,6 +4,10 @@ shared_examples "instances_post" do
   describe "POST" do
     use_database_cleaner_strategy_for_this_context :truncation
 
+    #
+    # Required resources
+    #
+
     let(:account) { Fabricate(:account) }
 
     let(:online_kvm_host_node) do
@@ -18,6 +22,10 @@ shared_examples "instances_post" do
       end
     end
 
+    #
+    # Request parameters and headers
+    #
+
     let(:required_params) do
       {
         image_id: image.canonical_uuid,
@@ -31,6 +39,9 @@ shared_examples "instances_post" do
       { Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid }
     end
 
+    #
+    # The actual request
+    #
 
     before(:each)  do
       # Stub out all Isono related methods
@@ -42,6 +53,10 @@ shared_examples "instances_post" do
 
       post("instances", params, headers)
     end
+
+    #
+    # The tests
+    #
 
     context "with only the required parameters" do
       let(:params) { required_params }
