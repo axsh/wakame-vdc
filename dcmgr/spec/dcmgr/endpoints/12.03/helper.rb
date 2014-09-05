@@ -12,6 +12,8 @@ C = Dcmgr::Constants
 # Stub methods
 #
 
+#TODO: Move stubs to a module
+
 # The API uses this to initialize Isono messaging and raises an error if it
 # returns a falsy value. Just stub it out and make it return a truey value.
 def stub_dcmgr_syncronized_message_ready
@@ -39,6 +41,10 @@ def stub_dcmgr_messaging
   allow(::Dcmgr).to receive(:messaging).and_return(msg_double)
 
   msg_double
+end
+
+def suppress_error_logging
+  Dcmgr::Logger::CustomLogger.any_instance.stub(:error)
 end
 
 #
@@ -81,6 +87,8 @@ end
 def app
   Dcmgr::Endpoints::V1203::CoreAPI
 end
+
+
 
 RSpec.configure do |c|
   c.include Rack::Test::Methods

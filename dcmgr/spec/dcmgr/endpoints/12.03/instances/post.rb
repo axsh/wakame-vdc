@@ -49,6 +49,8 @@ shared_examples "instances_post" do
       stub_online_host_nodes M::HostNode.where(id: online_kvm_host_node.id)
       stub_dcmgr_messaging
 
+      suppress_error_logging
+
       allow(Dcmgr.messaging).to receive(:submit)
 
       post("instances", params, headers)
