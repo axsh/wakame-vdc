@@ -151,6 +151,9 @@ boot-and-log-kvm-boot()
     echo "$@" >"thisrun/kvm-boot-cmdline-$(date +%y%m%d-%H%M%S)"
     "$@"  >>./kvm.stdout 2>>./kvm.stderr &
     echo "$!" >thisrun/kvm.pid
+    # the following are used by kvm-ui-util.sh
+    echo "$MONITOR" >thisrun/kvm.mon
+    echo "$(( VNC + 5900 ))" >thisrun/kvm.vnc
 }
 
 mount-image-raw()
