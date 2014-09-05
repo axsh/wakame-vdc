@@ -114,6 +114,12 @@ shared_examples "instances_post" do
 
       it_returns_error(:InvalidParameter, 400, 'cpu_cores')
     end
+
+    context "with a non numeric value for memory_size" do
+      let(:params) { required_params.merge(memory_size: 'not a number') }
+
+      it_returns_error(:InvalidParameter, 400, 'memory_size')
+    end
   end
 
 end
