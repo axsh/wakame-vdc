@@ -68,6 +68,7 @@ boot-common-params()
 {
     echo -m 2000 -smp 1 \
 	 -no-kvm-pit-reinjection \
+	 -monitor telnet::$MONITOR,server,nowait \
 	 -vnc :$VNC \
 	 -drive file="$WINIMG",id=windows-drive,cache=none,aio=native,if=none \
 	 -device virtio-blk-pci,drive=windows-drive,bootindex=0,bus=pci.0,addr=0x4 \
@@ -270,6 +271,9 @@ esac
 RDP=1${UD}389
 SSH=1${UD}022
 MISC=1${UD}123
+
+# And other ports to be used by KVM
+MONITOR=1${UD}302
 VNC=1${UD}0
 echo "vncviewer :$(( VNC + 5900 ))"
 
@@ -436,6 +440,10 @@ genCount="${cmd#*gen}"
 genCount="${genCount%%-*}"
 
 case "$cmd" in
+    -screendump | -screenshot | -sd | -ss)
+	dumptime="$(date +%y%m%d-%H%M%S)"  # assume not more than one dump per second
+	echo "screendump thisrun/screendump-$dumptime.ppm" | nc localhost $MONITOR
+	;;
     -mm*) # mount metadata
 	mount-image "$(pwd)" metadata.img 1
 	;;
