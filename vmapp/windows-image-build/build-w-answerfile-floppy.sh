@@ -135,7 +135,7 @@ boot-and-log-kvm-boot()
     echo "$!" >thisrun/kvm.pid
 }
 
-mount-image()
+mount-image-raw()
 {
     local installdir="$1"
     local imagename="$2"
@@ -152,7 +152,7 @@ mount-image()
     try mkdir mntpoint
     
     loopstatus="$(sudo losetup -a)"
-    if [[ "$loopstatus"  == *$(pwd -P)/$imagename* ]]
+    if [[ "$loopstatus"  == *$(pwd -P)/* ]]
     then
 	reportfail "Image file is already mounted."
     else
@@ -173,15 +173,54 @@ mount-image()
     sudo mount /dev/mapper/${loopdev}p${partion} mntpoint $options
 }
 
+mount-image()
+{
+    local installdir="$1"
+    local imagename="$2"
+    partion="$3"
+    options="$4"
+    mount-image-raw "$@"
+}
+
+umount-image-raw1()
+{
+    # relying on info in ./loopdev to be correct is
+    # probably two big of an assumption.  Therefore the
+    # umount-image-raw2 is testing a complete scan
+    # of $(sudo losetup -a) to find images that are
+    # associated to loop devices.
+    if loopdev="$(cat ./loopdev 2>/dev/null)"; then
+	sudo umount mntpoint
+	sudo kpartx -dv /dev/$loopdev
+	sudo losetup -d /dev/$loopdev
+	rm  ./loopdev
+    fi
+}
+
+umount-image-raw2()
+{
+    loopstatus="$(sudo losetup -a)"
+    # example line: /dev/loop1: [0801]:15729479 (/tmp/st/dir08/win-2008.raw)
+    loopstatus="${loopstatus//:/ }" # make parsing easier
+    while read loopdev something inode imgpath thatsall ; do
+	[[ "$imgpath" == \(*\) ]] || reportfail "verification of losetup parsing: $imgpath"
+	if [[ "${imgpath#(}" == $(pwd)/* ]]; then
+	    sudo umount mntpoint
+	    sudo kpartx -dv "$loopdev"
+	    sudo losetup -d "$loopdev"
+	fi
+    done <<<"$loopstatus"
+}
+
 umount-image()
 {
-    loopdev="$(cat ./loopdev 2>/dev/null)" || reportfail "could not read ./loopdev"
-    sudo umount mntpoint
-    sudo kpartx -dv /dev/$loopdev
-    sudo losetup -d /dev/$loopdev
+    umount-image-raw1 # for now do both techniques, maybe remove raw1 later
+    umount-image-raw2
     # next line assumes nobody else is using loop mounts
-    loopcheck="$(sudo losetup -a)"
-    [ "$loopcheck" = "" ] || reportfail "Still loopback devices in use. Either umounting failed or they were created by other processes."
+    loopstatus="$(sudo losetup -a)"
+    [[ "$loopstatus"  != *$(pwd -P)/* ]] || \
+	reportfail "Still loopback devices in use: $loopcheck"
+}
 
 kill-kvm()
 {
