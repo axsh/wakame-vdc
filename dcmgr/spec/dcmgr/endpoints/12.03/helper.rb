@@ -5,6 +5,9 @@ require 'spec_helper'
 require "rack"
 require "rack/test"
 
+M = Dcmgr::Models
+C = Dcmgr::Constants
+
 #
 # Stub methods
 #
