@@ -73,6 +73,15 @@ shared_examples "instances_post" do
 
       it_returns_error(:InvalidImageID, 400)
     end
+
+    context "with a machine image uuid with a malformed synax" do
+      let(:params) { required_params.merge(image_id: "i am not a uuid") }
+
+      error_msg = "Dcmgr::Models::InvalidUUIDError: Invalid uuid or unsupported" +
+                  " uuid: i am not a uuid in Dcmgr::Models::Image"
+
+      it_returns_error(:DatabaseError, 400, error_msg)
+    end
   end
 
 end
