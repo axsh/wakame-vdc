@@ -16,11 +16,19 @@ function render_email_address() {
 	EOS
 }
 
+## shunit2 setup
+function oneTimeSetUp() {
+  setup_email
+}
+
+function oneTimeTearDown() {
+  delete_email
+}
+
 ## step
 
 # API test for create new notification.
 function test_create_new_notification() {
-  setup_email
   notification_id=11 email=${email} run_cmd notification create
   assertEquals 0 $?
 } 
@@ -35,8 +43,6 @@ function test_get_notification() {
 function test_delete_notification() {
   run_cmd notification destroy 11
   assertEquals 0 $?
-
-  delete_email
 }
 
 ## shunit2
