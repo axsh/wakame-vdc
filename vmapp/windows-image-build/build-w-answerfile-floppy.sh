@@ -470,6 +470,8 @@ case "$cmd" in
 	echo "1003-gen$genCount-second-boot" >thisrun/nextstep
 	;;
     1003-gen*-second-boot)
+	try 'thepid="$(cat thisrun/kvm.pid)"'
+	kill -0 $thepid && reportfail "expecting KVM not to be already running"
 	[ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	echo "1003b-record-logs-at-ctr-alt-delete-prompt1-gen$genCount" >thisrun/nextstep
 	;;
