@@ -213,6 +213,7 @@ confirm-sysprep-shutdown()
 set -x
 
 VIRTIOISO="virtio-win-0.1-74.iso"  # version of virtio disk and network drivers known to work
+ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
 
 case "$1" in
     *8*)
@@ -254,6 +255,18 @@ portforward=""
 portforward="$portforward,hostfwd=tcp:0.0.0.0:$RDP-:3389"  # RDP
 portforward="$portforward,hostfwd=tcp:0.0.0.0:$SSH-:22"  # ssh (for testing)
 portforward="$portforward,hostfwd=tcp:0.0.0.0:$MISC-:7890"  # test (for testing)
+portforward="$portforward,hostfwd=tcp:0.0.0.0:10050-:10050"  # zabbix
+portforward="$portforward,hostfwd=tcp:0.0.0.0:10051-:10051"  # zabbix
+
+scriptArray=(
+    wakame-init-first-boot.ps1
+    sysprep-for-backup.cmd
+    SetupComplete-firstboot.cmd
+    SetupComplete-install.cmd
+    wakame-init-every-boot.cmd
+    wakame-init-every-boot.ps1
+    wakame-functions.ps1
+)
 
 install-windows-from-iso()
 {
@@ -264,14 +277,7 @@ install-windows-from-iso()
     mkdir -p "./mnt"
     sudo mount -t vfat -o loop $FLP "./mnt"
     sudo cp "$SCRIPT_DIR/$ANSFILE" "./mnt/Autounattend.xml"
-    for fn in FinalStepsForInstall.cmd \
-		  Unattend-for-first-boot.xml \
-		  wakame-init-first-boot.ps1 \
-		  sysprep-for-backup.cmd \
-		  SetupComplete-firstboot.cmd \
-		  SetupComplete-install.cmd \
-		  wakame-init-every-boot.cmd \
-		  wakame-init-every-boot.ps1 ; do
+    for fn in "${scriptArray[@]}" FinalStepsForInstall.cmd Unattend-for-first-boot.xml $ZABBIXEXE ; do
 	sudo cp "$SCRIPT_DIR/$fn" "./mnt/"
     done
 
@@ -281,8 +287,12 @@ install-windows-from-iso()
     # to keep the answer file as simple as possible.  Another
     # alternative seemed to be to use FinalStepsForInstall.cmd, but
     # for some reason that did not work.
+    # Also adding the call to the zabbix installer here so that the base
+    # version of the run-sysprep.cmd file does not hard code the exact name
+    # of the zabbix installer.
     prodkey="$(cat keyfile)" || reportfail "File named \"keyfile\" with MAK product key must be in the current directory"
     {
+	echo "A:$ZABBIXEXE"
 	echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $prodkey"
 	echo
 	cat "$SCRIPT_DIR/run-sysprep.cmd"
