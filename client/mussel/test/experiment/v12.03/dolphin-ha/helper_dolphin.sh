@@ -15,6 +15,7 @@ function setup_dolphin_vars() {
   DOLPHIN_HOST=${DOLPHIN_HOST:-localhost}
   DOLPHIN_PORT=${DOLPHIN_PORT:-9004}
   DOLPHIN_BASE_URI=${DOLPHIN_BASE_URI:-${base_uri:-http://${DOLPHIN_HOST}:${DOLPHIN_PORT}}}
+  JSONSH=${JSONSH:-/usr/local/bin/json.sh}
 }
 
 ### instance
