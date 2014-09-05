@@ -42,6 +42,9 @@ FIRSTBOOT (defaults to "", i.e. do not put in meta-data/first-boot)
 AUTOACTIVATE (defaults to "", i.e. do not put in meta-data/auto-activate)
 NATNET (defaults to "", i.e. disconnect from Internet)
 PROXY (defaults to "", i.e. do not put in meta-data/auto-activate-proxy)
+IPV4 (defaults to 10.0.2.15)
+NETMASK (defaults to 255.255.255.0)
+GATEWAY (defaults to 10.0.2.2)
 EOF
     exit
 }
@@ -72,9 +75,11 @@ boot-common-params()
 	 -k ja $(boot-date-param)
 }
 
-if [ "$MACADDR" == "" ] ; then
-    MACADDR="52-54-00-11-a0-5b"
-fi
+[ "$MACADDR" == "" ] &&  MACADDR="52-54-00-11-a0-5b"
+[ "$IPV4" == "" ] &&  IPV4="10.0.2.15"
+[ "$NETMASK" == "" ] &&  NETMASK="255.255.255.0"
+[ "$GATEWAY" == "" ] &&  GATEWAY="10.0.2.2"
+
 
 configure-metadata-disk()
 {
@@ -84,15 +89,20 @@ configure-metadata-disk()
     
     # networking interfaces
     sudo bash -c "mkdir mntpoint/meta-data/network/interfaces/macs/$MACADDR"
-    sudo bash -c "echo 10.0.2.15 >mntpoint/meta-data/network/interfaces/macs/$MACADDR/local-ipv4s"
-    sudo bash -c "echo 255.255.0.0 >mntpoint/meta-data/network/interfaces/macs/$MACADDR/x-netmask"
-    sudo bash -c "echo 10.0.2.2 >mntpoint/meta-data/network/interfaces/macs/$MACADDR/x-gateway"
+    sudo bash -c "echo $IPV4 >mntpoint/meta-data/network/interfaces/macs/$MACADDR/local-ipv4s"
+    sudo bash -c "echo $NETMASK >mntpoint/meta-data/network/interfaces/macs/$MACADDR/x-netmask"
+    sudo bash -c "echo $GATEWAY >mntpoint/meta-data/network/interfaces/macs/$MACADDR/x-gateway"
     sudo bash -c "echo 8.8.8.8 >mntpoint/meta-data/network/interfaces/macs/$MACADDR/x-dns"
     
     # hosts file
     sudo bash -c 'mkdir mntpoint/meta-data/extra-hosts'
     sudo bash -c 'echo 192.168.2.22 >mntpoint/meta-data/extra-hosts/twotwo'
     sudo bash -c 'echo 192.168.2.23 >mntpoint/meta-data/extra-hosts/twothree'
+
+    # defaults values for zabbix testing
+    sudo bash -c "echo $IPV4 >mntpoint/meta-data/local-ipv4"
+    sudo bash -c 'echo "DEMO1-VM" >mntpoint/meta-data/instance-id'
+    sudo bash -c 'echo "192.168.2.1" >mntpoint/meta-data/x-monitoring/zabbix-servers'
     
     if [ "$FIRSTBOOT" = "" ]; then
 	sudo rm -f mntpoint/meta-data/first-boot
