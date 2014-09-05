@@ -49,6 +49,7 @@ def body
   JSON.parse(last_response.body)
 end
 
+#TODO: Move this to a module
 def it_returns_error(error, http_status = nil, message = nil)
   it "returns error #{http_status} #{error} #{message}" do
     expect(body['error']).to eq "Dcmgr::Endpoints::Errors::#{error}"
@@ -64,6 +65,12 @@ def it_returns_error(error, http_status = nil, message = nil)
     it "has error message: #{message}" do
       expect(body['message']).to eq message
     end
+  end
+end
+
+def it_does_not_crash
+  it "doesn't crash" do
+    expect(last_response.body).not_to eq "<h1>Internal Server Error</h1>"
   end
 end
 

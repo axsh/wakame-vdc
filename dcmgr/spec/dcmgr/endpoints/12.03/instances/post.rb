@@ -27,6 +27,10 @@ shared_examples "instances_post" do
       }
     end
 
+    let(:headers) do
+      { Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid }
+    end
+
 
     before(:each)  do
       # Stub out all Isono related methods
@@ -36,15 +40,8 @@ shared_examples "instances_post" do
 
       allow(Dcmgr.messaging).to receive(:submit)
 
-      post("instances",
-           params,
-           Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
+      post("instances", params, headers)
     end
-
-    #
-    # TODO: fix crash when account is nil
-    # TODO: fix crash when backupobject is nil
-    #
 
     context "with only the required parameters" do
       let(:params) { required_params }
@@ -65,6 +62,18 @@ shared_examples "instances_post" do
         expect(Dcmgr.messaging).to have_received(:submit).with("scheduler",
                                                                "schedule_instance",
                                                                body['id'])
+      end
+
+      context "with no account id in the http headers" do
+        let(:headers) { Hash.new }
+
+        it_does_not_crash
+      end
+
+      context "when the image provided has nil as its backup object" do
+        let(:image) { Fabricate(:image) }
+
+        it_does_not_crash
       end
     end
 
