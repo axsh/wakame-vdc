@@ -108,6 +108,12 @@ shared_examples "instances_post" do
 
       it_returns_error(:DatabaseError, 400, error_msg)
     end
+
+    context "with a non numeric value for cpu_cores" do
+      let(:params) { required_params.merge(cpu_cores: 'not a number') }
+
+      it_returns_error(:InvalidParameter, 400, 'cpu_cores')
+    end
   end
 
 end

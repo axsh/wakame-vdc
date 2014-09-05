@@ -57,7 +57,7 @@ end
 
 #TODO: Move this to a module
 def it_returns_error(error, http_status = nil, message = nil)
-  it "returns error #{http_status} #{error} #{message}" do
+  it "returns error #{error}" do
     expect(body['error']).to eq "Dcmgr::Endpoints::Errors::#{error}"
   end
 
