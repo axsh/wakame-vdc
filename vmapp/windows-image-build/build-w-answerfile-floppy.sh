@@ -193,13 +193,15 @@ windowsLogs=(
     Windows/TSSysprep.log
     Windows/WindowsUpdate.log
     Windows/Setup
+    "'Program Files/ZABBIX Agent/zabbix_agentd.conf'"
 )
 
 tar-up-windows-logs()
 {
-    [ -d mntpoint/Windows ] || reportfail "Windows disk image not mounted"
     target="$1"
-    tar czvf "$target" -C mntpoint "${windowsLogs[@]}"
+    [ -d mntpoint/Windows ] || reportfail "Windows disk image not mounted"
+    # eval is needed to deal with the quotes needed for spaces in a file name
+    eval tar czvf "$target" -C mntpoint "${windowsLogs[@]}"
     cp $(pwd)/qemu-vlan0.pcap "${target%.tar.gz}.pcap"
 }
 
