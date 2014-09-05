@@ -181,6 +181,16 @@ umount-image()
     # next line assumes nobody else is using loop mounts
     loopcheck="$(sudo losetup -a)"
     [ "$loopcheck" = "" ] || reportfail "Still loopback devices in use. Either umounting failed or they were created by other processes."
+
+kill-kvm()
+{
+    kvmpid="$(< thisrun/kvm.pid)"
+    if [ -d /proc/$kvmpid ]; then
+	echo "Terminating KVM instance pid=$kvmpid"
+	kill -TERM "$kvmpid"
+    else
+	echo "KVM already stopped."
+    fi
 }
 
 # potentially interesting logs and directories for debugging
@@ -458,6 +468,9 @@ case "$cmd" in
 	;;
     -pw)
 	get-decode-password
+	;;
+    -kill*kvm)
+	kill-kvm
 	;;
     -package | -pack*)
 	final-seed-image-packaging
