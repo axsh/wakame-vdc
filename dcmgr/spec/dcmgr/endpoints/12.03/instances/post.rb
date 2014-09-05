@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-require File.dirname(__FILE__) + "/../helper"
 
-describe "instances" do
+shared_examples "instances_post" do
   describe "POST" do
     use_database_cleaner_strategy_for_this_context :truncation
 
@@ -17,6 +16,15 @@ describe "instances" do
       Fabricate(:image) do
         backup_object_id backup_object.canonical_uuid
       end
+    end
+
+    let(:required_params) do
+      {
+        image_id: image.canonical_uuid,
+        hypervisor: Dcmgr::Constants::HostNode::HYPERVISOR_KVM,
+        cpu_cores: 1,
+        memory_size: 256
+      }
     end
 
 
@@ -39,14 +47,7 @@ describe "instances" do
     #
 
     context "with only the required parameters" do
-      let(:params) do
-        {
-          image_id: image.canonical_uuid,
-          hypervisor: Dcmgr::Constants::HostNode::HYPERVISOR_KVM,
-          cpu_cores: 1,
-          memory_size: 256
-        }
-      end
+      let(:params) { required_params }
 
       it "returns json decribing the created instance" do
         expect(body['account_id']).to eq account.canonical_uuid
@@ -65,6 +66,12 @@ describe "instances" do
                                                                "schedule_instance",
                                                                body['id'])
       end
+    end
+
+    context "with a machine image uuid that doesn't exist" do
+      let(:params) { required_params.merge(image_id: "wmi-nothere") }
+
+      it_returns_error(:InvalidImageID, 400)
     end
   end
 

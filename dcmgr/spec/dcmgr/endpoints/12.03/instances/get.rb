@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-require File.dirname(__FILE__) + "/../helper"
 
-describe "instances" do
+shared_examples "instances_get" do
 
   describe "GET" do
     before(:each)  { get("instances", params) }
