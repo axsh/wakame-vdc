@@ -1,17 +1,35 @@
 #!/bin/bash
 
-export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || reportfail  # use -P to get expanded absolute path
+# don't run unless $KILLPGOK is set or this script is the process leader
+[ -n "$KILLPGOK" ] ||  kill -0 -$$ || {
+	echo "((Read the first part of this script to understand its error handling))" 1>&2
+	exit 255
+    }
+
+export KILLPGOK=yes  # allow for all scripts called by this script
 
 reportfail()
 {
-    echo "Failed...exiting. ($*)" 1>&2
-    exit 255
+    # The goal is to make this function simply (i.e. always) terminate
+    # not only this script but also *all* related scripts and
+    # processes.  A simple "exit" can be hidden by subprocesses,
+    # therefore this function sends SIGTERM to all processes in the
+    # same process group as the process that caught the error.  If the
+    # process calling this script wants to receive SIGTERM, it should
+    # set $KILLPGOK to "yes".  If not, it should call this script with
+    # setsid.  Similarly, this script can also use setsid to protect
+    # processes that it starts from termination when it makes sense.
+    echo "Failed...terminating process group. ($*)" 1>&2
+    kill -TERM 0  # see man kill(2), should kill all processes in same process group
+
+    echo "This line should not be reached." 1>&2 ; exit 255
 }
 
-try()
-{
-    eval "$@" || reportfail "$@"
-}
+try() { eval "$@" || reportfail "$@,$?" ; }
+
+trap 'echo "pid=$BASHPID exiting" 1>&2 ; exit 255' TERM  # feel free to specialize this
+
+export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || reportfail
 
 usage() {
     cat <<'EOF'
