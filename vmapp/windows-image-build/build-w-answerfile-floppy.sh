@@ -105,7 +105,14 @@ configure-metadata-disk()
     [ -f metadata.img ] || reportfail "metadata.img file not found in current directory"
     mount-image "$(pwd)" metadata.img 1 || reportfail "mounting of metadata.img failed"
     sudo bash -c 'echo "DEMO1-VM" >mntpoint/meta-data/local-hostname'
-    
+
+    # public key
+    if ! [ -f testsshkey ]; then
+	try ssh-keygen -f testsshkey -N ""
+    fi
+    sudo bash -c "mkdir -p mntpoint/meta-data/public-keys/0"
+    sudo bash -c "echo $IPV4 >mntpoint/meta-data/public-keys/0/openssh-key"
+
     # networking interfaces
     sudo bash -c "mkdir mntpoint/meta-data/network/interfaces/macs/$MACADDR"
     sudo bash -c "echo $IPV4 >mntpoint/meta-data/network/interfaces/macs/$MACADDR/local-ipv4s"
