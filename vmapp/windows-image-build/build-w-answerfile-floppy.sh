@@ -228,6 +228,7 @@ umount-image-raw1()
 umount-image-raw2()
 {
     loopstatus="$(sudo losetup -a)"
+    [ "$loopstatus" = "" ] && return 0
     # example line: /dev/loop1: [0801]:15729479 (/tmp/st/dir08/win-2008.raw)
     loopstatus="${loopstatus//:/ }" # make parsing easier
     while read loopdev something inode imgpath thatsall ; do
