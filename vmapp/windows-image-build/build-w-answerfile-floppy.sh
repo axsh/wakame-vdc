@@ -469,9 +469,9 @@ get-decode-password()
 final-seed-image-packaging()
 {
     loopstatus="$(sudo losetup -a)"
-    [ "$loopstatus" = "" ] || reportfail "This code requires taht no other loop devices be in use: $loopstatus"
+    [ "$loopstatus" = "" ] || reportfail "This code requires that no other loop devices be in use: $loopstatus"
     initialtar="$(echo ./thisrun/windows-*tar.gz)"
-    seedtar="windows${LABEL}r2.x84_64.kvm.md.raw.tar.gz"
+    seedtar="windows${LABEL}r2.x86_64.kvm.md.raw.tar.gz"
     [ -f "$initialtar" ] || reportfail "Initial tar file not found in ./thisrun/"
     try cd ./thisrun
     [ -d final-seed-image ] && reportfail "Seed image already packaged"
