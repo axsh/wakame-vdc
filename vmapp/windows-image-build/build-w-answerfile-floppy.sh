@@ -486,6 +486,7 @@ final-seed-image-packaging()
     try sudo kpartx -dv /dev/loop0
     try sudo losetup -d /dev/loop0
     time try tar czvSf "$seedtar" "${seedtar%.tar.gz}"
+    time try md5sum "$seedtar" >"$seedtar".md5
 }
 
 updatescripts-raw()
