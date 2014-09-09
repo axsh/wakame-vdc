@@ -17,7 +17,7 @@ is_public=${is_public:-}
 
 ## step
 
-#
+# API test for instance create
 function test_instance_create() {
   create_instance 
 }

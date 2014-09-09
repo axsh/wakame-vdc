@@ -19,7 +19,7 @@ function setUp() {
 
 ## step
 
-#
+# API test for instance destroy
 function test_instance_destroy() {
   destroy_instance
 }
