@@ -158,13 +158,14 @@ feature 'Basic Virtual Network Operations' do
 
   # TODO refactor
   def ssh_to_instance
-    stdout = ""
     ip = extract_ip_address(@instance, nw_manage.id)
-    ret = Net::SSH.start(ip, 'root', :keys => [@key_files[@instance.id]]) do |ssh|
-      stdout = ssh.exec!('hostname')
+
+    ret = Net::SSH.start(ip, 'root', :keys => [@key_files[@instance.id]], :user_known_hosts_file => '/dev/null', :paranoid => false) do |ssh|
+      ssh.exec!('hostname')
     end
-    stdout.chomp!
-    expect("i-#{stdout}").to eq @instance.id
+    ret.chomp!
+
+    expect(ret).to eq @instance.id.gsub(/i-/, "")
   end
 
   def power_off_instance
