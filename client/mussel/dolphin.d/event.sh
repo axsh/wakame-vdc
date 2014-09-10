@@ -5,6 +5,13 @@
 
 . ${BASH_SOURCE[0]%/*}/base.sh
 
+function task_index() {
+  if [[ -n ${start_time} ]]; then
+    xquery="start_time=${start_time}"
+  fi
+  cmd_index $*
+}
+
 function task_show() {
   local namespace=$1 cmd=$2 start_id=$3 
 

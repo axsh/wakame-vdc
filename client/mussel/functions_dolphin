@@ -26,9 +26,9 @@ function base_uri() {
 }
 
 function cmd_index() {
-  local namespace=$1 cmd=$2 uuid=$3
+  local namespace=$1 cmd=$2 
 
-  call_api -X GET $(base_uri)/${namespace}s
+  call_api -X GET $(base_uri)/${namespace}s$([[ -z "${xquery}" ]] || echo ?${xquery})
 }
 
 function cmd_xcreate() {
