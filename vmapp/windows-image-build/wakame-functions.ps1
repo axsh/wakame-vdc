@@ -177,6 +177,7 @@ function Update_Hosts_File
 
 function Try_Auto_Activation
 {
+    $mdl = Get_MD_Letter
     if (Test-Path ("$mdl\meta-data\auto-activate"))
     {
 	try {

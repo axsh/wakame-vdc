@@ -15,6 +15,7 @@ Update_Hosts_File
 
 Try_Auto_Activation
 
+$mdl = Get_MD_Letter
 if (Test-Path ("$mdl\meta-data\first-boot"))
 {
     # A zero byte pw.enc file will indicate to HVA that the image (now
