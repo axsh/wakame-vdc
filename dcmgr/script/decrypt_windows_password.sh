@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -o pipefail
+
 ssh_private_key=$1
 inst_uuid=$2
 api_uri=${3:-'http://127.0.0.1:9001'}
@@ -21,15 +24,17 @@ function call_api() {
 }
 
 function decrypt() {
-  key=$1
-  encrypted_base64=$2
+  local key=$1
+  local encrypted_base64=$2
 
-  echo "$encrypted_base64" | base64 --decode |
-                            openssl rsautl -decrypt -inkey $key -oaep
+  echo "$encrypted_base64" \
+    | base64 --decode \
+    | openssl rsautl -decrypt -inkey "$key" -oaep
 }
 
-password=$(call_api | awk -F '"encrypted_password":"' '{print $2}' |
-                      awk -F '"' '{print $1}' |
-                      sed 's/\\n/\n/g')
+password=$(call_api \
+  | awk -F '"encrypted_password":"' '{print $2}' \
+  | awk -F '"' '{print $1}' \
+  | sed 's/\\n/\n/g')
 
 echo $(decrypt "$ssh_private_key" "$password")
