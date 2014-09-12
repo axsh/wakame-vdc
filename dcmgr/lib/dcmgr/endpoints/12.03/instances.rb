@@ -183,18 +183,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
   end
   quota 'instance.count'
+
+  describe "Starts a new instance"
+  param :cpu_cores, :Integer, in: 1..128, on_error: proc { raise E::InvalidParameter, :cpu_cores }
+  param :memory_size, :Integer, min: 128, on_error: proc { raise E::InvalidParameter, :memory_size }
   post do
-    # description 'Runs a new VM instance'
-    # param :image_id, string, :required
-    # param :host_node_id, string, :optional
-    # param :hostname, string, :optional
-    # param :user_data, string, :optional
-    # param :security_groups, array, :optional
-    # param :vifs, Ruby or JSON hash, :optional, example {"eth0":{"index":"1","network":"nw-demo1","security_groups":"sg-demofgr"},"eth1":{"index":"1","network":"nw-demo2","security_groups":[]}}
-    # param :ssh_key_id, string, :optional
-    # param :network_id, string, :optional
-    # param :ha_enabled, string, :optional
-    # param :display_name, string, :optional
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
 
     if params['hypervisor']
@@ -203,20 +196,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
     else
       raise E::InvalidParameter, :hypervisor
-    end
-
-    params['cpu_cores'] = params['cpu_cores'].to_i
-    if params['cpu_cores'].between?(1, 128)
-
-    else
-      raise E::InvalidParameter, :cpu_cores
-    end
-
-    params['memory_size'] = params['memory_size'].to_i
-    if params['memory_size'].between?(128, 999999)
-
-    else
-      raise E::InvalidParameter, :memory_size
     end
 
     if !M::HostNode.check_domain_capacity?(params['cpu_cores'], params['memory_size'])
