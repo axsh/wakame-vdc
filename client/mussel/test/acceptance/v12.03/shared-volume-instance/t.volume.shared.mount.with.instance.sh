@@ -122,7 +122,7 @@ function test_exchange_shared_volume_between_two_running_instances(){
   test -n "{$volume_uuid}"
   assertEquals 0 $?
 
-  echo "instance_uuid1=${instace_uuid1}, extra volume uuid=${volume_uuid}"
+  echo "instance_uuid1=${instance_uuid1}, extra volume uuid=${volume_uuid}"
 
   # boot shared volume instance "instance_uuid2" without extra volume.
   volumes_args=""
@@ -130,7 +130,7 @@ function test_exchange_shared_volume_between_two_running_instances(){
 
   local instance_uuid2=${instance_uuid}
 
-  echo "instance_uuid2=${instace_uuid2}"
+  echo "instance_uuid2=${instance_uuid2}"
 
   # detach volume from instance_uuid1
   instance_id=${instance_uuid1} run_cmd volume detach "${volume_uuid}"
@@ -180,7 +180,7 @@ function test_exchange_shared_volume_between_two_halted_instances(){
   test -n "{$volume_uuid}"
   assertEquals 0 $?
 
-  echo "instance_uuid1=${instace_uuid1}, extra volume uuid=${volume_uuid}"
+  echo "instance_uuid1=${instance_uuid1}, extra volume uuid=${volume_uuid}"
 
   # poweroff instance_uuid1
   run_cmd instance poweroff ${instance_uuid1} >/dev/null
@@ -193,7 +193,7 @@ function test_exchange_shared_volume_between_two_halted_instances(){
 
   local instance_uuid2=${instance_uuid}
 
-  echo "instance_uuid2=${instace_uuid2}"
+  echo "instance_uuid2=${instance_uuid2}"
 
   # poweroff instance_uuid2
   run_cmd instance poweroff ${instance_uuid2} >/dev/null
