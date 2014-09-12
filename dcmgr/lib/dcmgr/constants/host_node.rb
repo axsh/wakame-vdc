@@ -14,7 +14,12 @@ module Dcmgr::Constants
     ARCH_X86_64=:x86_64.to_s.freeze
 
     SUPPORTED_ARCH=[ARCH_X86, ARCH_X86_64].freeze
-    SUPPORTED_HYPERVISOR=[HYPERVISOR_DUMMY, HYPERVISOR_KVM, HYPERVISOR_LXC, HYPERVISOR_ESXI, HYPERVISOR_OPENVZ].freeze
+
+    SUPPORTED_HYPERVISOR=[HYPERVISOR_DUMMY,
+                          HYPERVISOR_KVM,
+                          HYPERVISOR_LXC,
+                          HYPERVISOR_ESXI,
+                          HYPERVISOR_OPENVZ].freeze
 
     STATUS_ONLINE='online'.freeze
     STATUS_OFFLINE='offline'.freeze
