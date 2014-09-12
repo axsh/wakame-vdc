@@ -194,15 +194,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                       min: 128,
                       on_error: proc { raise E::InvalidParameter, :memory_size },
                       desc: "The amount of memory you wish to give the instance. (in MB)"
+
+  param :hypervisor, :String,
+                     in: C::HostNode::SUPPORTED_HYPERVISOR
+                     on_error: proc { raise E::InvalidParameter, :hypervisor },
+                     desc: "The hypervisor that you want to start this instance with."
   post do
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
 
-    if params['hypervisor']
-      if M::HostNode.online_nodes.filter(:hypervisor=>params['hypervisor']).empty?
-        raise E::InvalidParameter, "Unknown/Inactive hypervisor:#{params['hypervisor']}"
-      end
-    else
-      raise E::InvalidParameter, :hypervisor
+    if M::HostNode.online_nodes.filter(:hypervisor=>params['hypervisor']).empty?
+      raise E::InvalidParameter, "Unknown/Inactive hypervisor:#{params['hypervisor']}"
     end
 
     if !M::HostNode.check_domain_capacity?(params['cpu_cores'], params['memory_size'])
