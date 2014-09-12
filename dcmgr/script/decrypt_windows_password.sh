@@ -29,7 +29,7 @@ function decrypt() {
 }
 
 password=$(call_api | awk -F '"encrypted_password":"' '{print $2}' |
-                                       awk -F '"' '{print $1}' |
-                                       sed 's/\\n/\n/g')
+                      awk -F '"' '{print $1}' |
+                      sed 's/\\n/\n/g')
 
 echo $(decrypt "$ssh_private_key" "$password")
