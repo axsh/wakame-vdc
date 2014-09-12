@@ -178,13 +178,14 @@ function Update_Hosts_File
 function Try_Auto_Activation
 {
     $mdl = Get_MD_Letter
-    if (Test-Path ("$mdl\meta-data\auto-activate"))
+    if (Test-Path ("$mdl\meta-data\auto-activate")) # does *directory* exist?
     {
 	try {
 	    $proxy = ""
-	    if (Test-Path ("$mdl\meta-data\auto-activate-proxy")) {
-		$proxy = Read_Metadata("auto-activate-proxy")
+	    if (Test-Path ("$mdl\meta-data\auto-activate\auto-activate-proxy")) {
+		$proxy = Read_Metadata("auto-activate\auto-activate-proxy")
 		Write-Host "Setting proxy to $proxy."
+		# contents of auto-activate-proxy should be IP:PORT, e.g.: 10.1.3.44:8888
 		netsh.exe winhttp set proxy $proxy 2>&1 | Write-Host
 	    }
 	    netsh.exe winhttp show proxy 2>&1 | Write-Host

@@ -57,9 +57,9 @@ Note the following environment are used:
 BOOTDATE (defaults to 2014-04-01)
 MACADDR (defaults to 52-54-00-11-a0-5b)
 FIRSTBOOT (defaults to "", i.e. do not put in meta-data/first-boot)
-AUTOACTIVATE (defaults to "", i.e. do not put in meta-data/auto-activate)
+AUTOACTIVATE (defaults to "", i.e. do not put in directory meta-data/auto-activate)
 NATNET (defaults to "", i.e. disconnect from Internet)
-PROXY (defaults to "", i.e. do not put in meta-data/auto-activate-proxy)
+PROXY (defaults to "", i.e. do not put in meta-data/auto-activate/auto-activate-proxy)
 IPV4 (defaults to 10.0.2.15)
 NETMASK (defaults to 255.255.255.0)
 GATEWAY (defaults to 10.0.2.2)
@@ -138,16 +138,16 @@ configure-metadata-disk()
     fi
 
     if [ "$AUTOACTIVATE" = "" ]; then
-	sudo rm -f mntpoint/meta-data/auto-activate
+	sudo rm -fr mntpoint/meta-data/auto-activate
     else
-	sudo touch mntpoint/meta-data/auto-activate
+	sudo mkdir -p  mntpoint/meta-data/auto-activate
 	sudo touch "thisrun/auto-activate-set-$(date +%y%m%d-%H%M%S)"
     fi
 
     if [ "$PROXY" = "" ]; then
-	sudo rm -f mntpoint/meta-data/auto-activate-proxy
+	sudo rm -f mntpoint/meta-data/auto-activate/auto-activate-proxy
     else
-	echo "$PROXY" | sudo tee mntpoint/meta-data/auto-activate-proxy
+	echo "$PROXY" | sudo tee mntpoint/meta-data/auto-activate/auto-activate-proxy
 	sudo touch "thisrun/auto-activate-proxy-set-$(date +%y%m%d-%H%M%S)"
     fi
     umount-image
