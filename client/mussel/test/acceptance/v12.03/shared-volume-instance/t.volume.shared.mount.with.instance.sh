@@ -21,10 +21,6 @@ function setUp(){
 }
 
 ## instance
-function before_create_instance() {
-  # boot instance with second blank volume.
-  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
-}
 
 ## step
 
@@ -38,6 +34,8 @@ function before_create_instance() {
 # 6. umount.
 # 7. terminate the instance.
 function test_mount_shared_volume_with_instance(){
+  # boot instance with second blank volume.
+  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
   # boot shared volume instance.
   create_instance
 
