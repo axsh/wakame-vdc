@@ -187,12 +187,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   describe "Starts a new instance"
   param :cpu_cores, :Integer,
                     in: 1..128,
-                    on_error: proc { raise E::InvalidParameter, :cpu_cores }
+                    on_error: proc { raise E::InvalidParameter, :cpu_cores },
                     desc: "The number of cpu cores to assign to this instance."
 
   param :memory_size, :Integer,
                       min: 128,
-                      on_error: proc { raise E::InvalidParameter, :memory_size }
+                      on_error: proc { raise E::InvalidParameter, :memory_size },
                       desc: "The amount of memory you wish to give the instance. (in MB)"
   post do
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
