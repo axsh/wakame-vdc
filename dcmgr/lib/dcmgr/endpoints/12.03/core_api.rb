@@ -11,18 +11,6 @@ require 'sinatra/browse'
 require 'dcmgr/endpoints/errors'
 require 'dcmgr/endpoints/12.03/quota_definitions'
 
-module Sinatra::Browse
-  # We want to use the min and max validator here so I just quickly monkey patch
-  # sinatra-browse to include them. This will be removed when the next sinatra-browse
-  # version is released as it will include these.
-  parameter_type(:Integer) do
-    coerce { |value| Integer(value) }
-
-    validator(:min) { |min| @value >= min }
-    validator(:max) { |max| @value <= max }
-  end
-end
-
 module Dcmgr::Endpoints::V1203
   class CoreAPI < Sinatra::Base
     include Dcmgr::Logger
