@@ -21,10 +21,6 @@ function setUp(){
 }
 
 ## instance
-function before_create_instance() {
-  # boot instance with second blank volume.
-  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
-}
 
 ## step
 
@@ -38,6 +34,8 @@ function before_create_instance() {
 # 6. umount.
 # 7. terminate the instance.
 function test_mount_shared_volume_with_instance(){
+  # boot instance with second blank volume.
+  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
   # boot shared volume instance.
   create_instance
 
@@ -97,6 +95,131 @@ function test_mount_shared_volume_with_instance(){
   # terminate the instance
   destroy_instance
 }
+
+
+# Test that the volume can exchange between two RUNNING instances.
+#
+# 1. boot shared volume instance "instance_uuid1" with extra blank volume.
+# 2. boot shared volume instance "instance_uuid2" without extra volume.
+# 3. detach volume from instance_uuid1
+# 4. attach volume to instance_uuid2
+# 7. terminate instance_uuid1 & instance_uuid2.
+function test_exchange_shared_volume_between_two_running_instances(){
+  # boot instance with second blank volume.
+  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
+
+  # boot shared volume instance "instance_uuid1" with extra blank volume.
+  create_instance
+
+  local instance_uuid1=${instance_uuid}
+
+  run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
+  assertEquals 0 $?
+
+  local volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
+  test -n "{$volume_uuid}"
+  assertEquals 0 $?
+
+  echo "instance_uuid1=${instance_uuid1}, extra volume uuid=${volume_uuid}"
+
+  # boot shared volume instance "instance_uuid2" without extra volume.
+  volumes_args=""
+  create_instance
+
+  local instance_uuid2=${instance_uuid}
+
+  echo "instance_uuid2=${instance_uuid2}"
+
+  # detach volume from instance_uuid1
+  instance_id=${instance_uuid1} run_cmd volume detach "${volume_uuid}"
+  retry_until "document_pair? volume ${volume_uuid} state available"
+  assertEquals 0 $?
+
+  # attach volume to instance_uuid2
+  instance_id=${instance_uuid2} run_cmd volume attach "${volume_uuid}"
+  retry_until "document_pair? volume ${volume_uuid} state attached"
+  assertEquals 0 $?
+
+  # terminate instance_uuid1 & instance_uuid2.
+  local instance_uuid=${instance_uuid1}
+  destroy_instance
+  local instance_uuid=${instance_uuid2}
+  destroy_instance
+
+  # delete volume
+  run_cmd volume destroy ${volume_uuid}
+  retry_until "document_pair? volume ${volume_uuid} state deleted"
+  assertEquals 0 $?
+}
+
+
+# Test that the volume can exchange between two HALTED instances.
+#
+# 1. boot shared volume instance "instance_uuid1" with extra blank volume.
+# 2. poweroff instance_uuid1
+# 3. boot shared volume instance "instance_uuid2" without extra volume.
+# 4. poweroff instance_uuid2
+# 5. detach volume from instance_uuid1
+# 6. attach volume to instance_uuid2
+# 7. terminate instance_uuid1 & instance_uuid2.
+function test_exchange_shared_volume_between_two_halted_instances(){
+  # boot instance with second blank volume.
+  volumes_args="volumes[0][size]=${blank_volume_size} volumes[0][volume_type]=shared"
+
+  # boot shared volume instance "instance_uuid1" with extra blank volume.
+  create_instance
+
+  local instance_uuid1=${instance_uuid}
+
+  run_cmd instance show_volumes ${instance_uuid} | ydump > $last_result_path
+  assertEquals 0 $?
+
+  local volume_uuid=$(yfind '1/:uuid:' < $last_result_path)
+  test -n "{$volume_uuid}"
+  assertEquals 0 $?
+
+  echo "instance_uuid1=${instance_uuid1}, extra volume uuid=${volume_uuid}"
+
+  # poweroff instance_uuid1
+  run_cmd instance poweroff ${instance_uuid1} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid1} state halted"
+  assertEquals 0 $?
+
+  # boot shared volume instance "instance_uuid2" without extra volume.
+  volumes_args=""
+  create_instance
+
+  local instance_uuid2=${instance_uuid}
+
+  echo "instance_uuid2=${instance_uuid2}"
+
+  # poweroff instance_uuid2
+  run_cmd instance poweroff ${instance_uuid2} >/dev/null
+  retry_until "document_pair? instance ${instance_uuid2} state halted"
+  assertEquals 0 $?
+
+  # detach volume from instance_uuid1
+  instance_id=${instance_uuid1} run_cmd volume detach "${volume_uuid}"
+  retry_until "document_pair? volume ${volume_uuid} state available"
+  assertEquals 0 $?
+
+  # attach volume to instance_uuid2
+  instance_id=${instance_uuid2} run_cmd volume attach "${volume_uuid}"
+  retry_until "document_pair? volume ${volume_uuid} state attached"
+  assertEquals 0 $?
+
+  # terminate instance_uuid1 & instance_uuid2.
+  local instance_uuid=${instance_uuid1}
+  destroy_instance
+  local instance_uuid=${instance_uuid2}
+  destroy_instance
+
+  # delete volume
+  run_cmd volume destroy ${volume_uuid}
+  retry_until "document_pair? volume ${volume_uuid} state deleted"
+  assertEquals 0 $?
+}
+
 
 ## shunit2
 
