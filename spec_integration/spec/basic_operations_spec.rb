@@ -184,6 +184,16 @@ feature 'Basic Virtual Network Operations' do
 
   def power_on_instance
     Mussel::Instance.power_on(@instance)
+
+    i = nil
+    loop do
+      i = Mussel::Instance.show(@instance.id)
+      p "instance state: #{i.state}"
+      break if i.state == 'running'
+      sleep(1)
+    end
+
+    expect(i.state).to eq 'running'
   end
 
   def confirm_instance_ipv4_address
