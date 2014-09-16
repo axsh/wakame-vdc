@@ -69,7 +69,7 @@ module Dcmgr
       end
 
       def vsctl(option)
-        list = {:attach => 'add-port', :detach => 'del-port', :create_bridge => 'add-br', :delete_bridge => 'del-br'}
+        list = {:attach => '--may-exist add-port', :detach => '--if-exist del-port', :create_bridge => 'add-br', :delete_bridge => 'del-br'}
         "#{Dcmgr::Configurations.hva.vsctl_path} #{list[option]}"
       end
 
