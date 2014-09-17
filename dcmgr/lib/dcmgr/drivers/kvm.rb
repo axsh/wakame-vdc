@@ -201,9 +201,6 @@ RUN_SH
             sh("/sbin/ip link set %s up" % [vif_uuid(vif)])
             bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
 
-            detach_vif_cmd = detach_vif_from_bridge(bridge, vif)
-            sh(detach_vif_cmd)
-
             attach_vif_cmd = attach_vif_to_bridge(bridge, vif)
             sh(attach_vif_cmd)
 
@@ -357,6 +354,18 @@ RUN_SH
             sh("/bin/kill -9 #{kvm_pid}") rescue logger.error($!)
           else
             logger.error("Can not find the KVM process. Skipping: #{hc.inst_id}")
+          end
+        end
+
+        return if Dcmgr::Configurations.hva.edge_networking != 'openvnet'
+
+        hc.inst[:vif].each do |vif|
+          if vif[:ipv4] and vif[:ipv4][:network]
+            sh("/sbin/ip link set %s down" % [vif_uuid(vif)])
+            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+
+            detach_vif_cmd = detach_vif_from_bridge(bridge, vif)
+            sh(detach_vif_cmd)
           end
         end
       end
