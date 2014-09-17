@@ -42,6 +42,8 @@ feature 'Basic Virtual Network Operations' do
   end
 
   scenario 'Instance works properly after restart (PowerOff/PowerOn)' do
+    pending 'unable to ssh to instance through management line'
+    fail
     create_virtual_network_nw_demo1
     start_new_instance_with_ipv4_address_10_105_0_10
     ssh_to_instance
