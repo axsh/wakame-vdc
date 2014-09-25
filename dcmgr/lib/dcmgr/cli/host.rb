@@ -9,15 +9,22 @@ class Host < Base
   include Dcmgr::Models
   include Dcmgr::Constants::HostNode
 
+  no_tasks {
+    def self.common_options
+      method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new host node"
+      method_option :cpu_cores, :type => :numeric, :default=>1, :desc => "Number of cpu cores to be offered"
+      method_option :memory_size, :type => :numeric, :default=>1024, :desc => "Amount of memory to be offered (in MB)"
+      method_option :hypervisor, :type => :string, :default=>'kvm', :desc => "The hypervisor name. [#{SUPPORTED_HYPERVISOR.join(', ')}]"
+      method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{SUPPORTED_ARCH.join(', ')}]"
+      option :disk_space, :type => :numeric, :required => false, :default=>0, :desc => "Amount of disk space to store instances local volumes (MB)"
+      option :enabled, :type => :boolean, :default=>true, :desc => "Flag to tell scheduler to provision the host node"
+    end
+  }
+
   desc "add NODE_ID [options]", "Register a new host node"
   method_option :uuid, :type => :string, :desc => "The UUID for the new host node"
-  method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new host node"
   method_option :force, :type => :boolean, :default=>false, :desc => "Force new entry creation"
-  method_option :cpu_cores, :type => :numeric, :default=>1, :desc => "Number of cpu cores to be offered"
-  method_option :memory_size, :type => :numeric, :default=>1024, :desc => "Amount of memory to be offered (in MB)"
-  method_option :hypervisor, :type => :string, :default=>'kvm', :desc => "The hypervisor name. [#{SUPPORTED_HYPERVISOR.join(', ')}]"
-  method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{SUPPORTED_ARCH.join(', ')}]"
-  option :disk_space, :type => :numeric, :required => false, :default=>0, :desc => "Amount of disk space to store instances local volumes (MB)"
+  common_options
   def add(node_id)
     UnsupportedArchError.raise(options[:arch]) unless SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
@@ -40,13 +47,8 @@ class Host < Base
   end
 
   desc "modify UUID [options]", "Modify a registered host node"
-  method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new host node"
-  method_option :cpu_cores, :type => :numeric, :desc => "Number of cpu cores to be offered"
-  method_option :memory_size, :type => :numeric, :desc => "Amount of memory to be offered (in MB)"
-  method_option :hypervisor, :type => :string, :desc => "The hypervisor name. [#{HostNode::SUPPORTED_HYPERVISOR.join(', ')}]"
-  method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{HostNode::SUPPORTED_ARCH.join(', ')}]"
   method_option :node_id, :type => :string, :size => 255, :desc => "The node ID for the host node"
-  option :disk_space, :type => :numeric, :desc => "Amount of disk space to store instances local volumes (MB)"
+  common_options
   def modify(uuid)
     UnsupportedArchError.raise(options[:arch]) unless SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
@@ -84,14 +86,15 @@ Disk Space (usage / offering): <%= ByteUnit.convert_to(host.disk_space_usage, By
 Hypervisor: <%= host.hypervisor %>
 Architecture: <%= host.arch %>
 Status: <%= host.status %>
+Enabled: <%= host.enabled %>
 Create: <%= host.created_at %>
 Update: <%= host.updated_at %>
 __END
     else
       ds = HostNode.dataset
-      table = [['UUID', 'Node ID', 'Hypervisor', 'Architecture', 'Usage', 'Status']]
+      table = [['UUID', 'Node ID', 'Hypervisor', 'Architecture', 'Usage', 'Status', 'Enabled']]
       ds.each { |r|
-        table << [r.canonical_uuid, r.node_id, r.hypervisor, r.arch, "#{r.usage_percent}%", r.status]
+        table << [r.canonical_uuid, r.node_id, r.hypervisor, r.arch, "#{r.usage_percent}%", r.status, r.enabled]
       }
       shell.print_table(table)
     end
