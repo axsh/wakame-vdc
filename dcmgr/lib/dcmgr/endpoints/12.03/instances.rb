@@ -197,7 +197,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # param :display_name, string, :optional
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
 
-    i params['hypervisor']
+    if params['hypervisor']
       if M::HostNode.online_nodes.filter(:hypervisor=>params['hypervisor']).empty?
         raise E::InvalidParameter, "Unknown/Inactive hypervisor:#{params['hypervisor']}"
       end
