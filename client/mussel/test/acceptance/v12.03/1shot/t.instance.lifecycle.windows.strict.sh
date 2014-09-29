@@ -32,16 +32,6 @@ function destroy_instance() {
 
 ## after creating
 
-function test_wait_for_instance_initializing() {
-  retry_until "document_pair? instance ${instance_uuid} state initializing"
-  assertEquals 0 $?
-}
-
-function test_wait_for_instance_running() {
-  retry_until "document_pair? instance ${instance_uuid} state running"
-  assertEquals 0 $?
-}
-
 function test_get_instance_ipaddr() {
   instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
   assertEquals 0 $?
