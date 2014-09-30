@@ -12,14 +12,12 @@
 
 ## variables
 
-ssh_user=${ssh_user:-root}
-
 ## functions
 
 function render_secg_rule() {
   cat <<-EOS
 	icmp:-1,-1,ip4:0.0.0.0/0
-	tcp:22,22,ip4:0.0.0.0/0
+	tcp:3389,3389,ip4:0.0.0.0/0
 	tcp:80,80,ip4:0.0.0.0/0
 	EOS
 }
