@@ -41,6 +41,7 @@ class Host < Base
               :hypervisor=>options[:hypervisor],
               :arch=>options[:arch],
               :offering_disk_space_mb=>options[:disk_space],
+              :enabled=>options[:enabled],
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     puts super(HostNode,fields)
@@ -60,6 +61,7 @@ class Host < Base
               :arch=>options[:arch],
               :node_id=>options[:node_id],
               :offering_disk_space_mb=>options[:disk_space],
+              :enabled=>options[:enabled],
     }
     super(HostNode,uuid,fields)
   end
