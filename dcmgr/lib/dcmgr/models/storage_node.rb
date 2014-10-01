@@ -15,7 +15,7 @@ module Dcmgr::Models
       # SELECT * FROM `storage_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
       # Needs to specify storage_nodes table as this is CTI model.
-      StorageNode.filter(:node_id => r)
+      filter(:node_id => r, :scheduling_enabled=>true)
     end
 
     # Returns offline nodes.
