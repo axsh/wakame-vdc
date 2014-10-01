@@ -18,6 +18,12 @@ module Dcmgr::Models
       StorageNode.filter(:node_id => r)
     end
 
+    # Returns offline nodes.
+    def_dataset_method(:offline_nodes) do
+      # SELECT `storage_nodes`.* FROM `storage_nodes` LEFT JOIN `node_states` ON (`storage_nodes`.`node_id` = `node_states`.`node_id`) WHERE ((`node_states`.`state` IS NULL) OR (`node_states`.`state` = 'offline'))
+      select_all(:storage_nodes).join_table(:left, :node_states, {:storage_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'})
+    end
+
     def validate
       super
       # for compatibility: sta.xxx or sta-xxxx
