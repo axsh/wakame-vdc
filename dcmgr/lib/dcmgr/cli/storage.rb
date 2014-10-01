@@ -17,17 +17,25 @@ class Storage < Base
       "#{super()} #{Storage.namespace} #{self.namespace}"
     end
 
+    no_tasks {
+      def self.common_options
+        option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
+        option :ipaddr, :type => :string, :required => true, :desc => "IP address for the ISCSI target"
+        option :display_name, :type => :string, :size => 255, :desc => "The name for the storage node"
+        option :scheduling_enabled, :type => :boolean, :default=>true, :desc => "Flag to tell scheduler to provision the storage node"
+      end
+    }
+
     desc "add <node id> [options]", "Register a new ISCSI storage node"
     option :uuid, :type => :string, :desc => "The uuid for the new storage node"
-    option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
-    option :ipaddr, :type => :string, :required => true, :desc => "IP address of transport target"
-    option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
+    common_options
     def add(node_id)
       fields = {
         :node_id=>node_id,
         :offering_disk_space_mb=>options[:disk_space],
         :ip_address=>options[:ipaddr],
         :display_name=>options[:display_name],
+        :scheduling_enabled=>options[:scheduling_enabled],
       }
       fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
 
@@ -36,15 +44,14 @@ class Storage < Base
 
     desc "modify <uuid> [options]", "Modify <uuid> of ISCSI storage node"
     option :node_id, :type => :string, :desc => "The node ID for the storage node"
-    option :disk_space, :type => :numeric, :desc => "Amount of disk size to be exported (in MB)"
-    option :ipaddr, :type => :string, :desc => "IP address of transport target"
-    option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
+    common_options
     def modify(uuid)
       fields = {
         :node_id=>options[:node_id],
         :offering_disk_space_mb=>options[:disk_space],
         :ip_address=>options[:ipaddr],
         :display_name=>options[:display_name],
+        :scheduling_enabled=>options[:scheduling_enabled],
       }
       super(M::IscsiStorageNode,uuid,fields)
     end
@@ -61,17 +68,25 @@ class Storage < Base
       "#{super()} #{Storage.namespace} #{self.namespace}"
     end
 
+    no_tasks {
+      def self.common_options
+        option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
+        option :display_name, :type => :string, :size => 255, :desc => "The name for the storage node"
+        option :mount_point, :type => :string, :size => 255, :desc => "Mount point path on host node side"
+        option :scheduling_enabled, :type => :boolean, :default=>true, :desc => "Flag to tell scheduler to provision the storage node"
+      end
+    }
+
     desc "add <node id> [options]", "Register a new NFS storage node"
     option :uuid, :type => :string, :desc => "The uuid for the new storage node"
-    option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
-    option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
-    option :mount_point, :type => :string, :size => 255, :desc => "Mount point path on host node"
+    common_options
     def add(node_id)
       fields = {
         :node_id=>node_id,
         :offering_disk_space_mb=>options[:disk_space],
         :display_name=>options[:display_name],
         :mount_point => options[:mount_point],
+        :scheduling_enabled=>options[:scheduling_enabled],
       }
       fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
 
@@ -80,15 +95,14 @@ class Storage < Base
 
     desc "modify <uuid> [options]", "Modify <uuid> of NFS storage node"
     option :node_id, :type => :string, :desc => "The node ID for the storage node"
-    option :disk_space, :type => :numeric, :desc => "Amount of disk size to be exported (in MB)"
-    option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
-    option :mount_point, :type => :string, :size => 255, :desc => "Mount point path on host node"
+    common_options
     def modify(uuid)
       fields = {
         :node_id=>options[:node_id],
         :offering_disk_space_mb=>options[:disk_space],
         :display_name=>options[:display_name],
         :mount_point => options[:mount_point],
+        :scheduling_enabled=>options[:scheduling_enabled],
       }
       # NfsStorageNode is a class table inheritance model. so applys
       # the find and update operation to the parent class.
@@ -113,6 +127,8 @@ UUID: <%= st.canonical_uuid %>
 Node ID: <%= st.node_id %>
 Disk space (offerring): <%= st.offering_disk_space_mb %>MB
 Storage Type: <%= st.storage_type %>
+Status: <%= st.status %>
+Scheduling: <%= st.scheduling_enabled %>
 Create: <%= st.created_at %>
 Update: <%= st.updated_at %>
 __END
@@ -121,12 +137,16 @@ __END
         puts <<__END
 IP Address: #{st.ip_address}
 __END
+      when Dcmgr::Models::NfsStorageNode
+        puts <<__END
+Mount Point: #{st.mount_point}
+__END
       end
     else
       ds = StorageNode.dataset
-      table = [['UUID', 'Node ID', 'Storage', 'Status']]
+      table = [['UUID', 'Node ID', 'Storage', 'Status', 'Scheduling']]
       ds.each { |r|
-        table << [r.canonical_uuid, r.node_id, r.storage_type, r.status]
+        table << [r.canonical_uuid, r.node_id, r.storage_type, r.status, r.scheduling_enabled]
       }
       shell.print_table(table)
     end
