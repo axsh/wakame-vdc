@@ -88,7 +88,7 @@ Disk Space (usage / offering): <%= ByteUnit.convert_to(host.disk_space_usage, By
 Hypervisor: <%= host.hypervisor %>
 Architecture: <%= host.arch %>
 Status: <%= host.status %>
-Scheduling Enabled: <%= host.scheduling_enabled %>
+Scheduling: <%= host.scheduling_enabled %>
 Create: <%= host.created_at %>
 Update: <%= host.updated_at %>
 __END
