@@ -16,15 +16,23 @@ module Dcmgr::Models
 
     one_to_many :local_volumes
 
+    # Returns only online nodes with scheduling_enabled=true for
+    # compatiblity. Since online_nodes method is used for two components:
+    # host node schedulers and host node list API. list API expects to
+    # filter only for status of each node but the schedulers expect to
+    # return only scheduling_enabled=true node.
+    # Schedulers should use new separate dataset method then this
+    # method will back to original behavior.
     def_dataset_method(:online_nodes) do
       # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
-      filter(:node_id => r, :enabled=>true)
+      filter(:node_id => r, :scheduling_enabled=>true)
     end
 
+    # Returns offline nodes.
     def_dataset_method(:offline_nodes) do
       # SELECT `host_nodes`.* FROM `host_nodes` LEFT JOIN `node_states` ON (`host_nodes`.`node_id` = `node_states`.`node_id`) WHERE ((`node_states`.`state` IS NULL) OR (`node_states`.`state` = 'offline'))
-      select_all(:host_nodes).join_table(:left, :node_states, {:host_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'} | {:host_nodes__enabled=>false})
+      select_all(:host_nodes).join_table(:left, :node_states, {:host_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'})
     end
 
     def validate

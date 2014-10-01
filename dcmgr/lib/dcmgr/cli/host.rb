@@ -17,7 +17,7 @@ class Host < Base
       method_option :hypervisor, :type => :string, :default=>'kvm', :desc => "The hypervisor name. [#{SUPPORTED_HYPERVISOR.join(', ')}]"
       method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{SUPPORTED_ARCH.join(', ')}]"
       option :disk_space, :type => :numeric, :required => false, :default=>0, :desc => "Amount of disk space to store instances local volumes (MB)"
-      option :enabled, :type => :boolean, :default=>true, :desc => "Flag to tell scheduler to provision the host node"
+      option :scheduling_enabled, :type => :boolean, :default=>true, :desc => "Flag to tell scheduler to provision the host node"
     end
   }
 
@@ -41,6 +41,7 @@ class Host < Base
               :hypervisor=>options[:hypervisor],
               :arch=>options[:arch],
               :offering_disk_space_mb=>options[:disk_space],
+              :scheduling_enabled=>options[:scheduling_enabled],
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     puts super(HostNode,fields)
@@ -60,6 +61,7 @@ class Host < Base
               :arch=>options[:arch],
               :node_id=>options[:node_id],
               :offering_disk_space_mb=>options[:disk_space],
+              :scheduling_enabled=>options[:scheduling_enabled],
     }
     super(HostNode,uuid,fields)
   end
@@ -86,13 +88,13 @@ Disk Space (usage / offering): <%= ByteUnit.convert_to(host.disk_space_usage, By
 Hypervisor: <%= host.hypervisor %>
 Architecture: <%= host.arch %>
 Status: <%= host.status %>
-Enabled: <%= host.enabled %>
+Scheduling Enabled: <%= host.scheduling_enabled %>
 Create: <%= host.created_at %>
 Update: <%= host.updated_at %>
 __END
     else
       ds = HostNode.dataset
-      table = [['UUID', 'Node ID', 'Hypervisor', 'Architecture', 'Usage', 'Status', 'Enabled']]
+      table = [['UUID', 'Node ID', 'Hypervisor', 'Architecture', 'Usage', 'Status', 'Scheduling']]
       ds.each { |r|
         table << [r.canonical_uuid, r.node_id, r.hypervisor, r.arch, "#{r.usage_percent}%", r.status, r.enabled]
       }
