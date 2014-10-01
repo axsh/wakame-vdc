@@ -73,7 +73,7 @@ task_set_enable() {
   [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   call_api -X PUT $(urlencode_data \
-    $(add_param monitoring string) \
+    $(add_param monitoring hash) \
    ) \
    $(base_uri)/instances/${uuid}.$(suffix)
 }

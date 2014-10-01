@@ -91,11 +91,11 @@ function test_instance_monitoring_destroy() {
 function test_instance_monitoring_set_enable() {
   local cmd=set_enable
 
-  local monitoring=true
+  local monitoring="enabled=true"
 
   local opts=""
 
-  local parameters="monitoring=${monitoring}"
+  local parameters="monitoring[enabled]=true"
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${opts})" \
                "curl -X PUT $(urlencode_data ${parameters}) $(base_uri)/instances/${uuid}.$(suffix)"
