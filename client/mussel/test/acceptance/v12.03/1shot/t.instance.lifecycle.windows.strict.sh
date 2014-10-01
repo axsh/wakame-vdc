@@ -5,6 +5,12 @@
 #  cat, ssh-keygen, ping, rm
 #
 
+# NOTE: When running inside 1-CPU KVMs nested inside 1-CPU KVMs, 2008
+#       tests can take more than 45 minutes, and 2012 tests can take
+#       more than 70 minutes.  Be sure timeouts, including the
+#       password_generation_timeout option in hva.conf, are set
+#       accordingly.
+
 ## include files
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
