@@ -57,9 +57,6 @@ function test_wait_for_network_not_to_be_ready_after_terminating() {
 function test_poweron_instance() {
   run_cmd instance poweron ${instance_uuid} >/dev/null
   assertNotEquals 0 $?
-
-  retry_until "document_pair? backup_object ${backup_obj_uuid} state available"
-  assertEquals 0 $?
 }
 
 function test_wait_for_network_to_be_ready2() {
