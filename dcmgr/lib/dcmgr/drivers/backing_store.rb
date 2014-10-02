@@ -13,11 +13,11 @@ module Dcmgr
 
       # Retrive configuration section for this or child class.
       def self.driver_configuration
-        Dcmgr.conf.backing_store
+        Dcmgr::Configurations.sta.backing_store
       end
 
       def driver_configuration
-        Dcmgr.conf.backing_store
+        Dcmgr::Configurations.sta.backing_store
       end
 
       def local_backup_object?(backup_object_hash)

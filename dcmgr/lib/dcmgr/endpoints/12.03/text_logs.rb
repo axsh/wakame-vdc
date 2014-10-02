@@ -68,9 +68,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/text_logs' do
 
   def log_storage
     Dcmgr::Models::LogStorage.create(:cassandra, {
-      :keyspace => Dcmgr.conf.cassandra_keyspace,
-      :cf => Dcmgr.conf.cassandra_cf,
-      :uri => Dcmgr.conf.cassandra_uri
+      :keyspace => Dcmgr::Configurations.dcmgr.cassandra_keyspace,
+      :cf => Dcmgr::Configurations.dcmgr.cassandra_cf,
+      :uri => Dcmgr::Configurations.dcmgr.cassandra_uri
     })
   end
 end

@@ -13,11 +13,11 @@ module Dcmgr
 
         def initialize
           # TODO: Make ovs_vsctl use a real config option.
-          @ovs_ofctl = Dcmgr.conf.ovs_ofctl_path
-          @ovs_vsctl = Dcmgr.conf.ovs_ofctl_path.dup
+          @ovs_ofctl = Dcmgr::Configurations.hva.ovs_ofctl_path
+          @ovs_vsctl = Dcmgr::Configurations.hva.ovs_ofctl_path.dup
           @ovs_vsctl[/ovs-ofctl/] = 'ovs-vsctl'
 
-          @verbose = Dcmgr.conf.verbose_openflow
+          @verbose = Dcmgr::Configurations.hva.verbose_openflow
         end
 
         def get_bridge_name datapath_id

@@ -17,11 +17,11 @@ module Dcmgr::Drivers
 
     def initialize()
       super
-      @iqn_prefix  = Dcmgr.conf.iscsi_target.iqn_prefix
-      @webapi_ip   = Dcmgr.conf.iscsi_target.webapi_ip
-      @webapi_port = Dcmgr.conf.iscsi_target.webapi_port
-      indelible_volume = Dcmgr.conf.backing_store.indelible_volume
-      wakame_volumes_dir = Dcmgr.conf.backing_store.wakame_volumes_dir
+      @iqn_prefix  = driver_configuration.iqn_prefix
+      @webapi_ip   = driver_configuration.webapi_ip
+      @webapi_port = driver_configuration.webapi_port
+      indelible_volume = driver_configuration.indelible_volume
+      wakame_volumes_dir = driver_configuration.wakame_volumes_dir
 
       @vol_path = "#{indelible_volume}/#{wakame_volumes_dir}"
     end

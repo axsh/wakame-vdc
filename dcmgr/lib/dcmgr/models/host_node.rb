@@ -16,15 +16,23 @@ module Dcmgr::Models
 
     one_to_many :local_volumes
 
+    # Returns only online nodes with scheduling_enabled=true for
+    # compatiblity. Since online_nodes method is used for two components:
+    # host node schedulers and host node list API. list API expects to
+    # filter only for status of each node but the schedulers expect to
+    # return only scheduling_enabled=true node.
+    # Schedulers should use new separate dataset method then this
+    # method will back to original behavior.
     def_dataset_method(:online_nodes) do
       # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
-      filter(:node_id => r, :enabled=>true)
+      filter(:node_id => r, :scheduling_enabled=>true)
     end
 
+    # Returns offline nodes.
     def_dataset_method(:offline_nodes) do
       # SELECT `host_nodes`.* FROM `host_nodes` LEFT JOIN `node_states` ON (`host_nodes`.`node_id` = `node_states`.`node_id`) WHERE ((`node_states`.`state` IS NULL) OR (`node_states`.`state` = 'offline'))
-      select_all(:host_nodes).join_table(:left, :node_states, {:host_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'} | {:host_nodes__enabled=>false})
+      select_all(:host_nodes).join_table(:left, :node_states, {:host_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'})
     end
 
     def validate
@@ -72,7 +80,7 @@ module Dcmgr::Models
     def check_capacity(instance)
       raise ArgumentError unless instance.is_a?(Instance)
 
-      using_cpu_cores, using_memory_size = self.instances_dataset.lives.select { [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map {|i| i || 0}
+      using_cpu_cores, using_memory_size = self.instances_dataset.alives.select { [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map {|i| i || 0}
 
       (self.offering_cpu_cores >= using_cpu_cores + instance.cpu_cores) &&
         (self.offering_memory_size >= using_memory_size + instance.memory_size)
@@ -150,7 +158,7 @@ module Dcmgr::Models
 
     # Check the free resource capacity across entire local VDC domain.
     def self.check_domain_capacity?(cpu_cores, memory_size, num=1)
-      ds = Instance.dataset.lives.filter(:host_node => HostNode.online_nodes)
+      ds = Instance.dataset.alives.filter(:host_node => HostNode.online_nodes)
       alives_cpu_cores, alives_mem_size = ds.select{[sum(:cpu_cores), sum(:memory_size)]}.naked.first.values.map { |i| i || 0 }
       stopped_cpu_cores, stopped_mem_size = ds.filter(:state=>'stopped').select{ [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map { |i| i || 0 }
       # instance releases the resources during stopped state normally. however admins may
@@ -173,7 +181,7 @@ module Dcmgr::Models
     end
 
     def add_vnet(network)
-      m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
+      m = MacLease.lease(Dcmgr::Configurations.dcmgr.mac_address_vendor_id)
       hn_vnet = HostNodeVnet.new
       hn_vnet.host_node = self
       hn_vnet.network = network
@@ -193,7 +201,7 @@ module Dcmgr::Models
 
     protected
     def instances_usage(colname)
-      instances_dataset.lives.sum(colname).to_i
+      instances_dataset.alives.sum(colname).to_i
     end
   end
 end

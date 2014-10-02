@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+require 'fuguta'
 
 module Dcmgr::Drivers
   class NetworkMonitoring
+    class Configuration < Fuguta::Configuration; end
+
     def register_instance(instance)
       raise NotImplementedError
     end

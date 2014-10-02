@@ -40,11 +40,11 @@ class CopyProcessor < Isono::NodeModules::Base
 
     EM.next_tick do
       queue_worker = Dcmgr::NodeModules::JobQueueWorker.new(self.node)
-      queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1, Dcmgr.conf.default_retry_max_per_job) do |job|
+      queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1, Dcmgr::Configurations.bksta.default_retry_max_per_job) do |job|
         myinstance.dup.submit_pull_job(job)
       end
 
-      queue_worker.subscribe("backup_storage.pull_from.#{self.node.node_id}", 1, Dcmgr.conf.default_retry_max_per_job) do |job|
+      queue_worker.subscribe("backup_storage.pull_from.#{self.node.node_id}", 1, Dcmgr::Configurations.bksta.default_retry_max_per_job) do |job|
         myinstance.dup.pull_file_job(job)
       end
     end
@@ -60,7 +60,7 @@ class CopyProcessor < Isono::NodeModules::Base
   def submit_pull_job(job)
     params = job[:params]
 
-    uri = Dcmgr.conf.destinations[params[:destination]]
+    uri = Dcmgr::Configurations.bksta.destinations[params[:destination]]
     if uri.nil?
       raise "Unknown destination: #{params[:destination]}"
     end
@@ -75,7 +75,7 @@ class CopyProcessor < Isono::NodeModules::Base
     res = nil
     tryagain do
       post_params = params.merge({
-        'src' => Dcmgr.conf.export_uri.to_s + "/" + params[:backup_object][:object_key],
+        'src' => Dcmgr::Configurations.bksta.export_uri.to_s + "/" + params[:backup_object][:object_key],
       })
       logger.info("Sending POST /submit_pull_job: #{uri.to_s}, #{post_params}")
 
@@ -118,7 +118,7 @@ class CopyProcessor < Isono::NodeModules::Base
     end
 
     # Save the downloaded object to the URI.
-    @save_uri =Dcmgr.conf.export_uri.dup.tap { |o|
+    @save_uri = Dcmgr::Configurations.bksta.export_uri.dup.tap { |o|
       o.path += "/#{params[:backup_object][:uuid]}"
     }
 
@@ -154,8 +154,8 @@ class CopyProcessor < Isono::NodeModules::Base
 
     transfer = CurlTransfer.new
     bkst = Dcmgr::Drivers::BackupStorage.driver_class(@backup_object[:backup_storage][:storage_type]).new
-    if Dcmgr.conf.local_upload_uri
-      bkst.upload_base_uri = Dcmgr.conf.local_upload_uri
+    if Dcmgr::Configurations.bksta.local_upload_uri
+      bkst.upload_base_uri = Dcmgr::Configurations.bksta.local_upload_uri
     end
     n = transfer.pull_download_command(src_uri.to_s)
     transfer_command =  (n[0] % n[1])
@@ -234,7 +234,7 @@ class DestinationMonitor < Isono::NodeModules::Base
 
   initialize_hook do
     @destinations = {}
-    Dcmgr.conf.destinations.each { |name, uri|
+    Dcmgr::Configurations.bksta.destinations.each { |name, uri|
       @destinations[name] = {:uri=>uri, :status=>false, :last_monitor_at=>nil}
     }
 
@@ -307,7 +307,7 @@ class APIProxy < Sinatra::Base
   def rpc_request(*args)
     fib = Fiber.current
     req = Isono::NodeModules::RpcChannel.new(@node).request(*args) { |req|
-      req.timeout_sec = Dcmgr.conf.site_over_rpc_timeout
+      req.timeout_sec = Dcmgr::Configurations.bksta.site_over_rpc_timeout
       req.on_success { |r|
         fib.resume(r)
       }
@@ -380,7 +380,7 @@ class APIProxy < Sinatra::Base
                                               bo[:uuid],
                                               job_params
                                               ) do |req|
-        req.timeout_sec = Dcmgr.conf.site_over_rpc_timeout
+        req.timeout_sec = Dcmgr::Configurations.bksta.site_over_rpc_timeout
 
         req.on_success { |r|
           fib.resume("OK")

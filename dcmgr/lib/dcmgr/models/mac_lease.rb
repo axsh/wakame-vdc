@@ -32,7 +32,7 @@ module Dcmgr::Models
     def self.string_to_ints(addr_str)
       case addr_str.size
       when 6
-        [Dcmgr.conf.mac_address_vendor_id.hex, addr_str.hex]
+        [Dcmgr::Configurations.dcmgr.mac_address_vendor_id.hex, addr_str.hex]
       when 12
         [
           addr_str[0,6].hex,

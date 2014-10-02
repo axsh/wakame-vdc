@@ -385,7 +385,7 @@ RUN_SH
       def run_migration_instance(hc)
         qemu_command = build_qemu_command(hc)
 
-        migration_tcp_port = pick_tcp_listen_port
+        migration_tcp_port = find_unused_tcp_listen_ports(1)
 
         sh(qemu_command + " -incoming tcp:#{driver_configuration.incoming_ip}:#{migration_tcp_port}")
 
@@ -478,8 +478,13 @@ RUN_SH
         end
       end
 
-      # Randomly choose unused local tcp port number.
-      def pick_tcp_listen_port
+      def tcp_listen_port_range
+        (driver_configuration.tcp_listen_port_range_begin ..
+         driver_configuration.tcp_listen_port_range_end)
+      end
+
+      # find multiple unused local tcp port number(s).
+      def find_unused_tcp_listen_ports(numbers)
         # Support only for Linux netstat output.
         l=`/bin/netstat -nat`.split("\n")
         # take out two header lines.
@@ -491,16 +496,23 @@ RUN_SH
           m = n.split(/\s+/)
           ary = m[3].split(':')
           port = ary.pop
-          listen_ports[port.to_i]=0
+          if tcp_listen_port_range.include?(port.to_i)
+            listen_ports[port.to_i]=0
+          end
         }
 
-        logger.debug("Local TCP ports being used: #{listen_ports.keys}")
+        logger.info("Local TCP ports being used in #{tcp_listen_port_range}: #{listen_ports.keys}")
+
+        new_ports = []
 
         begin
-          new_port =
-            Random.rand(driver_configuration.tcp_listen_port_range_begin .. driver_configuration.tcp_listen_port_range_end)
-        end until(!listen_ports.has_key?(new_port))
-        new_port
+          begin
+            new_port =
+              Random.rand(tcp_listen_port_range)
+          end while (listen_ports.has_key?(new_port) || new_ports.member?(new_port))
+          new_ports.push(new_port)
+        end while(new_ports.size < numbers)
+        new_ports
       end
 
       def drive_model(hc)
@@ -607,20 +619,22 @@ RUN_SH
       end
 
       def build_qemu_command(hc)
-        # tcp listen ports for KVM monitor and VNC console
-        monitor_tcp_port = pick_tcp_listen_port
+        # Finds three TCP listen ports at a time.
+        #   QEMU monitor port, VNC console, Serial console.
+        monitor_tcp_port, vnc_tcp_port, serial_tcp_port =
+          find_unused_tcp_listen_ports(3)
         hc.dump_instance_parameter('monitor.port', monitor_tcp_port)
 
-        opts = {}
         # run vm
         inst = hc.inst
+        opts = {}
         if driver_configuration.vnc_options
-          opts[:vnc_tcp_port] = pick_tcp_listen_port
+          opts[:vnc_tcp_port] = vnc_tcp_port
           hc.dump_instance_parameter('vnc.port', opts[:vnc_tcp_port])
         end
 
         if driver_configuration.serial_port_options
-          opts[:serial_tcp_port] = pick_tcp_listen_port
+          opts[:serial_tcp_port] = serial_tcp_port
           hc.dump_instance_parameter('serial.port', opts[:serial_tcp_port])
         end
 

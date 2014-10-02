@@ -8,7 +8,7 @@ Wakame-vdc is an IaaS (Infrastructure as a Service) cloud computing framework, f
 Quick Start
 -----------
 
-[Install on RHEL/CentOS through yum.](https://github.com/axsh/wakame-vdc/tree/master/rpmbuild/README.md)
+[Install Wakame-vdc on CentOS 6.4](https://github.com/axsh/wakame-vdc/wiki/install-guide)
 
 [Try Wakame-vdc pre-installed in VirtualBox.](http://wakameusersgroup.org/demo_image.html)
 

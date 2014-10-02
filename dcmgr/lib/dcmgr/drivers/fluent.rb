@@ -13,10 +13,10 @@ module Dcmgr
 
       def initialize
         @template_file_name = 'fluent.conf'
-        @output_file = Dcmgr.conf.logging_service_conf
-        @dolphin_server_uri = Dcmgr.conf.dolphin_server_uri
-        @max_read_message_bytes = Dcmgr.conf.logging_service_max_read_message_bytes
-        @max_match_count = Dcmgr.conf.logging_service_max_match_count
+        @output_file = Dcmgr::Configurations.hva.logging_service_conf
+        @dolphin_server_uri = Dcmgr::Configurations.hva.dolphin_server_uri
+        @max_read_message_bytes = Dcmgr::Configurations.hva.logging_service_max_read_message_bytes
+        @max_match_count = Dcmgr::Configurations.hva.logging_service_max_match_count
       end
 
       def set_alarms(alm)
@@ -43,11 +43,11 @@ module Dcmgr
       end
 
       def reload
-        if Dcmgr.conf.logging_service_reload
-          sh("#{Dcmgr.conf.logging_service_reload}")
+        if Dcmgr::Configurations.hva.logging_service_reload
+          sh("#{Dcmgr::Configurations.hva.logging_service_reload}")
           logger.info("Reload fluent with #{@output_file}")
         else
-          logger.error("Failed to reload fluent. Not found #{Dcmgr.conf.logging_service_reload}")
+          logger.error("Failed to reload fluent. Not found #{Dcmgr::Configurations.hva.logging_service_reload}")
         end
       end
 

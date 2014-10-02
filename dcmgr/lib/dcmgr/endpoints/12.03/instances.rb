@@ -123,7 +123,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
            when *INSTANCE_META_STATE
              case params[:state]
              when 'alive'
-               ds.lives
+               ds.alives
              when 'alive_with_terminated'
                ds.alives_and_termed
              when 'without_terminated'
@@ -668,7 +668,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       when 'false'
         false
       else
-        Dcmgr.conf.default_force_poweroff_instance
+        Dcmgr::Configurations.dcmgr.default_force_poweroff_instance
       end
     job_name = force ? 'poweroff' : 'soft_poweroff'
 
@@ -687,7 +687,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   put '/:id/poweron' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless [C::Instance::STATE_HALTED].member?(instance.state)
-    if Dcmgr.conf.enable_instance_poweron_readiness_validation
+    if Dcmgr::Configurations.dcmgr.enable_instance_poweron_readiness_validation
       unless instance.ready_poweron?
         raise E::InvalidInstanceState, "not ready for poweron operation"
       end
