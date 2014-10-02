@@ -43,9 +43,9 @@ function test_wait_for_network_to_be_ready() {
 ## poweroff
 
 function test_soft_poweroff_instance() {
-  sleep 4
-  sleep 1
-  force=false run_cmd instance poweroff ${instance_uuid} >/dev/null
+  sleep 240
+  sleep 60
+  force=false run_cmd instance poweroff ${instance_uuid}
   retry_until "document_pair? instance ${instance_uuid} state halted"
 }
 
@@ -57,8 +57,8 @@ function test_wait_for_network_not_to_be_ready_after_terminating() {
 ## poweron again
 
 function test_poweron_instance() {
-  run_cmd instance poweron ${instance_uuid} >/dev/null
-  assertNotEquals 0 $?
+  run_cmd instance poweron ${instance_uuid}
+  assertEquals 0 $?
 }
 
 function test_wait_for_network_to_be_ready2() {
