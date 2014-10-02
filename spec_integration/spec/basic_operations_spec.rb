@@ -27,7 +27,7 @@ feature 'Basic Virtual Network Operations' do
 
   scenario 'Create instance to virtual network (Static IP address)' do
     create_virtual_network_nw_demo1
-    start_new_instance_with_ipv4_address_10_105_0_10
+    start_new_instance_with_ipv4_address
     confirm_instance_with_expected_configuration
     terminate_instance
     delete_virtual_network
@@ -35,7 +35,7 @@ feature 'Basic Virtual Network Operations' do
 
   scenario 'Virtual network can not be deleted if there is instance' do
     create_virtual_network_nw_demo1
-    start_new_instance_with_ipv4_address_10_105_0_10
+    start_new_instance_with_ipv4_address
     network_delete_fail_if_instance_exist
     terminate_instance
     delete_virtual_network
@@ -45,7 +45,7 @@ feature 'Basic Virtual Network Operations' do
     pending 'unable to ssh to instance through management line'
     fail
     create_virtual_network_nw_demo1
-    start_new_instance_with_ipv4_address_10_105_0_10
+    start_new_instance_with_ipv4_address
     ssh_to_instance
     power_off_instance
     power_on_instance
@@ -58,7 +58,7 @@ feature 'Basic Virtual Network Operations' do
     pending 'not implemented, yet.'
     fail
     create_virtual_network_nw_demo1
-    start_new_instance_with_ipv4_address_10_105_0_10
+    start_new_instance_with_ipv4_address
     confirm_instance_ipv4_address
     power_off_instance
     change_instance_ipv4_address
@@ -70,7 +70,8 @@ feature 'Basic Virtual Network Operations' do
 
   let(:nw_manage) do
     Mussel::Network.index.select do |n|
-      n.dc_network['name'] == 'management'
+      n.dc_network['name'] == 'management' ||
+      n.dc_network['name'] == 'mng'
     end.first
   end
 
@@ -126,7 +127,7 @@ feature 'Basic Virtual Network Operations' do
     expect(ret.ipv4_network).not_to eq '10.100.9.0'
   end
 
-  def start_new_instance_with_ipv4_address_10_105_0_10
+  def start_new_instance_with_ipv4_address
     # instance_params[:vifs] = {
     #   'eth0' => {'index'=>'0', 'network'=>@network.id, 'ipv4_addr'=>'10.105.0.10', 'mac_addr'=>'525400000002'},
     #   'eth1' => {'index'=>'1', 'network'=>nw_manage.id, 'ipv4_addr'=>'10.1.0.10', 'mac_addr'=>'525400000012'}
