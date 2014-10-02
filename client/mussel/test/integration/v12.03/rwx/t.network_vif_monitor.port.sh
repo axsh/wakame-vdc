@@ -24,7 +24,7 @@ function after_create_instance() {
 ## step
 
 function test_instance_monitoring_enable() {
-  local monitoring="enable=true"
+  local monitoring="enabled=true"
 
   run_cmd instance_monitoring set_enable ${instance_uuid}
   assertEquals 0 $?

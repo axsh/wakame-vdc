@@ -14,7 +14,7 @@
 ## functions
 
 function test_instance_monitoring_enable() {
-  local monitoring="enable=true"
+  local monitoring="enabled=true"
 
   run_cmd instance_monitoring set_enable ${instance_uuid}
   assertEquals 0 $?
@@ -23,7 +23,7 @@ function test_instance_monitoring_enable() {
 function test_instance_monitoring_create() {
   local enabled=true
   local title=PROCESS1
-  local parmas="notification_id=mussel name=/usr/sbin/httpd"
+  local params="notification_id=mussel name=/usr/sbin/httpd"
 
   monitoring_uuid=$(run_cmd instance_monitoring create ${instance_uuid} | hash_value uuid)
   assertEquals 0 $?
