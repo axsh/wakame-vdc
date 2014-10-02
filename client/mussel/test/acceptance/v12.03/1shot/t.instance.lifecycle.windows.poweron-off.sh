@@ -42,8 +42,8 @@ function test_wait_for_network_to_be_ready() {
 
 ## poweroff
 
-function test_poweroff_instance() {
-  run_cmd instance poweroff ${instance_uuid} >/dev/null
+function test_soft_poweroff_instance() {
+  force=false run_cmd instance poweroff ${instance_uuid} >/dev/null
   retry_until "document_pair? instance ${instance_uuid} state halted"
 }
 
