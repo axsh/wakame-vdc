@@ -43,8 +43,9 @@ function test_wait_for_network_to_be_ready() {
 ## poweroff
 
 function test_soft_poweroff_instance() {
-  sleep 240
-  sleep 60
+  # Sleep for a few minutes to make sure Windows has fully booted.
+  # Otherwise the soft poweroff event will be ignored by Windows.
+  sleep $(( 5 * 60 ))
   force=false run_cmd instance poweroff ${instance_uuid}
   retry_until "document_pair? instance ${instance_uuid} state halted"
 }
