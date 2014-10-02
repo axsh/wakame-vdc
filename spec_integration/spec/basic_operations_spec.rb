@@ -155,8 +155,9 @@ feature 'Basic Virtual Network Operations' do
   end
 
   def network_delete_fail_if_instance_exist
-    ret = Mussel::Network.destroy(@network.id)
-    expect(ret.empty?).to eq true
+    Mussel::Network.destroy(@network.id)
+    net = Mussel::Network.index.select {|n| n.uuid == @network.id }
+    expect(net.empty?).to eq true
   end
 
   # TODO refactor
