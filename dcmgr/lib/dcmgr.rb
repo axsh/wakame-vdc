@@ -266,12 +266,16 @@ module Dcmgr
     autoload :OpenvzLocalStore, 'dcmgr/drivers/local_store/openvz_local_store.rb'
     autoload :KvmLocalStore,    'dcmgr/drivers/local_store/kvm_local_store'
 
+    #
+    # Network monitoring drivers
+    #
+    autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
+    autoload :Zabbix,            'dcmgr/drivers/zabbix'
+    autoload :PublicZabbix,      'dcmgr/drivers/public_zabbix'
+
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'
     autoload :Stud, 'dcmgr/drivers/stud'
-    autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
-    autoload :Zabbix, 'dcmgr/drivers/zabbix'
-    autoload :PublicZabbix, 'dcmgr/drivers/public_zabbix'
     autoload :Natbox, 'dcmgr/drivers/natbox'
     autoload :Fluent, 'dcmgr/drivers/fluent'
     autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
