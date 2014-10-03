@@ -276,7 +276,6 @@ module Dcmgr
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'
     autoload :Stud, 'dcmgr/drivers/stud'
-    autoload :Natbox, 'dcmgr/drivers/natbox'
     autoload :Fluent, 'dcmgr/drivers/fluent'
     autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
   end
