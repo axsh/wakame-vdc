@@ -361,7 +361,7 @@ RUN_SH
       def soft_poweroff_instance(hc)
         begin
           connect_monitor(hc) { |t|
-            t.cmd("system_poweroff")
+            t.cmd("system_powerdown")
           }
         rescue Errno::ECONNRESET => e
           # succssfully terminated the process
