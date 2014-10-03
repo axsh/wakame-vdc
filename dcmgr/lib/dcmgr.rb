@@ -270,9 +270,12 @@ module Dcmgr
     # Network monitoring drivers
     #
     autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
-    autoload :Zabbix,            'dcmgr/drivers/zabbix'
-    autoload :PublicZabbix,      'dcmgr/drivers/public_zabbix'
+    autoload :Zabbix,            'dcmgr/drivers/network_monitoring/zabbix'
+    autoload :PublicZabbix,      'dcmgr/drivers/network_monitoring/public_zabbix'
 
+    #
+    # Other drivers
+    #
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'
     autoload :Stud, 'dcmgr/drivers/stud'
