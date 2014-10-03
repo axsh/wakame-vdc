@@ -246,15 +246,26 @@ module Dcmgr
     autoload :Lxc ,            'dcmgr/drivers/hypervisor/linux_hypervisor/linux_container/lxc'
     autoload :Openvz,          'dcmgr/drivers/hypervisor/linux_hypervisor/linux_container/openvz'
 
-    autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
-    autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
-    autoload :Tgt,          'dcmgr/drivers/tgt'
-    autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
-    autoload :DummyLocalStore, 'dcmgr/drivers/dummy_local_store.rb'
-    autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
-    autoload :ESXiLocalStore, 'dcmgr/drivers/esxi_local_store.rb'
-    autoload :OpenvzLocalStore, 'dcmgr/drivers/openvz_local_store.rb'
-    autoload :IndelibleIscsi, 'dcmgr/drivers/indelible_iscsi'
+    #
+    # Storage target drivers
+    #
+    autoload :StorageTarget,  'dcmgr/drivers/storage_target'
+    autoload :IscsiTarget,    'dcmgr/drivers/storage_target/iscsi_target'
+    autoload :IndelibleIscsi, 'dcmgr/drivers/storage_target/iscsi_target/indelible_iscsi'
+    autoload :SunIscsi,       'dcmgr/drivers/storage_target/iscsi_target/sun_iscsi'
+    autoload :Tgt,            'dcmgr/drivers/storage_target/iscsi_target/tgt'
+    autoload :Nfs,            'dcmgr/drivers/storage_target/nfs'
+
+    #
+    # Local store drivers
+    #
+    autoload :LocalStore,       'dcmgr/drivers/local_store.rb'
+    autoload :DummyLocalStore,  'dcmgr/drivers/local_store/dummy_local_store.rb'
+    autoload :ESXiLocalStore,   'dcmgr/drivers/local_store/esxi_local_store.rb'
+    autoload :LinuxLocalStore,  'dcmgr/drivers/local_store/linux_local_store.rb'
+    autoload :OpenvzLocalStore, 'dcmgr/drivers/local_store/openvz_local_store.rb'
+    autoload :KvmLocalStore,    'dcmgr/drivers/local_store/kvm_local_store'
+
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'
     autoload :Stud, 'dcmgr/drivers/stud'
@@ -264,9 +275,6 @@ module Dcmgr
     autoload :Natbox, 'dcmgr/drivers/natbox'
     autoload :Fluent, 'dcmgr/drivers/fluent'
     autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
-    autoload :KvmLocalStore, 'dcmgr/drivers/kvm_local_store'
-    autoload :StorageTarget, 'dcmgr/drivers/storage_target'
-    autoload :Nfs, 'dcmgr/drivers/nfs'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'
