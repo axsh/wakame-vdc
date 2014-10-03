@@ -217,6 +217,33 @@ module Dcmgr
         clean_snapshot_for_backup()
       end
 
+      def run_command(*cmd_tuple)
+        logger.info("Executing command line: " + shell.format_tuple(*cmd_tuple))
+        stderr_buf=""
+
+        r = shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
+          sin.close
+
+          begin
+            while l = eout.readline
+              if l =~ /(\d+)/
+                evcb.progress($1.to_f)
+              end
+              stderr_buf << l
+            end
+          rescue EOFError
+            # ignore this error
+          end
+
+        end
+
+        unless r.exitstatus == 0
+          raise "Failed to run command: exitcode=#{r.exitstatus}\n#{stderr_buf}"
+        end
+
+        r
+      end
+
       def upload_image(inst, ctx, bo, evcb)
         @ctx = ctx
         @bo = bo
@@ -235,26 +262,8 @@ module Dcmgr
 
             cmd_tuple[0] << " | " + cmd_tuple2[0]
             cmd_tuple[1] += cmd_tuple2[1]
-            logger.info("Executing command line: " + shell.format_tuple(*cmd_tuple))
-            stderr_buf=""
-            r = shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
-              sin.close
 
-              begin
-                while l = eout.readline
-                  if l =~ /(\d+)/
-                    evcb.progress($1.to_f)
-                  end
-                  stderr_buf << l
-                end
-              rescue EOFError
-                # ignore this error
-              end
-
-            end
-            unless r.exitstatus == 0
-              raise "Failed to run archive & upload command: exitcode=#{r.exitstatus}\n#{stderr_buf}"
-            end
+            run_command(*cmd_tuple)
 
             chksum = File.read(chksum_path).split(/\s+/).first
             alloc_size = File.read(size_path).split(/\s+/).first
@@ -269,25 +278,8 @@ module Dcmgr
 
               cmd_tuple[0] << "> %s"
               cmd_tuple[1] += [bkup_tmp.path]
-              logger.info("Executing command line: " + shell.format_tuple(*cmd_tuple))
-              stderr_buf=""
-              r = shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
-                sin.close
 
-                begin
-                  while l = eout.readline
-                    if l =~ /(\d+)/
-                      evcb.progress($1.to_f)
-                    end
-                    stderr_buf << l
-                  end
-                rescue EOFError
-                  # ignore this error
-                end
-              end
-              unless r.exitstatus == 0
-                raise "Failed to run archive command: exitcode=#{r.exitstatus}\n#{stderr_buf}"
-              end
+              run_command(*cmd_tuple)
 
               alloc_size = File.size(bkup_tmp.path)
               chksum = File.read(chksum_path).split(/\s+/).first
