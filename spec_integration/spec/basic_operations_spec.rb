@@ -34,6 +34,8 @@ feature 'Basic Virtual Network Operations' do
   end
 
   scenario 'Virtual network can not be deleted if there is instance' do
+    pending 'it is possible to delete networks atm'
+    fail
     create_virtual_network_nw_demo1
     start_new_instance_with_ipv4_address
     network_delete_fail_if_instance_exist
