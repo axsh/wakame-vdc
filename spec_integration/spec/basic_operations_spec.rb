@@ -77,7 +77,13 @@ feature 'Basic Virtual Network Operations' do
   end
 
   let(:dc_network) do
-    Mussel::DcNetwork.index.select {|i| i.name == config[:dc_network][:vnet]}.first
+    dcn = Mussel::DcNetwork.index.select {|i| i.name == config[:dc_network][:vnet]}
+    if dcn.empty?
+      d = Mussel::DcNetwork.create({:name => config[:dc_network][:vnet]})
+      Mussel::DcNetwork.add_offering_modes(d.id, {:mode => 'l2overlay'})
+      dcn << Mussel::DcNetwork.update(d.id, {:allow_new_networks => true})
+    end
+    dcn.first
   end
 
   let(:nw_demo1_params) do
