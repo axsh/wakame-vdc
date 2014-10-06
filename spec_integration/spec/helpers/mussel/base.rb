@@ -52,9 +52,6 @@ module Mussel
   class SshKeyPair < Base
   end
 
-  class DcNetwork < Base
-  end
-
   module Responses
     class Base < OpenStruct
     end
@@ -67,9 +64,6 @@ module Mussel
     end
 
     class SshKeyPair < Base
-    end
-
-    class DcNetwork < Base
     end
   end
 end
