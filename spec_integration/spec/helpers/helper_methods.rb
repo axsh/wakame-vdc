@@ -49,3 +49,23 @@ def extract_ip_address(instance, network_uuid)
     v['network_id'] == network_uuid
   end.first['ipv4']['address']
 end
+
+def symbolize_keys_recursive!(hash)
+  binding.pry
+  hash.symbolize_keys!
+  hash.values.select {|h|
+    h.is_a? Hash
+  }.each {|h|
+    symbolize_keys_recursive!(h)
+  }
+end
+
+def recursive_symbolize_keys(hash)
+  hash.each_with_object({}){|(k,v), m|
+    m[k.to_s.to_sym] = (v.is_a?(Hash) ? recursive_symbolize_keys(v) : v)
+  }
+end
+
+def config
+  @config ||= recursive_symbolize_keys(YAML.load_file(File.expand_path("../../../config/config.yml", __FILE__)))
+end

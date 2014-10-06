@@ -72,13 +72,12 @@ feature 'Basic Virtual Network Operations' do
 
   let(:nw_manage) do
     Mussel::Network.index.select do |n|
-      n.dc_network['name'] == 'management' ||
-      n.dc_network['name'] == 'mng'
+      n.dc_network['name'] == config[:dc_network][:management]
     end.first
   end
 
   let(:dc_network) do
-    Mussel::DcNetwork.index.select {|i| i.name == 'vnet'}.first
+    Mussel::DcNetwork.index.select {|i| i.name == config[:dc_network][:vnet]}.first
   end
 
   let(:nw_demo1_params) do
