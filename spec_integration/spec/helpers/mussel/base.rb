@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Mussel
-  MUSSEL_PATH='/opt/axsh/wakame-vdc/client/mussel'
+  MUSSEL_PATH = File.expand_path("../../../../../client/mussel", __FILE__)
   MUSSEL = "#{MUSSEL_PATH}/mussel.sh"
   RESPONSE_FORMAT='json'
 
