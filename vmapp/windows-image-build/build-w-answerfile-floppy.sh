@@ -84,7 +84,7 @@ boot-date-param()
 
 boot-common-params()
 {
-    echo -m 2000 -smp 1 \
+    echo -m 2000 -smp 2 -enable-kvm \
 	 -no-kvm-pit-reinjection \
 	 -monitor telnet::$MONITOR,server,nowait \
 	 -vnc :$VNC \
@@ -153,10 +153,12 @@ configure-metadata-disk()
     umount-image
 }
 
+KVM_BINARY=/home/triggers/up-vnet-from-scratch/vnet-from-scratch/lib/c-dinkvm/qemu/x86_64-softmmu/qemu-system-x86_64
+KVM_BINARY=qemu-system-x86_64
 boot-and-log-kvm-boot()
 {
-    echo "$@" >"thisrun/kvm-boot-cmdline-$(date +%y%m%d-%H%M%S)"
-    "$@"  >>./kvm.stdout 2>>./kvm.stderr &
+    echo "$KVM_BINARY" "$@" >"thisrun/kvm-boot-cmdline-$(date +%y%m%d-%H%M%S)"
+    "$KVM_BINARY" "$@"  >>./kvm.stdout 2>>./kvm.stderr &
     echo "$!" >thisrun/kvm.pid
     # the following are used by kvm-ui-util.sh
     echo "$MONITOR" >thisrun/kvm.mon
@@ -400,7 +402,7 @@ install-windows-from-iso()
     qemu-img create -f raw "$WINIMG" 30G
 
     if [ "$NATNET" = "" ] ; then
-	boot-and-log-kvm-boot kvm $(boot-common-params) \
+	boot-and-log-kvm-boot $(boot-common-params) \
 			      -fda "$FLP" \
 			      -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
 			      -drive file="$SCRIPT_DIR/$VIRTIOISO",index=3,media=cdrom \
@@ -409,7 +411,7 @@ install-windows-from-iso()
 			      -net socket,vlan=0,mcast=230.0.$UD.1:12341
     else
 	mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
-	boot-and-log-kvm-boot kvm $(boot-common-params) \
+	boot-and-log-kvm-boot $(boot-common-params) \
 			      -fda "$FLP" \
 			      -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
 			      -drive file="$SCRIPT_DIR/$VIRTIOISO",index=3,media=cdrom \
@@ -424,7 +426,7 @@ boot-without-networking()
 {
     configure-metadata-disk
     mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
-    boot-and-log-kvm-boot kvm $(boot-common-params) \
+    boot-and-log-kvm-boot $(boot-common-params) \
 			  -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
 			  -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
 			  -net nic,vlan=0,macaddr=$MACADDR \
@@ -436,7 +438,7 @@ boot-with-networking()
 {
     configure-metadata-disk
     mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
-    boot-and-log-kvm-boot kvm $(boot-common-params) \
+    boot-and-log-kvm-boot $(boot-common-params) \
 			  -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
 			  -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
 			  -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
