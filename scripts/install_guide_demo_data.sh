@@ -13,7 +13,7 @@ function uncomment() {
   sudo sed -i -e "s/^#\\(${commented_line}\\)/\\1/" ${files}
 }
 
-# Put the configuration file in place
+# Put the configuration files in place
 sudo cp /opt/axsh/wakame-vdc/dcmgr/config/dcmgr.conf.example /etc/wakame-vdc/dcmgr.conf
 sudo cp /opt/axsh/wakame-vdc/dcmgr/config/hva.conf.example /etc/wakame-vdc/hva.conf
 sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/database.yml.example /etc/wakame-vdc/dcmgr_gui/database.yml
