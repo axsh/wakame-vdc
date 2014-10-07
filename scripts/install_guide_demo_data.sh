@@ -13,9 +13,6 @@ function uncomment() {
   sudo sed -i -e "s/^#\\(${commented_line}\\)/\\1/" ${files}
 }
 
-# Enable the upstart jobs
-uncomment 'RUN=yes' '/etc/default/vdc-*'
-
 # Put the configuration file in place
 sudo cp /opt/axsh/wakame-vdc/dcmgr/config/dcmgr.conf.example /etc/wakame-vdc/dcmgr.conf
 sudo cp /opt/axsh/wakame-vdc/dcmgr/config/hva.conf.example /etc/wakame-vdc/hva.conf
