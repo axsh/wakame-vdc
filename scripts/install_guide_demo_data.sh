@@ -1,12 +1,41 @@
 #!/bin/bash
 
-set -ue
-
 # This script will configure Wakame-vdc to work with OpenVZ instances on a single
 # host. It is meant to be used in conjuction with the installation guide on the
 # wiki. Please follow the installation guide until it tells you to run this script.
 #
 # https://github.com/axsh/wakame-vdc/wiki/install-guide
+
+set -e
+
+if [ -z "$NETWORK" ] ||
+   [ -z "$PREFIX" ] ||
+   [ -z "$DHCP_RANGE_START" ] ||
+   [ -z "$DHCP_RANGE_END" ]
+then
+  cat<<USAGE
+  This script requires you to provide the network that you will install instances in.
+
+  The NETWORK and PREFIX environment variabled are required to be set. These
+  correspond to the two parts of a cidr notation.
+  192.168.0.0/24 would become: NETWORK='192.168.0.0' PREFIX='24'
+
+  Also required are DHCP_RANGE_START and DHCP_RANGE_END. These variables will
+  decide which ip addresses Wakame-vdc can use to assign to instances.
+
+  Anoter optional variable is GATEWAY.
+
+  Examples:
+  NETWORK='10.0.0.0' PREFIX='8' DHCP_RANGE_START='10.0.0.100' DHCP_RANGE_END='10.0.0.200' ${0}
+  NETWORK='192.168.3.0' PREFIX='24' GATEWAY='192.168.3.1' DHCP_RANGE_START='192.168.3.1' DHCP_RANGE_END='192.168.3.254' ${0}
+USAGE
+
+  exit 1
+fi
+
+exit 0
+
+set -ue
 
 ruby_path=/opt/axsh/wakame-vdc/ruby/bin
 
