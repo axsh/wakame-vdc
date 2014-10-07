@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ue
 
 # This script will configure Wakame-vdc to work with OpenVZ instances on a single
 # host. It is meant to be used in conjuction with the installation guide on the
