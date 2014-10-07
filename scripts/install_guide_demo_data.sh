@@ -24,6 +24,14 @@ sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/dcmgr_gui.yml.example /et
 sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/instance_spec.yml.example /etc/wakame-vdc/dcmgr_gui/instance_spec.yml
 sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/load_balancer_spec.yml.example /etc/wakame-vdc/dcmgr_gui/load_balancer_spec.yml
 
+# Download machine image
+sudo mkdir -p /var/lib/wakame-vdc/images
+cd /var/lib/wakame-vdc/images
+sudo curl -O http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-kvm-md-32.raw.gz
+
+# Set hva node id
+uncomment 'NODE_ID=demo1' '/etc/default/vdc-hva'
+
 # Set up backend database
 sudo /etc/init.d/mysqld start
 PATH=/opt/axsh/wakame-vdc/ruby/bin:$PATH
@@ -31,14 +39,6 @@ PATH=/opt/axsh/wakame-vdc/ruby/bin:$PATH
 mysqladmin -uroot create wakame_dcmgr
 cd /opt/axsh/wakame-vdc/dcmgr
 rake db:up
-
-# Download machine image
-sudo mkdir -p /var/lib/wakame-vdc/images
-cd /var/lib/wakame-vdc/images
-sudo curl -O http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-kvm-md-32.raw.gz
-
-# Set up hva
-uncomment 'NODE_ID=demo1' '/etc/default/vdc-hva'
 
 # Fill up the backend database
 cat <<CMDSET | grep -v '^#' | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
