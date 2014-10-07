@@ -6,6 +6,8 @@ set -ue
 # host. It is meant to be used in conjuction with the installation guide on the
 # wiki. Please follow the installation guide until it tells you to run this script.
 
+ruby_path=/opt/axsh/wakame-vdc/ruby/bin
+
 function uncomment() {
   local commented_line=$1
   local files=$2
@@ -31,11 +33,10 @@ uncomment 'NODE_ID=demo1' '/etc/default/vdc-hva'
 
 # Set up backend database
 sudo /etc/init.d/mysqld start
-PATH=/opt/axsh/wakame-vdc/ruby/bin:$PATH
 
 mysqladmin -uroot create wakame_dcmgr
 cd /opt/axsh/wakame-vdc/dcmgr
-rake db:up
+${ruby_path}/rake db:up
 
 # Fill up the backend database
 cat<<CMDSET | grep -v '\s*#' | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
@@ -103,7 +104,7 @@ CMDSET
 # Set up the frontend GUI database
 mysqladmin -uroot create wakame_dcmgr_gui
 cd /opt/axsh/wakame-vdc/frontend/dcmgr_gui/
-rake db:init
+${ruby_path}/rake db:init
 
 # Fill it up
 cat <<CMDSET | /opt/axsh/wakame-vdc/frontend/dcmgr_gui/bin/gui-manage -e
