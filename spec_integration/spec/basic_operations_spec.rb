@@ -140,8 +140,7 @@ feature 'Basic Virtual Network Operations' do
     #   'eth1' => {'index'=>'1', 'network'=>nw_manage.id, 'ipv4_addr'=>'10.1.0.10', 'mac_addr'=>'525400000012'}
     # }
     instance_params[:vifs] = {
-      'eth0' => {'index'=>'0', 'network'=>@network.id},
-      'eth1' => {'index'=>'1', 'network'=>nw_manage.id}
+      'eth0' => {'index'=>'0', 'network'=>@network.id}
     }
 
     setup_vif(instance_params)
