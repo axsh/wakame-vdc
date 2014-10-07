@@ -42,7 +42,7 @@ cd /opt/axsh/wakame-vdc/dcmgr
 ${ruby_path}/rake db:up
 
 # Fill up the backend database
-cat<<CMDSET | grep -v '\s*#' | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
+grep -v '\s*#' <<CMDSET | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
   # Register the HVA
   host add hva.demo1 \
     --uuid hn-demo1 \
@@ -110,7 +110,7 @@ cd /opt/axsh/wakame-vdc/frontend/dcmgr_gui/
 ${ruby_path}/rake db:init
 
 # Fill it up
-cat <<CMDSET | /opt/axsh/wakame-vdc/frontend/dcmgr_gui/bin/gui-manage -e
+/opt/axsh/wakame-vdc/frontend/dcmgr_gui/bin/gui-manage -e <<CMDSET
   account add --name default --uuid a-shpoolxx
   user add --name "demo user" --uuid u-demo --password demo --login-id demo
   user associate u-demo --account-ids a-shpoolxx
