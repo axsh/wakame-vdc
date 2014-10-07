@@ -5,6 +5,8 @@ set -ue
 # This script will configure Wakame-vdc to work with OpenVZ instances on a single
 # host. It is meant to be used in conjuction with the installation guide on the
 # wiki. Please follow the installation guide until it tells you to run this script.
+#
+# https://github.com/axsh/wakame-vdc/wiki/install-guide
 
 ruby_path=/opt/axsh/wakame-vdc/ruby/bin
 
