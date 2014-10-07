@@ -31,9 +31,10 @@ sudo curl -O http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-luci
 # Set hva node id
 uncomment 'NODE_ID=demo1' '/etc/default/vdc-hva'
 
-# Set up backend database
+# Start MySQL so we can set up our databases.
 sudo /etc/init.d/mysqld start
 
+# Set up backend database
 mysqladmin -uroot create wakame_dcmgr
 cd /opt/axsh/wakame-vdc/dcmgr
 ${ruby_path}/rake db:up
