@@ -26,6 +26,8 @@ feature 'Basic Virtual Network Operations' do
   end
 
   scenario 'Create instance to virtual network (Static IP address)' do
+    pending 'need to ping instance over natted network'
+    fail
     create_virtual_network_nw_demo1
     start_new_instance_with_ipv4_address
     confirm_instance_with_expected_configuration
