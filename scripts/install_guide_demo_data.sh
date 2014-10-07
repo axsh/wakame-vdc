@@ -38,7 +38,7 @@ cd /opt/axsh/wakame-vdc/dcmgr
 rake db:up
 
 # Fill up the backend database
-cat<<CMDSET | grep -v '\s*^#' | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
+cat<<CMDSET | grep -v '\s*#' | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
   # Register the HVA
   host add hva.demo1 \
     --uuid hn-demo1 \
