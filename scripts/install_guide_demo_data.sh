@@ -14,7 +14,7 @@ if [ -z "$NETWORK" ] ||
    [ -z "$DHCP_RANGE_END" ]
 then
   cat<<USAGE
-  This script requires you to provide the network that you will install instances in.
+  This script requires you to provide the network that you will start instances in.
 
   The NETWORK and PREFIX environment variabled are required to be set. These
   correspond to the two parts of a cidr notation.
