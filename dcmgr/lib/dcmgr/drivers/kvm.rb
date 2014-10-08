@@ -357,17 +357,7 @@ RUN_SH
           end
         end
 
-        return if Dcmgr::Configurations.hva.edge_networking != 'openvnet'
-
-        hc.inst[:vif].each do |vif|
-          if vif[:ipv4] and vif[:ipv4][:network]
-            sh("/sbin/ip link set %s down" % [vif_uuid(vif)])
-            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-
-            detach_vif_cmd = detach_vif_from_bridge(bridge, vif)
-            sh(detach_vif_cmd)
-          end
-        end
+        cleanup_vif(hc)
       end
 
       def soft_poweroff_instance(hc)

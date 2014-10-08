@@ -201,6 +201,7 @@ module Dcmgr
 
         # delete container folder
         sh("vzctl destroy %s",[hc.inst_id])
+        cleanup_vif(hc)
         hc.logger.debug("delete container folder #{hc.private_dir}")
         # delete CT local config files
         hc.ct_local_confs.map { |i| i + ".destroyed" }.each { |i|

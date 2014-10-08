@@ -94,6 +94,7 @@ module Dcmgr
         shell.run("lxc-wait -n %s -s STOPPED", [ctx.inst_id])
         umount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
         umount_root_image(ctx, ctx.root_mount_path)
+        cleanup_vif(ctx)
       end
 
       def attach_volume_to_guest(ctx)
