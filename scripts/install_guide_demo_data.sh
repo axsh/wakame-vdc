@@ -1,14 +1,42 @@
 #!/bin/bash
 
-set -ue
-
 # This script will configure Wakame-vdc to work with OpenVZ instances on a single
-# host. It is meant to be used in conjuction with the installation guide on the
+# host. It is meant to be used in conjunction with the installation guide on the
 # wiki. Please follow the installation guide until it tells you to run this script.
 #
 # https://github.com/axsh/wakame-vdc/wiki/install-guide
 
+set -e
+
+if [ -z "$NETWORK" ] ||
+   [ -z "$PREFIX" ] ||
+   [ -z "$DHCP_RANGE_START" ] ||
+   [ -z "$DHCP_RANGE_END" ]
+then
+  cat<<USAGE
+  This script requires you to provide the network that you will start instances in.
+
+  The NETWORK and PREFIX environment variabled are required to be set. These
+  correspond to the two parts of a cidr notation.
+  192.168.0.0/24 would become: NETWORK='192.168.0.0' PREFIX='24'
+
+  Also required are DHCP_RANGE_START and DHCP_RANGE_END. These variables will
+  decide which ip addresses Wakame-vdc can use to assign to instances.
+
+  The GATEWAY variable is optional.
+
+  Examples:
+  NETWORK='10.0.0.0' PREFIX='8' DHCP_RANGE_START='10.0.0.100' DHCP_RANGE_END='10.0.0.200' ${0}
+  NETWORK='192.168.3.0' PREFIX='24' GATEWAY='192.168.3.1' DHCP_RANGE_START='192.168.3.1' DHCP_RANGE_END='192.168.3.254' ${0}
+USAGE
+
+  exit 1
+fi
+
+set -ue
+
 ruby_path=/opt/axsh/wakame-vdc/ruby/bin
+GATEWAY=${GATEWAY:-''}
 
 function uncomment() {
   local commented_line=$1
@@ -42,7 +70,7 @@ cd /opt/axsh/wakame-vdc/dcmgr
 ${ruby_path}/rake db:up
 
 # Fill up the backend database
-cat<<CMDSET | grep -v '\s*#' | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
+grep -v '\s*#' <<CMDSET | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
   # Register the HVA
   host add hva.demo1 \
     --uuid hn-demo1 \
@@ -83,14 +111,13 @@ cat<<CMDSET | grep -v '\s*#' | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
   # Give Wakame-vdc a network to start instances in
   network add \
     --uuid nw-demo1 \
-    --ipv4-network 192.168.3.0 \
-    --prefix 24 \
-    --ipv4-gw 192.168.3.1 \
+    --ipv4-network "${NETWORK}" \
+    --prefix "${PREFIX}" \
     --account-id a-shpoolxx \
     --display-name "demo network"
 
   # Tell Wakame-vdc which ip addresses from the network it can use
-  network dhcp addrange nw-demo1 192.168.3.1 192.168.3.254
+  network dhcp addrange nw-demo1 "${DHCP_RANGE_START}" "${DHCP_RANGE_END}"
 
   # Tell Wakame-vdc which mac addresses it can use
   macrange add 525400 1 ffffff --uuid mr-demomacs
@@ -104,13 +131,18 @@ cat<<CMDSET | grep -v '\s*#' | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
   network dc add-network-mode public securitygroup
 CMDSET
 
+# Add the network gateway if it was set
+if [ -n "$GATEWAY" ]; then
+  /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage network modify nw-demo1 --ipv4-gw "$GATEWAY"
+fi
+
 # Set up the frontend GUI database
 mysqladmin -uroot create wakame_dcmgr_gui
 cd /opt/axsh/wakame-vdc/frontend/dcmgr_gui/
 ${ruby_path}/rake db:init
 
 # Fill it up
-cat <<CMDSET | /opt/axsh/wakame-vdc/frontend/dcmgr_gui/bin/gui-manage -e
+/opt/axsh/wakame-vdc/frontend/dcmgr_gui/bin/gui-manage -e <<CMDSET
   account add --name default --uuid a-shpoolxx
   user add --name "demo user" --uuid u-demo --password demo --login-id demo
   user associate u-demo --account-ids a-shpoolxx
