@@ -23,7 +23,7 @@ then
   Also required are DHCP_RANGE_START and DHCP_RANGE_END. These variables will
   decide which ip addresses Wakame-vdc can use to assign to instances.
 
-  Anoter optional variable is GATEWAY.
+  The GATEWAY variable is optional.
 
   Examples:
   NETWORK='10.0.0.0' PREFIX='8' DHCP_RANGE_START='10.0.0.100' DHCP_RANGE_END='10.0.0.200' ${0}
