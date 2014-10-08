@@ -33,11 +33,10 @@ USAGE
   exit 1
 fi
 
-exit 0
-
 set -ue
 
 ruby_path=/opt/axsh/wakame-vdc/ruby/bin
+GATEWAY={$GATEWAY:-""}
 
 function uncomment() {
   local commented_line=$1
@@ -112,14 +111,13 @@ grep -v '\s*#' <<CMDSET | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
   # Give Wakame-vdc a network to start instances in
   network add \
     --uuid nw-demo1 \
-    --ipv4-network 192.168.3.0 \
-    --prefix 24 \
-    --ipv4-gw 192.168.3.1 \
+    --ipv4-network "${NETWORK}" \
+    --prefix "${PREFIX}" \
     --account-id a-shpoolxx \
     --display-name "demo network"
 
   # Tell Wakame-vdc which ip addresses from the network it can use
-  network dhcp addrange nw-demo1 192.168.3.1 192.168.3.254
+  network dhcp addrange nw-demo1 "${DHCP_RANGE_START}" "${DHCP_RANGE_END}"
 
   # Tell Wakame-vdc which mac addresses it can use
   macrange add 525400 1 ffffff --uuid mr-demomacs
@@ -132,6 +130,11 @@ grep -v '\s*#' <<CMDSET | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
   # Enable security groups on the public bridge
   network dc add-network-mode public securitygroup
 CMDSET
+
+# Add the network gateway if it was set
+if [ -n "$GATEWAY" ]; then
+  /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage network modify nw-demo1 --ipv4-gw "$GATEWAY"
+fi
 
 # Set up the frontend GUI database
 mysqladmin -uroot create wakame_dcmgr_gui
