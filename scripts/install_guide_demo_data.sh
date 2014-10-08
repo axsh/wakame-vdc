@@ -36,7 +36,7 @@ fi
 set -ue
 
 ruby_path=/opt/axsh/wakame-vdc/ruby/bin
-GATEWAY={$GATEWAY:-""}
+GATEWAY=${GATEWAY:-''}
 
 function uncomment() {
   local commented_line=$1
