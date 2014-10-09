@@ -11,6 +11,16 @@ module Mussel
       def destroy(instance)
         super(instance.id)
       end
+
+      def power_off(instance, force = true)
+        http_response = JSON.parse(`#{parse_params({:force => force})} #{MUSSEL} instance poweroff #{instance.id}`)
+        Responses.const_get(class_name.camelize).new(http_response)
+      end
+
+      def power_on(instance)
+        http_response = JSON.parse(`#{response_format} #{MUSSEL} instance poweron #{instance.id}`)
+        Responses.const_get(class_name.camelize).new(http_response)
+      end
     end
   end
 

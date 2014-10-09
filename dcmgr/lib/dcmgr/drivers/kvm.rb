@@ -200,8 +200,8 @@ RUN_SH
           if vif[:ipv4] and vif[:ipv4][:network]
             sh("/sbin/ip link set %s up" % [vif_uuid(vif)])
             bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-            attach_vif_cmd = attach_vif_to_bridge(bridge, vif)
 
+            attach_vif_cmd = attach_vif_to_bridge(bridge, vif)
             sh(attach_vif_cmd)
 
             run_sh += ("/sbin/ip link set %s up" % [vif_uuid(vif)])
@@ -356,6 +356,8 @@ RUN_SH
             logger.error("Can not find the KVM process. Skipping: #{hc.inst_id}")
           end
         end
+
+        cleanup_vif(hc)
       end
 
       def soft_poweroff_instance(hc)

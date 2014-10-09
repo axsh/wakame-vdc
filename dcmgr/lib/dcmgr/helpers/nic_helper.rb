@@ -95,6 +95,19 @@ module Dcmgr
         get_bridge_cmd(bridge, vif, :detach)
       end
 
+      def cleanup_vif(hc)
+        hc.inst[:vif].each do |vif|
+          if vif[:ipv4] and vif[:ipv4][:network]
+            next if system("/sbin/ip link show %s" % [vif_uuid(vif)]) == false
+            sh("/sbin/ip link set %s down" % [vif_uuid(vif)])
+            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+
+            detach_vif_cmd = detach_vif_from_bridge(bridge, vif)
+            sh(detach_vif_cmd)
+          end
+        end
+      end
+
       def minimize_stp_forward_delay(bridge)
         case Dcmgr::Configurations.hva.edge_networking
         when 'openvnet' then
