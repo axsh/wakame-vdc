@@ -106,15 +106,31 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     return dirty.any?
   end
 
-  # Show list of instances
-  # Filter Paramters:
-  # start: fixnum, optional
-  # limit: fixnum, optional
-  # account_id:
-  # state: (running|stopped|terminated|alive)
-  # created_since, created_until:
-  # terminated_since, terminated_until:
-  # host_node_id:
+  #TODO: Add some uuid validation
+  describe "Shows a list of the instances that currently exist."
+  param :start, :Integer,
+                desc: "The index to start listing from."
+  param :limit, :Integer,
+                desc: "The maximum amount of instances to list."
+  param :account_id, :String,
+                desc: "Show only instances from this account id."
+  param :state, :String,
+                in: INSTANCE_META_STATE + INSTANCE_STATE
+  param :created_since, :DateTime,
+                        desc: "Show only instances created after this time."
+  param :created_until, :DateTime,
+                        desc: "Show only instances created before this time."
+  param :terminated_since, :DateTime,
+                           desc: "Show only instances terminated after this time."
+  param :terminated_until, :DateTime,
+                           desc: "Show only instances terminated before this time."
+  param :host_node_id, :String,
+                       desc: "Show only instances from this host node."
+  param :service_type, :String,
+                       in: Dcmgr::Configurations.dcmgr.service_types
+                       desc: "Show only instances of this service type."
+  param :display_name, :String,
+                       desc: "Show only instances with this display name."
   get do
     ds = M::Instance.dataset
 
@@ -128,8 +144,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                ds.alives_and_termed
              when 'without_terminated'
                ds.without_terminated
-             else
-               raise E::InvalidParameter, :state
              end
            when *INSTANCE_STATE
              ds.filter(:state=>params[:state])
@@ -157,7 +171,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
 
     if params[:service_type]
-      Dcmgr::Configurations.dcmgr.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
       ds = ds.filter(:service_type=>params[:service_type])
     end
 
