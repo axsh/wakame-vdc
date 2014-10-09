@@ -99,7 +99,7 @@ grep -v '\s*#' <<CMDSET | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
     --size 149084 \
     --allocation-size 359940 \
     --container-format gz \
-    --checksum 55dcc87838af4aa14eb3eb986ea756d3
+    --checksum 1f841b195e0fdfd4342709f77325ce29
 
   # Tell Wakame-vdc that this backup object is a bootable machine image
   image add local bo-lucid5d \
@@ -113,6 +113,7 @@ grep -v '\s*#' <<CMDSET | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
     --uuid nw-demo1 \
     --ipv4-network "${NETWORK}" \
     --prefix "${PREFIX}" \
+    --dns 8.8.8.8 \
     --account-id a-shpoolxx \
     --display-name "demo network"
 
