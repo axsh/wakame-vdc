@@ -19,7 +19,7 @@ declare namespace=dc_network
 function test_dc_network_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 ${namespace} [help|destroy|index|show|xcreate]"
+  assertEquals "${res}" "$0 ${namespace} [help|add_offering_modes|create|destroy|index|show|update|xcreate]"
 }
 
 ## shunit2
