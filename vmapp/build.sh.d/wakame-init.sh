@@ -18,8 +18,8 @@
 . $(cd ${BASH_SOURCE[0]%/*} && pwd)/../functions/distro.sh
 
 ##
-declare wakame_init_rhel_path=$(cd ${BASH_SOURCE[0]%/*} && pwd)/../../tests/image_builder/rhel/6/wakame-init
-declare wakame_init_ubuntu_path=$(cd ${BASH_SOURCE[0]%/*} && pwd)/../../tests/image_builder/ubuntu/10.04/wakame-init
+declare wakame_init_rhel_path=$(cd ${BASH_SOURCE[0]%/*} && pwd)/../../wakame-init/rhel/6/wakame-init
+declare wakame_init_ubuntu_path=$(cd ${BASH_SOURCE[0]%/*} && pwd)/../../wakame-init/ubuntu/10.04/wakame-init
 
 ##
 function install_wakame_init() {

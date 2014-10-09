@@ -16,6 +16,7 @@ gem 'padrino-sprockets', '0.0.2', :require => "padrino/sprockets"
 gem 'coffee-script', '2.2.0'
 gem 'therubyracer', '0.10.2', :require => 'v8'
 gem 'unicorn', '4.7.0'
+gem "unicorn-worker-killer", "~> 0.4.2"
 gem 'rack-cors', :require => 'rack/cors'
 
 # Development requirements
