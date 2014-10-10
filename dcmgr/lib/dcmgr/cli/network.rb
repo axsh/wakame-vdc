@@ -39,6 +39,7 @@ class Network < Base
     private :map_network_params
 
     def self.common_options
+      method_option :uuid, :type => :string, :desc => "UUID of the network"
       method_option :ipv4_network, :type => :string, :desc => "IPv4 network address"
       method_option :ipv4_gw, :type => :string, :desc => "Gateway address for IPv4 network"
       method_option :prefix, :type => :numeric, :desc => "IP network mask size (1 < prefix < 32)"
@@ -49,20 +50,24 @@ class Network < Base
       method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network"
       method_option :bandwidth, :type => :numeric,  :desc => "The maximum bandwidth for the network in Mbit/s"
       method_option :description, :type => :string,  :desc => "Description for the network"
-      method_option :account_id, :type => :string, :default=>'a-shpoolxx', :desc => "The account ID to own this"
-      method_option :metric, :type => :numeric, :default=>100, :desc => "Routing priority order of this network segment"
-      method_option :network_mode, :type => :string, :default=>'securitygroup', :desc => "Network mode: #{NETWORK_MODES.join(', ')}"
-      method_option :service_type, :type => :string, :default=>@@conf.default_service_type, :desc => "Service type of the network. (#{@@conf.service_types.keys.sort.join(', ')})"
+      method_option :account_id, :type => :string, :desc => "The account ID to own this"
+      method_option :metric, :type => :numeric, :desc => "Routing priority order of this network segment"
+      method_option :network_mode, :type => :string, :desc => "Network mode: #{NETWORK_MODES.join(', ')}"
+      method_option :service_type, :type => :string, :desc => "Service type of the network. (#{@@conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :desc => "Display name of the network"
-      method_option :ip_assignment, :type => :string, :default=>'asc', :desc => "How to assign the IP address of the network"
+      method_option :ip_assignment, :type => :string, :desc => "How to assign the IP address of the network"
     end
   }
 
   desc "add [options]", "Register a new network entry"
-  method_option :uuid, :type => :string, :desc => "UUID of the network"
   common_options
-  method_options[:ipv4_network].required=true
-  method_options[:prefix].required=true
+  method_options[:ipv4_network].required = true
+  method_options[:prefix].required = true
+  method_options[:account_id].default = 'a-shpoolxx'
+  method_options[:metric].default = 100
+  method_options[:network_mode].default = 'securitygroup'
+  method_options[:service_type].default = @@conf.default_service_type
+  method_options[:ip_assignment].default = 'asc'
   def add
     validate_ipv4_range
 
