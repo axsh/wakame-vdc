@@ -19,8 +19,10 @@ class Storage < Base
 
     no_tasks {
       def self.common_options
-        option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
+        option :uuid, :type => :string, :desc => "The uuid for the new storage node"
+        option :disk_space, :type => :numeric, :desc => "Amount of disk size to be exported (in MB)"
         option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
+        option :ipaddr, :type => :string, :desc => "IP address of transport target"
       end
 
       def map_options_to_column
@@ -33,9 +35,9 @@ class Storage < Base
     }
 
     desc "add <node id> [options]", "Register a new ISCSI storage node"
-    option :uuid, :type => :string, :desc => "The uuid for the new storage node"
-    option :ipaddr, :type => :string, :required => true, :desc => "IP address of transport target"
     common_options
+    method_options[:disk_space].required = true
+    method_options[:ipaddr].required = true
     def add(node_id)
       fields = {
         :node_id=>node_id,
@@ -47,7 +49,6 @@ class Storage < Base
 
     desc "modify <uuid> [options]", "Modify <uuid> of ISCSI storage node"
     option :node_id, :type => :string, :desc => "The node ID for the storage node"
-    option :ipaddr, :type => :string, :desc => "IP address of transport target"
     common_options
     def modify(uuid)
       fields = map_options_to_column
@@ -68,8 +69,10 @@ class Storage < Base
 
     no_tasks {
       def self.common_options
-        option :disk_space, :type => :numeric, :required => true, :desc => "Amount of disk size to be exported (in MB)"
+        option :uuid, :type => :string, :desc => "The uuid for the new storage node"
+        option :disk_space, :type => :numeric, :desc => "Amount of disk size to be exported (in MB)"
         option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
+        option :mount_point, :type => :string, :size => 255, :desc => "Mount point path on host node"
       end
 
       def map_options_to_column
@@ -81,9 +84,9 @@ class Storage < Base
     }
 
     desc "add <node id> [options]", "Register a new NFS storage node"
-    option :uuid, :type => :string, :desc => "The uuid for the new storage node"
-    option :mount_point, :type => :string, :size => 255, :desc => "Mount point path on host node"
     common_options
+    method_options[:disk_space].required = true
+    method_options[:mount_point].required = true
     def add(node_id)
       fields = {
         :node_id=>node_id,
@@ -95,7 +98,6 @@ class Storage < Base
 
     desc "modify <uuid> [options]", "Modify <uuid> of NFS storage node"
     option :node_id, :type => :string, :desc => "The node ID for the storage node"
-    option :mount_point, :type => :string, :size => 255, :desc => "Mount point path on host node"
     common_options
     def modify(uuid)
       fields = map_options_to_column
