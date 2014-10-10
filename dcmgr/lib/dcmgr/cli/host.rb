@@ -96,7 +96,7 @@ __END
       ds = HostNode.dataset
       table = [['UUID', 'Node ID', 'Hypervisor', 'Architecture', 'Usage', 'Status', 'Scheduling']]
       ds.each { |r|
-        table << [r.canonical_uuid, r.node_id, r.hypervisor, r.arch, "#{r.usage_percent}%", r.status, r.enabled]
+        table << [r.canonical_uuid, r.node_id, r.hypervisor, r.arch, "#{r.usage_percent}%", r.status, r.scheduling_enabled]
       }
       shell.print_table(table)
     end
