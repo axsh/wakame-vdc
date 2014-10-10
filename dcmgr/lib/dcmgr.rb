@@ -263,8 +263,8 @@ module Dcmgr
     autoload :DummyLocalStore,  'dcmgr/drivers/local_store/dummy_local_store.rb'
     autoload :ESXiLocalStore,   'dcmgr/drivers/local_store/esxi_local_store.rb'
     autoload :LinuxLocalStore,  'dcmgr/drivers/local_store/linux_local_store.rb'
-    autoload :OpenvzLocalStore, 'dcmgr/drivers/local_store/openvz_local_store.rb'
-    autoload :KvmLocalStore,    'dcmgr/drivers/local_store/kvm_local_store'
+    autoload :OpenvzLocalStore, 'dcmgr/drivers/local_store/linux_local_store/openvz_local_store.rb'
+    autoload :KvmLocalStore,    'dcmgr/drivers/local_store/linux_local_store/kvm_local_store'
 
     #
     # Network monitoring drivers
