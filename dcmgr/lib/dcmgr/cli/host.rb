@@ -11,20 +11,35 @@ class Host < Base
 
   no_tasks {
     def self.common_options
+      method_option :uuid, :type => :string, :desc => "The UUID for the new host node"
       method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new host node"
-      method_option :cpu_cores, :type => :numeric, :default=>1, :desc => "Number of cpu cores to be offered"
-      method_option :memory_size, :type => :numeric, :default=>1024, :desc => "Amount of memory to be offered (in MB)"
-      method_option :hypervisor, :type => :string, :default=>'kvm', :desc => "The hypervisor name. [#{SUPPORTED_HYPERVISOR.join(', ')}]"
-      method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{SUPPORTED_ARCH.join(', ')}]"
-      option :disk_space, :type => :numeric, :required => false, :default=>0, :desc => "Amount of disk space to store instances local volumes (MB)"
-      option :scheduling_enabled, :type => :boolean, :default=>true, :desc => "Flag to tell scheduler to provision the host node"
+      method_option :cpu_cores, :type => :numeric, :desc => "Number of cpu cores to be offered"
+      method_option :memory_size, :type => :numeric, :desc => "Amount of memory to be offered (in MB)"
+      method_option :hypervisor, :type => :string, :desc => "The hypervisor name. [#{SUPPORTED_HYPERVISOR.join(', ')}]"
+      method_option :arch, :type => :string, :desc => "The CPU architecture type. [#{SUPPORTED_ARCH.join(', ')}]"
+      option :disk_space, :type => :numeric, :desc => "Amount of disk space to store instances local volumes (MB)"
+      option :scheduling_enabled, :type => :boolean, :desc => "Flag to tell scheduler to provision the host node"
     end
+
+    def map_options_to_column
+      optmap(options) { |c|
+        c.map(:memory_size, :offering_memory_size)
+        c.map(:cpu_cores, :offering_cpu_cores)
+        c.map(:disk_space, :offering_disk_space_mb)
+      }
+    end
+    private :map_options_to_column
   }
 
   desc "add NODE_ID [options]", "Register a new host node"
-  method_option :uuid, :type => :string, :desc => "The UUID for the new host node"
   method_option :force, :type => :boolean, :default=>false, :desc => "Force new entry creation"
   common_options
+  method_options[:cpu_cores].default = 1
+  method_options[:memory_size].default = 1024
+  method_options[:hypervisor].default = 'kvm'
+  method_options[:arch].default = 'x86_64'
+  method_options[:disk_space].default = 0
+  method_options[:scheduling_enabled].default = true
   def add(node_id)
     UnsupportedArchError.raise(options[:arch]) unless SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
@@ -33,16 +48,12 @@ class Host < Base
       abort("Node ID is not registered yet: #{node_id}")
     end
 
+    # :force is not field for HostNode model.
+    options.delete(:force)
+
     fields = {
-              :display_name=>options[:display_name],
-              :node_id=>node_id,
-              :offering_cpu_cores=>options[:cpu_cores],
-              :offering_memory_size=>options[:memory_size],
-              :hypervisor=>options[:hypervisor],
-              :arch=>options[:arch],
-              :offering_disk_space_mb=>options[:disk_space],
-              :scheduling_enabled=>options[:scheduling_enabled],
-    }
+      :node_id => node_id,
+    }.merge(map_options_to_column)
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     puts super(HostNode,fields)
   end
@@ -53,16 +64,8 @@ class Host < Base
   def modify(uuid)
     UnsupportedArchError.raise(options[:arch]) unless SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
-    fields = {
-              :display_name=>options[:display_name],
-              :offering_memory_size=>options[:memory_size],
-              :offering_cpu_cores=>options[:cpu_cores],
-              :hypervisor=>options[:hypervisor],
-              :arch=>options[:arch],
-              :node_id=>options[:node_id],
-              :offering_disk_space_mb=>options[:disk_space],
-              :scheduling_enabled=>options[:scheduling_enabled],
-    }
+
+    fields = map_options_to_column
     super(HostNode,uuid,fields)
   end
 
