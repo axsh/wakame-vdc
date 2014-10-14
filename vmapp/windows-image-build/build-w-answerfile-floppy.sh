@@ -67,15 +67,94 @@ EOF
     exit
 }
 
-if [ "$BOOTDATE" == "" ] ; then
-    # By default, set the date to something later than the files in
-    # the Windows Server 2012 ISO.  All the files in the ISO seem to
-    # be dated 2014-03-18.  Setting after this but earlier than
-    # today's date makes it possible to do experiments with KVM faking
-    # dates but still be using dates that would be plausible to
-    # Windows and Microsoft's activaion server.
-    BOOTDATE="2014-04-01"
-fi
+set-environment-var-defaults()
+{
+    if [ "$BOOTDATE" == "" ] ; then
+	# By default, set the date to something later than the files in
+	# the Windows Server 2012 ISO.  All the files in the ISO seem to
+	# be dated 2014-03-18.  Setting after this but earlier than
+	# today's date makes it possible to do experiments with KVM faking
+	# dates but still be using dates that would be plausible to
+	# Windows and Microsoft's activaion server.
+	BOOTDATE="2014-04-01"
+    fi
+
+    [ "$MACADDR" == "" ] &&  MACADDR="52-54-00-11-a0-5b"
+    [ "$IPV4" == "" ] &&  IPV4="10.0.2.15"
+    [ "$NETMASK" == "" ] &&  NETMASK="255.255.255.0"
+    [ "$GATEWAY" == "" ] &&  GATEWAY="10.0.2.2"
+
+    
+    [ "$KVM_BINARY" == "" ] && KVM_BINARY=qemu-system-x86_64
+
+
+    # Decide on ports for KVM's user-mode networking port forwarding
+    RDP=1${UD}389
+    SSH=1${UD}022
+    MISC=1${UD}123
+
+    # And other ports to be used by KVM
+    MONITOR=1${UD}302
+    VNC=1${UD}0
+
+    portforward=""
+    portforward="$portforward,hostfwd=tcp:0.0.0.0:$RDP-:3389"  # RDP
+    portforward="$portforward,hostfwd=tcp:0.0.0.0:$SSH-:22"  # ssh (for testing)
+    portforward="$portforward,hostfwd=tcp:0.0.0.0:$MISC-:7890"  # test (for testing)
+    portforward="$portforward,hostfwd=tcp:0.0.0.0:10050-:10050"  # zabbix
+    portforward="$portforward,hostfwd=tcp:0.0.0.0:10051-:10051"  # zabbix
+
+    scriptArray=(
+	wakame-init-first-boot.ps1
+	sysprep-for-backup.cmd
+	SetupComplete-firstboot.cmd
+	SetupComplete-install.cmd
+	wakame-init-every-boot.cmd
+	wakame-init-every-boot.ps1
+	wakame-functions.ps1
+    )
+
+
+    VIRTIOISO="virtio-win-0.1-74.iso"  # version of virtio disk and network drivers known to work
+    ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
+}
+set-environment-var-defaults
+
+soon-to-be-obsolete-code()
+{
+    case "$1" in
+	*8*)
+	    WINIMG=win-2008.raw
+	    ANSFILE=Autounattend-08.xml
+	    WINISO=SW_DVD5_Windows_Svr_DC_EE_SE_Web_2008_R2_64Bit_Japanese_w_SP1_MLF_X17-22600.ISO
+	    UD=8 # unique digit
+	    LABEL=2008
+	    ;;
+	*12*)
+	    WINIMG=win-2012.raw
+	    ANSFILE=Autounattend-12.xml
+	    WINISO=SW_DVD9_Windows_Svr_Std_and_DataCtr_2012_R2_64Bit_Japanese_-3_MLF_X19-53644.ISO
+	    UD=9 # unique digit
+	    LABEL=2012
+	    ;;
+	*)
+	    usage
+	    ;;
+    esac
+
+    case "$1" in # allow a couple more test VMs to run in parallel
+	*8b*)
+	    UD=6 # unique digit
+	    ;;
+	*12b*)
+	    UD=7 # unique digit
+	    ;;
+    esac
+}
+soon-to-be-obsolete-code
+
+set -x
+
 
 boot-date-param()
 {
@@ -93,12 +172,6 @@ boot-common-params()
 	 -usbdevice tablet  \
 	 -k ja $(boot-date-param)
 }
-
-[ "$MACADDR" == "" ] &&  MACADDR="52-54-00-11-a0-5b"
-[ "$IPV4" == "" ] &&  IPV4="10.0.2.15"
-[ "$NETMASK" == "" ] &&  NETMASK="255.255.255.0"
-[ "$GATEWAY" == "" ] &&  GATEWAY="10.0.2.2"
-
 
 configure-metadata-disk()
 {
@@ -153,8 +226,6 @@ configure-metadata-disk()
     umount-image
 }
 
-KVM_BINARY=/home/triggers/up-vnet-from-scratch/vnet-from-scratch/lib/c-dinkvm/qemu/x86_64-softmmu/qemu-system-x86_64
-KVM_BINARY=qemu-system-x86_64
 boot-and-log-kvm-boot()
 {
     echo "$KVM_BINARY" "$@" >"thisrun/kvm-boot-cmdline-$(date +%y%m%d-%H%M%S)"
@@ -265,21 +336,21 @@ kill-kvm()
     fi
 }
 
-# potentially interesting logs and directories for debugging
-windowsLogs=(
-    Windows/DtcInstall.log
-    Windows/inf/setupapi.app.log
-    Windows/Panther
-    Windows/setupact.log
-    Windows/System32/sysprep
-    Windows/TSSysprep.log
-    Windows/WindowsUpdate.log
-    Windows/Setup
-    "'Program Files/ZABBIX Agent/zabbix_agentd.conf'"
-)
-
 tar-up-windows-logs()
 {
+    # potentially interesting logs and directories for debugging
+    windowsLogs=(
+	Windows/DtcInstall.log
+	Windows/inf/setupapi.app.log
+	Windows/Panther
+	Windows/setupact.log
+	Windows/System32/sysprep
+	Windows/TSSysprep.log
+	Windows/WindowsUpdate.log
+	Windows/Setup
+	"'Program Files/ZABBIX Agent/zabbix_agentd.conf'"
+    )
+
     target="$1"
     [ -d mntpoint/Windows ] || reportfail "Windows disk image not mounted"
     # eval is needed to deal with the quotes needed for spaces in a file name
@@ -304,67 +375,6 @@ confirm-sysprep-shutdown()
     read ans
     [ "$ans" = "YES" ] || exit 255
 }
-
-set -x
-
-VIRTIOISO="virtio-win-0.1-74.iso"  # version of virtio disk and network drivers known to work
-ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
-
-case "$1" in
-    *8*)
-	WINIMG=win-2008.raw
-	ANSFILE=Autounattend-08.xml
-	WINISO=SW_DVD5_Windows_Svr_DC_EE_SE_Web_2008_R2_64Bit_Japanese_w_SP1_MLF_X17-22600.ISO
-	UD=8 # unique digit
-	LABEL=2008
-	;;
-    *12*)
-	WINIMG=win-2012.raw
-	ANSFILE=Autounattend-12.xml
-	WINISO=SW_DVD9_Windows_Svr_Std_and_DataCtr_2012_R2_64Bit_Japanese_-3_MLF_X19-53644.ISO
-	UD=9 # unique digit
-	LABEL=2012
-	;;
-    *)
-	usage
-	;;
-esac
-
-case "$1" in # allow a couple more test VMs to run in parallel
-    *8b*)
-	UD=6 # unique digit
-	;;
-    *12b*)
-	UD=7 # unique digit
-	;;
-esac
-
-# Decide on ports for KVM's user-mode networking port forwarding
-RDP=1${UD}389
-SSH=1${UD}022
-MISC=1${UD}123
-
-# And other ports to be used by KVM
-MONITOR=1${UD}302
-VNC=1${UD}0
-echo "vncviewer :$(( VNC + 5900 ))"
-
-portforward=""
-portforward="$portforward,hostfwd=tcp:0.0.0.0:$RDP-:3389"  # RDP
-portforward="$portforward,hostfwd=tcp:0.0.0.0:$SSH-:22"  # ssh (for testing)
-portforward="$portforward,hostfwd=tcp:0.0.0.0:$MISC-:7890"  # test (for testing)
-portforward="$portforward,hostfwd=tcp:0.0.0.0:10050-:10050"  # zabbix
-portforward="$portforward,hostfwd=tcp:0.0.0.0:10051-:10051"  # zabbix
-
-scriptArray=(
-    wakame-init-first-boot.ps1
-    sysprep-for-backup.cmd
-    SetupComplete-firstboot.cmd
-    SetupComplete-install.cmd
-    wakame-init-every-boot.cmd
-    wakame-init-every-boot.ps1
-    wakame-functions.ps1
-)
 
 install-windows-from-iso()
 {
