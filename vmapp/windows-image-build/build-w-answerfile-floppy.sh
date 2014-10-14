@@ -6,7 +6,7 @@
 	exit 255
     }
 
-export KILLPGOK=yes  # allow for all scripts called by this script
+export KILLPGOK=yes  # allow for all scripts called by this script to be killed on error
 
 reportfail()
 {
