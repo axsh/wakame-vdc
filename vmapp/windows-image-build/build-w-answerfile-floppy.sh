@@ -108,7 +108,7 @@ configure-metadata-disk()
 
     # public key
     if ! [ -f testsshkey ]; then
-	try ssh-keygen -f testsshkey -N ""
+	try ssh-keygen -f testsshkey -N '""'
     fi
     sudo bash -c "mkdir -p mntpoint/meta-data/public-keys/0"
     sudo bash -c "echo $(cat testsshkey.pub) >mntpoint/meta-data/public-keys/0/openssh-key"
@@ -188,6 +188,7 @@ mount-image-raw()
     else
 	rm -f kpartx.out
 	try sudo kpartx -av "$installdir/$imagename" 1>kpartx.out
+	udevadm settle
     fi
     
     loopstatus2="$(sudo losetup -a)"
@@ -485,6 +486,7 @@ final-seed-image-packaging()
     try mv "$WINIMG" "${seedtar%.tar.gz}"
 
     try sudo kpartx -av "${seedtar%.tar.gz}"
+    udevadm settle
     try sudo ntfslabel /dev/mapper/loop0p1 root
     try sudo kpartx -dv /dev/loop0
     try sudo losetup -d /dev/loop0
