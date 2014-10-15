@@ -34,6 +34,7 @@ set -x
 
 usage() {
     cat <<'EOF'
+    # NOTE: the following is out-of-date:
 
     # This is a big proof-of-concept hack for automating seed image
     # building.  Currently, this script requires the user to (1)
@@ -56,7 +57,7 @@ usage() {
 
     # The step that checks the wait condition will usually take a
     # new screenshot.  What is being waiting for is determined from
-    # the file thisrun/nextstep.
+    # the file $trdir/nextstep.
 
 To run, just do:
 
@@ -189,7 +190,7 @@ wait-for-login-completion()
 
 supernext-step-completed()
 {
-    cmd="$(< thisrun/nextstep)"
+    cmd="$(< $trdir/nextstep)"
     case "$cmd" in
 	1-install)
 	    true # nothing to check; always OK to proceed
@@ -208,7 +209,7 @@ supernext-step-completed()
 
 supernext-simulate-user-actions-before()
 {
-    cmd="$(< thisrun/nextstep)"
+    cmd="$(< $trdir/nextstep)"
     case "$cmd" in
 	1-install)
 	    : # no user actions need to be done
@@ -228,25 +229,25 @@ supernext-simulate-user-actions-before()
 supernext-simulate-user-actions-after()
 {
     SLEEPFOR=30 # 10 seconds sometimes works. Do 3 times this.
-    case "$cmd" in  # uses $cmd from previous functions, because thisrun/nextstep may have changed
+    case "$cmd" in  # uses $cmd from previous functions, because $trdir/nextstep may have changed
 	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
-	    touch thisrun/press-ctrl-alt-del
+	    touch $trdir/press-ctrl-alt-del
 	    kvm-ui-simulate  press-ctrl-alt-del
 
 	    sleep 15
 	    kvm-ui-take-screenshot # for debugging
-	    touch thisrun/type-a-run-sysprep-return-1
+	    touch $trdir/type-a-run-sysprep-return-1
 	    kvm-ui-simulate  type-a-run-sysprep-return # "a:run-sysprep" here it is the password
 	    wait-for-login-completion
 
 	    sleep 2
 	    kvm-ui-take-screenshot # for debugging
-	    touch thisrun/open-powershell-click
+	    touch $trdir/open-powershell-click
 	    kvm-ui-simulate  open-powershell-click
 
 	    sleep "$SLEEPFOR"
 	    kvm-ui-take-screenshot # for debugging
-	    touch thisrun/type-a-run-sysprep-return-2
+	    touch $trdir/type-a-run-sysprep-return-2
 	    kvm-ui-simulate  type-a-run-sysprep-return # "a:run-sysprep" here it runs the script
 
 	    sleep "$SLEEPFOR"
@@ -256,7 +257,7 @@ supernext-simulate-user-actions-after()
 	    for i in $(seq 1 6); do
 		sleep "$SLEEPFOR"
 		kvm-ui-take-screenshot # for debugging
-		touch thisrun/press-return-$i
+		touch $trdir/press-return-$i
 		kvm-ui-simulate press-return
 	    done
 	    # sysprep should start automatically, and the next step
@@ -275,25 +276,14 @@ supernext-simulate-user-actions-after()
 
 supernext-main()
 {
-    trdir="$(readlink -f ./thisrun)" || reportfail "./thisrun directory not found"
-    LABEL="${trdir##*run-}"
-    LABEL="${LABEL%%-*}"
+    try LABEL="$(cat $trdir/LABEL)"
 
     if supernext-step-completed; then
 	# The current step finished!
 	# Do user actions necessary before next step...
 	supernext-simulate-user-actions-before || exit 255
 
-	# And now, it is time to do the next step in build script.
-	# The first parameter to build-w-answerfile-floppy.sh is
-	# 20{12,08}{,b,c}.  For example, 2012c.
-	# By convention, the build directory in this case would be
-	# named dir12c.  The "20" part is actually optional, so
-	# passing in the dirname will work when the convention is
-	# used, and exit with error when the convention is not used.
-	thehack="$(pwd)"
-	thehack="${thehack##*/}"
-	"$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$thehack" -next
+	"$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$trdir" -next
 
 	supernext-simulate-user-actions-after || exit 255
 	return 0
@@ -307,31 +297,10 @@ source "$SCRIPT_DIR/kvm-ui-util.sh" source
 
 case "$1" in
     -next) # normal case
+	trdir="${2%/}"
+	[ -f "$trdir"/active ] || reportfail "second parameter must be an active test/build directory"
+	trdir="$(cd "$trdir" ; pwd)"
 	supernext-main
-	;;
-    -debug)
-	shift
-	trdir="$(readlink -f ./thisrun)" || reportfail "./thisrun directory not found"
-	LABEL="${trdir##*run-}"
-	LABEL="${LABEL%%-*}"
-	"$@"
-	;;
-    -doall)  # just for quick debugging.  The calling script should implement this functionality.
-	thehack="$(pwd)"
-	thehack="${thehack##*/}"
-	"$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$thehack" 0-init
-	for i in $(seq 1 20); do
-	    echo "Iteration $i: "
-	    sudo whoami # keep sudo alive
-	    supernext-main
-	    cmd="$(< thisrun/nextstep)"
-	    if [ "$cmd" = "3-tar-the-image" ]; then
-		echo "Finished."
-		exit 0
-	    fi
-	    ps -o pid,pgid,cmd
-	    sleep 60
-	done
 	;;
     *) usage
        ;;

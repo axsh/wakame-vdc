@@ -53,9 +53,6 @@ EOF
 
 check-required-env()  # also sets defaults if run in Windows build environment
 {
-    trdir=""
-    [ -L ./thisrun ] && [ -d ./thisrun ] && trdir="./thisrun"
-
     if [ -z "$KVMPID" ]; then
 	[ -n "$trdir" ] && KVMPID="$(< "$trdir/kvm.pid")"
     fi
@@ -89,7 +86,7 @@ kvm-ui-feed-slowly-via-vnc()
       while [ -f /tmp/$$-for-kvm-ui ]; do
 	  dd bs=10 count=1 2>&99
 	  sleep 0.01
-      done | nc localhost $KVMVNC >/dev/null
+      done | nc 127.0.0.1 $KVMVNC >/dev/null
     )
     echo "End send to VNC" 1>&2
 }
@@ -100,7 +97,7 @@ kvm-ui-take-screenshot()
     dumptime="$(date +%y%m%d-%H%M%S)"  # assume not more than one dump per second
     [ -z "$trdir" ] && trdir=/tmp
     fname="$trdir/screendump-$dumptime.ppm"
-    echo "screendump $fname" | nc localhost $KVMMON 1>/dev/null
+    echo "screendump $fname" | nc 127.0.0.1 $KVMMON 1>/dev/null
     sleep 1
     gzip "$trdir/screendump-$dumptime.ppm"
     echo "$trdir/screendump-$dumptime.ppm".gz
@@ -145,12 +142,12 @@ kvm-ui-main()
 # simple built in functions:
 kvm-ui-simulate-press-ctrl-alt-del()
 {
-    echo sendkey ctrl-alt-delete | nc localhost "$KVMMON"
+    echo sendkey ctrl-alt-delete | nc 127.0.0.1 "$KVMMON"
 }
 
 kvm-ui-simulate-press-return()
 {
-    echo sendkey ret | nc localhost "$KVMMON"
+    echo sendkey ret | nc 127.0.0.1 "$KVMMON"
 }
 
 kvm-ui-simulate-type-date-return()
