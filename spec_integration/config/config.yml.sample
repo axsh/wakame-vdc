@@ -1,3 +1,9 @@
 dc_network:
   vnet: 'vnet'
   management: 'management'
+
+ip_pool_uuid: 'ipp-external'
+nw_global_uuid: 'nw-global'
+nw_management_uuid: 'nw-manage'
+
+trial_limit: 40

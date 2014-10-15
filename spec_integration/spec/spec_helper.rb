@@ -10,7 +10,9 @@ Bundler.require(:test)
 $LOAD_PATH << File.expand_path("./helpers", File.dirname(__FILE__))
 require 'mussel'
 
-require "#{File.dirname(__FILE__)}/helpers/helper_methods.rb"
+Dir.glob("#{File.dirname(__FILE__)}/helpers/helper_*.rb").each do |f|
+  require f
+end
 
 RSpec::Core::ExampleGroup.define_example_group_method :feature
 RSpec::Core::ExampleGroup.define_example_method :scenario
