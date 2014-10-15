@@ -5,7 +5,6 @@ require 'spec_helper'
 feature 'Basic Virtual Network Operations' do
 
   before(:all) do
-    @key_files = {}
   end
 
   scenario 'Create and Delete virtual network' do
