@@ -772,7 +772,11 @@ dispatch-init-command()
 
 read-persistent-values()
 {
-    echo TODO, read in values from dispatch-init-command
+    try LABEL="$(cat ./LABEL)"
+    try WINIMG="$(cat ./WINIMG)"
+    try ANSFILE="$(cat ./ANSFILE)"
+    try WINISO="$(cat ./WINISO)"
+    try UD="$(cat ./active)"
 }
 
 window-image-utils-main()
