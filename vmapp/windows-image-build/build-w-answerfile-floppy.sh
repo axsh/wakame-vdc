@@ -117,40 +117,7 @@ set-environment-var-defaults()
     ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
 }
 
-soon-to-be-obsolete-code()
-{
-    case "$1" in
-	*8*)
-	    WINIMG=win-2008.raw
-	    ANSFILE=Autounattend-08.xml
-	    WINISO=SW_DVD5_Windows_Svr_DC_EE_SE_Web_2008_R2_64Bit_Japanese_w_SP1_MLF_X17-22600.ISO
-	    UD=8 # unique digit
-	    LABEL=2008
-	    ;;
-	*12*)
-	    WINIMG=win-2012.raw
-	    ANSFILE=Autounattend-12.xml
-	    WINISO=SW_DVD9_Windows_Svr_Std_and_DataCtr_2012_R2_64Bit_Japanese_-3_MLF_X19-53644.ISO
-	    UD=9 # unique digit
-	    LABEL=2012
-	    ;;
-	*)
-	    usage
-	    ;;
-    esac
-
-    case "$1" in # allow a couple more test VMs to run in parallel
-	*8b*)
-	    UD=6 # unique digit
-	    ;;
-	*12b*)
-	    UD=7 # unique digit
-	    ;;
-    esac
-}
-
 set -x
-
 
 boot-date-param()
 {
