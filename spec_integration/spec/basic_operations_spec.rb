@@ -29,7 +29,7 @@ feature 'Basic Virtual Network Operations' do
     pending 'need to ping instance over natted network'
     fail
     create_virtual_network_nw_demo1
-    start_new_instance_with_ipv4_address
+    launch_instance
     confirm_instance_with_expected_configuration
     terminate_instance
     delete_virtual_network
@@ -39,7 +39,7 @@ feature 'Basic Virtual Network Operations' do
     pending 'it is possible to delete networks atm'
     fail
     create_virtual_network_nw_demo1
-    start_new_instance_with_ipv4_address
+    launch_instance
     network_delete_fail_if_instance_exist
     terminate_instance
     delete_virtual_network
@@ -49,7 +49,7 @@ feature 'Basic Virtual Network Operations' do
     pending 'unable to ssh to instance through management line'
     fail
     create_virtual_network_nw_demo1
-    start_new_instance_with_ipv4_address
+    launch_instance
     ssh_to_instance
     power_off_instance
     power_on_instance
@@ -62,7 +62,7 @@ feature 'Basic Virtual Network Operations' do
     pending 'not implemented, yet.'
     fail
     create_virtual_network_nw_demo1
-    start_new_instance_with_ipv4_address
+    launch_instance
     confirm_instance_ipv4_address
     power_off_instance
     change_instance_ipv4_address
@@ -136,30 +136,9 @@ feature 'Basic Virtual Network Operations' do
     expect(ret.ipv4_network).not_to eq '10.100.9.0'
   end
 
-  def start_new_instance_with_ipv4_address
-    # instance_params[:vifs] = {
-    #   'eth0' => {'index'=>'0', 'network'=>@network.id, 'ipv4_addr'=>'10.105.0.10', 'mac_addr'=>'525400000002'},
-    #   'eth1' => {'index'=>'1', 'network'=>nw_manage.id, 'ipv4_addr'=>'10.1.0.10', 'mac_addr'=>'525400000012'}
-    # }
-    instance_params[:vifs] = {
-      'eth0' => {'index'=>'0', 'network'=>@network.id}
-    }
-
-    setup_vif(instance_params)
-    output_keyfile = create_ssh_key_pair(instance_params)
-
-    @instance = wait_instance(Mussel::Instance.create(instance_params), nw_manage.id)
-    @key_files[@instance.id] = output_keyfile
-  end
-
   def confirm_instance_with_expected_configuration
     expect(@instance.vif.first).not_to eq nil
     expect(@instance.vif.first['network_id']).to eq @network.id
-  end
-
-  def terminate_instance
-    ret = Mussel::Instance.destroy(@instance)
-    expect(ret.first).to eq @instance.id
   end
 
   def network_delete_fail_if_instance_exist
