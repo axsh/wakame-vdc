@@ -33,6 +33,7 @@ export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || report
 
 usage() {
     cat <<'EOF'
+(NOTE: this documentation is out-of-date.)
 
 A quick guide for using this script to make Windows images is in
 README.md.  This script also has other features for experimenting with
@@ -84,9 +85,7 @@ set-environment-var-defaults()
     [ "$NETMASK" == "" ] &&  NETMASK="255.255.255.0"
     [ "$GATEWAY" == "" ] &&  GATEWAY="10.0.2.2"
 
-    
     [ "$KVM_BINARY" == "" ] && KVM_BINARY=qemu-system-x86_64
-
 
     # Decide on ports for KVM's user-mode networking port forwarding
     RDP=1${UD}389
@@ -114,11 +113,9 @@ set-environment-var-defaults()
 	wakame-functions.ps1
     )
 
-
     VIRTIOISO="virtio-win-0.1-74.iso"  # version of virtio disk and network drivers known to work
     ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
 }
-set-environment-var-defaults
 
 soon-to-be-obsolete-code()
 {
@@ -534,7 +531,7 @@ parse-initial-params()
     # recalling and modifying commands in a shell console.
 
     # All the commands expect the special directory to already exist.
-    # The only exception is the "-init" command, which creates a new
+    # The only exception is the "0-init" command, which creates a new
     # special directory.
 
     # The following code sets up for the above convention and adds a
@@ -559,11 +556,16 @@ parse-initial-params()
     fi
     params=( "${params[@]}" )  # shift array
 
+    if [[ "$thecommand" = "0-init" ]]; then
+	# check here before creating a new directory
+	[ "$1" = 2008 ] || [ "$1" = 2012 ] || usage
+    fi
+    
     # if path has explicit slash at the end, skip heuristic stuff below. 
     if [[ "$sd_partialpath" == */ ]]; then
 	# Use exactly what the user gives.
 	sd_fullpath="$sd_partialpath"
-	if [[ "$thecommand" == "-init" ]]; then
+	if [[ "$thecommand" = "0-init" ]]; then
 	    try mkdir "$sd_fullpath"
 	    sd_fullpath="$(cd "$sd_fullpath" && pwd)"
 	fi
@@ -571,7 +573,7 @@ parse-initial-params()
     fi
 	    
     # the heuristic stuff
-    if [[ "$thecommand" == "-init" ]]; then
+    if [[ "$thecommand" = "0-init" ]]; then
 	# extend prefix until it is unique, new directory
 	firstparam="${params[0]}"  # assume 2008 or 2012
 	ccc=0
@@ -596,162 +598,206 @@ parse-initial-params()
     # using $thecommand, $sd_fullpath, and "${params[@]}"
 }
 
+dispatch-command()
+{
+    genCount="${cmd#*gen}"
+    genCount="${genCount%%-*}"
+
+    case "$cmd" in
+	-screendump | -screenshot | -sd | -ss)
+	    dumptime="$(date +%y%m%d-%H%M%S)"  # assume not more than one dump per second
+	    echo "screendump thisrun/screendump-$dumptime.ppm" | nc localhost $MONITOR
+	    ;;
+	-mm*) # mount metadata
+	    mount-image "$(pwd)" metadata.img 1
+	    ;;
+	-mtu) # *m*ount windows image, *t*ar log files, *u*mount
+	    [[ "$3" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
+            mount-tar-umount "$3"
+	    ;;
+	-updatescripts) # push latest scripts into existing untared seed image
+	    partitionNumber=2
+	    mount-image "$(pwd)" "$WINIMG" $partitionNumber
+	    updatescripts-raw
+	    umount-image
+	    ;;
+	-mountrw)
+	    partitionNumber=2
+	    mount-image "$(pwd)" "$WINIMG" $partitionNumber
+	    ;;
+	-mount)
+	    partitionNumber=2
+	    mount-image "$(pwd)" "$WINIMG" $partitionNumber "-o ro"
+	    ;;
+	-umount)
+	    umount-image
+	    ;;
+	-testoff)
+	    boot-without-networking
+	    ;;
+	-test)
+	    boot-with-networking
+	    ;;
+	-pw)
+	    get-decode-password
+	    ;;
+	-kill*kvm)
+	    kill-kvm
+	    ;;
+	-cleanup)
+	    umount-image
+	    kill-kvm
+	    ;;
+	-package | -pack*)
+	    final-seed-image-packaging
+	    ;;
+	### from here start new framework
+	0-init)
+	    # TODO refactor this:
+	    for iso in "$WINISO" "$VIRTIOISO" ; do
+		[ -f "$SCRIPT_DIR/$iso" ] || reportfail "Must first copy $iso to $SCRIPT_DIR"
+	    done
+	    [ -f ./keyfile ] || reportfail "Must first create the file ./keyfile with 5X5 product key"
+	    ;;
+	1-install)
+	    install-windows-from-iso
+	    echo "1b-record-logs-at-ctr-alt-delete-prompt-gen0" >thisrun/nextstep
+	    ;;
+	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
+	    mount-tar-umount thisrun/at-$cmd.tar.gz
+	    echo "2-confirm-sysprep-gen0" >thisrun/nextstep
+	    echo "Login with 'a:run-sysprep', then run sysprep"
+	    ;;
+	2-confirm-sysprep-gen0)
+	    confirm-sysprep-shutdown
+	    mount-tar-umount thisrun/after-gen0-sysprep.tar.gz
+	    echo "3-tar-the-image" >thisrun/nextstep
+	    ;;
+	3-tar-the-image)
+	    time md5sum "$WINIMG" >"$WINIMG".md5
+	    time tar czSvf "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
+	    cp -al "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz thisrun
+	    mount-tar-umount thisrun/after-gen0-sysprep.tar.gz
+	    echo "1001-gen0-first-boot" >thisrun/nextstep
+	    ;;
+	1001-gen*-first-boot)
+	    mount-tar-umount thisrun/before-$cmd.tar.gz
+	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
+	    echo "1002-confirm-gen$genCount-shutdown-get-pw" >thisrun/nextstep
+	    ;;
+	1002-confirm-gen*-shutdown-get-pw)
+	    [ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
+	    mount-tar-umount thisrun/after-$cmd.tar.gz
+	    get-decode-password | tee thisrun/pw
+	    echo "1003-gen$genCount-second-boot" >thisrun/nextstep
+	    ;;
+	1003-gen*-second-boot)
+	    try 'thepid="$(cat thisrun/kvm.pid)"'
+	    kill -0 $thepid && reportfail "expecting KVM not to be already running"
+	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
+	    echo "1003b-record-logs-at-ctr-alt-delete-prompt1-gen$genCount" >thisrun/nextstep
+	    ;;
+	1003b-record-logs-at-ctr-alt-delete-prompt1-gen*)
+	    mount-tar-umount thisrun/at-$cmd.tar.gz
+	    echo "1004-confirm-gen$genCount-shutdown" >thisrun/nextstep
+	    echo "Password is '$(< thisrun/pw)'"
+	    ;;
+	1004-confirm-gen*-shutdown)
+	    [ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
+	    mount-tar-umount thisrun/after-$cmd.tar.gz
+	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
+	    echo "1004b-record-logs-at-ctr-alt-delete-prompt2-gen$genCount" >thisrun/nextstep
+	    echo "Rebooting"
+	    ;;
+	1004b-record-logs-at-ctr-alt-delete-prompt2-gen*)
+	    mount-tar-umount thisrun/at-$cmd.tar.gz
+	    echo "1005-confirm-gen$genCount-sysprep-shutdown" >thisrun/nextstep
+	    echo "Password is still '$(< thisrun/pw)'"
+	    echo "Run sysprep to make backup image"
+	    ;;
+	1005-confirm-gen*-sysprep-shutdown)
+	    confirm-sysprep-shutdown
+	    mount-tar-umount thisrun/after-$cmd.tar.gz
+	    echo "1001-gen$((genCount + 1))-first-boot" >thisrun/nextstep
+	    ;;
+	*)
+	    reportfail "Invalid command for 2nd parameter"
+	    ;;
+    esac
+}
+
+dispatch-init-command()
+{
+    LABEL="$1"
+    LABEL2="${LABEL:2}"  # 08 or 12
+    shopt -s nullglob
+    [ "$(echo *)" = "" ] || reportfail "Directory to initialize is not empty"
+
+    echo "$LABEL" >./LABEL
+    echo "win-$LABEL.raw" >./WINIMG
+    echo "Autounattend-$LABEL2.xml" >./ANSFILE
+    case "$LABEL" in
+	2008)
+	    echo SW_DVD5_Windows_Svr_DC_EE_SE_Web_2008_R2_64Bit_Japanese_w_SP1_MLF_X17-22600.ISO >./WINISO
+	    echo 8 >./active
+	    ;;
+	2012)
+	    echo SW_DVD9_Windows_Svr_Std_and_DataCtr_2012_R2_64Bit_Japanese_-3_MLF_X19-53644.ISO >./WINISO
+	    echo 9 >./active
+	    ;;
+    esac
+
+    echo "1-install" >./nextstep
+    echo "$(date +%y%m%d-%H%M%S)" >./timestamp
+    echo "This directory will make more sense if you sort by the files by date: ls -lt" >./README
+
+    # The value in active is a single digit used to make port
+    # assignment unique.  Currently the script automatically keeps one
+    # 2008 experiment/build separate from one 2012
+    # experiment/build. There is potential to generalize this more,
+    # but for now leaving it as a TODO. As a quick hack, the next code
+    # scans to see if any active experiment/builds use the same digit.
+    UD="$(< ./active)"
+    result="$(cd .. ; grep "$UD" */active)"
+    if [[ "$result" == *active*active ]]; then
+	echo "WARNING:"
+	echo "Two or more active experiment/builds use the same digit"
+	echo "for making port assignments unique:"
+	echo "$result"
+	echo "Consider changing the contents of:"
+	echo "$sd_fullpath/active"
+	sleep 2
+    fi
+}
+
+read-persistent-values()
+{
+    echo TODO, read in values from dispatch-init-command
+}
+
 window-image-utils-main()
 {
     params=( "$@" )
     parse-initial-params
+
+    # update convince shortcut
+    rm -f lastdir
+    ln -s "$sd_fullpath" lastdir
 
     if true; then  # for debugging
 	echo "thecommand=$thecommand"
 	echo "sd_fullpath=$sd_fullpath"
 	echo "\${params[@]}=${params[@]}"
     fi
+
+    try cd "$sd_fullpath"
+    if [ "$thecommand" = "0-init" ]; then
+	dispatch-init-command "${params[@]}"
+    else
+	read-persistent-values
+	set-environment-var-defaults
+	dispatch-command "$thecommand" "${params[@]}"
+    fi
 }
 window-image-utils-main "$@"
 
-exit # for debugging
-
-#######################################################
-#######################################################
-
-if [ "$2" == "-next" ]
-then
-    cmd="$(< thisrun/nextstep)"
-else
-    cmd="$2"
-fi
-
-genCount="${cmd#*gen}"
-genCount="${genCount%%-*}"
-
-case "$cmd" in
-    -screendump | -screenshot | -sd | -ss)
-	dumptime="$(date +%y%m%d-%H%M%S)"  # assume not more than one dump per second
-	echo "screendump thisrun/screendump-$dumptime.ppm" | nc localhost $MONITOR
-	;;
-    -mm*) # mount metadata
-	mount-image "$(pwd)" metadata.img 1
-	;;
-    -mtu) # *m*ount windows image, *t*ar log files, *u*mount
-	[[ "$3" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
-        mount-tar-umount "$3"
-	;;
-    -updatescripts) # push latest scripts into existing untared seed image
-	partitionNumber=2
-	mount-image "$(pwd)" "$WINIMG" $partitionNumber
-	updatescripts-raw
-	umount-image
-	;;
-    -mountrw)
-	partitionNumber=2
-	mount-image "$(pwd)" "$WINIMG" $partitionNumber
-	;;
-    -mount)
-	partitionNumber=2
-	mount-image "$(pwd)" "$WINIMG" $partitionNumber "-o ro"
-	;;
-    -umount)
-	umount-image
-	;;
-    -testoff)
-	boot-without-networking
-	;;
-    -test)
-	boot-with-networking
-	;;
-    -pw)
-	get-decode-password
-	;;
-    -kill*kvm)
-	kill-kvm
-	;;
-    -cleanup)
-	umount-image
-	kill-kvm
-	;;
-    -package | -pack*)
-	final-seed-image-packaging
-	;;
-    ### from here start new framework
-    0-init)
-	for iso in "$WINISO" "$VIRTIOISO" ; do
-	    [ -f "$SCRIPT_DIR/$iso" ] || reportfail "Must first copy $iso to $SCRIPT_DIR"
-	done
-	[ -f ./keyfile ] || reportfail "Must first create the file ./keyfile with 5X5 product key"
-	for (( i=0 ; i<10000 ; i++ )) ; do
-	    trythis="$(printf "run-$LABEL-%03d" $i)"
-	    [ -d "$trythis" ] && continue
-	    mkdir "$trythis"
-	    rm -f thisrun
-	    ln -s "$trythis" thisrun
-	    echo "1-install" >thisrun/nextstep
-	    echo "$(date +%y%m%d-%H%M%S)" >thisrun/timestamp
-	    echo "This directory will make more sense if you sort by the files by date: ls -lt" >thisrun/README
-	    break
-	done
-	;;
-    1-install)
-	install-windows-from-iso
-	echo "1b-record-logs-at-ctr-alt-delete-prompt-gen0" >thisrun/nextstep
-	;;
-    1b-record-logs-at-ctr-alt-delete-prompt-gen0)
-	mount-tar-umount thisrun/at-$cmd.tar.gz
-	echo "2-confirm-sysprep-gen0" >thisrun/nextstep
-	echo "Login with 'a:run-sysprep', then run sysprep"
-	;;
-    2-confirm-sysprep-gen0)
-	confirm-sysprep-shutdown
-	mount-tar-umount thisrun/after-gen0-sysprep.tar.gz
-	echo "3-tar-the-image" >thisrun/nextstep
-	;;
-    3-tar-the-image)
-	time md5sum "$WINIMG" >"$WINIMG".md5
-	time tar czSvf "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
-	cp -al "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz thisrun
-	mount-tar-umount thisrun/after-gen0-sysprep.tar.gz
-	echo "1001-gen0-first-boot" >thisrun/nextstep
-	;;
-    1001-gen*-first-boot)
-	mount-tar-umount thisrun/before-$cmd.tar.gz
-	[ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
-	echo "1002-confirm-gen$genCount-shutdown-get-pw" >thisrun/nextstep
-	;;
-    1002-confirm-gen*-shutdown-get-pw)
-	[ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
-	mount-tar-umount thisrun/after-$cmd.tar.gz
-	get-decode-password | tee thisrun/pw
-	echo "1003-gen$genCount-second-boot" >thisrun/nextstep
-	;;
-    1003-gen*-second-boot)
-	try 'thepid="$(cat thisrun/kvm.pid)"'
-	kill -0 $thepid && reportfail "expecting KVM not to be already running"
-	[ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
-	echo "1003b-record-logs-at-ctr-alt-delete-prompt1-gen$genCount" >thisrun/nextstep
-	;;
-    1003b-record-logs-at-ctr-alt-delete-prompt1-gen*)
-	mount-tar-umount thisrun/at-$cmd.tar.gz
-	echo "1004-confirm-gen$genCount-shutdown" >thisrun/nextstep
-	echo "Password is '$(< thisrun/pw)'"
-	;;
-    1004-confirm-gen*-shutdown)
-	[ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
-	mount-tar-umount thisrun/after-$cmd.tar.gz
-	[ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
-	echo "1004b-record-logs-at-ctr-alt-delete-prompt2-gen$genCount" >thisrun/nextstep
-	echo "Rebooting"
-	;;
-    1004b-record-logs-at-ctr-alt-delete-prompt2-gen*)
-	mount-tar-umount thisrun/at-$cmd.tar.gz
-	echo "1005-confirm-gen$genCount-sysprep-shutdown" >thisrun/nextstep
-	echo "Password is still '$(< thisrun/pw)'"
-	echo "Run sysprep to make backup image"
-	;;
-    1005-confirm-gen*-sysprep-shutdown)
-	confirm-sysprep-shutdown
-	mount-tar-umount thisrun/after-$cmd.tar.gz
-	echo "1001-gen$((genCount + 1))-first-boot" >thisrun/nextstep
-	;;
-    *)
-	reportfail "Invalid command for 2nd parameter"
-	;;
-esac
