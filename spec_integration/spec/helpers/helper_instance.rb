@@ -13,6 +13,8 @@ def launch_instance
   output_keyfile = create_ssh_key_pair(instance_params)
 
   @instance = wait_instance(Mussel::Instance.create(instance_params), config[:nw_management_uuid])
+
+  @key_files ||= {}
   @key_files[@instance.id] = output_keyfile
 end
 
@@ -21,17 +23,6 @@ def wait_instance(instance, network_uuid)
   ip = extract_management_ip_address(instance.vif)
   ping_until_vif_ready(ip)
   instance
-
-  # ipp_uuid = config[:ip_pool_uuid]
-  # ipp_params = {
-  #   :network_id => config[:nw_global_uuid]
-  # }
-  # ip_handle = Mussel::IpPool.acquire(ipp_uuid, ipp_params)
-
-  # eip_params = {
-  #   :ip_handle_id => ip_handle.ip_handle_id
-  # }
-  # vif = Mussel::NetworkVif.attach_external_ip(eip_params, instance.vif.first['vif_id'])
 end
 
 def wait_until_vif_ready(instance_uuid)
@@ -53,12 +44,12 @@ def extract_management_ip_address(vifs)
 end
 
 def ping_until_vif_ready(ip)
-  trial = 0
+  trial = 1
   loop do
     sleep(1)
     ping_success = system("ping -c 1 #{ip}")
     trial = trial + 1
-    break if ping_success || (trial >= config[:trial_limit])
+    break if ping_success || (trial > config[:trial_limit])
   end
 end
 
