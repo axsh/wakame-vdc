@@ -717,6 +717,7 @@ dispatch-init-command()
 	    echo 9 >./active
 	    ;;
     esac
+    cp ../key$LABEL ./keyfile
 
     echo "1-install" >./nextstep
     echo "$(date +%y%m%d-%H%M%S)" >./timestamp
