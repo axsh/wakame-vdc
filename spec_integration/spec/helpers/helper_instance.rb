@@ -46,9 +46,10 @@ def wait_until_vif_ready(instance_uuid)
 end
 
 def extract_management_ip_address(vifs)
-  vifs.select { |vif|
+  v = vifs.select { |vif|
     vif['network_id'] == config[:nw_management_uuid]
-  }['ipv4']['address']
+  }
+  v.first['ipv4']['address']
 end
 
 def ping_until_vif_ready(ip)
