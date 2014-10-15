@@ -542,9 +542,9 @@ parse-initial-params()
     # than explain, so will leave the rest of this comment as a TODO
     # item.
 
-    if [[ "${params[0]}" == -* ]]; then
-	# this code does not allow special directories to start with -, so
-	# assume this is a command
+    if [[ "${params[0]//[0-9]/}" == -* ]]; then
+	# if no special directories to start with a sequence of zero
+	# or more numbers followed by a dash, then this must be a command
 	thecommand="${params[0]}"
 	sd_partialpath="./run-"  # guess dir is in current directory and has prefix run-
 	unset params[0]
@@ -558,7 +558,7 @@ parse-initial-params()
 
     if [[ "$thecommand" = "0-init" ]]; then
 	# check here before creating a new directory
-	[ "$1" = 2008 ] || [ "$1" = 2012 ] || usage
+	[ "${params[0]}" = 2008 ] || [ "${params[0]}" = 2012 ] || usage
     fi
     
     # if path has explicit slash at the end, skip heuristic stuff below. 
