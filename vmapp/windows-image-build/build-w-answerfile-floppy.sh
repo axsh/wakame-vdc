@@ -151,7 +151,6 @@ soon-to-be-obsolete-code()
 	    ;;
     esac
 }
-soon-to-be-obsolete-code
 
 set -x
 
@@ -589,6 +588,7 @@ parse-initial-params()
 	for apath in "$sd_partialpath"*; do  # should already be sorted
 	    [ -f "$apath/active" ] && sd_fullpath="$apath"
 	done
+	[ "$sd_fullpath" = "" ] && reportfail "No active special directories found"
 	# use the latest that is still active
 	sd_fullpath="$(cd "$sd_fullpath" && pwd)"
     fi
