@@ -170,33 +170,33 @@ configure-metadata-disk()
 	sudo rm -f mntpoint/meta-data/first-boot
     else
 	sudo touch mntpoint/meta-data/first-boot
-	sudo touch "thisrun/first-boot-set-$(date +%y%m%d-%H%M%S)"
+	sudo touch "./first-boot-set-$(date +%y%m%d-%H%M%S)"
     fi
 
     if [ "$AUTOACTIVATE" = "" ]; then
 	sudo rm -fr mntpoint/meta-data/auto-activate
     else
 	sudo mkdir -p  mntpoint/meta-data/auto-activate
-	sudo touch "thisrun/auto-activate-set-$(date +%y%m%d-%H%M%S)"
+	sudo touch "./auto-activate-set-$(date +%y%m%d-%H%M%S)"
     fi
 
     if [ "$PROXY" = "" ]; then
 	sudo rm -f mntpoint/meta-data/auto-activate/auto-activate-proxy
     else
 	echo "$PROXY" | sudo tee mntpoint/meta-data/auto-activate/auto-activate-proxy
-	sudo touch "thisrun/auto-activate-proxy-set-$(date +%y%m%d-%H%M%S)"
+	sudo touch "./auto-activate-proxy-set-$(date +%y%m%d-%H%M%S)"
     fi
     umount-image
 }
 
 boot-and-log-kvm-boot()
 {
-    echo "$KVM_BINARY" "$@" >"thisrun/kvm-boot-cmdline-$(date +%y%m%d-%H%M%S)"
+    echo "$KVM_BINARY" "$@" >"./kvm-boot-cmdline-$(date +%y%m%d-%H%M%S)"
     "$KVM_BINARY" "$@"  >>./kvm.stdout 2>>./kvm.stderr &
-    echo "$!" >thisrun/kvm.pid
+    echo "$!" >./kvm.pid
     # the following are used by kvm-ui-util.sh
-    echo "$MONITOR" >thisrun/kvm.mon
-    echo "$(( VNC + 5900 ))" >thisrun/kvm.vnc
+    echo "$MONITOR" >./kvm.mon
+    echo "$(( VNC + 5900 ))" >./kvm.vnc
 }
 
 mount-image-raw()
@@ -290,7 +290,7 @@ umount-image()
 
 kill-kvm()
 {
-    kvmpid="$(< thisrun/kvm.pid)"
+    kvmpid="$(< ./kvm.pid)"
     if [ -d /proc/$kvmpid ]; then
 	echo "Terminating KVM instance pid=$kvmpid"
 	kill -TERM "$kvmpid"
@@ -332,7 +332,7 @@ mount-tar-umount()
 confirm-sysprep-shutdown()
 {
     # TODO: automate this
-    [ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
+    [ -d /proc/$(< ./kvm.pid) ] && reportfail "KVM still running"
     return 0 # skip the question...the answer was always YES
     echo "Did sysprep succeed? (YES/n)"
     read ans
@@ -447,10 +447,9 @@ final-seed-image-packaging()
 {
     loopstatus="$(sudo losetup -a)"
     [ "$loopstatus" = "" ] || reportfail "This code requires that no other loop devices be in use: $loopstatus"
-    initialtar="$(echo ./thisrun/windows-*tar.gz)"
+    initialtar="$(echo ././windows-*tar.gz)"
     seedtar="windows${LABEL}r2.x86_64.kvm.md.raw.tar.gz"
-    [ -f "$initialtar" ] || reportfail "Initial tar file not found in ./thisrun/"
-    try cd ./thisrun
+    [ -f "$initialtar" ] || reportfail "Initial tar file not found in ././"
     [ -d final-seed-image ] && reportfail "Seed image already packaged"
     mkdir ./final-seed-image
     try cd ./final-seed-image
@@ -567,13 +566,19 @@ parse-initial-params()
 
 dispatch-command()
 {
+    if [ "$1" == "-next" ]
+    then
+	cmd="$(< ./nextstep)"
+    else
+	cmd="$1"
+    fi
     genCount="${cmd#*gen}"
     genCount="${genCount%%-*}"
 
     case "$cmd" in
 	-screendump | -screenshot | -sd | -ss)
 	    dumptime="$(date +%y%m%d-%H%M%S)"  # assume not more than one dump per second
-	    echo "screendump thisrun/screendump-$dumptime.ppm" | nc localhost $MONITOR
+	    echo "screendump ./screendump-$dumptime.ppm" | nc localhost $MONITOR
 	    ;;
 	-mm*) # mount metadata
 	    mount-image "$(pwd)" metadata.img 1
@@ -628,64 +633,63 @@ dispatch-command()
 	    ;;
 	1-install)
 	    install-windows-from-iso
-	    echo "1b-record-logs-at-ctr-alt-delete-prompt-gen0" >thisrun/nextstep
+	    echo "1b-record-logs-at-ctr-alt-delete-prompt-gen0" >./nextstep
 	    ;;
 	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
-	    mount-tar-umount thisrun/at-$cmd.tar.gz
-	    echo "2-confirm-sysprep-gen0" >thisrun/nextstep
+	    mount-tar-umount ./at-$cmd.tar.gz
+	    echo "2-confirm-sysprep-gen0" >./nextstep
 	    echo "Login with 'a:run-sysprep', then run sysprep"
 	    ;;
 	2-confirm-sysprep-gen0)
 	    confirm-sysprep-shutdown
-	    mount-tar-umount thisrun/after-gen0-sysprep.tar.gz
-	    echo "3-tar-the-image" >thisrun/nextstep
+	    mount-tar-umount ./after-gen0-sysprep.tar.gz
+	    echo "3-tar-the-image" >./nextstep
 	    ;;
 	3-tar-the-image)
 	    time md5sum "$WINIMG" >"$WINIMG".md5
-	    time tar czSvf "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
-	    cp -al "windows-$LABEL-$(cat thisrun/timestamp)".tar.gz thisrun
-	    mount-tar-umount thisrun/after-gen0-sysprep.tar.gz
-	    echo "1001-gen0-first-boot" >thisrun/nextstep
+	    time tar czSvf "windows-$LABEL-$(cat ./timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
+	    mount-tar-umount ./after-gen0-sysprep.tar.gz
+	    echo "1001-gen0-first-boot" >./nextstep
 	    ;;
 	1001-gen*-first-boot)
-	    mount-tar-umount thisrun/before-$cmd.tar.gz
+	    mount-tar-umount ./before-$cmd.tar.gz
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
-	    echo "1002-confirm-gen$genCount-shutdown-get-pw" >thisrun/nextstep
+	    echo "1002-confirm-gen$genCount-shutdown-get-pw" >./nextstep
 	    ;;
 	1002-confirm-gen*-shutdown-get-pw)
-	    [ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
-	    mount-tar-umount thisrun/after-$cmd.tar.gz
-	    get-decode-password | tee thisrun/pw
-	    echo "1003-gen$genCount-second-boot" >thisrun/nextstep
+	    [ -d /proc/$(< ./kvm.pid) ] && reportfail "KVM still running"
+	    mount-tar-umount ./after-$cmd.tar.gz
+	    get-decode-password | tee ./pw
+	    echo "1003-gen$genCount-second-boot" >./nextstep
 	    ;;
 	1003-gen*-second-boot)
-	    try 'thepid="$(cat thisrun/kvm.pid)"'
+	    try 'thepid="$(cat ./kvm.pid)"'
 	    kill -0 $thepid && reportfail "expecting KVM not to be already running"
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
-	    echo "1003b-record-logs-at-ctr-alt-delete-prompt1-gen$genCount" >thisrun/nextstep
+	    echo "1003b-record-logs-at-ctr-alt-delete-prompt1-gen$genCount" >./nextstep
 	    ;;
 	1003b-record-logs-at-ctr-alt-delete-prompt1-gen*)
-	    mount-tar-umount thisrun/at-$cmd.tar.gz
-	    echo "1004-confirm-gen$genCount-shutdown" >thisrun/nextstep
-	    echo "Password is '$(< thisrun/pw)'"
+	    mount-tar-umount ./at-$cmd.tar.gz
+	    echo "1004-confirm-gen$genCount-shutdown" >./nextstep
+	    echo "Password is '$(< ./pw)'"
 	    ;;
 	1004-confirm-gen*-shutdown)
-	    [ -d /proc/$(< thisrun/kvm.pid) ] && reportfail "KVM still running"
-	    mount-tar-umount thisrun/after-$cmd.tar.gz
+	    [ -d /proc/$(< ./kvm.pid) ] && reportfail "KVM still running"
+	    mount-tar-umount ./after-$cmd.tar.gz
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
-	    echo "1004b-record-logs-at-ctr-alt-delete-prompt2-gen$genCount" >thisrun/nextstep
+	    echo "1004b-record-logs-at-ctr-alt-delete-prompt2-gen$genCount" >./nextstep
 	    echo "Rebooting"
 	    ;;
 	1004b-record-logs-at-ctr-alt-delete-prompt2-gen*)
-	    mount-tar-umount thisrun/at-$cmd.tar.gz
-	    echo "1005-confirm-gen$genCount-sysprep-shutdown" >thisrun/nextstep
-	    echo "Password is still '$(< thisrun/pw)'"
+	    mount-tar-umount ./at-$cmd.tar.gz
+	    echo "1005-confirm-gen$genCount-sysprep-shutdown" >./nextstep
+	    echo "Password is still '$(< ./pw)'"
 	    echo "Run sysprep to make backup image"
 	    ;;
 	1005-confirm-gen*-sysprep-shutdown)
 	    confirm-sysprep-shutdown
-	    mount-tar-umount thisrun/after-$cmd.tar.gz
-	    echo "1001-gen$((genCount + 1))-first-boot" >thisrun/nextstep
+	    mount-tar-umount ./after-$cmd.tar.gz
+	    echo "1001-gen$((genCount + 1))-first-boot" >./nextstep
 	    ;;
 	*)
 	    reportfail "Invalid command for 2nd parameter"
