@@ -16,23 +16,19 @@ export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || report
 WIN_VERSION="$1"
 [ "$1" = 2008 ] || [ "$1" = 2012 ] || reportfail "first parameter must be 2008 or 2012"
 
+
 # Assume Jenkins puts us in a suitable part of the disk hierarchy to create a build directory.
-BDIR="dir${WIN_VERSION#20}"
+BDIR="./builddirs/smoketest-$WIN_VERSION/"
 
 if [ -d "$BDIR" ]; then
-    (
-	cd "$BDIR"
-	setsid "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$WIN_VERSION" -cleanup
-    )
+    setsid "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$BDIR/" -cleanup
     rm "$BDIR" -fr
 fi
-
-mkdir "$BDIR"  && cd "$BDIR" || reportfail "could not make build directory"
 
 cleanup-code()
 {
     echo "Doing post-test cleanup"
-    setsid "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$WIN_VERSION" -cleanup
+    setsid "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$BDIR/" -cleanup
 }
 
 trap 'cleanup-code' EXIT
@@ -83,12 +79,13 @@ tar xzvf "$SCRIPT_DIR/metadata.img.tar.gz"
 
 # All the needed files should be in place. Start the build.
 
-KILLPGOK=yes "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$WIN_VERSION" 0-init
+KILLPGOK=yes "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$BDIR" 0-init "$WIN_VERSION"
+
 for i in $(seq 1 30); do
     echo "Iteration $i: "
     sudo whoami # keep sudo alive
-    setsid "$SCRIPT_DIR/supernext.sh" -next
-    cmd="$(< thisrun/nextstep)"
+    setsid "$SCRIPT_DIR/supernext.sh" -next "$BDIR"
+    cmd="$(< "$BDIR/nextstep")"
     if [[ "$cmd" == *cannot-continue ]]; then
 	echo "Build failed at step: $cmd"
 	break
@@ -102,6 +99,6 @@ for i in $(seq 1 30); do
 done
 
 # for smoke tests, assume only run-*-000 exists
-tar xzvOf ./run-$WIN_VERSION-000/after-gen0-sysprep.tar.gz   Windows/Setup/State/State.ini >State.ini
+tar xzvOf "./$BDIR/after-gen0-sysprep.tar.gz"   Windows/Setup/State/State.ini >State.ini
 
 [[ "$(< State.ini)" == *IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE* ]] || reportfail "sysprep did not update State.ini file"

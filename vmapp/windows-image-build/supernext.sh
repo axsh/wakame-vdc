@@ -228,7 +228,10 @@ supernext-simulate-user-actions-before()
 
 supernext-simulate-user-actions-after()
 {
-    SLEEPFOR=30 # 10 seconds sometimes works. Do 3 times this.
+    # (did 30 seconds for a while, which seemed way too conservative,
+    # so 15 seconds should be enough for zabbix installer to move to
+    # the next state)
+    SLEEPFOR=15
     case "$cmd" in  # uses $cmd from previous functions, because $trdir/nextstep may have changed
 	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
 	    touch $trdir/press-ctrl-alt-del

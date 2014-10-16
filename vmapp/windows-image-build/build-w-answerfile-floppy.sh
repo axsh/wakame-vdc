@@ -269,9 +269,10 @@ umount-image-raw2()
     # example line: /dev/loop1: [0801]:15729479 (/tmp/st/dir08/win-2008.raw)
     loopstatus="${loopstatus//:/ }" # make parsing easier
     while read loopdev something inode imgpath thatsall ; do
-	[[ "$imgpath" == \(*\) ]] || reportfail "verification of losetup parsing: $imgpath"
+	[[ "$imgpath" == \(*\) ]] || echo "WARNING: losetup parsing may be wrong: $imgpath"
 	if [[ "${imgpath#(}" == $(pwd)/* ]]; then
 	    sudo umount mntpoint
+	    bash </tmp/myfifo
 	    sudo kpartx -dv "$loopdev"
 	    sudo losetup -d "$loopdev"
 	fi
@@ -345,11 +346,11 @@ install-windows-from-iso()
     FLP="./answerfile-floppy.img"
     dd if=/dev/zero of="$FLP" bs=1k count=1440
     mkfs.vfat "$FLP"
-    mkdir -p "./mnt"
-    sudo mount -t vfat -o loop $FLP "./mnt"
-    sudo cp "$SCRIPT_DIR/$ANSFILE" "./mnt/Autounattend.xml"
+    mkdir -p "./mntpoint"
+    sudo mount -t vfat -o loop $FLP "./mntpoint"
+    sudo cp "$SCRIPT_DIR/$ANSFILE" "./mntpoint/Autounattend.xml"
     for fn in "${scriptArray[@]}" FinalStepsForInstall.cmd Unattend-for-first-boot.xml $ZABBIXEXE ; do
-	sudo cp "$SCRIPT_DIR/$fn" "./mnt/"
+	sudo cp "$SCRIPT_DIR/$fn" "./mntpoint/"
     done
 
     # Here we are inserting code at the start of the script that runs
@@ -367,9 +368,9 @@ install-windows-from-iso()
 	echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $prodkey"
 	echo
 	cat "$SCRIPT_DIR/run-sysprep.cmd"
-    } | sudo tee ./mnt/run-sysprep.cmd
+    } | sudo tee ./mntpoint/run-sysprep.cmd
 
-    sudo umount "./mnt"
+    sudo umount "./mntpoint"
     
     # Create 30GB image
     rm -f "$WINIMG"
@@ -717,7 +718,7 @@ dispatch-init-command()
 	    echo 9 >./active
 	    ;;
     esac
-    cp ../key$LABEL ./keyfile
+    cp "$SCRIPT_DIR/key$LABEL" ./keyfile
 
     echo "1-install" >./nextstep
     echo "$(date +%y%m%d-%H%M%S)" >./timestamp
