@@ -461,7 +461,10 @@ final-seed-image-packaging()
     try sudo kpartx -av "${seedtar%.tar.gz}"
     udevadm settle
     try sudo ntfslabel /dev/mapper/loop0p1 root
-    try sudo kpartx -dv /dev/loop0
+    while ! sudo kpartx -dv /dev/loop0 ; do
+	echo "kpartx -dv /dev/loop0  failed....retrying in 10 seconds"
+	sleep 10
+    done
     try sudo losetup -d /dev/loop0
     time try tar czvSf "$seedtar" "${seedtar%.tar.gz}"
     time try md5sum "$seedtar" >"$seedtar".md5
