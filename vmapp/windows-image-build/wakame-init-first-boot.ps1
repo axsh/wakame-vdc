@@ -58,5 +58,13 @@ Try_Auto_Activation
 
 "Finishing wakame-init-first-boot.ps1...about to do Stop-Computer" | Write-Host
 
+$mdl = Get_MD_Letter
+if (Test-Path ("$mdl\meta-data\first-boot"))
+{
+    # First boot script has run, so make sure every-boot script does
+    # not try to do first-boot behavior
+    Remove-Item "$mdl\meta-data\first-boot"
+}
+
 # shutdown
 Stop-Computer

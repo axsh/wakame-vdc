@@ -24,6 +24,9 @@ if (Test-Path ("$mdl\meta-data\first-boot"))
     # simulate the first-boot script.
     Generate_Password
 
+    # Make sure this does not run again on the next boot
+    Remove-Item "$mdl\meta-data\first-boot"
+    
     # shutdown
     Stop-Computer
 }
