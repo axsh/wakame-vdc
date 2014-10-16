@@ -719,6 +719,7 @@ dispatch-init-command()
 	    ;;
     esac
     cp "$SCRIPT_DIR/key$LABEL" ./keyfile
+    tar xzvf "$SCRIPT_DIR/metadata.img.tar.gz"
 
     echo "1-install" >./nextstep
     echo "$(date +%y%m%d-%H%M%S)" >./timestamp

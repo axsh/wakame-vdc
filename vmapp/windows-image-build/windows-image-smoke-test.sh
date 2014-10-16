@@ -74,9 +74,6 @@ ensure-file-is-in-place virtio-win-0.1-74.iso
 DLSOURCES="$localsource http://repo.zabbix.jp/zabbix/zabbix-1.8/windows"
 ensure-file-is-in-place zabbix_agent-1.8.15-1.JP_installer.exe
 
-cp "$SCRIPT_DIR/key${WIN_VERSION}" ./keyfile
-tar xzvf "$SCRIPT_DIR/metadata.img.tar.gz"
-
 # All the needed files should be in place. Start the build.
 
 KILLPGOK=yes "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$BDIR" 0-init "$WIN_VERSION"
