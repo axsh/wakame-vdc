@@ -589,7 +589,7 @@ dispatch-command()
 	    ;;
 	-mtu) # *m*ount windows image, *t*ar log files, *u*mount
 	    [[ "$2" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
-            mount-tar-umount "$2"
+            mount-tar-umount "$orgpwd/$2"
 	    ;;
 	-updatescripts) # push latest scripts into existing untared seed image
 	    partitionNumber=2
@@ -758,6 +758,7 @@ read-persistent-values()
 
 window-image-utils-main()
 {
+    orgpwd="$(pwd)"
     params=( "$@" )
     parse-initial-params
 
