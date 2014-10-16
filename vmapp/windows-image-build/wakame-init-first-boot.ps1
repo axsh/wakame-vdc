@@ -23,34 +23,6 @@ catch {
 }
 
 try {
-    # Generate password
-    Add-Type -AssemblyName System.Web
-    $randpass = [System.Web.Security.Membership]::GeneratePassword(10,2).ToCharArray()
-    $Encode = New-Object "System.Text.UTF8Encoding"
-    $randpasstxt = $Encode.GetString([byte[]] $randpass)
-
-    # Encrypt password
-    $MetaSshpub = Read_Metadata("public-keys\0\openssh-key")
-    $XmlPublicKey =  sshpubkey2xml( $MetaSshpub )
-    $rsaProvider = New-Object System.Security.Cryptography.RSACryptoServiceProvider
-    $rsaProvider.FromXmlString($XmlPublicKey.InnerXml)
-    $ee = $rsaProvider.Encrypt($randpass,$true)
-    $mdl = Get_MD_Letter
-    [System.IO.File]::WriteAllBytes("$mdl\meta-data\pw.enc",$ee)
-
-    # Change Administrator password
-    $computer=hostname
-    $username="Administrator"
-    $user = [adsi]"WinNT://$computer/$username,user"
-    $user.SetPassword($randpasstxt)
-    $user.SetInfo()
-}
-catch {
-    $Error[0] | Write-Host
-    Write-Host "Error occurred while setting Administrator password"
-}
-
-try {
     # Turn on RDP
     Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server' -Name fDenyTSConnections -Value 0
     Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name UserAuthentication -Value 0
@@ -77,6 +49,8 @@ catch {
     $Error[0] | Write-Host
     Write-Host "Error occurred while setting up script for configuration on each reboot"
 }
+
+Generate_Password
 
 Update_Hosts_File
 
