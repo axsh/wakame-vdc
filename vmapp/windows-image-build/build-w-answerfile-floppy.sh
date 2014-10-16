@@ -588,8 +588,8 @@ dispatch-command()
 	    mount-image "$(pwd)" metadata.img 1
 	    ;;
 	-mtu) # *m*ount windows image, *t*ar log files, *u*mount
-	    [[ "$3" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
-            mount-tar-umount "$3"
+	    [[ "$2" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
+            mount-tar-umount "$2"
 	    ;;
 	-updatescripts) # push latest scripts into existing untared seed image
 	    partitionNumber=2
