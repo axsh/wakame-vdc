@@ -448,9 +448,9 @@ final-seed-image-packaging()
 {
     loopstatus="$(sudo losetup -a)"
     [ "$loopstatus" = "" ] || reportfail "This code requires that no other loop devices be in use: $loopstatus"
-    initialtar="$(echo ././windows-*tar.gz)"
+    initialtar="$(echo ./windows-*tar.gz)"
     seedtar="windows${LABEL}r2.x86_64.kvm.md.raw.tar.gz"
-    [ -f "$initialtar" ] || reportfail "Initial tar file not found in ././"
+    [ -f "$initialtar" ] || reportfail "Initial tar file not found in $(pwd)"
     [ -d final-seed-image ] && reportfail "Seed image already packaged"
     mkdir ./final-seed-image
     try cd ./final-seed-image
