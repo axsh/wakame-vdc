@@ -12,6 +12,22 @@ Get_Metadata_Mac_Addresses | foreach { Set_Networking_From_Metadata( $_ ) }
 Get_Metadata_Mac_Addresses | foreach { Set_Networking_From_Metadata( $_ ) }
 
 try {
+    # If the bootstatuspolicy is not changed, it is possible for Windows Server,
+    # especially 2008, to boot to safe mode.  If the user does not have access
+    # to the (VNC) console, the instance can become essentially stuck in safe mode and
+    # never boot far enough for connecting through RDP.
+    Write-host "bededit (before):"
+    bcdedit  2>&1 | Write-Host
+    bcdedit /set bootstatuspolicy ignoreallfailures 2>&1 | Write-Host
+    Write-host "bededit (after):"
+    bcdedit 2>&1 | Write-Host
+}
+catch {
+    $Error[0] | Write-Host
+    Write-Host "Error occurred while doing bcdedit /set bootstatuspolicy ignoreallfailures"
+}
+
+try {
     # Set hostname/computer name
     $metaHost = Read_Metadata("local-hostname")
     $computerName = Get-WmiObject Win32_ComputerSystem
