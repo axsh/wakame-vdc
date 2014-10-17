@@ -147,16 +147,6 @@ feature 'Basic Virtual Network Operations' do
   end
 
   # TODO refactor
-  def ssh_to_instance
-    ip = extract_ip_address(@instance, nw_manage.id)
-
-    ret = Net::SSH.start(ip, 'root', :keys => [@key_files[@instance.id]], :user_known_hosts_file => '/dev/null', :paranoid => false) do |ssh|
-      ssh.exec!('hostname')
-    end
-    ret.chomp!
-
-    expect(ret).to eq @instance.id.gsub(/i-/, "")
-  end
 
   def power_off_instance
     Mussel::Instance.power_off(@instance)
