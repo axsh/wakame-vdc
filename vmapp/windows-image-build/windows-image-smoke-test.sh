@@ -19,6 +19,7 @@ WIN_VERSION="$1"
 
 # Assume Jenkins puts us in a suitable part of the disk hierarchy to create a build directory.
 BDIR="./builddirs/smoketest-$WIN_VERSION/"
+try mkdir -p ./builddirs
 
 if [ -d "$BDIR" ]; then
     setsid "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$BDIR/" -cleanup
@@ -42,10 +43,19 @@ ensure-file-is-in-place()
     for asource in $DLSOURCES; do
 	case "$asource" in
 	    /*)
-		cp "$asource/$1" "$TARGETDIR/$1"
+		cp -al "$asource/$1" "$TARGETDIR/$1" || \
+		    cp "$asource/$1" "$TARGETDIR/$1"
 		;;
 	    http://*)
 		curl "$asource/$1" -o "$TARGETDIR/$1"
+		;;
+	    s3://*)
+		s3cmd get "$asource/$1" "$TARGETDIR/$1"
+		;;
+	    JenkinsENV)
+		# try to grab an environment variable set by Jenkins, e.g.: JenkinsENV-key2008
+		attempt="$(eval echo "\$1${asource}_$1")"
+		[ "$attempt" != "" ] && echo "$attempt" >"$TARGETDIR/$1"
 		;;
 	    *)
 		reportfail "unknown source: $asource"
@@ -56,23 +66,34 @@ ensure-file-is-in-place()
     reportfail "Could not install $1"
 }
 
+set -x
+
 localsource="$(echo /home/*/for-jenkins-windows-image-smoke-test)"
 [ -d "$localsource" ] || localsource=""
 
 TARGETDIR="$SCRIPT_DIR"
-DLSOURCES="$localsource"
-
-ensure-file-is-in-place SW_DVD5_Windows_Svr_DC_EE_SE_Web_2008_R2_64Bit_Japanese_w_SP1_MLF_X17-22600.ISO
-ensure-file-is-in-place SW_DVD9_Windows_Svr_Std_and_DataCtr_2012_R2_64Bit_Japanese_-3_MLF_X19-53644.ISO
-ensure-file-is-in-place key2008
-ensure-file-is-in-place key2012
-ensure-file-is-in-place metadata.img.tar.gz
 
 DLSOURCES="$localsource http://alt.fedoraproject.org/pub/alt/virtio-win/archives/virtio-win-0.1-74"
 ensure-file-is-in-place virtio-win-0.1-74.iso
 
 DLSOURCES="$localsource http://repo.zabbix.jp/zabbix/zabbix-1.8/windows"
 ensure-file-is-in-place zabbix_agent-1.8.15-1.JP_installer.exe
+
+DLSOURCES="$localsource $S3URL JenkinsENV"  # S3URL is set in Jenkins
+[ "$WIN_VERSION" = "2008" ] && \
+    ensure-file-is-in-place key2008
+[ "$WIN_VERSION" = "2012" ] && \
+    ensure-file-is-in-place key2012
+
+DLSOURCES="$localsource $S3URL"  # S3URL is set in Jenkins
+[ "$WIN_VERSION" = "2008" ] && \
+    ensure-file-is-in-place SW_DVD5_Windows_Svr_DC_EE_SE_Web_2008_R2_64Bit_Japanese_w_SP1_MLF_X17-22600.ISO
+[ "$WIN_VERSION" = "2012" ] && \
+    ensure-file-is-in-place SW_DVD9_Windows_Svr_Std_and_DataCtr_2012_R2_64Bit_Japanese_-3_MLF_X19-53644.ISO
+
+ensure-file-is-in-place metadata.img.tar.gz
+
+
 
 # All the needed files should be in place. Start the build.
 
