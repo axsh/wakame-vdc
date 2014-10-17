@@ -20,7 +20,7 @@ end
 
 def wait_instance(instance, network_uuid)
   instance = wait_until_vif_ready(instance.id)
-  ip = extract_management_ip_address(instance.vif)
+  ip = extract_ip_address(instance.vif, config[:nw_management_uuid])
   ping_until_vif_ready(ip)
   instance
 end
@@ -36,9 +36,9 @@ def wait_until_vif_ready(instance_uuid)
   instance
 end
 
-def extract_management_ip_address(vifs)
+def extract_ip_address(vifs, network_uuid)
   v = vifs.select { |vif|
-    vif['network_id'] == config[:nw_management_uuid]
+    vif['network_id'] == network_uuid
   }
   v.first['ipv4']['address']
 end
