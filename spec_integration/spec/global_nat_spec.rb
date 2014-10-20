@@ -28,7 +28,6 @@ feature 'Global NAT' do
       service_type: "std",
       display_name: "test",
       dhcp_range: "default",
-      service_dhcp: "10.105.0.1",
       dc_network: dc_network.id,
     }
   end
@@ -82,10 +81,10 @@ feature 'Global NAT' do
   end
 
   def instance_ping_8_8_8_8
-    binding.pry
     ret = ssh_to_instance do |ssh|
       ssh.exec!('ping -c 1 8.8.8.8')
+      ssh.exec!('echo $?')
     end
-    expect(ret).to eq true
+    expect(ret).to eq 0
   end
 end
