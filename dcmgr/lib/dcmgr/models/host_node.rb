@@ -52,11 +52,14 @@ module Dcmgr::Models
         errors.add(:arch, "unknown architecture type: #{self.arch}")
       end
 
-      unless self.offering_cpu_cores > 0
-        errors.add(:offering_cpu_cores, "it must have digit more than zero")
+      if self.offering_cpu_cores < 0
+        errors.add(:offering_cpu_cores, "it can not be less than zero")
       end
-      unless self.offering_memory_size > 0
-        errors.add(:offering_memory_size, "it must have digit more than zero")
+      if self.offering_memory_size < 0
+        errors.add(:offering_memory_size, "it can not be less than zero")
+      end
+      if self.offering_disk_space_mb.to_i < 0
+        errors.add(:offering_disk_space_mb, "it can not be less than zero")
       end
     end
 
@@ -110,7 +113,12 @@ module Dcmgr::Models
     end
 
     def cpu_core_usage_percent()
-      (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100.0
+      if offerring_memory_size.to_i > 0
+        (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100.0
+      else
+        # Show 100% if offering is zero.
+        100.0
+      end
     end
 
     # Returns reserved memory size used by running/scheduled instances.
@@ -119,7 +127,12 @@ module Dcmgr::Models
     end
 
     def memory_size_usage_percent()
-      (memory_size_usage.to_f / offering_memory_size.to_f) * 100.0
+      if offerring_memory_size.to_i > 0
+        (memory_size_usage.to_f / offering_memory_size.to_f) * 100.0
+      else
+        # Show 100% if offering is zero.
+        100.0
+      end
     end
 
     # Calc all local volume size on this host node.
@@ -130,7 +143,12 @@ module Dcmgr::Models
     end
 
     def disk_space_usage_percent()
-      (disk_space_usage.to_f / (offering_disk_space_mb * (1024 ** 2)).to_f) * 100.0
+      if offering_disk_space_mb.to_i > 0
+        (disk_space_usage.to_f / (offering_disk_space_mb * (1024 ** 2)).to_f) * 100.0
+      else
+        # Show 100% if offering is zero.
+        100.0
+      end
     end
 
     # Returns a usage percentage to show admins in quick overviews
