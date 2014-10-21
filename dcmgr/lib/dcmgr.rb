@@ -218,43 +218,69 @@ module Dcmgr
   autoload :Task, 'dcmgr/task'
 
   module Drivers
-    autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
-    autoload :LocalStorage, 'dcmgr/drivers/local_storage'
-    autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
-    autoload :DummyHypervisor, 'dcmgr/drivers/dummy_hypervisor'
-    autoload :LinuxHypervisor, 'dcmgr/drivers/linux_hypervisor'
-    autoload :Kvm , 'dcmgr/drivers/kvm'
-    autoload :Lxc , 'dcmgr/drivers/lxc'
-    autoload :ESXi, 'dcmgr/drivers/esxi'
-    autoload :Openvz, 'dcmgr/drivers/openvz'
+    #
+    # Backing store drivers
+    #
     autoload :BackingStore, 'dcmgr/drivers/backing_store'
-    autoload :Zfs,          'dcmgr/drivers/zfs'
-    autoload :Raw,          'dcmgr/drivers/raw'
-    autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
-    autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
-    autoload :Tgt,          'dcmgr/drivers/tgt'
-    autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
-    autoload :DummyLocalStore, 'dcmgr/drivers/dummy_local_store.rb'
-    autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
-    autoload :ESXiLocalStore, 'dcmgr/drivers/esxi_local_store.rb'
-    autoload :OpenvzLocalStore, 'dcmgr/drivers/openvz_local_store.rb'
-    autoload :Indelible, 'dcmgr/drivers/indelible'
-    autoload :IndelibleIscsi, 'dcmgr/drivers/indelible_iscsi'
-    autoload :IndelibleStorage, 'dcmgr/drivers/indelible_storage'
+    autoload :Zfs,          'dcmgr/drivers/backing_store/zfs'
+    autoload :Raw,          'dcmgr/drivers/backing_store/raw'
+    autoload :Indelible,    'dcmgr/drivers/backing_store/indelible'
+
+    #
+    # Backup storage drivers
+    #
+    autoload :BackupStorage,    'dcmgr/drivers/backup_storage'
+    autoload :Webdav,           'dcmgr/drivers/backup_storage/webdav'
+    autoload :IndelibleStorage, 'dcmgr/drivers/backup_storage/indelible_storage'
+    autoload :LocalStorage,     'dcmgr/drivers/backup_storage/local_storage'
+
+    #
+    # Hypervisor drivers
+    #
+    autoload :Hypervisor,      'dcmgr/drivers/hypervisor'
+    autoload :DummyHypervisor, 'dcmgr/drivers/hypervisor/dummy_hypervisor'
+    autoload :ESXi,            'dcmgr/drivers/hypervisor/esxi'
+    autoload :LinuxHypervisor, 'dcmgr/drivers/hypervisor/linux_hypervisor'
+    autoload :Kvm ,            'dcmgr/drivers/hypervisor/linux_hypervisor/kvm'
+    autoload :LinuxContainer,  'dcmgr/drivers/hypervisor/linux_hypervisor/linux_container'
+    autoload :Lxc ,            'dcmgr/drivers/hypervisor/linux_hypervisor/linux_container/lxc'
+    autoload :Openvz,          'dcmgr/drivers/hypervisor/linux_hypervisor/linux_container/openvz'
+
+    #
+    # Storage target drivers
+    #
+    autoload :StorageTarget,  'dcmgr/drivers/storage_target'
+    autoload :IscsiTarget,    'dcmgr/drivers/storage_target/iscsi_target'
+    autoload :IndelibleIscsi, 'dcmgr/drivers/storage_target/iscsi_target/indelible_iscsi'
+    autoload :SunIscsi,       'dcmgr/drivers/storage_target/iscsi_target/sun_iscsi'
+    autoload :Tgt,            'dcmgr/drivers/storage_target/iscsi_target/tgt'
+    autoload :Nfs,            'dcmgr/drivers/storage_target/nfs'
+
+    #
+    # Local store drivers
+    #
+    autoload :LocalStore,       'dcmgr/drivers/local_store'
+    autoload :DummyLocalStore,  'dcmgr/drivers/local_store/dummy_local_store'
+    autoload :ESXiLocalStore,   'dcmgr/drivers/local_store/esxi_local_store'
+    autoload :LinuxLocalStore,  'dcmgr/drivers/local_store/linux_local_store'
+    autoload :OpenvzLocalStore, 'dcmgr/drivers/local_store/linux_local_store/openvz_local_store'
+    autoload :KvmLocalStore,    'dcmgr/drivers/local_store/linux_local_store/kvm_local_store'
+
+    #
+    # Network monitoring drivers
+    #
+    autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
+    autoload :Zabbix,            'dcmgr/drivers/network_monitoring/zabbix'
+    autoload :PublicZabbix,      'dcmgr/drivers/network_monitoring/public_zabbix'
+
+    #
+    # Other drivers
+    #
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
-    autoload :Webdav, 'dcmgr/drivers/webdav'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'
     autoload :Stud, 'dcmgr/drivers/stud'
-    autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
-    autoload :Zabbix, 'dcmgr/drivers/zabbix'
-    autoload :PublicZabbix, 'dcmgr/drivers/public_zabbix'
-    autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
-    autoload :Natbox, 'dcmgr/drivers/natbox'
     autoload :Fluent, 'dcmgr/drivers/fluent'
     autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
-    autoload :KvmLocalStore, 'dcmgr/drivers/kvm_local_store'
-    autoload :StorageTarget, 'dcmgr/drivers/storage_target'
-    autoload :Nfs, 'dcmgr/drivers/nfs'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'
