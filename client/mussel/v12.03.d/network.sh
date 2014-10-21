@@ -18,6 +18,7 @@ task_create() {
     $(add_param network) \
     $(add_param network_mode) \
     $(add_param prefix) \
+    $(add_param metric) \
     $(add_param service_dhcp) \
     $(add_param account_id) \
   ) \
