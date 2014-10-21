@@ -5,13 +5,21 @@ module Dcmgr::Cli
     namespace :backupstorage
     M = Dcmgr::Models
 
+    no_tasks {
+      def self.common_options
+        method_option :uuid, :type => :string, :desc => "The UUID for the backup storage."
+        method_option :display_name, :type => :string, :desc => "The display name for the backup storage."
+        method_option :node_id, :type => :string, :desc => "The backup service agent ID for the backup storage."
+        method_option :base_uri, :type => :string, :desc => "The base URI to store the backup objects."
+        method_option :storage_type, :type => :string, :desc => "Storage driver name of the backup storage: #{M::BackupStorage::STORAGE_TYPES.join(', ')}"
+        method_option :description, :type => :string, :desc => "Description of the backup storage"
+      end
+    }
+
     desc "add [options]", "Register a backup storage"
-    method_option :uuid, :type => :string, :desc => "The UUID for the backup storage."
-    method_option :display_name, :type => :string, :required=>true, :desc => "The display name for the backup storage."
-    method_option :node_id, :type => :string, :required=>false, :desc => "The backup service agent ID for the backup storage."
-    method_option :base_uri, :type => :string, :required=>true, :desc => "The base URI to store the backup objects."
-    method_option :storage_type, :type => :string, :required=>true, :desc => "Storage driver name of the backup storage: #{M::BackupStorage::STORAGE_TYPES.join(', ')}"
-    method_option :description, :type => :string, :desc => "Description of the backup storage"
+    common_options
+    method_options[:base_uri].required = true
+    method_options[:storage_type].required = true
     def add()
       Error.raise(options[:storage_type]) unless M::BackupStorage::STORAGE_TYPES.member?(options[:storage_type].to_sym)
       fields = options.dup
@@ -19,12 +27,7 @@ module Dcmgr::Cli
     end
 
     desc "modify UUID [options]", "Modify the backup storage"
-    method_option :uuid, :type => :string, :desc => "The UUID for the backup storage."
-    method_option :display_name, :type => :string, :desc => "The display name for the backup storage."
-    method_option :node_id, :type => :string, :desc => "The backup service agent ID for the backup storage."
-    method_option :base_uri, :type => :string, :desc => "The base URI to store the backup objects."
-    method_option :storage_type, :type => :string, :desc => "Storage driver name of the backup storage: #{M::BackupStorage::STORAGE_TYPES.join(', ')}"
-    method_option :description, :type => :string, :desc => "Description of the backup storage"
+    common_options
     def modify(uuid)
       bkst = M::BackupStorage[uuid] || UnknownUUIDError.raise(uuid)
       fields = options.dup

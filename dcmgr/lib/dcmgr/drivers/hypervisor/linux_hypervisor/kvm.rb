@@ -375,7 +375,7 @@ RUN_SH
       def run_migration_instance(hc)
         qemu_command = build_qemu_command(hc)
 
-        migration_tcp_port = find_unused_tcp_listen_ports(1)
+        migration_tcp_port = find_unused_tcp_listen_ports(1).first
 
         sh(qemu_command + " -incoming tcp:#{driver_configuration.incoming_ip}:#{migration_tcp_port}")
 
