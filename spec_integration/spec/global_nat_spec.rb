@@ -21,7 +21,7 @@ feature 'Global NAT' do
       network: '10.105.0.0',
       gw: '10.105.0.1',
       prefix: 24,
-      metric: 10,
+      metric: 9,
       domain_name: 'vnet',
       network_mode: 'l2overlay',
       ip_assignment: 'asc',
@@ -29,6 +29,7 @@ feature 'Global NAT' do
       display_name: "test",
       dhcp_range: "default",
       dc_network: dc_network.id,
+      editable: true
     }
   end
 
@@ -44,6 +45,7 @@ feature 'Global NAT' do
 
   scenario 'Attach a global IP to an interface' do
     create_virtual_network_nw_demo1
+    add_external_ip_service_to_virtual_network
     launch_instance
     acquire_and_attach_global_ip
     instance_ping_8_8_8_8

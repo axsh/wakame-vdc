@@ -13,3 +13,9 @@ end
 def create_virtual_network_nw_demo1
   @network = Mussel::Network.create(nw_demo1_params)
 end
+
+def add_external_ip_service_to_virtual_network
+  Mussel::Network.add_services(@network.id, {
+    :name => 'external-ip'
+  })
+end
