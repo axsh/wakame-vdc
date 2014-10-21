@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-require File.dirname(__FILE__) + '/openvz_config.rb'
+require Dcmgr::DCMGR_ROOT + '/lib/dcmgr/drivers/openvz_config.rb'
 
 module Dcmgr
   module Drivers
