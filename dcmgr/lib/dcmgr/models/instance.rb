@@ -541,5 +541,9 @@ module Dcmgr::Models
       end
       true
     end
+
+    def ha_enabled?
+      self.ha_enabled.to_i == 1
+    end
   end
 end
