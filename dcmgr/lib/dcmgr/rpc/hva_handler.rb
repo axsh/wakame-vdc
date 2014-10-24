@@ -207,10 +207,13 @@ module Dcmgr
       end
 
       def setup_metadata_drive
+        items = get_metadata_items
+
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                            :setup_metadata_drive, [@hva_ctx, get_metadata_items])
+                            :setup_metadata_drive, [@hva_ctx, items])
+
         # export as single yaml file.
-        @hva_ctx.dump_instance_parameter('metadata.yml', YAML.dump(get_metadata_items))
+        @hva_ctx.dump_instance_parameter('metadata.yml', YAML.dump(items))
        end
 
       def get_metadata_items
