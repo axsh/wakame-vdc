@@ -147,7 +147,13 @@ module Dcmgr
 
         # We delete this file so Windows will not regenerate the administrator
         # password on reboot
-        File.delete(File.expand_path("#{mount_point}/meta-data/first-boot"))
+        first_boot_file = File.expand_path("#{mount_point}/meta-data/first-boot")
+        if File.exists?(first_boot_file)
+          File.delete(first_boot_file)
+        else
+          logger.warn "Unable to delete the first boot file on metadata drive. " +
+                      "File not found: #{first_boot_file}"
+        end
 
         umount_metadata_drive(hc, mount_point)
 
