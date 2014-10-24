@@ -85,8 +85,7 @@ feature 'Global NAT' do
   def instance_ping_8_8_8_8
     ret = ssh_to_instance do |ssh|
       ssh.exec!('ping -c 1 8.8.8.8')
-      ssh.exec!('echo $?')
     end
-    expect(ret).to eq 0
+    expect(ret).to include('0% packet loss')
   end
 end
