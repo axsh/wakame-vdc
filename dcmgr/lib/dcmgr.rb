@@ -134,6 +134,7 @@ module Dcmgr
     require 'dcmgr/metadata'
 
     autoload :AWS, 'dcmgr/metadata/aws'
+    autoload :AWSWithFirstBoot, 'dcmgr/metadata/aws_with_first_boot'
   end
 
   module NodeModules
