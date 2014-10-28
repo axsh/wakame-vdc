@@ -77,7 +77,7 @@ function set_mount_metadata_drive() {
     fi
     echo "Mounting metadata drive on: ${METADATA_DRIVE_MOUNTPOINT}"
     mount LABEL=METADATA ${METADATA_DRIVE_MOUNTPOINT} || {
-      echo no such labeled device: METADATA 
+      echo "no such labeled device: METADATA"
       exit 1
     }
     echo "Mounted metadata drive successfully on: ${METADATA_DRIVE_MOUNTPOINT}"
@@ -202,7 +202,7 @@ function set_extra_hosts() {
     egrep -w -q "^${comment}$" /etc/hosts && {
       sed -i -n "1,/^${comment}$/p" /etc/hosts
     } || {
-      echo ${comment} >> /etc/hosts
+      echo "${comment}" >> /etc/hosts
     }
     for i in `ls ${host_path}/*`; do
       hostname=`basename $i`
