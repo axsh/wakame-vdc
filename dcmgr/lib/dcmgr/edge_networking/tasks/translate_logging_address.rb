@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       class TranslateLoggingAddress < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         attr_accessor :host_ip
         attr_accessor :logging_ip
         attr_accessor :logging_port

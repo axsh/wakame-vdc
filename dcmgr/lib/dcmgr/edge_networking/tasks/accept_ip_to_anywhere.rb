@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Allows any outgoing IP layer traffic from the instance to pass through
       class AcceptIpToAnywhere < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         def initialize
           super()
           self.rules << IptablesRule.new(:filter,:forward,nil,:outgoing,"-j ACCEPT")

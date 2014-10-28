@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Dcmgr::VNet::NetworkModes
+module Dcmgr::EdgeNetworking::NetworkModes
 
   # This service type is for networks without firewalls.
   # Therefore there is an empty array returned for all netfilter

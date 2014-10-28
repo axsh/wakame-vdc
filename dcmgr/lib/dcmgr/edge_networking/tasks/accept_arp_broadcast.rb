@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       class AcceptArpBroadcast < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         attr_accessor :hva_ip
 
         def initialize(hva_ip,enable_logging = false,log_prefix = nil)

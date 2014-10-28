@@ -3,7 +3,7 @@
 require 'net/dhcp'
 require 'racket'
 
-module Dcmgr::VNet::OpenFlow
+module Dcmgr::EdgeNetworking::OpenFlow
 
   class ServiceDhcp < ServiceBase
     include Dcmgr::Logger

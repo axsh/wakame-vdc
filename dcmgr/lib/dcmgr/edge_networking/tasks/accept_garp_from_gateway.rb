@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Allow GARP from gateway device when it fails over to
@@ -11,7 +11,7 @@ module Dcmgr
       # anti-spoofing rules:
       #   DropIpSpoofing, DropARPSpoofing
       class AcceptGARPFromGateway < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         attr_accessor :gw_ip
 
         def initialize(gw_ip,enable_logging = false,log_prefix = nil)

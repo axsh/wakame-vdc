@@ -2,7 +2,7 @@
 
 require 'racket'
 
-module Dcmgr::VNet::OpenFlow
+module Dcmgr::EdgeNetworking::OpenFlow
 
   class IcmpHandler
     include Dcmgr::Logger

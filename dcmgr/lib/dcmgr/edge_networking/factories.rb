@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
 
-    V = Dcmgr::VNet
+    V = Dcmgr::EdgeNetworking
     class TaskManagerFactory
       def self.create_task_manager(node)
         manager = V::Netfilter::VNicProtocolTaskManager.new

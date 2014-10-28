@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Netfilter
 
       # Abstract class for task managers that apply netfilter to extend.

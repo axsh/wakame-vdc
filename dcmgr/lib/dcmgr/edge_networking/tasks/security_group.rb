@@ -3,11 +3,11 @@
 require 'ipaddress'
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       class SecurityGroup < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         def initialize(vnic, group_map)
           super()
 

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       class AcceptAllDNS < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         def initialize()
           super()
           # Allow DNS traffic to take place

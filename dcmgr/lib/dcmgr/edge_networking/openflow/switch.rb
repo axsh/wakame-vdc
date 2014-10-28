@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Dcmgr::VNet::OpenFlow
+module Dcmgr::EdgeNetworking::OpenFlow
 
   class OpenFlowSwitch
     include Dcmgr::Logger

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Allows for DNS traffic to be exchanged with and only with Wakame's DNS server
       class AcceptWakameDNSOnly < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         #TODO: allow ARP traffic to DNS server
         attr_reader :dns_server_ip
         attr_reader :dns_server_port

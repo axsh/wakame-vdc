@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Explicitely allows ARP traffic between "friend" nics
       class AcceptARPFromFriends < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         attr_reader :inst_ip
         attr_reader :friend_ips
         attr_reader :enable_logging

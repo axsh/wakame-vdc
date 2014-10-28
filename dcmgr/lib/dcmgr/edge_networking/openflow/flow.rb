@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module OpenFlow
 
       class Flow

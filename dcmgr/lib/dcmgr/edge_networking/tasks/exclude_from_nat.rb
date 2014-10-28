@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Contains specific rules for ip addresses to which connections should
       # not be natted.
       class ExcludeFromNat < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         #An array of the ip addresses excluded from nat
         attr_accessor :excluded_ips
 
@@ -33,7 +33,7 @@ module Dcmgr
       # Contains specific rules for ip addresses to which connections should
       # not be natted. Depends on the netfilter IpSet module
       class ExcludeFromNatIpSet < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         attr_accessor :excluded_ips
 
         def initialize(ips,self_ip)

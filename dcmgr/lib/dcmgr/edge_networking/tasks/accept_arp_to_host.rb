@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Explicitely allows ARP traffic to take place from the instance to the host
       class AcceptARPToHost < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         attr_reader :enable_logging
         attr_reader :log_prefix
         attr_reader :host_ip

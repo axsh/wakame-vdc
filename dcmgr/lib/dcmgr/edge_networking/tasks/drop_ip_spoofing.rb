@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Disable instances from spoofing another ip address
       class DropIpSpoofing < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         attr_accessor :ip
         attr_accessor :enable_logging
         attr_accessor :log_prefix

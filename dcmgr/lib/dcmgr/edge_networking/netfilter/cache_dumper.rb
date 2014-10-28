@@ -3,7 +3,7 @@
 require 'pp'
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Netfilter
       # Decorator class to dump @cache contents.
       # cache = NetfilterCache.new(....)

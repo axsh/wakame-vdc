@@ -3,7 +3,7 @@
 require 'trema'
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module OpenFlow
 
       module OpenFlowConstants

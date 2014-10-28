@@ -10,7 +10,7 @@ class IPAddr
 end
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module OpenFlow
 
       class OpenFlowController < Trema::Controller

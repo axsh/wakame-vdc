@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       class TranslateMetadataAddress < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         #TODO: allow ARP traffic to metadata server
         attr_reader :metadata_ip
         attr_reader :metadata_port

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Drop all incoming IP layer traffic
       class DropIpFromAnywhere < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         def initialize
           super()
           self.rules << IptablesRule.new(:filter,:forward,nil,:incoming,"-j DROP")

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Allows for DHCP traffic to take place with and only with wakame's DHCP server
       class AcceptWakameDHCPOnly < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         #TODO: allow ARP traffic to DHCP server
         attr_reader :dhcp_server_ip
 

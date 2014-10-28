@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Explicitely allows IP traffic between "friend" nics
       class AcceptIpFromFriends < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         attr_reader :friend_ips
 
         def initialize(friend_ips)

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-module Dcmgr::VNet::NetworkModes
+module Dcmgr::EdgeNetworking::NetworkModes
 
   class SecurityGroup
     include Dcmgr::Helpers::NicHelper
-    include Dcmgr::VNet::Tasks
+    include Dcmgr::EdgeNetworking::Tasks
 
     def netfilter_all_tasks(vnic,network,friends,security_groups,node)
       tasks = []
@@ -118,7 +118,7 @@ module Dcmgr::VNet::NetworkModes
     end
 
     def netfilter_secgroup_tasks(vnic, secgroup)
-      [Dcmgr::VNet::Tasks::SecurityGroup.new(vnic, secgroup)]
+      [Dcmgr::EdgeNetworking::Tasks::SecurityGroup.new(vnic, secgroup)]
     end
 
     def netfilter_drop_tasks(vnic,node)

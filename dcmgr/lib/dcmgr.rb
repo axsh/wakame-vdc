@@ -333,7 +333,7 @@ module Dcmgr
   end
 
   require 'dcmgr/edge_networking'
-  module VNet
+  module EdgeNetworking
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
 
     module NetworkModes

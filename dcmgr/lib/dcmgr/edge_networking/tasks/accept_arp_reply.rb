@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       # Accept ARP Reply to the instance from same link layer segment.
       # this rule should appear in earlier line.
       class AcceptARPReply < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
 
         def initialize(ip,macaddr,enable_logging = false,log_prefix = nil)
           super()

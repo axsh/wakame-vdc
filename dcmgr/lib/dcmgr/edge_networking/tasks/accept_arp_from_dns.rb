@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module VNet
+  module EdgeNetworking
     module Tasks
 
       class AcceptARPFromDNS < Task
-        include Dcmgr::VNet::Netfilter
+        include Dcmgr::EdgeNetworking::Netfilter
         attr_accessor :dns_server_ip
 
         def initialize(dns_server_ip,ip,enable_logging = false,log_prefix = "A arp from_dns: ")
