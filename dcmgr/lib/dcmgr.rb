@@ -332,7 +332,7 @@ module Dcmgr
     NAMESPACES=[HostNode, StorageNode, Network, MacAddress, IPAddress]
   end
 
-  require 'dcmgr/vnet'
+  require 'dcmgr/edge_networking'
   module VNet
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
 
