@@ -6,4 +6,6 @@ ip_pool_uuid: 'ipp-external'
 nw_global_uuid: 'nw-global'
 nw_management_uuid: 'nw-manage'
 
+host_node_id: 'hn-dsv0006'
+
 trial_limit: 40
