@@ -39,7 +39,8 @@ feature 'Global NAT' do
       image_id_lbnode: "wmi-lbnode1d64",
       cpu_cores: 1,
       hypervisor: "kvm",
-      memory_size: 1024
+      memory_size: 1024,
+      host_node_id: config[:host_node_id]
     }
   end
 
