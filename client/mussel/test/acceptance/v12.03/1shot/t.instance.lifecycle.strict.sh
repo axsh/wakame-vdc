@@ -100,6 +100,51 @@ function _test_wait_for_sshd_to_be_ready_after_starting() {
   assertEquals 0 $?
 }
 
+## running -> halted
+
+function test_poweroff_instance() {
+  run_cmd instance poweroff ${instance_uuid} >/dev/null
+  assertEquals 0 $?
+
+  retry_until "document_pair? instance ${instance_uuid} state halted"
+  assertEquals 0 $?
+}
+
+function test_wait_for_network_not_to_be_ready_after_poweroff() {
+  wait_for_network_not_to_be_ready ${instance_ipaddr}
+  assertEquals 0 $?
+}
+
+function test_wait_for_sshd_not_to_be_ready_after_poweroff() {
+  wait_for_sshd_not_to_be_ready ${instance_ipaddr}
+  assertEquals 0 $?
+}
+
+## halted -> running
+
+function test_poweron_instance() {
+  run_cmd instance poweron ${instance_uuid} >/dev/null
+  assertEquals 0 $?
+
+  retry_until "document_pair? instance ${instance_uuid} state running"
+  assertEquals 0 $?
+}
+
+function _test_get_instance_ipaddr_after_poweron() {
+  instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
+  assertEquals 0 $?
+}
+
+function _test_wait_for_network_to_be_ready_after_poweron() {
+  wait_for_network_to_be_ready ${instance_ipaddr}
+  assertEquals 0 $?
+}
+
+function _test_wait_for_sshd_to_be_ready_after_poweron() {
+  wait_for_sshd_to_be_ready ${instance_ipaddr}
+  assertEquals 0 $?
+}
+
 ## after terminating
 
 function test_destroy_instance() {
