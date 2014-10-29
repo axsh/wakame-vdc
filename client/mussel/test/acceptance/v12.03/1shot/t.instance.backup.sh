@@ -240,8 +240,17 @@ function test_image_backup_and_verify_new_image() {
   #vifs_args="vifs[eth0][index]=0 vifs[eth0][network]=nw-pub vifs[eth0][security_groups][]=default"
   create_instance
 
-  # TODO: ssh login to new instance
-  #ssh ....
+  # get ipaddress for booting new instance.
+  instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
+  assertEquals 0 $?
+
+  # verify network.
+  wait_for_network_to_be_ready ${instance_ipaddr}
+  assertEquals 0 $?
+
+  # verify ssh login.
+  wait_for_sshd_to_be_ready ${instance_ipaddr}
+  assertEquals 0 $?
 
   run_cmd instance destroy ${instance_uuid} >/dev/null
   assertEquals 0 $?
