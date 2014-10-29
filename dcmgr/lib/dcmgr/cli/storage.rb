@@ -122,7 +122,7 @@ class Storage < Base
       puts ERB.new(<<__END, nil, '-').result(binding)
 UUID: <%= st.canonical_uuid %>
 Node ID: <%= st.node_id %>
-Disk space (offerring): <%= st.offering_disk_space_mb %>MB
+Disk space (offering): <%= st.offering_disk_space_mb %>MB
 Storage Type: <%= st.storage_type %>
 Create: <%= st.created_at %>
 Update: <%= st.updated_at %>
