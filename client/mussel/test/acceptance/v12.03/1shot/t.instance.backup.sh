@@ -8,6 +8,8 @@
 ## include files
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
+. ${BASH_SOURCE[0]%/*}/helper_instance.sh
+
 
 ## variables
 
@@ -25,6 +27,16 @@ function setUp() {
 
   # reset command parameters
   volumes_args=
+}
+
+### shunit2 setup
+
+function oneTimeSetUp() {
+  :
+}
+
+function oneTimeTearDown() {
+  :
 }
 
 ### step
