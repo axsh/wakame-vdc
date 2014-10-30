@@ -18,6 +18,8 @@ display_name=${display_name:-}
 is_cacheable=${is_cacheable:-}
 is_public=${is_public:-}
 
+ssh_user=${ssh_user:-root}
+
 ## hook functions
 
 last_result_path=""
