@@ -29,6 +29,13 @@ function setUp() {
   volumes_args=
 }
 
+function render_secg_rule() {
+  cat <<-EOS
+	icmp:-1,-1,ip4:0.0.0.0/0
+	tcp:22,22,ip4:0.0.0.0/0
+	EOS
+}
+
 ### shunit2 setup
 
 function oneTimeSetUp() {
