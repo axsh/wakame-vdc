@@ -18,8 +18,8 @@ module Dcmgr
         end
 
         def on_associate_volume(instance, volume)
-          # work around: set device name as boot drive.
-          volume.guest_device_name = 'sda'
+          # work around: set pkey to fill unique value.
+          volume.guest_device_name = volume.pk
         end
 
       end

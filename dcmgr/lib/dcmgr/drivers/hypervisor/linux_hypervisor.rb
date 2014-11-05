@@ -203,6 +203,9 @@ module Dcmgr
       #   add('blkio.throttle.read_iops_device', "253:0 128000")
       # end
       def cgroup_set(subsys, scope, &blk)
+        if driver_configuration.cgroup_blkio.enable_throttling == false
+          return
+        end
         cgroup_mnt = `findmnt -n -t cgroup -O "#{subsys}"`.split("\n").first
         raise "Failed to find the cgroup base path to #{subsys} controller." if cgroup_mnt.nil?
         cgroup_base = cgroup_mnt.split(/\s+/).first
