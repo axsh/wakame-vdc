@@ -5,14 +5,23 @@ require 'yaml'
 
 require_relative 'aws_shared_examples'
 
-describe Dcmgr::Metadata::AWS do
+shared_context 'get_items' do
+  subject(:items) { described_class.new(inst.to_hash).get_items }
 
+  let(:inst) { Fabricate(:instance) }
+end
+
+shared_examples 'aws metadata' do
   describe "#get_items" do
-    subject(:items) { Dcmgr::Metadata::AWS.new(inst.to_hash).get_items }
+    include_context 'get_items'
 
     let(:nic_items) do
       nic_key_regex = /^network\/interfaces\/macs\//
       items.select { |k,v| k.to_s.match(nic_key_regex) }
+    end
+
+    it 'doesn\'t crash' do
+      items
     end
 
     context 'with an instance with no keypair and two vnics that don\'t have ips' do
@@ -53,14 +62,21 @@ describe Dcmgr::Metadata::AWS do
       it_behaves_like 'aws top level metadata'
       it_behaves_like 'aws metadata for instance with ssh keypair'
     end
+  end
+end
 
-    context "with an instance without request_params set" do
-      let(:inst) { Fabricate(:instance) }
+describe Dcmgr::Metadata::AWS do
+  it_behaves_like 'aws metadata'
+end
 
-      it 'doesn\'t crash' do
-        items
-      end
+describe Dcmgr::Metadata::AWSWithFirstBoot do
+  it_behaves_like 'aws metadata'
+
+  describe '#get_items' do
+    include_context 'get_items'
+
+    it 'Creates a first-boot file' do
+      expect(items['first-boot']).to eq ''
     end
   end
-
 end

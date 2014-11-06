@@ -2,6 +2,24 @@
 
 require 'thor'
 
+# Monkey Patch for Thor class to support method_option's attribute
+# overwrite.
+#
+# We define similar set of method_option items for add and modify
+# methods. But some method_options for add method requires
+# "required=>true" attribute.
+#
+# Here is the example to overwrite method_option attribute after
+# applying this monkey patch.
+#
+#   method_option :hoge, :desc=>"hoge"
+#   method_option[:hoge].required = true
+#   def add(); end
+class Thor::Argument
+  # Allow to overwrite option attributes.
+  attr_writer :name, :description, :enum, :required, :type, :default, :banner
+end
+
 module Dcmgr::Cli
   class Base < Thor
     protected

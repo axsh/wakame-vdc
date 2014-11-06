@@ -136,10 +136,17 @@ module Dcmgr::Models
       end
     end
 
+    # Set true if you want to skip validations run in destroy().
+    attr_accessor :force_destroy
+
     def before_destroy
-      # cancel destroy while backup object is being created.
-      unless self.volumes.all? { |v| v.derived_backup_objects_dataset.exclude(:state=>Dcmgr::Const::BackupObject::ALLOW_INSTANCE_DESTROY_STATES).empty? }
-        return false
+      if !@force_destroy
+        # cancel destroy while backup object is being created.
+        if !self.volumes.all? { |v|
+            v.derived_backup_objects_dataset.exclude(:state=>Dcmgr::Const::BackupObject::ALLOW_INSTANCE_DESTROY_STATES).empty?
+          }
+          return false
+        end
       end
 
       HostnameLease.filter(:account_id=>self.account_id, :hostname=>self.hostname).destroy
@@ -540,6 +547,10 @@ module Dcmgr::Models
         return false
       end
       true
+    end
+
+    def ha_enabled?
+      self.ha_enabled.to_i == 1
     end
   end
 end
