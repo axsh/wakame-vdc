@@ -251,6 +251,8 @@ module Dcmgr
       param :collector_dcell_node_id
       param :collector_dcell_node_uri
 
+      param :vdc_manage_host
+
       # AMQP broker to be connected.
       param :amqp_server_uri
 
