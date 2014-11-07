@@ -45,6 +45,8 @@ feature 'Global NAT' do
   end
 
   scenario 'Attach a global IP to an interface' do
+    pending 'customize later'
+    fail
     create_virtual_network_nw_demo1
     add_external_ip_service_to_virtual_network
     launch_instance
