@@ -45,6 +45,7 @@ module Dcmgr
     autoload :Natbox, 'dcmgr/configurations/natbox'
     autoload :Nwmongw, 'dcmgr/configurations/nwmongw'
     autoload :Bksta, 'dcmgr/configurations/bksta'
+    autoload :Features, 'dcmgr/configurations/features'
   end
 
   require 'dcmgr/models/errors'

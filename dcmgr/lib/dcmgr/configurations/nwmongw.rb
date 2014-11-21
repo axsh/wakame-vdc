@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require "fuguta"
 require "dcmgr/drivers/network_monitoring"
 
 module Dcmgr
   module Configurations
-    class Nwmongw < Fuguta::Configuration
+    class Nwmongw < Features
       # Database connection string
       param :database_uri
       # AMQP broker to be connected.

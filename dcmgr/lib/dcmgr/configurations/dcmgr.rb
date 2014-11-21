@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require "fuguta"
 
 module Dcmgr
   module Configurations
     # Configuration loader for dcmgr.conf.
-    class Dcmgr < Fuguta::Configuration
+    class Dcmgr < Features
 
       usual_paths [
         ENV['CONF_PATH'].to_s,
