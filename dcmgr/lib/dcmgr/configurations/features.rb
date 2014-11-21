@@ -23,6 +23,7 @@ module Dcmgr
       end
 
       class FeatureKeys < Fuguta::Configuration
+        param :openvnet, default: false
       end
     end
   end

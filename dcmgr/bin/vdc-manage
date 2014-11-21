@@ -15,7 +15,7 @@ Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr
 
 Dcmgr.run_initializers('logger', 'sequel')
 
-if Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_uri
+if Dcmgr::Configurations.dcmgr.features.openvnet
   require 'dcell'
 
   #
