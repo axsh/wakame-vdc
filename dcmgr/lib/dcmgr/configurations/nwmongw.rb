@@ -43,6 +43,7 @@ module Dcmgr
 
         @config[:networks] = []
       end
+      private :after_initialize
 
       def validate(errors)
         unless self.database_uri

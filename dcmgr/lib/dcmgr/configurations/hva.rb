@@ -118,8 +118,10 @@ module Dcmgr
         end
 
         def after_initialize
+          super
           @config[:path_list] = {}
         end
+        private :after_initialize
       end
 
       def hypervisor_driver(driver_class)

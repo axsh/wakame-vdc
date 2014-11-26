@@ -293,10 +293,6 @@ module Dcmgr
 
       deprecated_warn_param :instance_ha
 
-      def after_initialize
-      end
-      private :after_initialize
-
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]
         errors << "amqp_server_uri is undefined." unless @config[:amqp_server_uri]

@@ -17,8 +17,10 @@ module Dcmgr
 
       class MonitorTarget < Fuguta::Configuration
         def after_initialize
+          super
           @config[:monitor_items] = {}
         end
+        private :after_initialize
 
         DSL do
           def monitor_item(name, klass_sym, &blk)
