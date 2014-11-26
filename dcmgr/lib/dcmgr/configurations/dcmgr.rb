@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require "fuguta"
 
 module Dcmgr
   module Configurations
     # Configuration loader for dcmgr.conf.
-    class Dcmgr < Fuguta::Configuration
+    class Dcmgr < Features
 
       usual_paths [
         ENV['CONF_PATH'].to_s,
@@ -291,10 +292,6 @@ module Dcmgr
       param :enable_instance_poweron_readiness_validation, :default => true
 
       deprecated_warn_param :instance_ha
-
-      def after_initialize
-      end
-      private :after_initialize
 
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]

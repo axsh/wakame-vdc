@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require 'fuguta'
 
 module Dcmgr
 
   module Configurations
 
-    class Natbox < Fuguta::Configuration
+    class Natbox < Features
 
       usual_paths [
         ENV['CONF_PATH'].to_s,

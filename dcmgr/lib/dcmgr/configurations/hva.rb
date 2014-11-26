@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require "fuguta"
 
 module Dcmgr
   module Configurations
-    class Hva < Fuguta::Configuration
+    class Hva < Features
 
       usual_paths [
         ENV['CONF_PATH'].to_s,
@@ -117,8 +118,10 @@ module Dcmgr
         end
 
         def after_initialize
+          super
           @config[:path_list] = {}
         end
+        private :after_initialize
       end
 
       def hypervisor_driver(driver_class)
