@@ -186,7 +186,4 @@ kvm-ui-check-is-running()
     kill -0 "$KVMPID"
 }
 
-# more verbose checks and simultations in a separate file:
-[ -f "$SCRIPT_DIR/kvm-ui-defaults" ] && { source "$SCRIPT_DIR/kvm-ui-defaults" || exit ; }
-
 kvm-ui-main "$@"

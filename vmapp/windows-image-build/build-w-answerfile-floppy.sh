@@ -200,7 +200,7 @@ boot-and-log-kvm-boot()
     echo "$(( VNC + 5900 ))" >./kvm.vnc
 }
 
-mount-image-raw()
+mount-image()
 {
     local installdir="$1"
     local imagename="$2"
@@ -239,15 +239,6 @@ mount-image-raw()
     sudo mount /dev/mapper/${loopdev}p${partion} mntpoint $options
 }
 
-mount-image()
-{
-    local installdir="$1"
-    local imagename="$2"
-    partion="$3"
-    options="$4"
-    mount-image-raw "$@"
-}
-
 umount-image-raw1()
 {
     # relying on info in ./loopdev to be correct is
@@ -273,7 +264,6 @@ umount-image-raw2()
 	[[ "$imgpath" == \(*\) ]] || echo "WARNING: losetup parsing may be wrong: $imgpath"
 	if [[ "${imgpath#(}" == $(pwd)/* ]]; then
 	    sudo umount mntpoint
-	    bash </tmp/myfifo
 	    sudo kpartx -dv "$loopdev"
 	    sudo losetup -d "$loopdev"
 	fi
@@ -333,12 +323,8 @@ mount-tar-umount()
 
 confirm-sysprep-shutdown()
 {
-    # TODO: automate this
     [ -d /proc/$(< ./kvm.pid) ] && reportfail "KVM still running"
-    return 0 # skip the question...the answer was always YES
-    echo "Did sysprep succeed? (YES/n)"
-    read ans
-    [ "$ans" = "YES" ] || exit 255
+    return 0
 }
 
 install-windows-from-iso()
@@ -638,11 +624,7 @@ dispatch-command()
 	### is, those that are used to walk through the build process
 	### and the test scenario cycle.
 	0-init)
-	    # TODO refactor this:
-	    for iso in "$WINISO" "$VIRTIOISO" ; do
-		[ -f "$SCRIPT_DIR/$iso" ] || reportfail "Must first copy $iso to $SCRIPT_DIR"
-	    done
-	    [ -f ./keyfile ] || reportfail "Must first create the file ./keyfile with 5X5 product key"
+	    : # now handled as a special case
 	    ;;
 	1-install)
 	    install-windows-from-iso
