@@ -25,7 +25,7 @@ reportfail()
     echo "This line should not be reached." 1>&2 ; exit 255
 }
 
-try() { eval "$@" || reportfail "$@,$?" ; }
+evalcheck() { eval "$@" || reportfail "$@,$?" ; }
 
 trap 'echo "pid=$BASHPID exiting" 1>&2 ; exit 255' TERM  # feel free to specialize this
 
@@ -145,7 +145,7 @@ configure-metadata-disk()
 
     # public key
     if ! [ -f testsshkey ]; then
-	try ssh-keygen -f testsshkey -N '""'
+	evalcheck ssh-keygen -f testsshkey -N '""'
     fi
     sudo bash -c "mkdir -p mntpoint/meta-data/public-keys/0"
     sudo bash -c "echo $(cat testsshkey.pub) >mntpoint/meta-data/public-keys/0/openssh-key"
@@ -214,7 +214,7 @@ mount-image()
     then
 	rmdir mntpoint || reportfail "something is already mounted at mntpoint"
     fi
-    try mkdir mntpoint
+    evalcheck mkdir mntpoint
     
     loopstatus="$(sudo losetup -a)"
     if [[ "$loopstatus"  == *$(pwd -P)/* ]]
@@ -222,7 +222,7 @@ mount-image()
 	reportfail "Image file is already mounted."
     else
 	rm -f kpartx.out
-	try sudo kpartx -av "$installdir/$imagename" 1>kpartx.out
+	evalcheck sudo kpartx -av "$installdir/$imagename" 1>kpartx.out
 	udevadm settle
     fi
     
@@ -343,7 +343,7 @@ install-windows-from-iso()
     # Here we are inserting code that sets the product key
     # at the start of the batch file that runs sysprep.
     # An alternative
-    # would have been to set it in the answer file, but we are trying
+    # would have been to set it in the answer file, but we are evalchecking
     # to keep the answer file as simple as possible.  Another
     # alternative seemed to be to use FinalStepsForInstall.cmd, but
     # for some reason that did not work.
@@ -443,21 +443,21 @@ final-seed-image-packaging()
     [ -f "$initialtar" ] || reportfail "Initial tar file not found in $(pwd)"
     [ -d final-seed-image ] && reportfail "Seed image already packaged"
     mkdir ./final-seed-image
-    try cd ./final-seed-image
-    time try tar xzvf ../windows-*tar.gz
+    evalcheck cd ./final-seed-image
+    time evalcheck tar xzvf ../windows-*tar.gz
     [ -f "$WINIMG" ] || reportfail "No Windows image found in the tar file"
-    try mv "$WINIMG" "${seedtar%.tar.gz}"
+    evalcheck mv "$WINIMG" "${seedtar%.tar.gz}"
 
-    try sudo kpartx -av "${seedtar%.tar.gz}"
+    evalcheck sudo kpartx -av "${seedtar%.tar.gz}"
     udevadm settle
-    try sudo ntfslabel /dev/mapper/loop0p1 root
+    evalcheck sudo ntfslabel /dev/mapper/loop0p1 root
     while ! sudo kpartx -dv /dev/loop0 ; do
-	echo "kpartx -dv /dev/loop0  failed....retrying in 10 seconds"
+	echo "kpartx -dv /dev/loop0  failed....reevalchecking in 10 seconds"
 	sleep 10
     done
-    try sudo losetup -d /dev/loop0
-    time try tar czvSf "$seedtar" "${seedtar%.tar.gz}"
-    time try md5sum "$seedtar" >"$seedtar".md5
+    evalcheck sudo losetup -d /dev/loop0
+    time evalcheck tar czvSf "$seedtar" "${seedtar%.tar.gz}"
+    time evalcheck md5sum "$seedtar" >"$seedtar".md5
 }
 
 updatescripts-raw()
@@ -528,7 +528,7 @@ parse-initial-params()
 	# Use exactly what the user gives.
 	sd_fullpath="$sd_partialpath"
 	if [[ "$thecommand" = "0-init" ]]; then
-	    try mkdir "$sd_fullpath"
+	    evalcheck mkdir "$sd_fullpath"
 	    sd_fullpath="$(cd "$sd_fullpath" && pwd)"
 	fi
 	return 0 # skip heuristic
@@ -544,7 +544,7 @@ parse-initial-params()
 	    [ "$ccc" -lt 10000 ] || reportfail "Could not generate unique directory path"
 	    ccc=$(( ccc + 1 ))
 	done
-	try mkdir "$sd_fullpath"
+	evalcheck mkdir "$sd_fullpath"
 	sd_fullpath="$(cd "$sd_fullpath" && pwd)"
     else
 	shopt -s nullglob
@@ -658,7 +658,7 @@ dispatch-command()
 	    echo "1003-gen$genCount-second-boot" >./nextstep
 	    ;;
 	1003-gen*-second-boot)
-	    try 'thepid="$(cat ./kvm.pid)"'
+	    evalcheck 'thepid="$(cat ./kvm.pid)"'
 	    kill -0 $thepid && reportfail "expecting KVM not to be already running"
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	    echo "1003b-record-logs-at-ctr-alt-delete-prompt1-gen$genCount" >./nextstep
@@ -741,11 +741,11 @@ dispatch-init-command()
 
 read-persistent-values()
 {
-    try LABEL="$(cat ./LABEL)"
-    try WINIMG="$(cat ./WINIMG)"
-    try ANSFILE="$(cat ./ANSFILE)"
-    try WINISO="$(cat ./WINISO)"
-    try UD="$(cat ./active)"
+    evalcheck LABEL="$(cat ./LABEL)"
+    evalcheck WINIMG="$(cat ./WINIMG)"
+    evalcheck ANSFILE="$(cat ./ANSFILE)"
+    evalcheck WINISO="$(cat ./WINISO)"
+    evalcheck UD="$(cat ./active)"
 }
 
 window-image-utils-main()
@@ -764,7 +764,7 @@ window-image-utils-main()
 	echo "\${params[@]}=${params[@]}"
     fi
 
-    try cd "$sd_fullpath"
+    evalcheck cd "$sd_fullpath"
     if [ "$thecommand" = "0-init" ]; then
 	dispatch-init-command "${params[@]}"
     else

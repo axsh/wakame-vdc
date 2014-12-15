@@ -6,7 +6,7 @@ reportfail()
     exit 255
 }
 
-try()
+evalcheck()
 {
     eval "$@" || reportfail "$@"
 }
@@ -19,7 +19,7 @@ WIN_VERSION="$1"
 
 # Assume Jenkins puts us in a suitable part of the disk hierarchy to create a build directory.
 BDIR="./builddirs/smoketest-$WIN_VERSION/"
-try mkdir -p ./builddirs
+evalcheck mkdir -p ./builddirs
 
 if [ -d "$BDIR" ]; then
     setsid "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$BDIR/" -cleanup
