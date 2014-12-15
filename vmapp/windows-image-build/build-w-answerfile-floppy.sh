@@ -25,7 +25,7 @@ reportfail()
     echo "This line should not be reached." 1>&2 ; exit 255
 }
 
-evalcheck() { eval "$@" || reportfail "$@,$?" ; }
+evalcheck() { eval "$@" || reportfail "$@,rc=$?" ; }
 
 trap 'echo "pid=$BASHPID exiting" 1>&2 ; exit 255' TERM  # feel free to specialize this
 
@@ -145,7 +145,7 @@ configure-metadata-disk()
 
     # public key
     if ! [ -f testsshkey ]; then
-	evalcheck ssh-keygen -f testsshkey -N '""'
+	evalcheck 'ssh-keygen -f testsshkey -N ""'
     fi
     sudo bash -c "mkdir -p mntpoint/meta-data/public-keys/0"
     sudo bash -c "echo $(cat testsshkey.pub) >mntpoint/meta-data/public-keys/0/openssh-key"
@@ -222,7 +222,7 @@ mount-image()
 	reportfail "Image file is already mounted."
     else
 	rm -f kpartx.out
-	evalcheck sudo kpartx -av "$installdir/$imagename" 1>kpartx.out
+	evalcheck 'sudo kpartx -av "$installdir/$imagename" 1>kpartx.out'
 	udevadm settle
     fi
     
@@ -444,11 +444,11 @@ final-seed-image-packaging()
     [ -d final-seed-image ] && reportfail "Seed image already packaged"
     mkdir ./final-seed-image
     evalcheck cd ./final-seed-image
-    time evalcheck tar xzvf ../windows-*tar.gz
+    time evalcheck 'tar xzvf ../windows-*tar.gz'
     [ -f "$WINIMG" ] || reportfail "No Windows image found in the tar file"
-    evalcheck mv "$WINIMG" "${seedtar%.tar.gz}"
+    evalcheck 'mv "$WINIMG" "${seedtar%.tar.gz}"'
 
-    evalcheck sudo kpartx -av "${seedtar%.tar.gz}"
+    evalcheck 'sudo kpartx -av "${seedtar%.tar.gz}"'
     udevadm settle
     evalcheck sudo ntfslabel /dev/mapper/loop0p1 root
     while ! sudo kpartx -dv /dev/loop0 ; do
@@ -456,8 +456,8 @@ final-seed-image-packaging()
 	sleep 10
     done
     evalcheck sudo losetup -d /dev/loop0
-    time evalcheck tar czvSf "$seedtar" "${seedtar%.tar.gz}"
-    time evalcheck md5sum "$seedtar" >"$seedtar".md5
+    time evalcheck 'tar czvSf "$seedtar" "${seedtar%.tar.gz}"'
+    time evalcheck 'md5sum "$seedtar" >"$seedtar".md5'
 }
 
 updatescripts-raw()
@@ -528,7 +528,7 @@ parse-initial-params()
 	# Use exactly what the user gives.
 	sd_fullpath="$sd_partialpath"
 	if [[ "$thecommand" = "0-init" ]]; then
-	    evalcheck mkdir "$sd_fullpath"
+	    evalcheck 'mkdir "$sd_fullpath"'
 	    sd_fullpath="$(cd "$sd_fullpath" && pwd)"
 	fi
 	return 0 # skip heuristic
@@ -544,7 +544,7 @@ parse-initial-params()
 	    [ "$ccc" -lt 10000 ] || reportfail "Could not generate unique directory path"
 	    ccc=$(( ccc + 1 ))
 	done
-	evalcheck mkdir "$sd_fullpath"
+	evalcheck 'mkdir "$sd_fullpath"'
 	sd_fullpath="$(cd "$sd_fullpath" && pwd)"
     else
 	shopt -s nullglob
@@ -741,11 +741,11 @@ dispatch-init-command()
 
 read-persistent-values()
 {
-    evalcheck LABEL="$(cat ./LABEL)"
-    evalcheck WINIMG="$(cat ./WINIMG)"
-    evalcheck ANSFILE="$(cat ./ANSFILE)"
-    evalcheck WINISO="$(cat ./WINISO)"
-    evalcheck UD="$(cat ./active)"
+    evalcheck 'LABEL="$(cat ./LABEL)"'
+    evalcheck 'WINIMG="$(cat ./WINIMG)"'
+    evalcheck 'ANSFILE="$(cat ./ANSFILE)"'
+    evalcheck 'WINISO="$(cat ./WINISO)"'
+    evalcheck 'UD="$(cat ./active)"'
 }
 
 window-image-utils-main()
@@ -764,7 +764,7 @@ window-image-utils-main()
 	echo "\${params[@]}=${params[@]}"
     fi
 
-    evalcheck cd "$sd_fullpath"
+    evalcheck 'cd "$sd_fullpath"'
     if [ "$thecommand" = "0-init" ]; then
 	dispatch-init-command "${params[@]}"
     else

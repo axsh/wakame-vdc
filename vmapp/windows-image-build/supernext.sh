@@ -25,7 +25,7 @@ reportfail()
     echo "This line should not be reached." 1>&2 ; exit 255
 }
 
-evalcheck() { eval "$@" || reportfail "$@,$?" ; }
+evalcheck() { eval "$@" || reportfail "$@,rc=$?" ; }
 
 trap 'echo "pid=$BASHPID exiting" 1>&2 ; exit 255' TERM  # feel free to specialize this
 
@@ -287,7 +287,7 @@ supernext-simulate-user-actions-after()
 
 supernext-main()
 {
-    evalcheck LABEL="$(cat $trdir/LABEL)"
+    evalcheck 'LABEL="$(cat $trdir/LABEL)"'
 
     if supernext-step-completed; then
 	# The current step finished!

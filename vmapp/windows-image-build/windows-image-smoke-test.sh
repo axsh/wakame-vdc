@@ -8,7 +8,7 @@ reportfail()
 
 evalcheck()
 {
-    eval "$@" || reportfail "$@"
+    eval "$@" || reportfail "$@,rc=$?"
 }
 
 export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || reportfail
