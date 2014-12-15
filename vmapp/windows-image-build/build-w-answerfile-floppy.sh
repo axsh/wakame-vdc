@@ -47,15 +47,16 @@ quick hints, the intended use is as follows:
 This will cycle the window image through first boot, second boot,
 shutdown, reboot, sysprep, shutdown, and then start again with first
 boot, etc.  At various points, the script will output Windows log
-files and network packet dumps to a directory named run-{2008,2012}-*.
-The first set of log files have "gen0" in the log file names.  After
-the next first boot, "gen1" becomes part of the log file names, etc.,
-so that each cycle from first-boot to sysprep gets uniquely named
-files.  It is easer to make sense of all the log files if the
-directory is sorted by date.
+files and network packet dumps to a special directory. (The scripts
+use the path stored in $sd_fullpath as the special directory.)  The
+first set of log files have "gen0" in the log file names.  After the
+next first boot, "gen1" becomes part of the log file names, etc., so
+that each cycle from first-boot to sysprep gets uniquely named files.
+It is easer to make sense of all the log files if the directory is
+sorted by date.
 
 Note the following environment are used:
-BOOTDATE (defaults to 2014-04-01)
+BOOTDATE (defaults to 2014-04-01)  (do BOOTDATE=now for current time and date)
 MACADDR (defaults to 52-54-00-11-a0-5b)
 FIRSTBOOT (defaults to "", i.e. do not put in meta-data/first-boot)
 AUTOACTIVATE (defaults to "", i.e. do not put in directory meta-data/auto-activate)
@@ -73,10 +74,10 @@ set-environment-var-defaults()
     if [ "$BOOTDATE" == "" ] ; then
 	# By default, set the date to something later than the files in
 	# the Windows Server 2012 ISO.  All the files in the ISO seem to
-	# be dated 2014-03-18.  Setting after this but earlier than
+	# be dated after 2014-03-18.  Setting after this but earlier than
 	# today's date makes it possible to do experiments with KVM faking
 	# dates but still be using dates that would be plausible to
-	# Windows and Microsoft's activaion server.
+	# Windows and Microsoft's activation server.
 	BOOTDATE="2014-04-01"
     fi
 
@@ -283,8 +284,8 @@ umount-image()
 {
     umount-image-raw1 # for now do both techniques, maybe remove raw1 later
     umount-image-raw2
-    # next line assumes nobody else is using loop mounts
     loopstatus="$(sudo losetup -a)"
+    # the next line hopefully will ignore loop devices mapping files outside the special directory
     [[ "$loopstatus"  != *$(pwd -P)/* ]] || \
 	reportfail "Still loopback devices in use: $loopcheck"
 }
@@ -353,8 +354,9 @@ install-windows-from-iso()
 	sudo cp "$SCRIPT_DIR/$fn" "./mntpoint/"
     done
 
-    # Here we are inserting code at the start of the script that runs
-    # sysprep so that it first sets the product key.  An alternative
+    # Here we are inserting code that sets the product key
+    # at the start of the batch file that runs sysprep.
+    # An alternative
     # would have been to set it in the answer file, but we are trying
     # to keep the answer file as simple as possible.  Another
     # alternative seemed to be to use FinalStepsForInstall.cmd, but
@@ -367,16 +369,17 @@ install-windows-from-iso()
 	echo "A:$ZABBIXEXE"
 	echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $prodkey"
 	echo
-	cat "$SCRIPT_DIR/run-sysprep.cmd"
+	cat "$SCRIPT_DIR/run-sysprep.cmd" # copy in the rest of the batch file script that runs sysprep
     } | sudo tee ./mntpoint/run-sysprep.cmd
 
     sudo umount "./mntpoint"
     
-    # Create 30GB image
+    # Create a blank 30GB image into which Windows will soon be installed
     rm -f "$WINIMG"
     qemu-img create -f raw "$WINIMG" 30G
 
     if [ "$NATNET" = "" ] ; then
+	# have netdevice connect to mcast, which effectively creates a device not connected to anything
 	boot-and-log-kvm-boot $(boot-common-params) \
 			      -fda "$FLP" \
 			      -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
@@ -385,6 +388,7 @@ install-windows-from-iso()
 			      -net nic,vlan=0,macaddr=$MACADDR \
 			      -net socket,vlan=0,mcast=230.0.$UD.1:12341
     else
+	# use user mode network w/ NAT
 	mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
 	boot-and-log-kvm-boot $(boot-common-params) \
 			      -fda "$FLP" \
@@ -472,6 +476,8 @@ final-seed-image-packaging()
 
 updatescripts-raw()
 {
+    # Update scripts inside existing Windows image.  The motivation here
+    # is to avoid installing the image from scratch to speed up debugging.
     for fn in "${scriptArray[@]}" ; do
 	sudo cp "$SCRIPT_DIR/$fn" ./mntpoint/Windows/Setup/Scripts
     done
@@ -544,7 +550,7 @@ parse-initial-params()
 	    
     # the heuristic stuff
     if [[ "$thecommand" = "0-init" ]]; then
-	# extend prefix until it is unique, new directory
+	# extend prefix until it is a unique, new directory
 	firstparam="${params[0]}"  # assume 2008 or 2012
 	ccc=0
 	while sd_fullpath="$sd_partialpath$firstparam-$(printf "%04d" $ccc)" && \
@@ -627,7 +633,10 @@ dispatch-command()
 	-package | -pack*)
 	    final-seed-image-packaging
 	    ;;
-	### from here start new framework
+	### The commands above are mainly utility commands.  The
+	### commands below are the type that go into ./nextstep, that
+	### is, those that are used to walk through the build process
+	### and the test scenario cycle.
 	0-init)
 	    # TODO refactor this:
 	    for iso in "$WINISO" "$VIRTIOISO" ; do
@@ -732,8 +741,9 @@ dispatch-init-command()
     # assignment unique.  Currently the script automatically keeps one
     # 2008 experiment/build separate from one 2012
     # experiment/build. There is potential to generalize this more,
-    # but for now leaving it as a TODO. As a quick hack, the next code
-    # scans to see if any active experiment/builds use the same digit.
+    # but for now leaving such generalization as a TODO. As a quick
+    # hack, the next code scans to see if any active experiment/builds
+    # use the same digit.
     UD="$(< ./active)"
     result="$(cd .. ; grep "$UD" */active)"
     if [[ "$result" == *active*active ]]; then
@@ -762,7 +772,7 @@ window-image-utils-main()
     params=( "$@" )
     parse-initial-params
 
-    # update convince shortcut
+    # update convenience shortcut
     rm -f lastdir
     ln -s "$sd_fullpath" lastdir
 

@@ -71,8 +71,16 @@ check-required-env()  # also sets defaults if run in Windows build environment
 
 kvm-ui-feed-slowly-via-vnc()
 {
-    # create a slowed-down pipe that makes it possible to send
+    # This function creates a slowed-down pipe that makes it possible to send
     # captured VNC protocol directly to KVM.
+
+    # Warning: This has failed when the stream was delivered too fast
+    # *or* too slow.  The values below (send 10 bytes about every 1ms)
+    # have worked well so far, but have not been tested methodically.
+   
+    # Note: VNC binary inputs can be captured by using netcat and tee to
+    # redirect vncviewer streams to a file.
+
     check-required-env
     pat='*0+0 records in*' # when this pattern appears in dd stderr, quit
     echo "Begin send to VNC" 1>&2

@@ -106,9 +106,13 @@ kvm-ui-check-after-login-screen()
 ####### UI SIMULATIONS
 #######
 
+## Note: All of these VNC binary inputs were captured by using netcat
+## and tee to redirect vncviewer streams to a file, which was then
+## converted to base64.
+
 kvm-ui-simulate-type-a-run-sysprep-return()
 {
-    # just to test VNC piping code:
+    # types out the string "a:run-sysprep" and then presses the return key
     base64 -d  <<EOF | kvm-ui-feed-slowly-via-vnc
 UkZCIDAwMy4wMDgKAQAAAAAACAYAAQADAAMAAwQCAAAAAAIAAAf///8R////IQAAABAAAAABAAAA
 BQAAAAIAAAAAAwAAAAAAAyACWAAAAAAgGAABAP8A/wD/EAgAAAAAAgAAB////xH///8hAAAABQAA
@@ -147,7 +151,8 @@ kvm-ui-simulate-open-powershell-click()
 
 kvm-ui-simulate-open-powershell-click-2008()
 {
-# just to test VNC piping code:
+    # Moves the mouse to where the powershell button should be for
+    # Windows Server 2008 and clicks the mouse
     base64 -d  <<EOF | kvm-ui-feed-slowly-via-vnc
 UkZCIDAwMy4wMDgKAQAAAAAACAYAAQADAAMAAwQCAAAAAAIAAAf///8R////IQAAABAAAAABAAAA
 BQAAAAIAAAAAAwAAAAAAAyACWAAAAAAgGAABAP8A/wD/EAgAAAAAAgAAB////xH///8hAAAABQAA
@@ -163,7 +168,8 @@ EOF
 
 kvm-ui-simulate-open-powershell-click-2012()
 {
-    # just to test VNC piping code:
+    # Moves the mouse to where the powershell button should be for
+    # Windows Server 2012 and clicks the mouse
     base64 -d  <<EOF | kvm-ui-feed-slowly-via-vnc
 UkZCIDAwMy4wMDgKAQAAAAAACAYAAQADAAMAAwQCAAAAAAIAAAf///8R////IQAAABAAAAABAAAA
 BQAAAAIAAAAAAwAAAAAABAADAAAAAAAgGAABAP8A/wD/EAgAAAAAAgAAB////xH///8hAAAABQAA
@@ -228,8 +234,9 @@ supernext-simulate-user-actions-before()
 
 supernext-simulate-user-actions-after()
 {
-    # (did 30 seconds for a while, which seemed way too conservative,
-    # so 15 seconds should be enough for zabbix installer to move to
+    # (The code here was SLEEPFOR=30 seconds for a while, which seemed
+    # way too conservative and slow.  So it has been changed to 15
+    # seconds.  This should be enough for zabbix installer to move to
     # the next state)
     SLEEPFOR=15
     case "$cmd" in  # uses $cmd from previous functions, because $trdir/nextstep may have changed
@@ -255,7 +262,7 @@ supernext-simulate-user-actions-after()
 
 	    sleep "$SLEEPFOR"
 	    # The zabbix installer should be showing.  Just press return 5 times with a
-	    # sleep in between:
+	    # long-enough sleep in between:
 	    kvm-ui-take-screenshot # for debugging
 	    for i in $(seq 1 6); do
 		sleep "$SLEEPFOR"
@@ -263,9 +270,10 @@ supernext-simulate-user-actions-after()
 		touch $trdir/press-return-$i
 		kvm-ui-simulate press-return
 	    done
-	    # sysprep should start automatically, and the next step
-	    # will wait for the KVM process to disappear
-	    # Take a few more screenshots for debugging
+	    # sysprep should start automatically, and then shutdown
+	    # should happen automatically. The next step will wait for
+	    # the KVM process to disappear and take a few more
+	    # screenshots for debugging.
 	    for i in $(seq 1 6); do
 		sleep 10
 		kvm-ui-take-screenshot # for debugging

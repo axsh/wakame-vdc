@@ -116,7 +116,8 @@ for i in $(seq 1 30); do
     sleep 60
 done
 
-# for smoke tests, assume only run-*-000 exists
+# after-gen0-sysprep.tar.gz is the set of Windows log files after sysprep is run for the
+# initial time, which for image building is the final step.
 tar xzvOf "./$BDIR/after-gen0-sysprep.tar.gz"   Windows/Setup/State/State.ini >State.ini
 
 [[ "$(< State.ini)" == *IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE* ]] || reportfail "sysprep did not update State.ini file"
