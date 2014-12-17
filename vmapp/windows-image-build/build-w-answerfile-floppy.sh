@@ -118,8 +118,6 @@ set-environment-var-defaults()
     ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
 }
 
-set -x
-
 boot-date-param()
 {
     [ "$BOOTDATE" != "now" ] && echo "-rtc base=$BOOTDATE"
