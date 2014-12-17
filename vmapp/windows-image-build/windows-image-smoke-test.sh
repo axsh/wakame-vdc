@@ -50,7 +50,7 @@ ensure-file-is-in-place()
 		;;
 	    JenkinsENV)
 		# try to grab an environment variable set by Jenkins, e.g.: JenkinsENV-key2008
-		attempt="$(eval echo "\$1${asource}_$1")"
+		attempt="$(eval echo "\$${asource}_$1")"
 		[ "$attempt" != "" ] && echo "$attempt" >"$TARGETDIR/$1"
 		;;
 	    *)
