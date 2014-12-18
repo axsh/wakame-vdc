@@ -14,9 +14,9 @@ integrate into Jenkins.  One consequence of this is that it must automate everyt
 including user interface actions inside of Windows, which it does by
 using `supernext.sh` and `kvm-ui-util.sh`.
 
-## The `bash` script files
+## The `bash` script files:
 
-  * build-w-answerfile-floppy.sh
+### build-w-answerfile-floppy.sh
 
 This script's main functions are starting and stopping Windows VMs and
 dealing with the images files.  One typical use is to boot a VM, do
@@ -52,7 +52,7 @@ Between the steps, manual actions are usually needed.  By doing these
 actions and invoking the above command line, a developer can reliably
 run through what is otherwise a tedious and error prone test scenario.
 
-  * windows-image-smoke-test.sh
+### windows-image-smoke-test.sh
 
 To make things easy for Jenkins, this script does three things.
 First, it makes sure all the extra files that are required by
@@ -61,14 +61,14 @@ image) are available.  Then it creates a new build directory.  Then it
 calls `build-w-answerfile-floppy.sh` until it has completed the first
 three steps of the scenario, which are the steps that install Windows.
 
-  * supernext.sh
+### supernext.sh
 
 This script is used by `windows-image-smoke-test.sh` to simulate user
 interface actions that are not automated by
 `build-w-answerfile-floppy.sh`.  It relies on the `nextstep` file to
 know what actions need to be done.
 
-  * kvm-ui-util.sh
+### kvm-ui-util.sh
 
 This is a low-level script that is used to simulate user actions in
 KVM.  It is only called by `supernext.sh`, although a little setup
@@ -77,21 +77,21 @@ has potential for reuse in other project.
 
 ## The other files
 
-  * Autounattend-08.xml & Autounattend-12.xml
+### Autounattend-08.xml & Autounattend-12.xml
 
 One of these is put on a floppy image (and renamed to
 Autounattend.xml) when booting from the Windows install DVD ISO.  The
 file gives the Windows installer enough information to proceed
 automatically to a running copy of windows.
 
-  * FinalStepsForInstall.cmd
+### FinalStepsForInstall.cmd
 
 This batch file script is run by the Windows installer based on
 instructions from Autounattend.xml.  It copies all of the Wakame-vdc
 boot scripts to c:\Windows\Setup\Scripts\.  This includes all the
 *.xml, *.cmd, and *.ps1 files in this directory not described here.
 
-  * run-sysprep.cmd
+### run-sysprep.cmd
 
 After the Windows installer and FinalStepsForInstall.cmd have finished
 running, it is necessary to log in to the VM (using "a:run-sysprep" as
