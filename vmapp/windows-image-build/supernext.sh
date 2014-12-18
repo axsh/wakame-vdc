@@ -57,7 +57,7 @@ usage() {
 
     # The step that checks the wait condition will usually take a
     # new screenshot.  What is being waiting for is determined from
-    # the file $trdir/nextstep.
+    # the file $build_dir/nextstep.
 
 To run, just do:
 
@@ -196,7 +196,7 @@ wait-for-login-completion()
 
 supernext-step-completed()
 {
-    cmd="$(< $trdir/nextstep)"
+    cmd="$(< $build_dir/nextstep)"
     case "$cmd" in
 	1-install)
 	    true # nothing to check; always OK to proceed
@@ -215,7 +215,7 @@ supernext-step-completed()
 
 supernext-simulate-user-actions-before()
 {
-    cmd="$(< $trdir/nextstep)"
+    cmd="$(< $build_dir/nextstep)"
     case "$cmd" in
 	1-install)
 	    : # no user actions need to be done
@@ -239,25 +239,25 @@ supernext-simulate-user-actions-after()
     # seconds.  This should be enough for zabbix installer to move to
     # the next state)
     SLEEPFOR=15
-    case "$cmd" in  # uses $cmd from previous functions, because $trdir/nextstep may have changed
+    case "$cmd" in  # uses $cmd from previous functions, because $build_dir/nextstep may have changed
 	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
-	    touch $trdir/press-ctrl-alt-del
+	    touch $build_dir/press-ctrl-alt-del
 	    kvm-ui-simulate  press-ctrl-alt-del
 
 	    sleep 15
 	    kvm-ui-take-screenshot # for debugging
-	    touch $trdir/type-a-run-sysprep-return-1
+	    touch $build_dir/type-a-run-sysprep-return-1
 	    kvm-ui-simulate  type-a-run-sysprep-return # "a:run-sysprep" here it is the password
 	    wait-for-login-completion
 
 	    sleep 2
 	    kvm-ui-take-screenshot # for debugging
-	    touch $trdir/open-powershell-click
+	    touch $build_dir/open-powershell-click
 	    kvm-ui-simulate  open-powershell-click
 
 	    sleep "$SLEEPFOR"
 	    kvm-ui-take-screenshot # for debugging
-	    touch $trdir/type-a-run-sysprep-return-2
+	    touch $build_dir/type-a-run-sysprep-return-2
 	    kvm-ui-simulate  type-a-run-sysprep-return # "a:run-sysprep" here it runs the script
 
 	    sleep "$SLEEPFOR"
@@ -267,7 +267,7 @@ supernext-simulate-user-actions-after()
 	    for i in $(seq 1 6); do
 		sleep "$SLEEPFOR"
 		kvm-ui-take-screenshot # for debugging
-		touch $trdir/press-return-$i
+		touch $build_dir/press-return-$i
 		kvm-ui-simulate press-return
 	    done
 	    # sysprep should start automatically, and then shutdown
@@ -287,14 +287,14 @@ supernext-simulate-user-actions-after()
 
 supernext-main()
 {
-    evalcheck 'LABEL="$(cat $trdir/LABEL)"'
+    evalcheck 'LABEL="$(cat $build_dir/LABEL)"'
 
     if supernext-step-completed; then
 	# The current step finished!
 	# Do user actions necessary before next step...
 	supernext-simulate-user-actions-before || exit 255
 
-	"$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$trdir" -next
+	"$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$build_dir" -next
 
 	supernext-simulate-user-actions-after || exit 255
 	return 0
@@ -308,9 +308,9 @@ source "$SCRIPT_DIR/kvm-ui-util.sh" source
 
 case "$1" in
     -next) # normal case
-	trdir="${2%/}"
-	[ -f "$trdir"/active ] || reportfail "second parameter must be an active test/build directory"
-	trdir="$(cd "$trdir" ; pwd)"
+	build_dir="${2%/}"
+	[ -f "$build_dir"/active ] || reportfail "second parameter must be an active test/build directory"
+	build_dir="$(cd "$build_dir" ; pwd)"
 	supernext-main
 	;;
     *) usage

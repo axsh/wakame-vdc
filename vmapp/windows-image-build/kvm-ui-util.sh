@@ -54,17 +54,17 @@ EOF
 check-required-env()  # also sets defaults if run in Windows build environment
 {
     if [ -z "$KVMPID" ]; then
-	[ -n "$trdir" ] && KVMPID="$(< "$trdir/kvm.pid")"
+	[ -n "$build_dir" ] && KVMPID="$(< "$build_dir/kvm.pid")"
     fi
     [ -n "$KVMPID" ] || reportfail "KVMPID must be set to the KVM's pid"
 
     if [ -z "$KVMMON" ]; then
-	[ -n "$trdir" ] && KVMMON="$(< "$trdir/kvm.mon")"
+	[ -n "$build_dir" ] && KVMMON="$(< "$build_dir/kvm.mon")"
     fi 
     [ -n "$KVMMON" ] || reportfail "KVMMON must be set to the KVM's monitor port"
 
     if [ -z "$KVMVNC" ]; then
-	[ -n "$trdir" ] && KVMVNC="$(< "$trdir/kvm.vnc")"
+	[ -n "$build_dir" ] && KVMVNC="$(< "$build_dir/kvm.vnc")"
     fi 
     [ -n "$KVMVNC" ] || reportfail "KVMVNC must be set to the KVM's VNC port"
 }
@@ -103,12 +103,12 @@ kvm-ui-take-screenshot()
 {
     check-required-env
     dumptime="$(date +%y%m%d-%H%M%S)"  # assume not more than one dump per second
-    [ -z "$trdir" ] && trdir=/tmp
-    fname="$trdir/screendump-$dumptime.ppm"
+    [ -z "$build_dir" ] && build_dir=/tmp
+    fname="$build_dir/screendump-$dumptime.ppm"
     echo "screendump $fname" | nc 127.0.0.1 $KVMMON 1>/dev/null
     sleep 1
-    gzip "$trdir/screendump-$dumptime.ppm"
-    echo "$trdir/screendump-$dumptime.ppm".gz
+    gzip "$build_dir/screendump-$dumptime.ppm"
+    echo "$build_dir/screendump-$dumptime.ppm".gz
 }
 
 kvm-ui-simulate()

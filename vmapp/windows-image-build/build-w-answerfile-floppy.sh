@@ -47,8 +47,8 @@ quick hints, the intended use is as follows:
 This will cycle the window image through first boot, second boot,
 shutdown, reboot, sysprep, shutdown, and then start again with first
 boot, etc.  At various points, the script will output Windows log
-files and network packet dumps to a special directory. (The scripts
-use the path stored in $sd_fullpath as the special directory.)  The
+files and network packet dumps to a special build directory. (The scripts
+use the path stored in $bdir_fullpath as the build directory.)  The
 first set of log files have "gen0" in the log file names.  After the
 next first boot, "gen1" becomes part of the log file names, etc., so
 that each cycle from first-boot to sysprep gets uniquely named files.
@@ -273,7 +273,7 @@ umount-image()
     umount-image-raw1 # for now do both techniques, maybe remove raw1 later
     umount-image-raw2
     loopstatus="$(sudo losetup -a)"
-    # the next line hopefully will ignore loop devices mapping files outside the special directory
+    # the next line hopefully will ignore loop devices mapping files outside the build directory
     [[ "$loopstatus"  != *$(pwd -P)/* ]] || \
 	reportfail "Still loopback devices in use: $loopcheck"
 }
@@ -475,35 +475,35 @@ updatescripts-raw()
 parse-initial-params()
 {
     # All the commands make use of persistent state that is saved
-    # between commands in a special directory.  A new special
+    # between commands in a special build directory.  A new build
     # directory is created for each experiment or Windows build so
     # that information that could be useful for debugging is
     # preserved.
 
-    # The convention is for the *first* parameter to be the special
+    # The convention is for the *first* parameter to be the build
     # directory and for the *second* parameter to be the name of the
     # command.  If the command requires additional parameters, these
     # are listed after the command.
 
     # The reason for this ordering is that experience has shown that
-    # the same special directory is often reused for several commands.
+    # the same build directory is often reused for several commands.
     # As first parameter, it is easier to leave it unchanged when
     # recalling and modifying commands in a shell console.
 
-    # All the commands expect the special directory to already exist.
+    # All the commands expect the build directory to already exist.
     # The only exception is the "0-init" command, which creates a new
-    # special directory.
+    # build directory.
 
     # The following code sets up for the above convention and adds a
     # heuristic that should make command-line life easier when
-    # transitioning to new special directories.  In some cases, it
+    # transitioning to new build directories.  In some cases, it
     # makes it possible to leave off the first parameter and still
     # have everything work correctly.  All this is simpler to code
     # than explain, so will leave the rest of this comment as a TODO
     # item.
 
     if [[ "${params[0]//[0-9]/}" == -* ]]; then
-	# if no special directories to start with a sequence of zero
+	# if no build directories start with a sequence of zero
 	# or more numbers followed by a dash, then this must be a command
 	thecommand="${params[0]}"
 	sd_partialpath="./run-"  # guess dir is in current directory and has prefix run-
@@ -524,10 +524,10 @@ parse-initial-params()
     # if path has explicit slash at the end, skip heuristic stuff below. 
     if [[ "$sd_partialpath" == */ ]]; then
 	# Use exactly what the user gives.
-	sd_fullpath="$sd_partialpath"
+	bdir_fullpath="$sd_partialpath"
 	if [[ "$thecommand" = "0-init" ]]; then
-	    evalcheck 'mkdir "$sd_fullpath"'
-	    sd_fullpath="$(cd "$sd_fullpath" && pwd)"
+	    evalcheck 'mkdir "$bdir_fullpath"'
+	    bdir_fullpath="$(cd "$bdir_fullpath" && pwd)"
 	fi
 	return 0 # skip heuristic
     fi
@@ -537,25 +537,25 @@ parse-initial-params()
 	# extend prefix until it is a unique, new directory
 	firstparam="${params[0]}"  # assume 2008 or 2012
 	ccc=0
-	while sd_fullpath="$sd_partialpath$firstparam-$(printf "%04d" $ccc)" && \
-		[ -d "$sd_fullpath" ]; do
+	while bdir_fullpath="$sd_partialpath$firstparam-$(printf "%04d" $ccc)" && \
+		[ -d "$bdir_fullpath" ]; do
 	    [ "$ccc" -lt 10000 ] || reportfail "Could not generate unique directory path"
 	    ccc=$(( ccc + 1 ))
 	done
-	evalcheck 'mkdir "$sd_fullpath"'
-	sd_fullpath="$(cd "$sd_fullpath" && pwd)"
+	evalcheck 'mkdir "$bdir_fullpath"'
+	bdir_fullpath="$(cd "$bdir_fullpath" && pwd)"
     else
 	shopt -s nullglob
-	sd_fullpath=""
+	bdir_fullpath=""
 	for apath in "$sd_partialpath"*; do  # should already be sorted
-	    [ -f "$apath/active" ] && sd_fullpath="$apath"
+	    [ -f "$apath/active" ] && bdir_fullpath="$apath"
 	done
-	[ "$sd_fullpath" = "" ] && reportfail "No active special directories found"
+	[ "$bdir_fullpath" = "" ] && reportfail "No active build directories found"
 	# use the latest that is still active
-	sd_fullpath="$(cd "$sd_fullpath" && pwd)"
+	bdir_fullpath="$(cd "$bdir_fullpath" && pwd)"
     fi
     # There.  Now the rest of the code should be straightforward, only
-    # using $thecommand, $sd_fullpath, and "${params[@]}"
+    # using $thecommand, $bdir_fullpath, and "${params[@]}"
 }
 
 dispatch-command()
@@ -623,7 +623,7 @@ dispatch-command()
 	### is, those that are used to walk through the build process
 	### and the test scenario cycle.
 	0-init)
-	    : # now handled as a special case
+	    : # now handled as a build case
 	    ;;
 	1-install)
 	    install-windows-from-iso
@@ -734,7 +734,7 @@ dispatch-init-command()
 	echo "for making port assignments unique:"
 	echo "$result"
 	echo "Consider changing the contents of:"
-	echo "$sd_fullpath/active"
+	echo "$bdir_fullpath/active"
 	sleep 2
     fi
 }
@@ -756,15 +756,15 @@ window-image-utils-main()
 
     # update convenience shortcut
     rm -f lastdir
-    ln -s "$sd_fullpath" lastdir
+    ln -s "$bdir_fullpath" lastdir
 
     if true; then  # for debugging
 	echo "thecommand=$thecommand"
-	echo "sd_fullpath=$sd_fullpath"
+	echo "bdir_fullpath=$bdir_fullpath"
 	echo "\${params[@]}=${params[@]}"
     fi
 
-    evalcheck 'cd "$sd_fullpath"'
+    evalcheck 'cd "$bdir_fullpath"'
     if [ "$thecommand" = "0-init" ]; then
 	dispatch-init-command "${params[@]}"
     else
