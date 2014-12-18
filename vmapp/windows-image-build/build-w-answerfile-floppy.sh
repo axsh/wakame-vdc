@@ -341,7 +341,7 @@ install-windows-from-iso()
     # Here we are inserting code that sets the product key
     # at the start of the batch file that runs sysprep.
     # An alternative
-    # would have been to set it in the answer file, but we are evalchecking
+    # would have been to set it in the answer file, but we are trying
     # to keep the answer file as simple as possible.  Another
     # alternative seemed to be to use FinalStepsForInstall.cmd, but
     # for some reason that did not work.
@@ -450,7 +450,7 @@ final-seed-image-packaging()
     udevadm settle
     evalcheck sudo ntfslabel /dev/mapper/loop0p1 root
     while ! sudo kpartx -dv /dev/loop0 ; do
-	echo "kpartx -dv /dev/loop0  failed....reevalchecking in 10 seconds"
+	echo "kpartx -dv /dev/loop0  failed....retrying in 10 seconds"
 	sleep 10
     done
     evalcheck sudo losetup -d /dev/loop0
