@@ -103,57 +103,67 @@ parameters.  Note that the build-w-answerfile-floppy.sh sometimes
 modifies this batch file on-the-fly so that it installs zabbix before
 running sysprep.
 
+# Running locally:
 
-# ((The information on the rest of this page is out-of-date.))
+## Copy the following resource files to this directory (or follow alternative instructions given below):
 
-Windows Image Build Instructions 
-================================
+* Windows installation ISO files for Windows Server 2008 and 2012
+* virtio-win-0.1-74.iso (from http://alt.fedoraproject.org/pub/alt/virtio-win/)
+* zabbix_agent-1.8.15-1.JP_installer.exe (from http://repo.zabbix.jp/zabbix/zabbix-1.8/windows/)
+* An example metadata.img image in a tar file named metadata.img.tar.gz
+* Files named key2008 and key2012, with the Windows 5x5 activation keys on one line
 
-* Copy Windows installation ISO files to this directory.
-* Copy virtio-win-0.1-74.iso (from http://alt.fedoraproject.org/pub/alt/virtio-win/) to this directory.
-* Remember path to this directory.
+## Remember path to this directory.
 
 ```
 $ SDIR="$(pwd)"
 ```
 
-* Make a new working directory somewhere and continue as follows:
+* And then in a writable directory somewhere run the script with 2008
+  or 2012 as the parameter:
 
 ```
-$ mkdir build2008
-$ cd build2008
-$ echo "aaaaa-bbbbb-ccccc-ddddd-eeeee" >keyfile  # enter Windows 5x5 key
-$ $SDIR/build-w-answerfile-floppy.sh 2008 0-init
-$ $SDIR/build-w-answerfile-floppy.sh 2008 -next  # shortcut for 1-install
+$ $SDIR/windows-image-smoke-test.sh 2008
 ```
 
-* For 2008, connect vncviewer to port number 6080.
-* Wait for the Ctrl-Alt-Del login screen to appear in VNC, then do:
+This will create a new build directory named ./builddirs/smoketest-2008 or
+./builddirs/smoketest-2012, build a seed image there, and confirm that
+the file `C:\Windows\Setup\State\State.ini` indicates sysprep ran correctly.
+
+# Automatic download of resource files
+
+The `windows-image-smoke-test.sh` script provides an automatic
+download feature that is convenient for Jenkins.  Instead of manually
+putting the files in the directory, put the required files in an
+Amazon S3 bucket and the following:
+
+  * Create a `~/.s3cfg` that gives enough permissions to access the bucket.
+  * In the shell do: export S3URL=s3://a.b.c.d/the/path/to/the/iso/files
+
+As an alternative to putting the sensitive key2008 and key2012 files in S3,
+the following is also possible.
 
 ```
-$ $SDIR/build-w-answerfile-floppy.sh 2008 -next  # shortcut for 1b-record-logs-at-ctr-alt-delete-prompt-gen0
-```
-* Login to Windows with the password "a:run-sysprep".
-* Open PowerShell console and run the helper script for running sysprep by entering a:run-sysprep.
-* Wait for the VNC window to disconnect.
-
-```
-$ $SDIR/build-w-answerfile-floppy.sh 2008 -next  # shortcut for 2-confirm-sysprep-gen0
+export JenkinsENV_key2008="aaaaa-bbbbb-ccccc-ddddd-eeeee"  # key for Windows Server 2008
+export JenkinsENV_key2012="fffff-ggggg-hhhhh-iiiii-jjjjj"  # key for Windows Server 2012
 ```
 
-* The above will confirm that the KVM process has terminated and prompt
-you for whether sysprep succeeded.  If KVM did terminate, then sysprep
-probably shutdown Windows and KVM after running correctly.  Type "YES"
-to continue.
+Then running the same command as above will first download the needed
+resources and then build the seed image:
 
 ```
-$ $SDIR/build-w-answerfile-floppy.sh 2008 -next  # shortcut for 3-tar-the-image
+$ $SDIR/windows-image-smoke-test.sh 2008
 ```
 
-* Md5sum will be run on the new Windows seed image, and the image and checksum will be
-tarred into a sparse archive.
+# Final packaging
 
-* Finished.
+To create the seed image that is ready to be used with Wakame-vdc, do
+run the following command steps:
 
-Instructions for 2012 are the same, except substitute 2012 where 2008
-appears and use VNC port number 6090.
+ ```
+$ $SDIR/build-w-answerfile-floppy.sh  /path/to/builddirs/smoketest-2008  3-tar-the-image
+$ $SDIR/build-w-answerfile-floppy.sh  /path/to/builddirs/smoketest-2008  -package
+```
+
+The ready-to-use images will be created at
+/path/to/builddirs/smoketest-2008/final-seed-image/windows2008r2.x86_64.kvm.md.raw.tar.gz.
