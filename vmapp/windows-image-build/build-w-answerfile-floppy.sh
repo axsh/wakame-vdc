@@ -527,8 +527,8 @@ parse-initial-params()
 	bdir_fullpath="$sd_partialpath"
 	if [[ "$thecommand" = "0-init" ]]; then
 	    evalcheck 'mkdir "$bdir_fullpath"'
-	    bdir_fullpath="$(cd "$bdir_fullpath" && pwd)"
 	fi
+	bdir_fullpath="$(cd "$bdir_fullpath" && pwd)"
 	return 0 # skip heuristic
     fi
 	    
@@ -624,6 +624,10 @@ dispatch-command()
 	### and the test scenario cycle.
 	0-init)
 	    : # now handled as a build case
+	    ;;
+	9999-finalize)
+	    echo "Removing the file: $bdir_fullpath/active"
+	    rm "$bdir_fullpath/active"
 	    ;;
 	1-install)
 	    install-windows-from-iso
