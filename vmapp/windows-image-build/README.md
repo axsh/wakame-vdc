@@ -38,7 +38,7 @@ The *build directory* also serves other purposes:
 
 This last purpose is important for understanding how the other scripts
 work.  `build-w-answerfile-floppy.sh` contains a set of numbered
-commands, which if done in order, walk through the steps of a
+commands, which if done in order, walk through the steps of a particular
 debugging scenario that has been useful.  A file in the build
 directory named `nextstep` always contains the name of the command for
 the next step, which can be invoked automatically by calling the
@@ -50,7 +50,8 @@ $ ./build-w-answerfile-floppy.sh /path/to/builddir -next
 
 Between the steps, manual actions are usually needed.  By doing these
 actions and invoking the above command line, a developer can reliably
-run through what is otherwise a tedious and error prone test scenario.
+run through a test scenario that is time-consuming,
+tedious, and otherwise easy to mess up.
 
 ### windows-image-smoke-test.sh
 
@@ -82,7 +83,7 @@ has potential for reuse in other project.
 One of these is put on a floppy image (and renamed to
 Autounattend.xml) when booting from the Windows install DVD ISO.  The
 file gives the Windows installer enough information to proceed
-automatically to a running copy of windows.
+automatically until KVM is booted with a fresh install of Windows.
 
 ### FinalStepsForInstall.cmd
 
@@ -96,8 +97,8 @@ boot scripts to c:\Windows\Setup\Scripts\.  This includes all the
 After the Windows installer and FinalStepsForInstall.cmd have finished
 running, it is necessary to log in to the VM (using "a:run-sysprep" as
 the Administrator password) and run this script to finish making the
-seed image.  The script is copied to the floppy image, so it is
-invoked by typing a:run-sysprep into a console window.  It does a
+seed image.  This script is copied to the floppy image, so it is
+can be invoked by typing a:run-sysprep into a console window.  It does a
 little setup and then runs the sysprep command with the correct
 parameters.  Note that the build-w-answerfile-floppy.sh sometimes
 modifies this batch file on-the-fly so that it installs zabbix before
@@ -135,7 +136,7 @@ the file `C:\Windows\Setup\State\State.ini` indicates sysprep ran correctly.
 The `windows-image-smoke-test.sh` script provides an automatic
 download feature that is convenient for Jenkins.  Instead of manually
 putting the files in the directory, put the required files in an
-Amazon S3 bucket and the following:
+Amazon S3 bucket and do the following:
 
   * Create a `~/.s3cfg` that gives enough permissions to access the bucket.
   * In the shell do: export S3URL=s3://a.b.c.d/the/path/to/the/iso/files
@@ -157,8 +158,8 @@ $ $SDIR/windows-image-smoke-test.sh 2008
 
 # Final packaging
 
-To create the seed image that is ready to be used with Wakame-vdc, do
-run the following command steps:
+To create a seed image that is ready to be used with Wakame-vdc, do
+the following command steps manually:
 
  ```
 $ $SDIR/build-w-answerfile-floppy.sh  /path/to/builddirs/smoketest-2008  3-tar-the-image
