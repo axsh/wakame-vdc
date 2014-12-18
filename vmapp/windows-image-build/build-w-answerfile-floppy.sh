@@ -615,6 +615,7 @@ dispatch-command()
 	    kill-kvm
 	    ;;
 	-package | -pack*)
+	    set -x # show the user what this step is spending so much time doing
 	    final-seed-image-packaging
 	    ;;
 	### The commands above are mainly utility commands.  The
@@ -639,6 +640,7 @@ dispatch-command()
 	    echo "3-tar-the-image" >./nextstep
 	    ;;
 	3-tar-the-image)
+	    set -x # show the user what this step is spending so much time doing
 	    time md5sum "$WINIMG" >"$WINIMG".md5
 	    time tar czSvf "windows-$LABEL-$(cat ./timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
 	    mount-tar-umount ./after-gen0-sysprep.tar.gz
