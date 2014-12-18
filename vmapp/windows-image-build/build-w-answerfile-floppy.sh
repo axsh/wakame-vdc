@@ -506,11 +506,11 @@ parse-initial-params()
 	# if no build directories start with a sequence of zero
 	# or more numbers followed by a dash, then this must be a command
 	thecommand="${params[0]}"
-	sd_partialpath="./run-"  # guess dir is in current directory and has prefix run-
+	bd_partialpath="./run-"  # guess dir is in current directory and has prefix run-
 	unset params[0]
     else
 	thecommand="${params[1]}"
-	sd_partialpath="${params[0]}"  # guess dir has the given prefix
+	bd_partialpath="${params[0]}"  # guess dir has the given prefix
 	unset params[1]
 	unset params[0]
     fi
@@ -522,9 +522,9 @@ parse-initial-params()
     fi
     
     # if path has explicit slash at the end, skip heuristic stuff below. 
-    if [[ "$sd_partialpath" == */ ]]; then
+    if [[ "$bd_partialpath" == */ ]]; then
 	# Use exactly what the user gives.
-	bdir_fullpath="$sd_partialpath"
+	bdir_fullpath="$bd_partialpath"
 	if [[ "$thecommand" = "0-init" ]]; then
 	    evalcheck 'mkdir "$bdir_fullpath"'
 	fi
@@ -537,7 +537,7 @@ parse-initial-params()
 	# extend prefix until it is a unique, new directory
 	firstparam="${params[0]}"  # assume 2008 or 2012
 	ccc=0
-	while bdir_fullpath="$sd_partialpath$firstparam-$(printf "%04d" $ccc)" && \
+	while bdir_fullpath="$bd_partialpath$firstparam-$(printf "%04d" $ccc)" && \
 		[ -d "$bdir_fullpath" ]; do
 	    [ "$ccc" -lt 10000 ] || reportfail "Could not generate unique directory path"
 	    ccc=$(( ccc + 1 ))
@@ -547,7 +547,7 @@ parse-initial-params()
     else
 	shopt -s nullglob
 	bdir_fullpath=""
-	for apath in "$sd_partialpath"*; do  # should already be sorted
+	for apath in "$bd_partialpath"*; do  # should already be sorted
 	    [ -f "$apath/active" ] && bdir_fullpath="$apath"
 	done
 	[ "$bdir_fullpath" = "" ] && reportfail "No active build directories found"
