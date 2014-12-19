@@ -42,16 +42,16 @@ ensure-file-is-in-place()
 		cp -al "$asource/$1" "$TARGETDIR/$1" || \
 		    cp "$asource/$1" "$TARGETDIR/$1"
 		;;
+	    JenkinsENV)
+		# try to grab an environment variable set by Jenkins, e.g.: JenkinsENV-key2008
+		attempt="$(eval echo "\$${asource}_$1")"
+		[ "$attempt" != "" ] && echo "$attempt" >"$TARGETDIR/$1"
+		;;
 	    http://*)
 		curl "$asource/$1" -o "$TARGETDIR/$1"
 		;;
 	    s3://*)
 		s3cmd get "$asource/$1" "$TARGETDIR/$1"
-		;;
-	    JenkinsENV)
-		# try to grab an environment variable set by Jenkins, e.g.: JenkinsENV-key2008
-		attempt="$(eval echo "\$${asource}_$1")"
-		[ "$attempt" != "" ] && echo "$attempt" >"$TARGETDIR/$1"
 		;;
 	    *)
 		reportfail "unknown source: $asource"
