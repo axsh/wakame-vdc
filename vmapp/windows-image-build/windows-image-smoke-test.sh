@@ -20,6 +20,17 @@ cleanup-code()
 
 trap 'echo "Doing post-test cleanup" ; cleanup-code' EXIT
 
+# Check for missing dependencies here so that time is not wasted
+# running a test that will inevitably fail.
+for i in s3cmd mkfs.vfat ntfslabel mount.ntfs
+do
+    which "$i" >/dev/null || reportfail "Must install package for $i"
+done
+
+# FYI:
+# yum install s3cmd
+# yum install dosfstools
+# yum install ntfs-3g.x86_64 ntfsprogs.x86_64
 
 WIN_VERSION="$1"
 [ "$1" = 2008 ] || [ "$1" = 2012 ] || reportfail "first parameter must be 2008 or 2012"
