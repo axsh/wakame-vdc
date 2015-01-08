@@ -80,6 +80,9 @@ function test_balance_algorithm_leastconn() {
 }
 
 function setUp() {
+  if [ "vz.t23-acceptance-lb-cluster" == "${JOB_NAME}" ]; then
+    startSkipping
+  fi
   balance_algorithm="leastconn" run_cmd load_balancer update ${load_balancer_uuid}
   sleep ${sleep_sec}
 }
