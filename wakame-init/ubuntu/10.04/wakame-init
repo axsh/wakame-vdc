@@ -59,7 +59,7 @@ function get_userdata() {
 }
 
 function logger() {
-  cat | tee -a ${LOGFILE}
+  tee -a ${LOGFILE}
 }
 
 

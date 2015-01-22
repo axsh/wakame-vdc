@@ -46,7 +46,7 @@ function get_metadata() {
 }
 
 function logger() {
-  cat | tee -a ${LOGFILE}
+  tee -a ${LOGFILE}
 }
 
 ### mount metadata drive
