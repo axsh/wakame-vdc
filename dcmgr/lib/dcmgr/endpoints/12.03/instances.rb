@@ -32,6 +32,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
   end
 
+  def check_dc_network(network_id)
+    nw = M::Network[network_id]
+    dc = M::DcNetwork[nw[:dc_network_id].to_i]
+    raise E::UnknownDcNetwork, network_id unless dc
+  end
+  
   # monitoring.items nested parameters are accepted only at POST
   # /instances call. It is unable from PUT /instances.
   # Further modifications can be done from "/instances/i-xxxxx/monitoring"
@@ -265,6 +271,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       [temp["security_groups"]].flatten.select{|s| !s.blank?}.each do |security_group_uuid|
         raise E::UnknownSecurityGroup unless find_by_uuid(M::SecurityGroup, security_group_uuid)
       end
+
+      check_dc_network(temp["network"])
     }
 
     # params is a Mash object. so coverts to raw Hash object.
