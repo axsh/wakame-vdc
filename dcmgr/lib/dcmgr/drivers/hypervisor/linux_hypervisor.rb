@@ -60,7 +60,7 @@ module Dcmgr
 
           network = hc.rpc.request('hva-collector', 'get_network', vnic[:network_id])
           
-          raise "Dc network missing in database." if network[:dc_network][:name].nil?              
+          raise "Dc network not found in database." if network[:dc_network].nil?              
 
           network_name = network[:dc_network][:name]
           dcn = Dcmgr::Configurations.hva.dc_networks[network_name]
