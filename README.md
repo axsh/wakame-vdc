@@ -9,7 +9,7 @@ System requirements
 -------------------
 
 * Ruby version: 2.0.0-p598
-* OS version: Centos 6.6
+* OS: CentOS 6.6
 
 Other versions or operating systems may or may not work.
 
