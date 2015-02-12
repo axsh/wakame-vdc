@@ -8,8 +8,10 @@ Wakame-vdc is a virtual datacenter or an IaaS (Infrastructure as a Service) suit
 System requirements
 -------------------
 
-Ruby version: 2.0.0
-OS version: Centos 6.6 (Other operating systems may or may not work)
+Ruby version: 2.0.0-p598
+OS version: Centos 6.6
+
+Other versions or operating systems may or may not work.
 
 Quick Start
 -----------
