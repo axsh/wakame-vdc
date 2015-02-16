@@ -29,9 +29,7 @@ module Dcmgr::EdgeNetworking::NetworkModes
       tasks << DropIpSpoofing.new(vnic[:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
       tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
       tasks << AcceptGARPFromGateway.new(network[:ipv4_gw],enable_logging,"A garp from_gw #{vnic[:uuid]}: ") unless network[:ipv4_gw].nil?
-      host_addrs.each {|host_addr|
-        tasks << AcceptArpBroadcast.new(host_addr,enable_logging,"A arp bc #{vnic[:uuid]}: ")
-      }
+      tasks << AcceptArpBroadcast.new(enable_logging,"A arp bc #{vnic[:uuid]}: ")
 
       # General ip layer tasks
       tasks << AcceptIcmpRelatedEstablished.new
