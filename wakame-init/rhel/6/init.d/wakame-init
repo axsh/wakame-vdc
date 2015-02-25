@@ -10,6 +10,8 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
+[ -f /etc/default/wakame-init ] && . /etc/default/wakame-init
+
 RETVAL=0
 
 # valiable
