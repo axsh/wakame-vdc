@@ -13,16 +13,17 @@
 RETVAL=0
 
 # valiable
-user=root
-ipv6_init=no
-ipv6_autoconf=no
+USER=${USER:-"root"}
+IPV6INIT=${IPV6INIT:-"no"}
+IPV6_AUTOCONF=${IPV6_AUTOCONF:-"no"}
+METADATA_LOCATION=${METADATA_LOCATION:-"drive"}
 
 #
 # See how we were called.
 #
 
 start() {
-        USER=${user} IPV6INIT=${ipv6_init} IPV6_AUTOCONF=${ipv6_autoconf} /etc/wakame-init
+        USER=${USER} IPV6INIT=${IPV6INIT} IPV6_AUTOCONF=${IPV6_AUTOCONF} METADATA_LOCATION=${METADATA_LOCATION} /etc/wakame-init
         RETVAL=$?
         return $RETVAL
 }
