@@ -1,5 +1,4 @@
-#%define _vdc_git_uri git://github.com/axsh/wakame-vdc.git
-%define _vdc_git_uri file:///home/t-iwano/work/wakame-vdc
+%define _vdc_git_uri git://github.com/axsh/wakame-vdc.git
 %define oname wakame-init
 
 # * rpmbuild -bb ./wakame-init.spec \
