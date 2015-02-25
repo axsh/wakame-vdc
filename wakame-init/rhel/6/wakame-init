@@ -13,7 +13,7 @@ USER=${USER:-root}
 SSHDIR=$(getent passwd ${USER} | awk -F: '{print $6}')/.ssh/
 KEYSPATH=${SSHDIR}/authorized_keys
 
-METADATA_LOCATION=drive
+METADATA_LOCATION=${METADATA_LOCATION:-drive}
 METADATA_DRIVE_MOUNTPOINT=/metadata
 
 ## functions
@@ -219,7 +219,7 @@ function set_extra_hosts() {
 #   [ -z ${DEFAULT_GW} ] || route add 169.254.169.254 gateway $DEFAULT_GW
 # }
 
-function set_local_configuration() {
+function set_configuration() {
   case "$METADATA_LOCATION" in
   drive)
     set_mount_metadata_drive
@@ -231,36 +231,12 @@ function set_local_configuration() {
   set_host_name
   set_authorized_keys
   set_generate_ssh_host_keys
-}
-
-function set_configuration() {
   set_extra_hosts
 }
 
 ## exec
 
-case "$1" in
-ms|metadata-server)
-  METADATA_LOCATION=server
-  ;;
-md|metadata-drive)
-  METADATA_LOCATION=drive
-  ;;
-*)
-  METADATA_LOCATION=drive
-  ;;
-esac
-
-case "$2" in
-local-config)
-  set_local_configuration
-  ;;
-config)
-  set_configuration
-  ;;
-*)
-  ;;
-esac | logger
+set_configuration | logger
 
 # Important for remote storage.
 sync
