@@ -44,8 +44,10 @@ cd %{name}-%{version}
 %install
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}/etc/init.d/
+mkdir -p ${RPM_BUILD_ROOT}/etc/default/
 rsync -aHA `pwd`/wakame-init/rhel/6/wakame-init ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/wakame-init/rhel/6/init.d/wakame-init ${RPM_BUILD_ROOT}/etc/init.d/
+rsync -aHA `pwd`/wakame-init/rhel/6/default/wakame-init ${RPM_BUILD_ROOT}/etc/default/
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -56,7 +58,8 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root)
-%config(noreplace) /etc/wakame-init
-%config(noreplace) /etc/init.d/wakame-init
+/etc/wakame-init
+/etc/init.d/wakame-init
+%config(noreplace) /etc/default/wakame-init
 
 %changelog
