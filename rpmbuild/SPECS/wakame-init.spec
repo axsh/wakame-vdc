@@ -22,7 +22,7 @@ License: see https://github.com/axsh/wakame-vdc/blob/master/README.md
 BuildArch: noarch
 
 %description
-<insert long description, indented with spaces>
+Initialize virtual machine settings.
 
 ## rpmbuild -bp
 %prep
