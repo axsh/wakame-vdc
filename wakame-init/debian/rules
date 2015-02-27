@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+#
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+
+install/wakame-init::
+	install -pd $(DEB_DESTDIR)/etc/default
+	install -pd $(DEB_DESTDIR)/etc/init.d
+	install -pm 664 ubuntu/14.04/default/wakame-init $(DEB_DESTDIR)/etc/default/
+	install -pm 775 ubuntu/14.04/init.d/wakame-init  $(DEB_DESTDIR)/etc/init.d/
+	install -pm 775 ubuntu/14.04/wakame-init         $(DEB_DESTDIR)/etc/
+
