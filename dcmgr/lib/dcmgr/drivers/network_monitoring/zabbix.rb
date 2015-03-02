@@ -39,7 +39,13 @@ module Dcmgr::Drivers
     def rpc_request(method, params)
       logger.debug("JSON-RPC Request: #{method}: #{params}")
       res = connection.request(method, params)
-      logger.debug("JSON-RPC Response: #{method}: #{res.json_body}")
+      if logger.debug?
+        logger.debug("JSON-RPC Response: #{method}: #{res.json_body}")
+      else
+        if res.error?
+          logger.error("JSON-RPC Response: #{method}: #{res.json_body}")
+        end
+      end
       raise res.error_message if res.error?
 
       res
