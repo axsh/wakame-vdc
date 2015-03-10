@@ -126,11 +126,12 @@ module Dcmgr
             count += 1
             http_res = blk.call
           rescue => e
-            logger.error("#{e.message}: #{e.class}. (retrys #{count}/#{retry_max}")
             if count < retry_max
+              logger.error("Retrying (#{count}/#{retry_max}) due to #{e.class}: #{e.message}")
               sleep 1
               retry
             else
+              logger.error("Giving up (#{count}/#{retry_max}) due to #{e.class}: #{e.message}")
               raise e
             end
           end
