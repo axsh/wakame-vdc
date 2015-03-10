@@ -104,6 +104,7 @@ module Dcmgr
           res = RpcResponse.new(http_res)
           raise "Login failed: #{res.error_message}" if res.error?
           @auth_token = res.result
+          logger.info("API login successful for #{@user}: #{@auth_token}")
           res
         end
 
