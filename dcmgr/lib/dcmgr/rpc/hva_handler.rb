@@ -110,7 +110,7 @@ module Dcmgr
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
 
         # Security group vnic left events for vnet netfilter
-        destroy_instance_vnics(@inst)
+        announce_vnic_destroyed(@inst)
 
         rpc.request("hva-collector", 'finalize_instance', @inst_id, Time.now.utc)
 
@@ -144,7 +144,7 @@ module Dcmgr
         }
       end
 
-      def create_instance_vnics(inst)
+      def announce_vnic_created(inst)
         inst[:vif].each { |vnic|
           event.publish("#{inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
 
@@ -154,7 +154,7 @@ module Dcmgr
         }
       end
 
-      def destroy_instance_vnics(inst)
+      def announce_vnic_destroyed(inst)
         inst[:vif].each { |vnic|
           event.publish("#{@inst[:host_node][:node_id]}/vnic_destroyed", :args=>[vnic[:uuid]])
           vnic[:security_groups].each { |secg|
@@ -340,7 +340,7 @@ module Dcmgr
           update_instance_state({:state=>:running}, ['hva/instance_started'])
         end
 
-        create_instance_vnics(@inst)
+        announce_vnic_created(@inst)
 
         @inst[:volume].values.each { |v|
           update_volume_state(
@@ -381,7 +381,7 @@ module Dcmgr
           update_volume_state(v[:uuid], {:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
         }
 
-        create_instance_vnics(@inst)
+        announce_vnic_created(@inst)
       }, proc {
         # TODO: Run detach & destroy volume
         ignore_error { terminate_instance(false) }
@@ -557,7 +557,7 @@ module Dcmgr
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweroff_instance, [@hva_ctx])
         update_instance_state({:state=>:halted}, ['hva/instance_turnedoff'])
-        destroy_instance_vnics(@inst)
+        announce_vnic_destroyed(@inst)
         @hva_ctx.logger.info("Turned power off")
       }
 
@@ -571,7 +571,7 @@ module Dcmgr
         @hva_ctx.logger.info("Turning soft power off")
          task_session.invoke(@hva_ctx.hypervisor_driver_class,
                              :soft_poweroff_instance, [@hva_ctx])
-        destroy_instance_vnics(@inst)
+        announce_vnic_destroyed(@inst)
         @hva_ctx.logger.info("Turned soft power off")
       }
 
@@ -587,7 +587,7 @@ module Dcmgr
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweron_instance, [@hva_ctx])
         update_instance_state({:state=>:running}, ['hva/instance_turnedon'])
-        create_instance_vnics(@inst)
+        announce_vnic_created(@inst)
         @hva_ctx.logger.info("Turned power on")
       }, proc {
         ignore_error {
