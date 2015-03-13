@@ -569,8 +569,8 @@ module Dcmgr
         update_state_file(:halting)
 
         @hva_ctx.logger.info("Turning soft power off")
-         task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                             :soft_poweroff_instance, [@hva_ctx])
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :soft_poweroff_instance, [@hva_ctx])
         announce_vnic_destroyed(@inst)
         @hva_ctx.logger.info("Turned soft power off")
       }
