@@ -63,6 +63,22 @@ module Dcmgr
         }
       }
 
+      job :initialize_halted_instance, proc {
+        @hva_ctx = HvaContext.new(self)
+        @inst_id = request.args[0]
+
+        @hva_ctx.logger.info("Start to initialize instance")
+        @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
+
+        unless %w(migrating).member?(@inst[:state].to_s)
+          raise "Invalid instance state: #{@inst[:state]}"
+        end
+        # it does not need to handle volume's state here.
+        setup_volume_instance
+        update_instance_state({:state=>:halted})
+        @hva_ctx.logger.info("Finish to initialize instance")
+      }
+
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end
