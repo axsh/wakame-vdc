@@ -53,16 +53,28 @@ module Dcmgr
 
         # shutdown source instance.
         terminate_instance(false)
-
+        announce_vnic_destroyed(@inst)
         rpc.request('hva-collector', 'switch_instance_host_node', @inst_id, @dest_node_id)
-
         update_instance_state({:state=>:running})
 
+        job.submit("migration-handle.#{@dest_node_id}", "post_process_dest_node",
+                   @inst_id)
         @hva_ctx.logger.info("Finished the live migration")
       }, proc {
         ignore_error {
           update_instance_state({:state=>:running})
         }
+      }
+
+      job :post_process_dest_node, proc {
+        @hva_ctx = HvaContext.new(self)
+        @inst_id = request.args[0]
+        @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+
+        # TODO: check hypervisor status if it completed the migration task.
+
+        # install security group to destination host.
+        announce_vnic_created(@inst)
       }
 
       def event
