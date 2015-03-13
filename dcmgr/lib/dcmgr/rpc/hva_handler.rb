@@ -267,6 +267,9 @@ module Dcmgr
                                 :attach_volume_to_host, [@hva_ctx, volume_id])
           end
         }
+
+        setup_metadata_drive
+        check_interface
       end
     end
 
@@ -368,9 +371,6 @@ module Dcmgr
           rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:attaching, :attached_at=>nil})
         end
 
-        setup_metadata_drive
-
-        check_interface
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :run_instance, [@hva_ctx])
         # Node specific instance_started event for netfilter and general instance_started event for openflow

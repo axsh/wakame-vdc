@@ -20,9 +20,7 @@ module Dcmgr
         # incoming VM does not have to deal with chaging instance &
         # volume state.
         setup_shared_volume_instance
-        setup_metadata_drive
 
-        check_interface
         dest_params = task_session.invoke(@hva_ctx.hypervisor_driver_class,
                                           :run_migration_instance, [@hva_ctx])
         @hva_ctx.logger.info("Started migration waiting instance: #{dest_params}")
