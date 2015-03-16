@@ -7,7 +7,7 @@ system requirements.
 * OS: Ubuntu 14.04.2
 
 
-require packages.
+required packages.
 ---
 * git
 * build-essential
