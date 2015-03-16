@@ -2,12 +2,12 @@ How to build deb package.
 ===
 
 
-system requirements.
+System requirements.
 ---
 * OS: Ubuntu 14.04.2
 
 
-required packages.
+Required packages.
 ---
 * git
 * build-essential
