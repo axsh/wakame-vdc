@@ -1,13 +1,13 @@
-How to build deb package.
+How to build deb package
 ===
 
 
-System requirements.
+System requirements
 ---
 * OS: Ubuntu 14.04.2
 
 
-Required packages.
+Required packages
 ---
 * git
 * build-essential
@@ -20,7 +20,7 @@ install packages
 $ sudo apt-get install git build-essential devscripts cdbs debhelpers
 ```
 
-Build deb package.
+Build deb package
 ---
 
 git clone wakame-vdc 
@@ -33,12 +33,12 @@ change directory
 $ cd wakame-vdc/wakame-init
 ```
 
-build package.
+build package
 ```
 $ debuild --no-tgz-check -uc -us
 ```
 
-created package.
+created package
 ```
 $ ls -la ../ | grep wakame-init_*
 drwxrwxr-x  5 vagrant vagrant 4096 Mar 13 10:31 wakame-init
