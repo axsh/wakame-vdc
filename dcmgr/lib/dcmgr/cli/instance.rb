@@ -56,7 +56,9 @@ __END
 
     desc "force-delete UUID", "Delete all of an instance's resources in the database but don't terminate the actual VM. Use only if you know what you're doing!"
     def force_delete(uuid)
-      del(M::Instance,uuid)
+      to_delete = M::Instance[uuid] || UnknownUUIDError.raise(uuid)
+      to_delete.force_destroy = true
+      to_delete.destroy
     end
 
   end

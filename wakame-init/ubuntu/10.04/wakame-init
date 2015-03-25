@@ -15,11 +15,6 @@ METADATA_LOCATION=drive
 METADATA_DRIVE_MOUNTPOINT=/metadata
 METADATA_ISO_MOUNTPOINT=/mnt/metadata_cd
 
-function shlog() {
-  echo "\$ $*"
-  eval $*
-}
-
 function get_metadata_from_server() {
   local param=$1
   curl -s --retry 3 http://169.254.169.254/latest/meta-data/${param}
@@ -64,7 +59,7 @@ function get_userdata() {
 }
 
 function logger() {
-  cat | tee -a ${LOGFILE}
+  tee -a ${LOGFILE}
 }
 
 
@@ -197,7 +192,6 @@ NETINIT
     mac_path=network/interfaces/macs/${macaddr%%/}
     mac=`get_metadata ${mac_path}/mac`
 
-    shlog "ifconfig -a | grep -i $mac | tr -s ' ' | cut -d ' ' -f1"
     nic=`ifconfig -a | grep -i $mac | tr -s ' ' | cut -d ' ' -f1`
 
     ip=`get_metadata ${mac_path}/local-ipv4s`
@@ -230,9 +224,9 @@ INTERFACE
     fi
   done
 
-  shlog /etc/init.d/networking restart
+  /etc/init.d/networking restart
 
-  [ -z ${gateway} ] || shlog route add default gw ${gateway}
+  [ -z ${gateway} ] || route add default gw ${gateway}
   ;;
 *)
   ;;

@@ -39,7 +39,7 @@ map '/api' do
   end
 
   #TODO refactor
-  if Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_uri
+  if Dcmgr::Configurations.dcmgr.features.openvnet
     require 'dcell'
     DCell.start(:id => Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_id,
       :addr => "tcp://#{Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_uri}",

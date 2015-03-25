@@ -3,12 +3,20 @@ Wakame-vdc
 
 [![Code Climate](https://codeclimate.com/github/axsh/wakame-vdc.png)](https://codeclimate.com/github/axsh/wakame-vdc)
 
-Wakame-vdc is an IaaS (Infrastructure as a Service) cloud computing framework, facilitating the provisioning and management of a heterogeneous virtualized infrastructure. Wakame-vdc virtualizes the entire data center; servers, storage, and networking. Wakame-vdc is managed via a native Web Interface, the Wakame-vdc CLI, or the powerful Wakame-vdc API.
+Wakame-vdc is a virtual datacenter or an IaaS (Infrastructure as a Service) suite. Visit [the wiki](https://github.com/axsh/wakame-vdc/wiki) for a more detailed explanation.
+
+System requirements
+-------------------
+
+* Ruby version: 2.0.0-p598
+* OS: CentOS 6.6
+
+Other versions or operating systems may or may not work.
 
 Quick Start
 -----------
 
-[Install Wakame-vdc on CentOS 6.4](https://github.com/axsh/wakame-vdc/wiki/install-guide)
+[Install Wakame-vdc on CentOS 6.6](https://github.com/axsh/wakame-vdc/wiki/install-guide)
 
 [Try Wakame-vdc pre-installed in VirtualBox.](http://wakameusersgroup.org/demo_image.html)
 

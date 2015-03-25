@@ -12,7 +12,7 @@
 %{?repo_uri:%define _vdc_git_uri %{repo_uri}}
 
 Name: %{oname}
-Version: 13.08
+Version: 15.03
 Release: %{release_id}%{?dist}
 Summary: The wakame virtual data center.
 Group: Development/Languages
@@ -184,10 +184,6 @@ Requires: iscsi-initiator-utils scsi-target-utils
 Requires: ebtables iptables ethtool vconfig iproute
 Requires: bridge-utils
 Requires: dracut-kernel
-Requires: kmod-openvswitch >= 1.6.1
-Requires: kmod-openvswitch <  1.6.2
-Requires: openvswitch      >= 1.6.1
-Requires: openvswitch      <  1.6.2
 Requires: kpartx
 Requires: libcgroup
 Requires: tunctl

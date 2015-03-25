@@ -113,7 +113,7 @@ module Dcmgr::Models
     end
 
     def cpu_core_usage_percent()
-      if offerring_memory_size.to_i > 0
+      if offering_memory_size.to_i > 0
         (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100.0
       else
         # Show 100% if offering is zero.
@@ -127,7 +127,7 @@ module Dcmgr::Models
     end
 
     def memory_size_usage_percent()
-      if offerring_memory_size.to_i > 0
+      if offering_memory_size.to_i > 0
         (memory_size_usage.to_f / offering_memory_size.to_f) * 100.0
       else
         # Show 100% if offering is zero.
