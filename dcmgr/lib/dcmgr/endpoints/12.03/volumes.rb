@@ -258,8 +258,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     raise E::UnknownVolume, params[:id] if @volume.nil?
     raise E::InvalidVolumeState, params[:id] unless @volume.ready_to_take_snapshot?
 
-    if @volume.instance && !['running', 'halted'].member?(@volume.instance.state.to_s)
-      raise E::InvalidInstanceState, @volume.instance.canonical_uuid
+    if @volume.instance
+      # TODO: look into host node capability if the node supports
+      # snapshot backup.
+      if ![C::Instance::STATE_HALTED].member?(@volume.instance.state.to_s)
+        raise E::InvalidInstanceState, @volume.instance.canonical_uuid
+      end
     end
 
     bkst = find_target_backup_storage(@volume.service_type)
