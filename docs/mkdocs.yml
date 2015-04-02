@@ -4,6 +4,7 @@ site_description: Documentation for Wakame-VDC
 
 theme: readthedocs
 docs_dir: content
+use_directory_urls: true
 
 repo_url: https://github.com/axsh/wakame-vdc
 
