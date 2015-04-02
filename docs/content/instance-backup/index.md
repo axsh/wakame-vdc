@@ -38,7 +38,7 @@ You need to have started an [instance](../jargon-dictionary.md#instance) in orde
 
 Before you can create a backup, you have to power off your instance. On the Instances page of the GUI, tick the checkbox next to your instance and click on `Select an Action`.
 
-![screenshot](../img/instance-backup/01_select_an_action.png)
+![screenshot](img/instance-backup/01_select_an_action.png)
 
 Next, click on `Power Off`.
 
@@ -48,29 +48,29 @@ Make sure to click on `Power Off` and not `Stop`. `Stop` will delete the instanc
 
 `Power Off` means that the instance's OS will get the shutdown signal and the instance will gracefully shut down. It is equivalent to shutting down a physical server. You will be able to `Power On` the same instance again later.
 
-![screenshot](../img/instance-backup/02_power_off.png)
+![screenshot](img/instance-backup/02_power_off.png)
 
 Your instance should now have the state of `halting`. Wait a few moments and click on the `Refresh` button. Repeat until your instance has reached the state of `halted`.
 
-![screenshot](../img/instance-backup/03_halting.png)
+![screenshot](img/instance-backup/03_halting.png)
 
 Now tick the checkbox next to your instance again and click `Backup`.
 
-![screenshot](../img/instance-backup/04_backup.png)
+![screenshot](img/instance-backup/04_backup.png)
 
 The `Create Instance Backup` dialog will pop up. Fill in the `Backup Display Name` field. This will become the name of your new [machine image](../jargon-dictionary.md#machine-image). Click on `Backup` when you've filled it in.
 
-![screenshot](../img/instance-backup/05_create_backup_dialog.png)
+![screenshot](img/instance-backup/05_create_backup_dialog.png)
 
 You'll be taken back to the instances page. Click on `Machine Images` in the menu on the left.
 
-![screenshot](../img/instance-backup/06_instance_after_backup.png)
+![screenshot](img/instance-backup/06_instance_after_backup.png)
 
 You should see your new machine image with the state of `creating`. Wait a few moments and click on `Refresh`. Eventually your image will reach the state of `available`.
 
-![screenshot](../img/instance-backup/07_machine_image_creating.png)
+![screenshot](img/instance-backup/07_machine_image_creating.png)
 
 Once your image has reached the state of `available`, you are done. You are now free to `Power On` the original instance again and/or start new instances of this machine image.
 
-![screenshot](../img/instance-backup/08_create_image_available.png)
+![screenshot](img/instance-backup/08_create_image_available.png)
 
