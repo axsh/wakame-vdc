@@ -1,9 +1,15 @@
 site_name: Wakame-VDC
 site_favicon: favicon.ico
 site_description: Documentation for Wakame-VDC
+
 theme: readthedocs
-repo_url: https://github.com/axsh/wakame-vdc-wiki
 docs_dir: content
+
+repo_url: https://github.com/axsh/wakame-vdc
+
+copyright: Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
+#google_analytics: ['UA-xxxxxxx-x', 'domain.com']
+
 pages:
 - ['index.md', 'Home']
 - ['concept.md', 'Concept']
