@@ -16,13 +16,13 @@ In Wakame-vdc, every virtual network interface (vnic) will have its own firewall
 
 These firewalls are implemented on the [HVA](../jargon-dictionary.md#hva) and network traffic is filtered before it reaches the instance's vnic.
 
-![screenshot](img/security-groups/low_level_overview.png)
+![screenshot](../img/security-groups/low_level_overview.png)
 
 From the user's perspective, this firewall is controlled through *security groups*. A user can create security groups and place vnics in them. Depending on what groups a vnic is in, its firewall will decide what network traffic is allowed to pass through.
 
 Security groups are dynamic. Instances can enter and leave groups on the fly and groups can change their rules of allowed network traffic at any time. No restarts of any kind are required. Whenever a change happens in the security groups layout, the firewall of every vnic affected will update itself automatically.
 
-![screenshot](img/security-groups/high_level_overview.png)
+![screenshot](../img/security-groups/high_level_overview.png)
 
 ### Features
 
@@ -44,7 +44,7 @@ By putting two vnics in the same Security Group, they will get **full ARP and IP
 
 The following image shows a couple of instances with vnics in different security groups and isolation between them works.
 
-![screenshot](img/security-groups/isolation.png)
+![screenshot](../img/security-groups/isolation.png)
 
 #### Rules
 
@@ -52,7 +52,7 @@ By default all incoming traffic to instances is blocked. Security Group rules al
 
 The following image shows an example of a security group that opens TCP port 22 with 3 vnics in it.
 
-![screenshot](img/security-groups/rules.png)
+![screenshot](../img/security-groups/rules.png)
 
 ##### Syntax
 
@@ -96,7 +96,7 @@ Imagine you have a database server instance and a bunch of other instances that 
 
 This is where reference comes in. Reference allows you to put the database server in one security group and all clients together in another. You can add a *reference rule* to the server's group that will open only the listening database port **to all vnics in the clients' group**. When vnics are added to or removed from the clients' group, the firewall is updated automatically to take them into account.
 
-![screenshot](img/security-groups/reference.png)
+![screenshot](../img/security-groups/reference.png)
 
 ##### Syntax
 
@@ -114,11 +114,11 @@ For this example two security groups exist. *sg-dbsrv* which has the database se
 
 After logging into the GUI, click on `Security Groups` in the menu on the left. Next click on `Create Security Group`.
 
-![screenshot](img/security-groups/06_security_groups_create.png)
+![screenshot](../img/security-groups/06_security_groups_create.png)
 
 The following dialog will pop up. In here you will be able to write rules for your security group.
 
-![screenshot](img/security-groups/07_security_groups_dialog.png)
+![screenshot](../img/security-groups/07_security_groups_dialog.png)
 
 ### Adding and removing vnics from security groups using the Wakame-vdc GUI
 
@@ -126,13 +126,13 @@ When starting an instance using the Wakame-vdc GUI, you will be required to put 
 
 When starting an instance, you'll see the following dialog. The instance's security groups can be set here. When using the GUI, all vnics of this instance will be placed in the same security groups. If you wish to have one instance with multiple vnics in different security groups, you will need to call the [WebAPI](../jargon-dictionary.md#webapi) directly.
 
-![screenshot](img/security-groups/start_instance.png)
+![screenshot](../img/security-groups/start_instance.png)
 
 When you want to change the security groups of a running instance's vnic(s), click on Instances in the menu on the left of the main GUI window. Next to your instance you should see a button saying `edit`. Click it.
 
-![screenshot](img/security-groups/instance_edit_button.png)
+![screenshot](../img/security-groups/instance_edit_button.png)
 
 The dialog that pops up will allow you to set the security groups for *all* vnics of the instance.
 
-![screenshot](img/security-groups/edit_instance.png)
+![screenshot](../img/security-groups/edit_instance.png)
 
