@@ -1,0 +1,40 @@
+site_name: Wakame-VDC
+site_favicon: favicon.ico
+site_description: Documentation for Wakame-VDC
+
+theme: readthedocs
+docs_dir: content
+use_directory_urls: true
+
+repo_url: https://github.com/axsh/wakame-vdc
+
+copyright: Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
+#google_analytics: ['UA-xxxxxxx-x', 'domain.com']
+
+pages:
+- ['index.md', 'Home']
+- ['concept.md', 'Concept']
+- ['installation.md', 'Getting started', 'Installation']
+#- ['configuration.md', 'Getting started', 'Configuration']
+- ['development.md', 'Getting started', 'Development']
+- ['usage/index.md', 'Usage', 'Basics']
+- ['usage/advanced.md', 'Usage', 'Advanced']
+- ['instance-backup/index.md', 'Instance Backup', 'About']
+#- ['instance-backup/configuration.md', 'Instance Backup', 'Configuration']
+#- ['instance-backup/usage.md', 'Instance Backup', 'Usage']
+#- ['instance-backup/troubleshooting.md', 'Instance Backup', 'Troubleshooting']
+#- ['load-balancer/index.md', 'Feature: Load Balancer', 'About']
+#- ['load-balancer/installation.md', 'Feature: Load Balancer', 'Installation']
+#- ['load-balancer/configuration.md', 'Feature: Load Balancer', 'Configuration']
+#- ['load-balancer/usage.md', 'Feature: Load Balancer', 'Usage']
+#- ['load-balancer/troubleshooting.md', 'Feature: Load Balancer', 'Troubleshooting']
+- ['security-groups/index.md', 'Security Groups', 'About']
+#- ['security-groups/configuration.md', 'Security Groups', 'Configuration']
+#- ['security-groups/usage.md', 'Security Groups', 'Usage']
+#- ['security-groups/troubleshooting.md', 'Security Groups', 'Troubleshooting']
+- ['jargon-dictionary.md', 'Support', 'Jargon Dictionary']
+- ['faq.md', 'Support', 'FAQ']
+#- ['troubleshooting.md', 'Support', 'Troubleshooting']
+#- ['support.md', 'Support', 'Contact']  
+- ['community.md', 'Support', 'Community']
+
