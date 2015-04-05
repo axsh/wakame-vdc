@@ -55,7 +55,7 @@ function install_wakame_init() {
 	EOS
   cat ${chroot_dir}/etc/rc.local
 
-  rsync -a ${wakame_init_rhel_path} ${chroot_dir}/etc/wakame-init
+  rsync -a ${wakame_init_path} ${chroot_dir}/etc/wakame-init
   chmod 755 ${chroot_dir}/etc/wakame-init
   chown 0:0 ${chroot_dir}/etc/wakame-init
 }
