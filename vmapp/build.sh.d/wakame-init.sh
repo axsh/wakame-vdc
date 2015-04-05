@@ -15,6 +15,7 @@
 [[ -z "${__BUILD_WAKAME_INIT_INCLUDED__}" ]] || return 0
 
 ##
+. $(cd ${BASH_SOURCE[0]%/*} && pwd)/../functions/utils.sh
 . $(cd ${BASH_SOURCE[0]%/*} && pwd)/../functions/distro.sh
 
 ##
@@ -39,25 +40,41 @@ function install_wakame_init() {
   local wakame_init_path
   case "${distro}" in
   centos|rhel)
+    # TODO: use "yum install -y wakame-init"
+
     wakame_init_path=${wakame_init_rhel_path}
+    rsync -a ${wakame_init_path} ${chroot_dir}/etc/wakame-init
+    chmod 755 ${chroot_dir}/etc/wakame-init
+    chown 0:0 ${chroot_dir}/etc/wakame-init
+
+    rsync -a $(cd ${BASH_SOURCE[0]%/*} && pwd)/../../wakame-init/rhel/6/default/wakame-init ${chroot_dir}/etc/default/wakame-init
+    chmod 644 ${chroot_dir}/etc/default/wakame-init
+    chown 0:0 ${chroot_dir}/etc/default/wakame-init
+
+    rsync -a $(cd ${BASH_SOURCE[0]%/*} && pwd)/../../wakame-init/rhel/6/init.d/wakame-init  ${chroot_dir}/etc/init.d/wakame-init
+    chmod 755 ${chroot_dir}/etc/init.d/wakame-init
+    chown 0:0 ${chroot_dir}/etc/init.d/wakame-init
+
+    run_in_target ${chroot_dir} chkconfig --add wakame-init
+    run_in_target ${chroot_dir} chkconfig       wakame-init on
     ;;
   ubuntu|debian)
     wakame_init_path=${wakame_init_ubuntu_path}
+
+    printf "[DEBUG] Installing wakame-init script\n"
+    cat <<-EOS >> ${chroot_dir}/etc/rc.local
+	/etc/wakame-init ${metadata_type}
+	EOS
+    cat ${chroot_dir}/etc/rc.local
+
+    rsync -a ${wakame_init_path} ${chroot_dir}/etc/wakame-init
+    chmod 755 ${chroot_dir}/etc/wakame-init
+    chown 0:0 ${chroot_dir}/etc/wakame-init
     ;;
   *)
     echo "[ERROR] not supported distro:${distro} ${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1;
     ;;
   esac
-
-  printf "[DEBUG] Installing wakame-init script\n"
-  cat <<-EOS >> ${chroot_dir}/etc/rc.local
-	/etc/wakame-init ${metadata_type}
-	EOS
-  cat ${chroot_dir}/etc/rc.local
-
-  rsync -a ${wakame_init_path} ${chroot_dir}/etc/wakame-init
-  chmod 755 ${chroot_dir}/etc/wakame-init
-  chown 0:0 ${chroot_dir}/etc/wakame-init
 }
 
 ##
