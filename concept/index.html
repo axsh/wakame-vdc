@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Concept - Wakame-VDC</title>
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  <link href="../custom.css" rel="stylesheet">
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script src="../js/theme.js"></script>
+
+  <style>
+    body {font-size: 90%;}
+    pre, code {font-size: 100%;}
+    h3, h4, h5, h6 {color: #2980b9; font-weight: 300}
+  </style> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Wakame-VDC</a>
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <ul class="current">
+    
+        
+            <li class="toctree-l1 current">
+                <a class="current" href=".">Concept</a>
+            </li>
+        
+
+    
+        
+        <span>Getting started</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../installation">Installation</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../development">Development</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Usage</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../usage">Basics</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../usage/advanced">Advanced</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Instance Backup</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../instance-backup">About</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Security Groups</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../security-groups">About</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Support</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../jargon-dictionary">Jargon Dictionary</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../faq">FAQ</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../community">Community</a>
+                    
+                </li>
+            
+        
+
+    
+</ul>
+
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href=".."></a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    <li>Concept</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github"> Edit on GitHub</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              <h2 id="why-virtualize">Why virtualize?</h2>
+<p>Think about the concept of virtual machines like <a href="https://www.virtualbox.org">VirtualBox</a> or <a href="http://www.linux-kvm.org">KVM</a> for a bit. What do they do? They run on some kind of physical hardware. It can be either a big tower PC or a small laptop. The exact same virtual machines can run on either hardware.</p>
+<p>A virtual machine is software and software can be copied. Therefore virtual machines can be easily backed up and reverted to a previous state. Much the same way, virtual machines can easily be cloned or migrated to different hardware.</p>
+<p>A virtual data center like Wakame-vdc extends this from a single machine to an entire data center. Wakame-vdc consists of several components that communicate through the network. You can install all these components together on a single laptop, or you can run them all on separate servers in a physical data center. On top of either you are able to run a virtual data center.</p>
+<h2 id="virtual-data-center-components">Virtual data center components</h2>
+<p>There are three things that make up a data center, either physical or virtual: <strong>servers</strong>, <strong>network</strong> and <strong>storage</strong>.</p>
+<h3 id="servers">Servers</h3>
+<p>Wakame-vdc virtualizes servers by implementing the very virtual machine software (hypervisors) mentioned at the top of this page. Check out the <a href="../faq">F.A.Q.</a> to see which ones it uses exactly.</p>
+<p>Wakame-vdc keeps track of a number of <em>machine images</em>. These are essentially virtual servers. It doesn't boot these up directly though. Instead it boots <em>instances</em> of these images. That basically means that it starts up a copy of a machine image, leaving the original image unchanged. In theory you can start up an infinite amount of instances.</p>
+<h3 id="network">Network</h3>
+<p>Wakame-vdc by itself has only partial network virtualization. Namely, it has a virtualized firewall that updates itself automatically as the data center changes. This is refered to as security groups.</p>
+<p>In order to let users connect to instances, Wakame-vdc uses bridged networking. This is explained in the usage guides of several hypervisors and beyond the scope of this wiki.</p>
+<p>In order to do full network virtualization, Wakame-vdc integrates with our other product, <a href="http://www.openvnet.com">OpenVNet</a>. OpenVNet achieves full network virtualization using <a href="http://archive.openflow.org">OpenFlow</a>. This is currently still experimental.</p>
+<h3 id="storage">Storage</h3>
+<p>Wakame-vdc virtualizes storage using <a href="http://en.wikipedia.org/wiki/ISCSI">iSCSI</a> targets or <a href="http://en.wikipedia.org/wiki/Network_File_System">NFS</a>. In the case of iSCSI, several backends are supported.</p>
+<p>From the user's perspective, Wakame-vdc's storage consists of virtual disks referred to as <em>volumes</em>. A volume can be compared to an external hard drive. It can be attached to and detached from instances on the fly.</p>
+<h2 id="why-virtualize-the-data-center">Why virtualize the data center?</h2>
+<p>Virtualizing the data center provides these merits:</p>
+<ul>
+<li>
+<p>Portability</p>
+</li>
+<li>
+<p>Scalability</p>
+</li>
+<li>
+<p>Reliability</p>
+</li>
+</ul>
+<h3 id="portability">Portability</h3>
+<p>At the top of this page we mentioned that Wakame-vdc can run on all kinds of hardware ranging from a single laptop to a big physical data center with many servers. Once you've created a virtual data center on that single laptop, you are able to migrate it over to a production environment running on a big physical data center with relative ease.</p>
+<h3 id="scalability">Scalability</h3>
+<p>When you need to add a new server to a physical data center, what do you do? You buy the hardware, put it in place and set up the networking infrastructure and firewalls to connect it. It's a very time consuming and expensive process.</p>
+<p>In a virtual data center like Wakame-vdc, all you do is click a few buttons. This creates a new server (instance) and puts it in the data center while network settings get configured automatically. Depending on the size of the instance's machine image, it comes up in a matter of seconds.</p>
+<p>Now imagine that a user has a website running on top of a virtual data center. They get a traffic spike and the instances hosting their website just aren't enough any more. They are now able to quickly create a bunch of new instances to help you take care of that extra traffic. Once things settle down again, you can easily terminate those instances.</p>
+<h3 id="reliability">Reliability</h3>
+<p>A virtual data center provides much more flexible failover alternatives. From the user's point of view it doesn't matter on which physical server an instance is running. All the user cares about is being able to connect to their instance. If a physical server fails, instances can be quickly migrated to another physical server.</p>
+<p>Since a virtual data center is software and software can be copied, it is easy to take regular backups of certain servers or even the entire data center.</p>
+
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../installation" class="btn btn-neutral float-right" title="Installation"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href=".." class="btn btn-neutral" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+    <!-- Copyright etc -->
+    </p>
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+        
+            <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+        
+      <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../installation" style="color: #fcfcfc">Next &raquo;</a></span>
+    </span>
+</div>
+</body>
+</html>

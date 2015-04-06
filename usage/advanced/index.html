@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Advanced - Wakame-VDC</title>
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/highlight.css">
+  <link href="../../custom.css" rel="stylesheet">
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script src="../../js/theme.js"></script>
+
+  <style>
+    body {font-size: 90%;}
+    pre, code {font-size: 100%;}
+    h3, h4, h5, h6 {color: #2980b9; font-weight: 300}
+  </style> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> Wakame-VDC</a>
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <ul class="current">
+    
+        
+            <li class="toctree-l1 ">
+                <a class="" href="../../concept">Concept</a>
+            </li>
+        
+
+    
+        
+        <span>Getting started</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../../installation">Installation</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../../development">Development</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Usage</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="..">Basics</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 current">
+                    <a class="current" href=".">Advanced</a>
+                    
+                        <ul>
+                        
+                            <li class="toctree-l2"><a href="#overview">Overview</a></li>
+                            
+                                <li><a class="toctree-l3" href="#step-1-install-an-os-into-a-bootable-disk-or-directory-structure">Step 1: Install an OS into a bootable disk or directory structure</a></li>
+                            
+                                <li><a class="toctree-l3" href="#step-2-specialize-the-os-installation-for-the-intended-purpose">Step 2: Specialize the OS installation for the intended purpose</a></li>
+                            
+                                <li><a class="toctree-l3" href="#step-3-specialize-the-os-installation-for-wakame-vdc">Step 3: Specialize the OS installation for Wakame-vdc</a></li>
+                            
+                                <li><a class="toctree-l3" href="#step-4-package-it-all-into-one-machine-image-file">Step 4: Package it all into one machine image file</a></li>
+                            
+                                <li><a class="toctree-l3" href="#step-5-register-this-machine-image-file-with-wakame-vdc">Step 5: Register this machine image file with Wakame-vdc</a></li>
+                            
+                                <li><a class="toctree-l3" href="#using-and-testing-the-new-image">Using and testing the new image</a></li>
+                            
+                        
+                        </ul>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Instance Backup</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../../instance-backup">About</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Security Groups</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../../security-groups">About</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Support</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../../jargon-dictionary">Jargon Dictionary</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../../faq">FAQ</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../../community">Community</a>
+                    
+                </li>
+            
+        
+
+    
+</ul>
+
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="../.."></a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    <li>Advanced</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github"> Edit on GitHub</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              <h2 id="overview">Overview</h2>
+<p>Although there are a variety of pre-built machine images for Wakame-vdc, in
+most cases it will be necessary to install extra software and do other
+miscellaneous setup after starting an <a href="../../jargon-dictionary#instance">instance</a>.  To reduce this setup
+effort, in some cases it makes sense for users to create their own
+custom <a href="../../jargon-dictionary#machine-image">machine images</a>.  Then by simply starting an instance in Wakame-vdc, it is
+possible to have a virtual machine up and running that is already
+perfectly set up.  All necessary software and services, for whatever
+purpose, can be "ready-to-go".</p>
+<p>There are five basic steps for creating and using a custom machine image with Wakame-vdc:</p>
+<ol>
+<li>
+<p>Install an OS into a bootable disk or directory structure.</p>
+</li>
+<li>
+<p>Specialize the OS installation for the intended purpose.</p>
+</li>
+<li>
+<p>Specialize the OS installation for Wakame-vdc.</p>
+</li>
+<li>
+<p>Package it all into one machine image file.</p>
+</li>
+<li>
+<p>Register this machine image file with Wakame-vdc.</p>
+</li>
+</ol>
+<p>Wakame-vdc supports various virtualization technologies (KVM, OpenVZ,
+and LXC) and methods of packaging (tar, gzip, disk partitions, etc.),
+and the details for doing the above steps depends on which are chosen.
+Below we will explain the steps assuming OpenVZ virtualization and gz
+packaging, and to make things a little more interesting, set up the
+machine image to automatically start up a web server with a single
+static web page to show.  The steps for other combinations are
+similar, but differ in subtle ways that will be documented later.</p>
+<h4 id="step-1-install-an-os-into-a-bootable-disk-or-directory-structure">Step 1: Install an OS into a bootable disk or directory structure</h4>
+<p>For OpenVZ, specialized techniques are required to install an OS, so
+the recommended procedure is to use one of the <em>precreated templates</em>
+that can be found at the <a href="https://wiki.openvz.org/Download/template/precreated">OpenVZ wiki</a>.  Minimal
+installations of the major Linux distributions are available.</p>
+<h4 id="step-2-specialize-the-os-installation-for-the-intended-purpose">Step 2: Specialize the OS installation for the intended purpose</h4>
+<p>The most straightforward way to install and configure the installed OS
+distribution is from inside OpenVZ itself.  An environment created by
+following the <a href="../../installation">installation guide</a> or the <a href="http://wakameusersgroup.org/demo_image.html">VirtualBox
+demo image guide</a> provides
+enough OpenVZ functionality to do this.</p>
+<p>As an example, running
+following shell commands in a VM booted with the demo image will
+download a minimal "template cache" for CentOS and specialize it by installing web server
+software.  For an example of miscellaneous configuration, the shell commands
+create a top Web page and set up the web service to automatically start when the
+machine image is instantiated.</p>
+<p>The first few commands log into the demo VM and download a template image:</p>
+<pre><code>ssh centos@a.b.c.d  # where a.b.c.d is the demo VM's IP address
+[centos@wakame-vdc-1box ~]$ sudo su
+[root@wakame-vdc-1box centos]# cd /vz/template/cache
+[root@wakame-vdc-1box cache]# wget http://download.openvz.org/template/precreated/centos-6-x86_64-minimal.tar.gz
+</code></pre>
+<p>Next, an OpenVZ container based on this image is started.
+Note that the 101 that appears many times below can be any number that
+is not in use by OpenVZ.</p>
+<pre><code>[root@wakame-vdc-1box cache]# vzctl create 101 --ostemplate centos-6-x86_64-minimal --ipadd a.b.c.vv --hostname localhost
+[root@wakame-vdc-1box cache]# vzctl set 101 --nameserver 8.8.8.8 --save
+[root@wakame-vdc-1box cache]# vzctl start 101
+</code></pre>
+<p>Now we can go inside the container and specialize it by installing and
+configuring software.</p>
+<pre><code>[root@wakame-vdc-1box cache]# vzctl enter 101
+[root@localhost /]# yum install httpd
+[root@localhost /]# echo "&lt;html&gt;An Example top web page.&lt;/html&gt;" &gt;/var/www/html/index.html
+[root@localhost /]# service httpd start
+[root@localhost /]# chkconfig httpd on
+</code></pre>
+<h4 id="step-3-specialize-the-os-installation-for-wakame-vdc">Step 3: Specialize the OS installation for Wakame-vdc</h4>
+<h5 id="insert-the-wakame-init-script-and-run-it-from-etcrclocal">Insert the wakame-init script and run it from /etc/rc.local:</h5>
+<p>Note: This step is necessary so that Wakame-vdc can do last-minute
+specialization that is necessary when each instance is booted.  For
+example, the wakame-init script sets up network addresses and routing
+and installs ssh keys.  It also ensures that instances can access
+information from special <a href="../../jargon-dictionary#meta-data">meta-data</a> storage.
+One use of this storage is to allow scripts inside an instance to do
+additional specialization based on
+<a href="../../jargon-dictionary#user-data">user-data</a>.  Users can enter this data
+on-the-fly while starting an instance, and scripts can read it from a
+special file at <code>/metadata/user-data</code>.</p>
+<pre><code>curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
+
+yum install -y wakame-init
+</code></pre>
+<h5 id="clear-shell-history">Clear shell history:</h5>
+<p>Note: This step is optional.</p>
+<pre><code>rm /home/*/.bash_history /root/.bash_history
+</code></pre>
+<h5 id="remove-ssh-host-keys">Remove ssh host keys:</h5>
+<p>Note: This step is optional but recommended so that different
+instances appear as different ssh hosts.</p>
+<pre><code>rm /etc/ssh/ssh_host*
+</code></pre>
+<h5 id="remove-net-rules-file-so-eth0-doesnt-become-eth1-at-start">Remove net rules file so eth0 doesn't become eth1 at start:</h5>
+<p>Note: This step is not necessary for OpenVZ, but will not cause any
+problems.  In fact, most of the OpenVZ precreated template caches do
+not have this file.</p>
+<pre><code>rm /etc/udev/rules.d/70-persistent-net.rules
+</code></pre>
+<h4 id="step-4-package-it-all-into-one-machine-image-file">Step 4: Package it all into one machine image file</h4>
+<p>Exit the OpenVZ container.</p>
+<pre><code>[root@localhost etc]# exit
+</code></pre>
+<p>Now we are back at the demo box prompt. The following instructions are adapted from
+the <a href="http://wiki.openvz.org/Updating_Ubuntu_template">OpenVZ wiki</a>:</p>
+<pre><code>[root@wakame-vdc-1box cache]# vzctl stop 101
+[root@wakame-vdc-1box cache]# vzctl set 101 --ipdel all --save
+[root@wakame-vdc-1box cache]# cd /vz/private/101
+[root@wakame-vdc-1box 101]# tar  --numeric-owner -czf /vz/template/cache/new-custom-image-temp.tar.gz .
+[root@wakame-vdc-1box 101]# cd ..
+[root@wakame-vdc-1box private]# vzctl destroy 101
+</code></pre>
+<p>Wakame-vdc's preferred method of packaging machine images is inside of
+partitioned VM images files. The following commands show one way to
+create such an image file and store the new customized OS distribution
+inside it using standard GNU/Linux commands.</p>
+<p>The first commands change to the <code>/var/lib/wakame-vdc/images/</code>
+directory and create a 10G empty image there. Other directories will
+work. The advantage of choosing this directory is so that the image
+file will already be in the right place for testing with Wakame-vdc.</p>
+<pre><code>[root@wakame-vdc-1box private]# cd /var/lib/wakame-vdc/images/
+[root@wakame-vdc-1box images]# truncate -s 10G wakame-vdc-custom-image.raw
+</code></pre>
+<p>The next commands add a partition table to the image, and then make
+the first partition be an ext2 partition (i.e. which in this context,
+means any Linux partition) that takes up the whole image, except
+the first 63 sectors.  The new unformatted partition is then mounted
+on a loop device.</p>
+<pre><code>[root@wakame-vdc-1box images]# parted wakame-vdc-custom-image.raw mklabel msdos
+[root@wakame-vdc-1box images]# parted --script -- wakame-vdc-custom-image.raw mkpart primary ext2 63s -0
+[root@wakame-vdc-1box images]# kpartx -va wakame-vdc-custom-image.raw
+</code></pre>
+<p>Next, the mounted partition is formatted and then mounted.  Note:
+Before doing this next command, be sure the output from previous
+kpartx command says that the partition was mounted at loop0p1, and if
+not adjust the parameter accordingly.</p>
+<pre><code>[root@wakame-vdc-1box images]# mkfs.ext4 -F -E lazy_itable_init=1 -L root /dev/mapper/loop0p1
+[root@wakame-vdc-1box images]# tune2fs -o acl /dev/mapper/loop0p1
+[root@wakame-vdc-1box images]# mkdir tmp-mount
+[root@wakame-vdc-1box images]# mount /dev/mapper/loop0p1 tmp-mount/
+</code></pre>
+<p>Next, we copy the OpenVZ directory contents into the file system and
+then unmount the file system.</p>
+<pre><code>[root@wakame-vdc-1box images]# cd tmp-mount/
+[root@wakame-vdc-1box tmp-mount]# tar xzf /vz/template/cache/new-custom-image-temp.tar.gz
+[root@wakame-vdc-1box tmp-mount]# cd ..
+[root@wakame-vdc-1box images]# umount tmp-mount/
+[root@wakame-vdc-1box images]# rmdir tmp-mount/
+</code></pre>
+<p>Because in some use cases disk images can have multiple partitions,
+Wakame-vdc needs to know the UUID of the formatted disk partition to
+reliably identify it when booting instances.  This UUID needs to be
+found before the partition is removed from the loop device, so we
+determine it first and then release the loop device.</p>
+<pre><code>[root@wakame-vdc-1box images]# blkid -o export /dev/mapper/loop0p1 | tee /tmp/remember.uuid-etc
+[root@wakame-vdc-1box images]# kpartx -vd wakame-vdc-custom-image.raw
+</code></pre>
+<p>Before compressing the machine image, remember its size.</p>
+<pre><code>[root@wakame-vdc-1box images]# ls -l wakame-vdc-custom-image.raw | awk '{print $5}' | tee /tmp/remember.size
+</code></pre>
+<p>Finally, compress the image and remember the compressed size and the checksum of the compressed machine image.</p>
+<pre><code>[root@wakame-vdc-1box images]# gzip wakame-vdc-custom-image.raw
+[root@wakame-vdc-1box images]# ls -l wakame-vdc-custom-image.raw.gz | awk '{print $5}' | tee /tmp/remember.alloc_size
+[root@wakame-vdc-1box images]# md5sum /var/lib/wakame-vdc/images/wakame-vdc-custom-image.raw.gz | head -c 32 | tee /tmp/remember.md5
+</code></pre>
+<h4 id="step-5-register-this-machine-image-file-with-wakame-vdc">Step 5: Register this machine image file with Wakame-vdc</h4>
+<p>First, move the new machine image to Wakame-vdc's directory for keeping
+images.  (If the machine image was created by the above steps, it might
+already be there.)</p>
+<pre><code>mv wakame-vdc-custom-image.raw.gz /var/lib/wakame-vdc/images
+</code></pre>
+<p>Registering the machine image file requires two vdc-manage commands.
+The first registers the file as a <a href="../../jargon-dictionary#backup-object">backup object</a> and assigns it to a
+<a href="../../jargon-dictionary#backup-storage">backup storage</a>.  For example, to
+register the machine image created above into <a href="../../jargon-dictionary#backup-storage">backup storage</a> named <code>bkst-local</code>, the
+following command could be used:</p>
+<pre><code>/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupobject add \
+  --uuid bo-customimage \
+  --display-name "New image with web server and one static page" \
+  --storage-id bkst-local \
+  --object-key wakame-vdc-custom-image.raw.gz \
+  --size $(cat /tmp/remember.size) \
+  --allocation-size $(cat /tmp/remember.alloc_size) \
+  --container-format gz \
+  --checksum $(cat /tmp/remember.md5)
+</code></pre>
+<p>The second vdc-manage command tells Wakame-vdc that this <a href="../../jargon-dictionary#backup-object">backup object</a>
+is a machine image that we can start instances of.</p>
+<pre><code>/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image add local bo-customimage \
+  --account-id a-shpoolxx \
+  --uuid wmi-customimage \
+  --root-device uuid:$(source /tmp/remember.uuid-etc ; echo $UUID) \
+  --display-name "New image with web server and one static page"
+</code></pre>
+<p>Note that the $() expressions here supply the command with necessary
+details about the machine image, assuming it was collected as in the example
+steps above.  The names <code>bkst-local</code> and <code>a-shpoolxx</code> will work if
+your are installing into an environment that was created by following
+the <a href="../../installation">Wakame-vdc install guide</a>.  The correct values for
+other situations can be typed directly into the command line.</p>
+<h3 id="using-and-testing-the-new-image">Using and testing the new image</h3>
+<p>It should now be possible to start an instance from the machine image
+by following the instructions in the <a href="..">basic usage guide</a>.  The only necessary modification to these instructions
+is to use your new image name (such as <code>customimage</code> in the example above) instead of lucid5d.
+You can find the IP address of your instance from the "Instances" User Interface screen.</p>
+<p>If your image came from the instructions on this page, you can confirm that everything
+works by doing the following:</p>
+<ol>
+<li>Add the line "tcp:80,80,ip4:0.0.0.0" to the security group.</li>
+<li>Point a web browser to the instance's IP address.</li>
+</ol>
+<p>The web browser should now be displaying the text: "An Example top web page."</p>
+
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../instance-backup" class="btn btn-neutral float-right" title="About"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href=".." class="btn btn-neutral" title="Basics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+    <!-- Copyright etc -->
+    </p>
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+        
+            <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+        
+      <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../../instance-backup" style="color: #fcfcfc">Next &raquo;</a></span>
+    </span>
+</div>
+</body>
+</html>

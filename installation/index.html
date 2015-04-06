@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installation - Wakame-VDC</title>
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  <link href="../custom.css" rel="stylesheet">
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script src="../js/theme.js"></script>
+
+  <style>
+    body {font-size: 90%;}
+    pre, code {font-size: 100%;}
+    h3, h4, h5, h6 {color: #2980b9; font-weight: 300}
+  </style> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Wakame-VDC</a>
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <ul class="current">
+    
+        
+            <li class="toctree-l1 ">
+                <a class="" href="../concept">Concept</a>
+            </li>
+        
+
+    
+        
+        <span>Getting started</span>
+            
+                <li class="toctree-l1 current">
+                    <a class="current" href=".">Installation</a>
+                    
+                        <ul>
+                        
+                            <li class="toctree-l2"><a href="#wakame-vdc-install-guide">Wakame-vdc install guide</a></li>
+                            
+                                <li><a class="toctree-l3" href="#what-are-we-installing">What are we installing?</a></li>
+                            
+                                <li><a class="toctree-l3" href="#installation-requirements">Installation requirements</a></li>
+                            
+                                <li><a class="toctree-l3" href="#what-will-this-guide-do-to-my-machine">What will this guide do to my machine?</a></li>
+                            
+                                <li><a class="toctree-l3" href="#lets-get-started">Let's get started</a></li>
+                            
+                        
+                        </ul>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../development">Development</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Usage</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../usage">Basics</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../usage/advanced">Advanced</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Instance Backup</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../instance-backup">About</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Security Groups</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../security-groups">About</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Support</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../jargon-dictionary">Jargon Dictionary</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../faq">FAQ</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../community">Community</a>
+                    
+                </li>
+            
+        
+
+    
+</ul>
+
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href=".."></a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    <li>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github"> Edit on GitHub</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              <h1 id="wakame-vdc-install-guide">Wakame-vdc install guide</h1>
+<h3 id="what-are-we-installing">What are we installing?</h3>
+<p>This guide will set up a basic Wakame-vdc environment on a single host. When we are done with this guide we will have the following features available:</p>
+<ul>
+<li>
+<p>We will have a simple <em>machine image</em> running Ubuntu 10.04 (Lucid Lynx). We will be able to start instances of this image.</p>
+</li>
+<li>
+<p>We will be able to create dynamic firewalls using <a href="../security-groups">Security Groups</a>.</p>
+</li>
+<li>
+<p>We will be able to <a href="../instance-backup">back up running instances</a> and turn them into new machine images.</p>
+</li>
+<li>
+<p>We will be able to use either password or rsa key authentication when logging into instances.</p>
+</li>
+</ul>
+<h3 id="installation-requirements">Installation requirements</h3>
+<ul>
+<li>
+<p>A machine running <a href="http://www.centos.org">Centos</a> 6.6 with x86 64 bit processor architecture. This can be either bare metal or a virtual machine. Instances are going to run as
+<a href="http://openvz.org/Main_Page">OpenVZ</a> containers so you don't need to worry about nested virtualization.</p>
+</li>
+<li>
+<p>About 350 MB of disk space available in the <code>/opt</code> directory. Wakame-vdc itself is going to be placed there.</p>
+</li>
+<li>
+<p>1 GB of RAM should be more than enough for Wakame-vdc to run in this simple demo environment.</p>
+</li>
+<li>
+<p>Some free disk space in the <code>/var/lib</code> directory. How much you need depends on how many instances you want to start. Wakame-vdc is going to place both its machine images and instances data in
+<code>/var/lib/wakame-vdc</code>.</p>
+</li>
+</ul>
+<p>This guide will install only a single machine image. The image itself is compressed and will take up 146 MB. Instances of it will take up 351 MB each when started.</p>
+<ul>
+<li>Internet access. (to download rpm packages and machine images)</li>
+</ul>
+<h3 id="what-will-this-guide-do-to-my-machine">What will this guide do to my machine?</h3>
+<ul>
+<li>
+<p>Since we are going to use <a href="http://openvz.org/Main_Page">OpenVZ</a>, we will install OpenVZ's <a href="http://en.wikipedia.org/wiki/OpenVZ#Kernel">modified Linux kernel</a>.</p>
+</li>
+<li>
+<p>We are going to set up a <a href="http://www.linuxfoundation.org/collaborate/workgroups/networking/bridge">Linux Bridge</a> and connect the host's network interface to it.</p>
+</li>
+</ul>
+<h3 id="lets-get-started">Let's get started</h3>
+<h4 id="yum-repository-setup">Yum repository setup</h4>
+<p>Add the official Wakame-vdc yum repository to <code>/etc/yum.repos.d</code>.</p>
+<pre><code>sudo curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
+</code></pre>
+<p>Add the Axsh OpenVZ yum repository to <code>/etc/yum.repos.d</code>. We are hosting an older version of OpenVZ on which Wakame-vdc is confirmed to be working.</p>
+<pre><code>sudo curl -o /etc/yum.repos.d/openvz.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo
+</code></pre>
+<p>Install <a href="https://fedoraproject.org/wiki/EPEL">EPEL</a>. We need to pull some OpenVZ dependencies from here.</p>
+<pre><code>sudo yum install -y epel-release
+</code></pre>
+<h4 id="install-dcmgr">Install Dcmgr</h4>
+<p>The dcmgr package contains two things.</p>
+<ul>
+<li>
+<p>The Wakame-vdc web API. This is Wakame-vdc's user interface. You tell Wakame-vdc to do stuff by making http requests to this API.</p>
+</li>
+<li>
+<p>The Wakame-vdc collector. This is Wakame-vdc's decision making organ. When you start an instance it decides which HVA (We'll tell you what an HVA is below) will host it, which IP address it
+will get, etc.</p>
+</li>
+</ul>
+<p>Install the dcmgr package with the following command.</p>
+<pre><code>sudo yum install -y wakame-vdc-dcmgr-vmapp-config
+</code></pre>
+<h4 id="install-hva">Install HVA</h4>
+<p>The HVA (HyperVisor Agent) is the part of Wakame-vdc that actually starts instances. On a production environment, you would likely have several dedicated bare metal hosts for this. Right now we are
+just going to install one HVA on the same machine as dcmgr.</p>
+<p><strong>Remark:</strong> In this installation the instances are going to be <a href="http://openvz.org/Main_Page">OpenVZ</a> containers. Therefore we install the OpenVZ specific HVA package.</p>
+<pre><code>sudo yum install -y wakame-vdc-hva-openvz-vmapp-config
+</code></pre>
+<h4 id="install-webui">Install webui</h4>
+<p>This is Wakame-vdc's GUI. It's actually a <a href="http://rubyonrails.org">Rails application</a> that sits in front of the dcmgr web API.</p>
+<pre><code>sudo yum install -y wakame-vdc-webui-vmapp-config
+</code></pre>
+<h4 id="reboot-to-load-openvz-kernel">Reboot to load OpenVZ kernel</h4>
+<p>These Wakame-vdc packages have installed OpenVZ as a dependency. OpenVZ runs on a custom kernel. Reboot your machine so that kernel gets loaded.</p>
+<h4 id="set-up-bridged-networking">Set up bridged networking</h4>
+<p>Wakame-vdc uses bridged networking to allow users to connect to instances. We are going to set up a <a href="http://www.linuxfoundation.org/collaborate/workgroups/networking/bridge">Linux Bridge</a> to
+attach instances to.</p>
+<p>If you want to connect to instances from somewhere else than the host, we will need a network interface on the host that attaches an outside network to the bridge.</p>
+<p>For the sake of this guide, we are going to assume that we will start instances in network <code>192.168.3.0/24</code>. The host has a network interface <code>eth0</code> with static IP address <code>192.168.3.100</code>.
+<strong>Change these values to match your environment.</strong></p>
+<p>The network setup that this guide assumes places the host in the same network as the instances. That means the instances will have access to everything the host has access to. If the host can connect to the internet, the instances will be able to as well.</p>
+<p><strong>Remark:</strong> With this setup, the host itself will not be able to connect to the instances through networking because of security groups' arp wall. More info on that will be available in the near future, when we write a guide for security groups.</p>
+<p>Create the file <code>/etc/sysconfig/network-scripts/ifcfg-br0</code> with the following contents</p>
+<pre><code>DEVICE=br0
+TYPE=Bridge
+BOOTPROTO=static
+ONBOOT=yes
+NM_CONTROLLED=no
+IPADDR=192.168.3.100
+NETMASK=255.255.255.0
+GATEWAY=192.168.3.1
+DNS1=8.8.8.8
+DELAY=0
+</code></pre>
+<p>Next we need to attach <code>eth0</code> to the bridge. Modify the file <code>/etc/sysconfig/network-scripts/ifcfg-eth0</code> with the following contents.</p>
+<p><strong>Remark:</strong> If your machine's network interface is called <code>eth1</code>, <code>wlan0</code> or something else, make sure to edit its file instead. (e.g. ifcfg-eth1, ifcfg-wlan0, etc.) Also make sure to modify the <em>DEVICE=</em> line accordingly</p>
+<pre><code>DEVICE="eth0"
+ONBOOT="yes"
+BRIDGE=br0
+NM_CONTROLLED=no
+</code></pre>
+<p>Restart the network.</p>
+<p><strong>Be careful!</strong> If you have made any mistakes setting up these files for your environment, this next command will cause networking to go down on your machine. Triple check these values if
+you're running this guide on a remote machine!</p>
+<pre><code>sudo service network restart
+</code></pre>
+<h4 id="configuration">Configuration</h4>
+<p>Next we are going to configure Wakame-vdc and download a machine image containing Ubuntu 10.04 that we can start instances of. You can either do it manually or run a script we have provided. Both methods will amount to the same result. The script should be easier but doing it manually will teach you more about Wakame-vdc.</p>
+<h5 id="using-the-script">Using the script</h5>
+<p>The script can be found here: <a href="https://raw.githubusercontent.com/axsh/wakame-vdc/master/scripts/install_guide_demo_data.sh">install_guide_demo_data.sh</a></p>
+<p>It will perform all the steps explained below except reserving IP addresses. (which is optional)</p>
+<p>You need to tell it about the network you want to start your instances in. Run the script without parameters to see how to use it.</p>
+<p>After running the script and <a href="#reserve-ip">optionally reserving ip addresses</a>, skip over to the <a href="#start-wakame-vdc">Start Wakame-vdc</a> section.</p>
+<h5 id="manual-configuration">Manual configuration</h5>
+<p>The different Wakame-vdc services require their own config files. Unfortunately they currently aren't automatically installed with the rpm packages. Until we have that fixed, you will have to copy them over manually.</p>
+<pre><code>sudo cp /opt/axsh/wakame-vdc/dcmgr/config/dcmgr.conf.example /etc/wakame-vdc/dcmgr.conf
+
+sudo cp /opt/axsh/wakame-vdc/dcmgr/config/hva.conf.example /etc/wakame-vdc/hva.conf
+
+sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/database.yml.example /etc/wakame-vdc/dcmgr_gui/database.yml
+
+sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/dcmgr_gui.yml.example /etc/wakame-vdc/dcmgr_gui/dcmgr_gui.yml
+
+sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/instance_spec.yml.example /etc/wakame-vdc/dcmgr_gui/instance_spec.yml
+
+sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/load_balancer_spec.yml.example /etc/wakame-vdc/dcmgr_gui/load_balancer_spec.yml
+</code></pre>
+<h5 id="create-the-wakame-vdc-database">Create the Wakame-vdc database</h5>
+<p>Wakame-vdc uses a <a href="http://www.mysql.com">MySQL</a> database. Start MySQL and create the database.</p>
+<pre><code>sudo service mysqld start
+mysqladmin -uroot create wakame_dcmgr
+</code></pre>
+<p>We can use <a href="https://github.com/ruby/rake">Rake</a> to create the database tables. Wakame-vdc comes with its own ruby binary that includes Rake.</p>
+<pre><code>cd /opt/axsh/wakame-vdc/dcmgr
+/opt/axsh/wakame-vdc/ruby/bin/rake db:up
+</code></pre>
+<h5 id="register-the-hva">Register the HVA</h5>
+<p>As describe above, the HVA or host node is the part of Wakame-vdc that actually starts instances. Wakame-vdc can manage any number of these. The words HVA and host node will be use interchangeably in this guide.</p>
+<p>Wakame-vdc recognises host nodes by their <code>node id</code>. That is a unique id that <a href="http://www.amqp.org">AMQP</a> uses to identify each service. We will assign the id <code>demo1</code> to our HVA.</p>
+<p>Edit the file <code>/etc/default/vdc-hva</code> and uncomment the following line:</p>
+<pre><code>NODE_ID=demo1
+</code></pre>
+<p>Now our HVA process will start up with <code>demo1</code> as its <code>node id</code>. Next we need to add a database entry to let Wakame-vdc know how much memory, CPU power and disk space it has available, etc.</p>
+<p>We can use the <code>vdc-manage</code> cli to do this. Of course the parameters of this command will vary depending on the capacity of your HVA. Adjust them accordingly.</p>
+<pre><code>/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage host add hva.demo1 \
+   --uuid hn-demo1 \
+   --display-name "demo HVA 1" \
+   --cpu-cores 100 \
+   --memory-size 10240 \
+   --hypervisor openvz \
+   --arch x86_64 \
+   --disk-space 102400 \
+   --force
+</code></pre>
+<p>Remarks:
+  * The <code>node id</code> would be <em>hva.demo1</em>. We set <em>demo1</em> in the above step but when the process starts, it is automatically prefixed by <em>hva</em>.</p>
+<ul>
+<li><em>Memory-size</em> and <em>cpu-cores</em> do not represent the actual memory size and CPU cores of the host node. They represent the amount of either to be offered to instances.</li>
+</ul>
+<p>Setting <em>cpu-cores</em> to 100 means that you can start for example 100 instances with 1 CPU core each or in another example, 50 instances with 2 CPU cores each.</p>
+<ul>
+<li>The <em>force</em> flag is set so we can register the host node even though Wakame-vdc can't currently see it through AMQP. Since we haven't started the Wakame-vdc services yet, it's only natural that it can't see it yet. It will once we start them.</li>
+</ul>
+<h5 id="download-and-register-a-machine-image">Download and register a machine image</h5>
+<p>Of course we can't start any instances if we don't have a machine image to instantiate. For this guide we are just going to download a simple machine image containing Ubuntu 10.04 (Lucid Lynx).</p>
+<p>Wakame-vdc's default directory for keeping images is <code>/var/lib/wakame-vdc/images</code>. Create it.</p>
+<pre><code>sudo mkdir -p /var/lib/wakame-vdc/images
+</code></pre>
+<p>Now download the image in that directory.</p>
+<pre><code>cd /var/lib/wakame-vdc/images
+sudo curl -O http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-kvm-md-32.raw.gz
+</code></pre>
+<p>The image should have the following md5 sum. We will need it when registering it in the database.</p>
+<pre><code>1f841b195e0fdfd4342709f77325ce29  ubuntu-lucid-kvm-md-32.raw.gz
+</code></pre>
+<p>Now we need to let Wakame-vdc know that it has a machine image to start instances from. First of all here's a brief explanation of how Wakame-vdc treats machine images. There are two terms we'll need to understand here. <strong>Backup objects</strong> and <strong>machine images</strong>. A <em>backup object</em> is basically a hard drive image. A <em>machine image</em> is a backup object that's bootable. In case of a linux instance, the <em>machine image</em> would hold the root partition.</p>
+<p>To register both the <em>backup object</em> and the related <em>machine image</em>, we will again use the <code>vdc-manage</code> cli but since we are going to run more than one operation now, it's more efficient to call it without arguments. This will result in a special shell where we can run <code>vdc-manage</code> commands. This is more efficient because we only need to establish a connection to the database once and can then feed many commands through it.</p>
+<pre><code>/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage
+</code></pre>
+<p>First of all we need to tell Wakame-vdc how we are storing these <em>backup objects</em>. We are currently just keeping them on the local file system.</p>
+<pre><code>backupstorage add \
+  --uuid bkst-local \
+  --display-name "local storage" \
+  --base-uri "file:///var/lib/wakame-vdc/images/" \
+  --storage-type local \
+  --description "storage on the local filesystem"
+</code></pre>
+<p>Now register the backup object and assign it to the local storage that we just made.</p>
+<p>This image is compressed with gzip to save space. In order to properly manage its disk space usage, Wakame-vdc needs to know both the compressed size and uncompressed size of the image. These translate to the <em>size</em> and <em>allocation-size</em> options respectively.</p>
+<pre><code>backupobject add \
+  --uuid bo-lucid5d \
+  --display-name "Ubuntu 10.04 (Lucid Lynx) root partition" \
+  --storage-id bkst-local \
+  --object-key ubuntu-lucid-kvm-md-32.raw.gz \
+  --size 149084 \
+  --allocation-size 359940 \
+  --container-format gz \
+  --checksum 1f841b195e0fdfd4342709f77325ce29
+</code></pre>
+<p>Next we tell Wakame-vdc that this backup object is a machine image that we can start instances of.</p>
+<pre><code>image add local bo-lucid5d \
+  --account-id a-shpoolxx \
+  --uuid wmi-lucid5d \
+  --root-device uuid:148bc5df-3fc5-4e93-8a16-7328907cb1c0 \
+  --display-name "Ubuntu 10.04 (Lucid Lynx)"
+</code></pre>
+<h5 id="register-a-network">Register a network</h5>
+<p>Wakame-vdc needs to know which network instances will be connected to. You can register more than one network and then decide which one to use when you start instances.</p>
+<p><strong>Remark:</strong> As described above, this guide assumes that network to be <code>192.168.3.0/24</code>. Make sure to change these values if you intend to use another network.</p>
+<pre><code>network add \
+  --uuid nw-demo1 \
+  --ipv4-network 192.168.3.0 \
+  --prefix 24 \
+  --ipv4-gw 192.168.3.1 \
+  --dns 8.8.8.8 \
+  --account-id a-shpoolxx \
+  --display-name "demo network"
+</code></pre>
+<p>Wakame-vdc is now aware of this network but it still doesn't know which IP addresses in it are available to assign to instances. Register a dhcp range.</p>
+<pre><code>network dhcp addrange nw-demo1 192.168.3.1 192.168.3.254
+</code></pre>
+<p><a name="reserve-ip"></a>
+You might be worried because the gateway is included in dhcp range. Don't be. Wakame-vdc is smart enough to know that it can't use that IP address.</p>
+<p>If you have other IP addresses inside the dhcp range that can not be used by Wakame-vdc, you need to reserve them so Wakame-vdc knows these can't be used. For example in this guide we were using 192.168.3.100 as the host node's ip address and therefore it can not be used. You can reserve it with the following command. If you do not have any IP addresses that need to be reserved, just skip this step.</p>
+<pre><code>network reserve nw-demo1 --ipv4 192.168.3.100
+</code></pre>
+<p>Wakame-vdc needs to know which mac addresses are available to assign to instances.</p>
+<pre><code>macrange add 525400 1 ffffff --uuid mr-demomacs
+</code></pre>
+<p>Next, Wakame-vdc needs to know which bridge to attach its intances' virtual network interfaces (vnics) to, and which interface on that bridge is connected to the outside world. You do that by registering a <code>dc network</code>.</p>
+<pre><code>network dc add public --uuid dcn-public --description "the network instances are started in"
+network dc add-network-mode public securitygroup
+network forward nw-demo1 public
+</code></pre>
+<p>We're done with vdc-manage. Exit its shell.</p>
+<pre><code>exit
+</code></pre>
+<p>Earlier in this guide we have set up a bridge named <code>br0</code> and it's connected to the outside world through a network interface <code>eth0</code>. If you are also using these names, you should be fine.</p>
+<p><em>If</em> you are using other names, you need to go update <code>/etc/wakame-vdc/hva.conf</code>. Find the following in that file and change it to match the names that you're using.</p>
+<pre><code>dc_network('public') {
+  bridge_type 'linux'
+  interface 'eth0'
+  bridge 'br0'
+}
+</code></pre>
+<h5 id="configure-the-gui">Configure the GUI</h5>
+<p>The GUI is a rails application that requires its own database. Create it and initialize its tables using Rake.</p>
+<pre><code>mysqladmin -uroot create wakame_dcmgr_gui
+cd /opt/axsh/wakame-vdc/frontend/dcmgr_gui/
+/opt/axsh/wakame-vdc/ruby/bin/rake db:init
+</code></pre>
+<p>The GUI uses user/password authentication. Wakame-vdc's web API has no authentication so on a production environment, you'd want to show only the GUI to the outside world while keeping the web API on a private network.</p>
+<p>We're going to be talking about <strong>users</strong> and <strong>accounts</strong> here. Their meanings are slightly different.</p>
+<ul>
+<li>
+<p>An account is where rights are assigned. An account will be allowed to start a certain amount of instances and own certain resources.</p>
+</li>
+<li>
+<p>A user is a username/password combination that has access to one or more accounts. You will log into the Wakame-vdc GUI as a user and get access to the resources owned by any accounts your user is associated with.</p>
+</li>
+</ul>
+<p>Users and accounts share a many-to-many relation. A user can belong to many accounts and an account can belong to many users.</p>
+<p>The GUI database has a cli called <code>gui-manage</code> which is similar to vdc-manage.</p>
+<pre><code>/opt/axsh/wakame-vdc/frontend/dcmgr_gui/bin/gui-manage
+</code></pre>
+<p>Let's use it to create an account for ourselves. This account with uuid <code>a-shpoolxx</code> is a special account that Wakame-vdc uses for certain shared resources.</p>
+<pre><code>account add --name default --uuid a-shpoolxx
+</code></pre>
+<p>Next we'll add a user. The <em>login-id</em> is the name we're going to use when logging into the GUI.</p>
+<pre><code>user add --name "demo user" --uuid u-demo --password demo --login-id demo
+</code></pre>
+<p>Now associate the user and the account.</p>
+<pre><code>user associate u-demo --account-ids a-shpoolxx
+</code></pre>
+<p>We're done with gui-manage. Exit the shell.</p>
+<pre><code>exit
+</code></pre>
+<h4 id="start-wakame-vdc">Start Wakame-vdc</h4>
+<p>Start the rabbitmq server. Wakame-vdc's different processes use AMQP to communicate. Rabbitmq-server is the AMQP exchange managing all that traffic.</p>
+<pre><code>sudo service rabbitmq-server start
+</code></pre>
+<p>If you've been following this guide, MySQL should still be running. If it isn't running, start it.</p>
+<pre><code>sudo service mysqld start
+</code></pre>
+<p>After all this hard work we should be able to get Wakame-vdc up and running. Start the upstart jobs.</p>
+<p>These 4 upstart jobs can be started in any order as long as <em>rabbitmq-server</em> and <em>mysqld</em> have been started first.</p>
+<pre><code>sudo start vdc-dcmgr
+sudo start vdc-collector
+sudo start vdc-hva
+sudo start vdc-webui
+</code></pre>
+<p>If everything went right, Wakame-vdc is now up and running. Start a web browser and surf to your machine's IP address on port 9000. If you're using the same IP address as this guide, that would be <code>192.168.3.100:9000</code>. Log in with user <code>demo</code> and password <code>demo</code>.</p>
+<p>The <code>lucid5d</code> image has password login through ssh enabled. After starting instances you are able to log in using username <code>ubuntu</code> and password <code>ubuntu</code>. You are of course also able to log in using username <code>ubuntu</code> and a key pair registered with Wakame-vdc.</p>
+<p>Check out the <a href="../usage">basic usage guide</a> if you're not sure were to go from here.</p>
+
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../development" class="btn btn-neutral float-right" title="Development"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../concept" class="btn btn-neutral" title="Concept"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+    <!-- Copyright etc -->
+    </p>
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+        
+            <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+        
+      <span><a href="../concept" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../development" style="color: #fcfcfc">Next &raquo;</a></span>
+    </span>
+</div>
+</body>
+</html>

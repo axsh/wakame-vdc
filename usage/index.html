@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Basics - Wakame-VDC</title>
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  <link href="../custom.css" rel="stylesheet">
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script src="../js/theme.js"></script>
+
+  <style>
+    body {font-size: 90%;}
+    pre, code {font-size: 100%;}
+    h3, h4, h5, h6 {color: #2980b9; font-weight: 300}
+  </style> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Wakame-VDC</a>
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <ul class="current">
+    
+        
+            <li class="toctree-l1 ">
+                <a class="" href="../concept">Concept</a>
+            </li>
+        
+
+    
+        
+        <span>Getting started</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../installation">Installation</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../development">Development</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Usage</span>
+            
+                <li class="toctree-l1 current">
+                    <a class="current" href=".">Basics</a>
+                    
+                        <ul>
+                        
+                            <li class="toctree-l2"><a href="#what-is-covered-here">What is covered here?</a></li>
+                            
+                        
+                            <li class="toctree-l2"><a href="#prerequisites">Prerequisites</a></li>
+                            
+                        
+                            <li class="toctree-l2"><a href="#guide">Guide</a></li>
+                            
+                                <li><a class="toctree-l3" href="#starting-instances">Starting instances</a></li>
+                            
+                                <li><a class="toctree-l3" href="#using-instances">Using instances</a></li>
+                            
+                                <li><a class="toctree-l3" href="#terminating-instances">Terminating instances</a></li>
+                            
+                        
+                        </ul>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="advanced">Advanced</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Instance Backup</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../instance-backup">About</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Security Groups</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../security-groups">About</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Support</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../jargon-dictionary">Jargon Dictionary</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../faq">FAQ</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../community">Community</a>
+                    
+                </li>
+            
+        
+
+    
+</ul>
+
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href=".."></a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    <li>Basics</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github"> Edit on GitHub</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              <h2 id="what-is-covered-here">What is covered here?</h2>
+<p>We are going to walk you through Wakame-vdc's most basic function which is starting instances. Instance is the term that Wakame-vdc uses for a virtual server. The reasoning behind this is that we're not booting virtual machine images directly. Instead we're booting copies of it. We're instantiating a virtual machine image.</p>
+<p>At the end of this guide, we'll also tell you how to terminate started instances.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>A working Wakame-vdc environment with at least one machine image registered. If you've followed the <a href="../installation">installation guide</a> or the <a href="http://wakameusersgroup.org/demo_image.html">VirtualBox demo image guide</a>, you already have that.</p>
+<h2 id="guide">Guide</h2>
+<h3 id="starting-instances">Starting instances</h3>
+<p>Surf to the Wakame-vdc gui and log in. By default the GUI runs on port <code>9000</code>. Its ip address will be the one of whatever machine has installed the <strong>wakame-vdc-webui-vmapp-config</strong> package. If you have followed either of the guides mentioned in prerequisites, you can log in using username <code>demo</code> and password <code>demo</code>.</p>
+<p><img alt="screenshot" src="../img/usage/01_login.png" /></p>
+<p>Before we can start an instance there are two things we need. An <a href="http://en.wikipedia.org/wiki/RSA_(cryptosystem)">RSA</a> <strong>key pair</strong> and a <strong>security group</strong>. The key pair will be used to log into the instance through <a href="http://en.wikipedia.org/wiki/Secure_Shell">SSH</a>. The security group will act as a firewall.</p>
+<p>Let's take care of the key pair first. Click on <code>Key Pairs</code> in the menu on the left.</p>
+<p><img alt="screenshot" src="../img/usage/02_dashboard_key_pairs.png" /></p>
+<p>Click on <code>Create Key Pair</code>.</p>
+<p><img alt="screenshot" src="../img/usage/03_keypairs_create_key.png" /></p>
+<p>If you already have your own RSA key, you can just register your public key. If you leave the public key field blank, Wakame-vdc will generate a new key for you. Let's do that now.</p>
+<p>After you've clicked on <code>Create</code>, Wakame-vdc will generate a new RSA key pair and offer the private key for download. On a production environment, this key would be very sensitive information. Make sure to use <a href="http://en.wikipedia.org/wiki/HTTP_Secure">https</a> when running this on a production server.</p>
+<p>We're going to need this private key later so remember where you saved it. The private key will <em>not</em> be stored by Wakame-vdc in any way. If you accidentally delete it, it's gone forever.</p>
+<p>Fill in a name for your key and click on <code>Create</code>.</p>
+<p><img alt="screenshot" src="../img/usage/04_keypairs_dialog.png" /></p>
+<p>If everything went correctly, we should now be able to see our key pair in the list.</p>
+<p>Next we will create a security group. Click on <code>Security Groups</code> in the menu on the left.</p>
+<p><img alt="screenshot" src="../img/usage/05_keypairs_show_pair.png" /></p>
+<p>Click on <code>Create Security Group</code> on the top of the page.</p>
+<p><img alt="screenshot" src="../img/usage/06_security_groups_create.png" /></p>
+<p>By default <em>all</em> incoming traffic to instances is blocked by Wakame-vdc. We need to open port 22 so we will be able to log into our instance through ssh later. Fill in a name for your security group and add a rule to open up tcp port 22. Once that's done, click on <code>Create</code>.</p>
+<p><img alt="screenshot" src="../img/usage/07_security_groups_dialog.png" /></p>
+<p>As was the case for key pairs, we should now be able to see our security group in the list.</p>
+<p>Now it's time to actually start an instance. Click on <code>Machine Images</code> in the menu on the left.</p>
+<p><img alt="screenshot" src="../img/usage/08_security_groups_show.png" /></p>
+<p>This guide is written based on an image that was set up using the <a href="../installation">installation guide</a>. Therefore we have one machine image <em>wmi-lucid5d</em>. Your environment might have different machine images registered but the operations will be the same. Select any image from the list and click on <code>Launch Instance</code>.</p>
+<p><img alt="screenshot" src="../img/usage/09_machine_images_launch.png" /></p>
+<p>There's a lot of information on the <code>Launch Instance</code> dialog. We are only going to fill in the bare essentials needed to launch an instance.</p>
+<ul>
+<li>
+<p><strong>Instance Name</strong> (a human readable name for the instance)</p>
+</li>
+<li>
+<p><strong>SSH Key Pair</strong> (the RSA key pair we created before and are going to use to log into the instance)</p>
+</li>
+<li>
+<p><strong>Security Groups</strong> (the security group we created before which will open tcp port 22)</p>
+</li>
+<li>
+<p><strong>eth0</strong> (this will give the instance a virtual network interface and connect it to a network)</p>
+</li>
+</ul>
+<p>Once all of these are filled in, click on <code>Launch</code>.</p>
+<p><img alt="screenshot" src="../img/usage/10_launch_instance_dialog.png" /></p>
+<p>You'll be taken back to the <code>Machine Images</code> page. Don't worry if you don't see your instance here. Instances are shown on their own page. Click on <code>Instances</code> in the menu on the left.</p>
+<p><img alt="screenshot" src="../img/usage/11_machine_images_after_create.png" /></p>
+<p>You should be able to see your instance on this page. Under <code>State</code> it will say either <em>running</em> or <em>initializing</em>. If it's the latter then just wait for a while and refresh the page. It should get to the <em>running</em> state eventually. If it says <em>terminated</em>, then something went wrong. Make sure you've followed the steps in this guide correctly and check out the logs in the <code>/var/log/wakame-vdc</code> directory for clues.</p>
+<p>Once your instance has reached state <em>running</em>, it might still take a little while before you can ssh into it. The <em>running</em> state means that Wakame-vdc has started your instance. It's equivalent to pressing the power button on a physical server. The instance is turned on but the OS still needs a little time to boot.</p>
+<p>You will also see the ip address that has been assigned to your instance. On the screenshot below that would be <code>192.168.3.2</code>.</p>
+<p><img alt="screenshot" src="../img/usage/12_instances.png" /></p>
+<h3 id="using-instances">Using instances</h3>
+<p>At this point we're done with the Wakame-vdc GUI. That instance is now a server running in a network. We're going to log into it just like you'd log into any other server: using SSH. Remember how we downloaded the RSA private key that we created earlier? This is where we'll use it. On a Linux machine you'd run this command.</p>
+<pre><code>ssh -i /path/to/your/private/key -l username ip-of-your-instance
+</code></pre>
+<p>If we fill in the values used in this guide, we get the following command:</p>
+<pre><code>ssh -i ~/Downloads/ssh-tziiy9n6.pem -l ubuntu 192.168.3.2
+</code></pre>
+<p>That's it. You have now started an instance and can start using it. Feel free to play around and start any number of instances.</p>
+<h3 id="terminating-instances">Terminating instances</h3>
+<p>Once you've decided you don't need an instance any more, you can terminate it. Before you do so, you need to be absolutely sure that you don't need this instance any more. Once an instance is terminated, it is irrevocably deleted. It will not be possible to recover it!</p>
+<p>To terminate an instance, select it from the list and click on <code>Select an Action</code>.</p>
+<p><img alt="screenshot" src="../img/usage/13_select_an_action.png" /></p>
+<p>Now click on <code>Terminate</code>.</p>
+<p><img alt="screenshot" src="../img/usage/14_terminate.png" /></p>
+<p>A dialog pops up asking for confirmation. Confirm that this is indeed the instance that you want to terminate and click on <code>Terminate</code>.</p>
+<p><img alt="screenshot" src="../img/usage/15_terminate_dialog.png" /></p>
+<p>You'll be taken back to the instances list. You'll see the state of your instance is now <em>shutting down</em>. If you wait a few seconds and refresh it will have changed to <em>terminated</em>. The instance is now gone forever.</p>
+<p><img alt="screenshot" src="../img/usage/16_terminated.png" /></p>
+<p>That concludes this basic Wakame-vdc usage guide. We hope everything went smoothly and if you run into any problems, don't hesitate to contact us on the <a href="https://groups.google.com/forum/?hl=en-GB#!forum/wakame-ug">Wakame Users Group</a>. We'll do our best to help you resolve any issues you might run into.</p>
+
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="advanced" class="btn btn-neutral float-right" title="Advanced"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../development" class="btn btn-neutral" title="Development"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+    <!-- Copyright etc -->
+    </p>
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+        
+            <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+        
+      <span><a href="../development" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="advanced" style="color: #fcfcfc">Next &raquo;</a></span>
+    </span>
+</div>
+</body>
+</html>
