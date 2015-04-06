@@ -55,7 +55,8 @@
 	    <th><%= t("load_balancers.list.state") %></th>
 	    <th><%= t("load_balancers.list.action") %></th>
 	  </tr>
-
+	  {{each(index,item) rows}}
+	  
 	  <tr id="row-${item.uuid}">
 	    {{if item.uuid }}
 	    <td class="listradiobutton"><input id="${item.uuid}" type="radio" name="select" value="${item.uuid}" ></td>
