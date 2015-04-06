@@ -1,6 +1,6 @@
-site_name: Wakame-VDC
+site_name: Wakame-vdc Documentation
 site_favicon: favicon.ico
-site_description: Documentation for Wakame-VDC
+site_description: Documentation for Wakame-vdc
 
 theme: readthedocs
 docs_dir: content
