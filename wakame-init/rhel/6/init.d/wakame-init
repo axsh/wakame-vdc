@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+#       /etc/rc.d/init.d/wakame-init
+#
+#
+# chkconfig: 2345 9 91
+# description: initialize virtual machine settings.
+# processname: wakame-init
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+[ -f /etc/default/wakame-init ] && . /etc/default/wakame-init
+
+RETVAL=0
+
+# valiable
+USER=${USER:-"root"}
+IPV6INIT=${IPV6INIT:-"no"}
+IPV6_AUTOCONF=${IPV6_AUTOCONF:-"no"}
+METADATA_LOCATION=${METADATA_LOCATION:-"drive"}
+
+#
+# See how we were called.
+#
+
+start() {
+        USER=${USER} IPV6INIT=${IPV6INIT} IPV6_AUTOCONF=${IPV6_AUTOCONF} METADATA_LOCATION=${METADATA_LOCATION} /etc/wakame-init
+        RETVAL=$?
+        return $RETVAL
+}
+
+stop() {
+        return $RETVAL
+}
+
+case "$1" in
+start)
+        start
+        ;;
+stop)
+        stop
+        ;;
+*)
+        echo $"Usage: $0 {start|stop}"
+        RETVAL=2
+esac
+
+exit ${RETVAL}
+
