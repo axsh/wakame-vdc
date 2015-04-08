@@ -10,7 +10,7 @@
 # usage:
 #   1) Copy this file to somewhere (e.g. ~/.mussel-completion.bash).
 #   2) Add the following line to your .bashrc/.zshrc:
-#       source ~/.git-completion.bash
+#       source ~/.mussel-completion.bash
 #
 
 function hash_value() {
