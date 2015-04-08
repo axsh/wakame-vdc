@@ -33,10 +33,12 @@ _mussel.sh() {
   elif [[ ${offset} == 2 ]]; then
     local namespaces="
       backup_object
+      host_node
       image
       instance
       load_balancer
       network
+      network_vif
       security_group
       ssh_key_pair
     "
@@ -47,12 +49,8 @@ _mussel.sh() {
     local tasks_rw="${tasks_ro} create update destroy"
 
     case "${prev}" in
-      image | network | backup_object)
+      backup_object | host_node | image | network | network_vif)
         COMPREPLY=($(compgen -W "${tasks_ro}" -- ${cur}))
-        return 0
-        ;;
-      ssh_key_pair | security_group)
-        COMPREPLY=($(compgen -W "${tasks_rw}" -- ${cur}))
         return 0
         ;;
       instance)
@@ -61,6 +59,10 @@ _mussel.sh() {
         ;;
       load_balancer)
         COMPREPLY=($(compgen -W "${tasks_rw} register unregister" -- ${cur}))
+        return 0
+        ;;
+      ssh_key_pair | security_group)
+        COMPREPLY=($(compgen -W "${tasks_rw}" -- ${cur}))
         return 0
         ;;
     esac
@@ -93,40 +95,6 @@ _mussel.sh() {
   local task=${COMP_WORDS[2]}
 
   case "${namespace}" in
-    ssh_key_pair)
-      case "${task}" in
-        index)
-          ;;
-        create)
-          case "${prev}" in
-            --public-key)
-              COMPREPLY=($(compgen -f ${cur}))
-              ;;
-            *)
-              COMPREPLY=($(compgen -W "--public-key" -- ${cur}))
-              ;;
-          esac
-	  ;;
-      esac
-      ;;
-
-    security_group)
-      case "${task}" in
-        index)
-          ;;
-        create)
-          case "${prev}" in
-            --rule)
-              COMPREPLY=($(compgen -f ${cur}))
-              ;;
-            *)
-              COMPREPLY=($(compgen -W "--rule" -- ${cur}))
-              ;;
-          esac
-          ;;
-      esac
-      ;;
-
     instance)
       case "${task}" in
         index)
@@ -216,6 +184,41 @@ _mussel.sh() {
           ;;
       esac
       ;;
+
+    security_group)
+      case "${task}" in
+        index)
+          ;;
+        create)
+          case "${prev}" in
+            --rule)
+              COMPREPLY=($(compgen -f ${cur}))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "--rule" -- ${cur}))
+              ;;
+          esac
+          ;;
+      esac
+      ;;
+
+    ssh_key_pair)
+      case "${task}" in
+        index)
+          ;;
+        create)
+          case "${prev}" in
+            --public-key)
+              COMPREPLY=($(compgen -f ${cur}))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "--public-key" -- ${cur}))
+              ;;
+          esac
+          ;;
+      esac
+      ;;
+
   esac
 }
 
