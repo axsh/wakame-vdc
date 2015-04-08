@@ -194,7 +194,7 @@ _mussel.sh() {
               COMPREPLY=($(compgen -W "80 443" -- ${cur}))
               ;;
             --protocol | --instance-protocol)
-              COMPREPLY=($(compgen -W "http https tcp" -- ${cur}))
+              COMPREPLY=($(compgen -W "http https tcp ssl" -- ${cur}))
               ;;
             --max-connection)
               COMPREPLY=($(compgen -W "1000" -- ${cur}))
