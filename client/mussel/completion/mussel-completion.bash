@@ -66,14 +66,19 @@ _mussel.sh() {
     esac
   elif [[ ${offset} == 4 ]]; then
     case "${prev}" in
-      index)
-        return 0
-        ;;
-      show | update | destroy)
+      show)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index | hash_value id)" -- ${cur}))
         return 0
         ;;
-      poweroff | poweron | backup)
+      update | destroy)
+        COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index | hash_value id)" -- ${cur}))
+        return 0
+        ;;
+      poweroff)
+        COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index | hash_value id)" -- ${cur}))
+        return 0
+        ;;
+      poweron | backup)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index | hash_value id)" -- ${cur}))
         return 0
         ;;
@@ -90,7 +95,9 @@ _mussel.sh() {
   case "${namespace}" in
     ssh_key_pair)
       case "${task}" in
-    	  create)
+        index)
+          ;;
+        create)
           case "${prev}" in
             --public-key)
               COMPREPLY=($(compgen -f ${cur}))
@@ -99,12 +106,14 @@ _mussel.sh() {
               COMPREPLY=($(compgen -W "--public-key" -- ${cur}))
               ;;
           esac
-	      ;;
+	  ;;
       esac
       ;;
 
     security_group)
       case "${task}" in
+        index)
+          ;;
         create)
           case "${prev}" in
             --rule)
@@ -120,6 +129,16 @@ _mussel.sh() {
 
     instance)
       case "${task}" in
+        index)
+          case "${prev}" in
+            --state)
+              COMPREPLY=($(compgen -W "alive alive_with_terminated without_terminated running stopped terminated" -- ${cur}))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "--state" -- ${cur}))
+              ;;
+          esac
+          ;;
         create)
           case "${prev}" in
             --hypervisor)
@@ -150,6 +169,16 @@ _mussel.sh() {
 
     load_balancer)
       case "${task}" in
+        index)
+          case "${prev}" in
+            --state)
+              COMPREPLY=($(compgen -W "alive alive_with_deleted running terminated" -- ${cur}))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "--state" -- ${cur}))
+              ;;
+          esac
+          ;;
         create)
           case "${prev}" in
             --balance-algorithm)
