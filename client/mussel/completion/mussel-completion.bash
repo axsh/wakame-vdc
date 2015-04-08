@@ -9,7 +9,7 @@
 #
 
 function hash_value() {
-  local key=$1 line
+  local key=$1
 
   #
   # NF=2) ":id: i-xxx"
