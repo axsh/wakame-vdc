@@ -20,7 +20,7 @@ function hash_value() {
   # NF=2) ":id: i-xxx"
   # NF=3) "- :vif_id: vif-qqjr0ial"
   #
-  egrep -w ":${key}:" </dev/stdin | awk '{ if (NF == 2) {print $2} else if (NF == 3) {print $3} }'
+  egrep -w -- "- :${key}:" </dev/stdin | awk '{ if (NF == 2) {print $2} else if (NF == 3) {print $3} }'
 }
 
 _mussel.sh() {
@@ -41,6 +41,7 @@ _mussel.sh() {
       network_vif
       security_group
       ssh_key_pair
+      volume
     "
     COMPREPLY=($(compgen -W "${namespaces}" ${cur}))
     return 0
@@ -49,7 +50,7 @@ _mussel.sh() {
     local tasks_rw="${tasks_ro} create update destroy"
 
     case "${prev}" in
-      backup_object | host_node | image | network | network_vif)
+      backup_object | host_node | image | network | network_vif | volume )
         COMPREPLY=($(compgen -W "${tasks_ro}" -- ${cur}))
         return 0
         ;;
@@ -116,13 +117,13 @@ _mussel.sh() {
               COMPREPLY=($(compgen -W "1 2 4" -- ${cur}))
               ;;
             --image-id)
-              COMPREPLY=($(compgen -W "$(mussel.sh image index | hash_value uuid)" -- ${cur}))
+              COMPREPLY=($(compgen -W "$(mussel.sh image index | hash_value id)" -- ${cur}))
               ;;
             --memory-size)
               COMPREPLY=($(compgen -W "256 512" -- ${cur}))
               ;;
             --ssh-key-id)
-              COMPREPLY=($(compgen -W "$(mussel.sh ssh_key_pair index | hash_value uuid)" -- ${cur}))
+              COMPREPLY=($(compgen -W "$(mussel.sh ssh_key_pair index | hash_value id)" -- ${cur}))
               ;;
             --vifs)
               COMPREPLY=($(compgen -f ${cur}))
@@ -213,6 +214,21 @@ _mussel.sh() {
               ;;
             *)
               COMPREPLY=($(compgen -W "--public-key" -- ${cur}))
+              ;;
+          esac
+          ;;
+      esac
+      ;;
+
+    volume)
+      case "${task}" in
+        index)
+          case "${prev}" in
+            --state)
+              COMPREPLY=($(compgen -W "alive alive_with_deleted available attached deleted" -- ${cur}))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "--state" -- ${cur}))
               ;;
           esac
           ;;
