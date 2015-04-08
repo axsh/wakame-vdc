@@ -37,14 +37,13 @@ function install_wakame_init() {
       ;;
   esac
 
-  local wakame_init_path
   case "${distro}" in
     centos|rhel)
       rsync -a $(cd ${BASH_SOURCE[0]%/*} && pwd)/../../rpmbuild/wakame-vdc.repo ${chroot_dir}/etc/yum.repos.d/wakame-vdc.repo
       run_in_target ${chroot_dir} yum install -y wakame-init
       ;;
     ubuntu|debian)
-      wakame_init_path=${wakame_init_ubuntu_path}
+      local wakame_init_path=${wakame_init_ubuntu_path}
 
       printf "[DEBUG] Installing wakame-init script\n"
       cat <<-EOS >> ${chroot_dir}/etc/rc.local
