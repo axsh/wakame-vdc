@@ -182,7 +182,7 @@ _mussel.sh() {
         create)
           case "${prev}" in
             --balance-algorithm)
-              COMPREPLY=($(compgen -W "leastconn" -- ${cur}))
+              COMPREPLY=($(compgen -W "leastconn source" -- ${cur}))
               ;;
             --cookie)
               COMPREPLY=($(compgen -W "haproxy" -- ${cur}))
