@@ -15,9 +15,9 @@ The following companies are currently using Wakame-vdc in production.
 * [Kyushu Electric Power Co., Ltd.](http://www.kyuden.co.jp/en_index.html)
 * [National Institute of Informatics](http://www.nii.ac.jp/en/)
 * [NTT PC Communications](http://www.nttpc.co.jp/english/)
-  - [NTT PC Web Arena VPS Cloud](http://web.arena.ne.jp/vps-cloud/)
+    * [NTT PC Web Arena VPS Cloud](http://web.arena.ne.jp/vps-cloud/)
 * [Kyocera Communication Systems Co., Ltd.](http://www.kccs.co.jp/english/)
-  - [KCCS GreenOffice Unified Cloud](https://gouc.datacenter.ne.jp)
+    * [KCCS GreenOffice Unified Cloud](https://gouc.datacenter.ne.jp)
 
 Don't hesitate to let us know if you also use Wakame-vdc.
 
