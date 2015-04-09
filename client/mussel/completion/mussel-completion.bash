@@ -63,7 +63,6 @@ _mussel.sh() {
       | backup_storage \
       | dc_network \
       | host_node \
-      | image \
       | instance_monitoring \
       | network \
       | network_vif_monitor \
@@ -78,7 +77,7 @@ _mussel.sh() {
       load_balancer)
         COMPREPLY=($(compgen -W "${tasks_rw} register unregister" -- ${cur}))
         ;;
-      ssh_key_pair | security_group)
+      image | ssh_key_pair | security_group)
         COMPREPLY=($(compgen -W "${tasks_rw}" -- ${cur}))
         ;;
     esac
@@ -121,8 +120,14 @@ _mussel.sh() {
             --is-public)
               COMPREPLY=($(compgen -W "true false 0 1" -- ${cur}))
               ;;
+            --service-type)
+              COMPREPLY=($(compgen -W "std lb" -- ${cur}))
+              ;;
+            --state)
+              COMPREPLY=($(compgen -W "alive alive_with_deleted available deleted" -- ${cur}))
+              ;;
             *)
-              COMPREPLY=($(compgen -W "--is-public" -- ${cur}))
+              COMPREPLY=($(compgen -W "--is-public --service-type --state" -- ${cur}))
               ;;
           esac
           ;;
