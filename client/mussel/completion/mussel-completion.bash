@@ -52,44 +52,43 @@ _mussel.sh() {
     case "${prev}" in
       backup_object | host_node | image | network | network_vif | volume )
         COMPREPLY=($(compgen -W "${tasks_ro}" -- ${cur}))
-        return 0
         ;;
       instance)
         COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron backup" -- ${cur}))
-        return 0
         ;;
       load_balancer)
         COMPREPLY=($(compgen -W "${tasks_rw} register unregister" -- ${cur}))
-        return 0
         ;;
       ssh_key_pair | security_group)
         COMPREPLY=($(compgen -W "${tasks_rw}" -- ${cur}))
-        return 0
         ;;
     esac
+    return 0
   elif [[ ${offset} == 4 ]]; then
+    local needmore=
     case "${prev}" in
       show)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index | hash_value id)" -- ${cur}))
-        return 0
         ;;
       update | destroy)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
-        return 0
         ;;
       poweroff)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state running | hash_value id)" -- ${cur}))
-        return 0
         ;;
       poweron | backup)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
-        return 0
         ;;
       register | unregister)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state running | hash_value id)" -- ${cur}))
-        return 0
+        ;;
+      *)
+        needmore=yes
         ;;
     esac
+    if [[ -z "${needmore}" ]]; then
+      return 0
+    fi
   fi
 
   local namespace=${COMP_WORDS[1]}
