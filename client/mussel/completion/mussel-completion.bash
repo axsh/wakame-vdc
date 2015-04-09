@@ -32,15 +32,23 @@ _mussel.sh() {
     return 0
   elif [[ ${offset} == 2 ]]; then
     local namespaces="
+      alarm
       backup_object
+      backup_storage
+      dc_network
       host_node
       image
+      instance_monitoring
       instance
       load_balancer
+      ip_handle
+      ip_pool
       network
+      network_vif_monitor
       network_vif
       security_group
       ssh_key_pair
+      storage_node
       volume
     "
     COMPREPLY=($(compgen -W "${namespaces}" ${cur}))
@@ -50,7 +58,18 @@ _mussel.sh() {
     local tasks_rw="${tasks_ro} create update destroy"
 
     case "${prev}" in
-      backup_object | host_node | image | network | network_vif | volume )
+      alarm \
+      | backup_object \
+      | backup_storage \
+      | dc_network \
+      | host_node \
+      | image \
+      | instance_monitoring \
+      | network \
+      | network_vif_monitor \
+      | network_vif \
+      | storage_node \
+      | volume )
         COMPREPLY=($(compgen -W "${tasks_ro}" -- ${cur}))
         ;;
       instance)
