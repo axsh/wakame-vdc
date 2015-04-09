@@ -114,6 +114,21 @@ _mussel.sh() {
   local task=${COMP_WORDS[2]}
 
   case "${namespace}" in
+    image)
+      case "${task}" in
+        index)
+          case "${prev}" in
+            --is-public)
+              COMPREPLY=($(compgen -W "true false 0 1" -- ${cur}))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "--is-public" -- ${cur}))
+              ;;
+          esac
+          ;;
+      esac
+      ;;
+
     instance)
       case "${task}" in
         index)
