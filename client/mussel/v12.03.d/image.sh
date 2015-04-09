@@ -14,5 +14,9 @@ task_index() {
   if [[ -n "${service_type}" ]]; then
     xquery="${xquery}\&service_type=${service_type}"
   fi
+  # --state=(alive|alive_with_deleted|available|deleted)
+  if [[ -n "${state}" ]]; then
+    xquery="${xquery}\&state=${state}"
+  fi
   cmd_index $*
 }
