@@ -71,13 +71,13 @@ _mussel.sh() {
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index | hash_value id)" -- ${cur}))
         ;;
       update | destroy)
-        COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
+        COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state alive   | hash_value id)" -- ${cur}))
         ;;
       poweroff)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state running | hash_value id)" -- ${cur}))
         ;;
       poweron | backup)
-        COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
+        COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state alive   | hash_value id)" -- ${cur}))
         ;;
       register | unregister)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state running | hash_value id)" -- ${cur}))
