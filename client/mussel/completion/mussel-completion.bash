@@ -86,7 +86,9 @@ _mussel.sh() {
     local needmore=
     case "${prev}" in
       show)
-        COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index | hash_value id)" -- ${cur}))
+        # "--is-public" for image.index.
+        # this options will be ignored in other namespace.
+        COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --is-public true | hash_value id)" -- ${cur}))
         ;;
       update | destroy)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state alive   | hash_value id)" -- ${cur}))
@@ -155,7 +157,7 @@ _mussel.sh() {
               COMPREPLY=($(compgen -W "1 2 4" -- ${cur}))
               ;;
             --image-id)
-              COMPREPLY=($(compgen -W "$(mussel.sh image index | hash_value id)" -- ${cur}))
+              COMPREPLY=($(compgen -W "$(mussel.sh image index --is-public true | hash_value id)" -- ${cur}))
               ;;
             --memory-size)
               COMPREPLY=($(compgen -W "256 512" -- ${cur}))
