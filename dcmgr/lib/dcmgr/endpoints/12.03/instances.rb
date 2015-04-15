@@ -37,7 +37,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     dc = M::DcNetwork[nw[:dc_network_id].to_i]
     raise E::UnknownDcNetwork, network_id unless dc
   end
-  
+
   # monitoring.items nested parameters are accepted only at POST
   # /instances call. It is unable from PUT /instances.
   # Further modifications can be done from "/instances/i-xxxxx/monitoring"
