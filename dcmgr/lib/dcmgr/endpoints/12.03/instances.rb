@@ -9,7 +9,7 @@ require 'ipaddress'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_META_STATE=['alive', 'alive_with_terminated', 'without_terminated'].freeze
-  INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
+  INSTANCE_STATE=['running', 'stopped', 'halted', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
 
   register V1203::Helpers::ResourceLabel
