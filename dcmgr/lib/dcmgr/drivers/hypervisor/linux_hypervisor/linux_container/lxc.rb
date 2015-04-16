@@ -47,7 +47,7 @@ module Dcmgr
       end
 
       def initialize
-        @lxc_version = `lxc-version`.chomp.split(': ').last
+        @lxc_version = `lxc-info --version`.chomp.split(': ').last
         logger.info("lxc-version: #{@lxc_version}")
 
         unless check_cgroup_mount
