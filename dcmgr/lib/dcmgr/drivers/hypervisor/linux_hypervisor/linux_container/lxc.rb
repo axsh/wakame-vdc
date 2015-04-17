@@ -58,6 +58,10 @@ module Dcmgr
       def run_instance(ctx)
         # run lxc
         generate_config(ctx)
+
+        # check mount point
+        Dir.mkdir(ctx.root_mount_path) unless File.directory?(ctx.root_mount_path)
+        # "rootfs" directory should be created before running lxc-create.
         sh("lxc-create -f %s -n %s", [ctx.lxc_conf_path, ctx.inst[:uuid]])
 
         poweron_instance(ctx)
@@ -77,8 +81,6 @@ module Dcmgr
       end
 
       def poweron_instance(ctx)
-        # check mount point
-        Dir.mkdir(ctx.root_mount_path) unless File.directory?(ctx.root_mount_path)
         mount_root_image(ctx, ctx.root_mount_path)
 
         # metadata drive
