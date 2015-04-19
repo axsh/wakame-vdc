@@ -41,6 +41,10 @@ function install_wakame_init() {
     centos|rhel)
       rsync -a $(cd ${BASH_SOURCE[0]%/*} && pwd)/../../rpmbuild/wakame-vdc.repo ${chroot_dir}/etc/yum.repos.d/wakame-vdc.repo
       run_in_target ${chroot_dir} yum install -y wakame-init
+      # work-around: make sure to remove HWADDR= param in wakame-init.
+      if [[ -f ${chroot_dir}/etc/wakame-init ]]; then
+        sed -i "/^HWADDR=.*/d" ${chroot_dir}/etc/wakame-init
+      fi
       ;;
     ubuntu|debian)
       local wakame_init_path=${wakame_init_ubuntu_path}
