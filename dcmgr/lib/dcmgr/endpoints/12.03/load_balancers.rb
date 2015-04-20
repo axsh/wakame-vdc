@@ -564,7 +564,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       raise E::InvalidLoadBalancerState, lb.state
     end
 
-    respond_with(R::LoadBalancer.new(lb).generate)
+    respond_with([lb.canonical_uuid])
   end
 
  private
