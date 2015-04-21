@@ -331,6 +331,15 @@ Requires: %{oname} = %{version}-%{release}
 %description vdcsh
 <insert long description, indented with spaces>
 
+# client-mussel
+%package client-mussel
+BuildArch: noarch
+Summary: api client
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description client-mussel
+<insert long description, indented with spaces>
+
 ## rpmbuild -bp
 %prep
 [ -d %{name}-%{version} ] && rm -rf %{name}-%{version}
@@ -472,6 +481,10 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %dir /var/log/%{oname}
 %dir /var/lib/%{oname}
 %exclude %{prefix}/%{oname}/tests/
+
+%files client-mussel
+%defattr(-,root,root)
+%dir %{prefix}/%{oname}/client/mussel
 
 %files vdcsh
 %defattr(-,root,root)
