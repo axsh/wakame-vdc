@@ -483,7 +483,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 
 %files client-mussel
 %defattr(-,root,root)
-%dir %{prefix}/%{oname}/client/mussel
+%{prefix}/%{oname}/client/mussel/
 
 %files vdcsh
 %defattr(-,root,root)
