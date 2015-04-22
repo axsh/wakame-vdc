@@ -336,6 +336,7 @@ Requires: %{oname} = %{version}-%{release}
 BuildArch: noarch
 Summary: api client
 Group: Development/Languages
+Requires: curl
 %description client-mussel
 <insert long description, indented with spaces>
 
