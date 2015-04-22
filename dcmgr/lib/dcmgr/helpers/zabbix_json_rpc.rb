@@ -83,15 +83,16 @@ module Dcmgr
         end
 
         def request(method, params)
-          tryagain(@retry_max) do
+          zabbix_res = tryagain(@retry_max) do
             login if @auth_token.nil?
 
             http_res = send_request(method, params)
-            zabbix_res = RpcResponse.new(http_res)
-            if zabbix_res.error? && zabbix_res.error_code == -32602
+            response = RpcResponse.new(http_res)
+            if response.error? && response.error_code == -32602
               @auth_token = nil
               raise "Invalid Authentication Token. Try to fetch new token."
             end
+            response
           end
           zabbix_res
         end
