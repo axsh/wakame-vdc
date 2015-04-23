@@ -141,13 +141,10 @@ module Dcmgr
         end
 
         # `lxc-info -n i-abj0jbjk`.split
-        # => ["state:", "RUNNING", "pid:", "6253"]
-        #
-        # `lxc-info -n xxx`.split
-        # => ["state:", "STOPPED", "pid:", "-1"]
+        # => ["Name:", "i-wsriilld", "State:", "RUNNING", "PID:", "8292", "CPU", "use:", "1.33", "seconds", "Memory", "use:", "29.12", "MiB"]
 
-        container_status = `lxc-info -n #{i}`.split
-        if container_status[1] != "RUNNING"
+        container_status = `lxc-info -n #{i}`.chomp.split(" ")
+        if container_status[3] != "RUNNING"
           raise "Unable to find the lxc container: #{i}"
         end
       end
