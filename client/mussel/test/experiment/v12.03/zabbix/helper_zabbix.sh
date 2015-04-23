@@ -10,6 +10,13 @@
 
 ## functions
 
+function load_zabbixrc() {
+  ZABBIX_RC=${ZABBIX_RC:-${HOME}/.zabbixrc}
+  if [[ -f "${ZABBIX_RC}" ]]; then
+    . ${ZABBIX_RC}
+  fi
+}
+
 function setup_zabbix_vars() {
   ZABBIXSH=${ZABBIXSH:-/home/axsh/work/zabbix-bash/zabbix.sh}
   JSONSH=${JSONSH:-/usr/local/bin/json.sh}
@@ -57,6 +64,10 @@ function zabbix_api_authenticate() {
 
 
 ### instance
+
+### environment-specific configuration
+[[ -f ${BASH_SOURCE[0]%/*}/zabbixrc ]] && { . ${BASH_SOURCE[0]%/*}/zabbixrc; } || :
+load_zabbixrc
 
 ### shunit2 setup
 setup_zabbix_vars
