@@ -47,7 +47,13 @@ try {
     # not access stdout and stderr directly, which avoids a bug in
     # PowerShell in Windows Server 2008.
     # see: http://www.leeholmes.com/blog/2008/07/30/workaround-the-os-handles-position-is-not-what-filestream-expected/
-    netsh.exe advfirewall set currentprofile state off 2>&1 | Write-Host  # completely turn off firewall
+    netsh.exe advfirewall firewall add rule name="Open Zabbix agentd port 10050 inbound" dir=in action=allow protocol=TCP localport=10050 2>&1 | Write-Host
+    netsh.exe advfirewall firewall add rule name="Open Zabbix trapper port 10051 inbound" dir=in action=allow protocol=TCP localport=10051 2>&1 | Write-Host
+    
+    netsh.exe advfirewall firewall add rule name="Open Zabbix agentd port 10050 outbound" dir=out action=allow protocol=TCP localport=10050 2>&1 | Write-Host
+    netsh.exe advfirewall firewall add rule name="Open Zabbix trapper port 10051 outbound" dir=out action=allow protocol=TCP localport=10051 2>&1 | Write-Host
+
+    netsh.exe advfirewall firewall set rule group="remote desktop" new enable=Yes
 }
 catch {
     $Error[0] | Write-Host
