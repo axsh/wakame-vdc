@@ -89,6 +89,7 @@ module Dcmgr
 
         sh("lxc-start -d -n %s", [ctx.inst[:uuid], ctx.inst_data_dir])
         sh("lxc-wait -n %s -s RUNNING", [ctx.inst_id])
+        ctx.logger.info("Started container")
       end
 
       def poweroff_instance(ctx)
