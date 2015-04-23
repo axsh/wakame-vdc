@@ -24,6 +24,13 @@ function setup_zabbix_vars() {
   api_password=${api_password:-zabbix}
 }
 
+function setup_mysql_vars() {
+  MYSQL_HOST=${MYSQL_HOST:-localhost}
+  MYSQL_USER=${MYSQL_USER:-root}
+  MYSQL_PASSWORD=${MYSQL_PASSWORD:-}
+  MYSQL_DB=${MYSQL_DB:-zabbix}
+}
+
 function zabbix_sh() {
   echo ${ZABBIXSH}
 }
@@ -62,6 +69,23 @@ function zabbix_api_authenticate() {
   $(zabbix_sh) user login --user ${api_user} --password ${api_password} | $(json_sh) | grep result | awk '{print $3}'
 }
 
+function query_mysql() {
+  local query=${1}
+  declare mysql_opts=""
+
+  [[ -n "${MYSQL_HOST}" ]] && {
+    mysql_opts="${mysql_opts} --host=${MYSQL_HOST}"
+  }
+
+  [[ -n "${MYSQL_PASSWORD}" ]] && {
+    mysql_opts="${mysql_opts} --password=${MYSQL_PASSWORD}"
+  }
+  /usr/bin/mysql -s ${mysql_opts} --execute="${query}" -u${MYSQL_USER} ${MYSQL_DB}
+}
+
+function delete_sessions() {
+  query_mysql "delete from sessions where userid=3"
+}
 
 ### instance
 
@@ -71,3 +95,4 @@ load_zabbixrc
 
 ### shunit2 setup
 setup_zabbix_vars
+setup_mysql_vars
