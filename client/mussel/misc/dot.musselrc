@@ -1,0 +1,235 @@
+# -*-Shell-script-*-
+#
+# requires:
+#  bash
+#  date, sed, cat, curl, mkdir, ln, egrep, awk, xargs, tail, tee
+#
+# description:
+#  mussel.sh hacks and wakame-vdc api debugging tool
+#
+# usage:
+#   1) Copy this file to ~/.musselrc
+#   2) Create ~/.musselrc.local
+#
+# ~/.musselrc loaded mussel.sh will generate some files under ~/.mussel.log/.
+#
+# ~/.mussel.log/
+#  |
+#  +- history # Command histories
+#  +- stderr  # Copy of all stdout
+#  +- stdout  # Copy of all stderr
+#  |
+#  +- statistics/
+#      +- ${namespace}/
+#         +- ${task}/
+#            +- %Y%m%d/
+#               +- %Y%m%d.%H%M%S.%s/
+#                  +- api.request
+#                  +- api.response
+#                  +- bash.declare
+#                  +- bash.funcname
+#                  +- cmd.command
+#                  +- cmd.exit
+#                  +- cmd.name
+#                  +- cmd.stderr
+#                  +- cmd.stdout
+#                  +- http.request.header
+#                  +- http.request.method
+#                  +- http.request.params
+#                  +- http.request.uri
+#                  +- http.response.header
+#                  +- http.trace
+#                  +- mussel.cmd
+#                  +- mussel.namespace
+#
+
+# if you want to define some your variables, you can define them using ${HOME}/.musselrc.local.
+if [[ -f ${HOME}/.musselrc.local ]]; then
+  . ${HOME}/.musselrc.local
+fi
+
+#MUSSEL_FRONTEND=[ interactive | noninteractive ]
+MUSSEL_FRONTEND=${MUSSEL_FRONTEND:-interactive}
+
+## dcmgr-api
+
+DCMGR_HOST=${DCMGR_HOST:-127.0.0.1}
+account_id=${account_id:-a-shpoolxx}
+
+## hypervisor
+
+#hypervisor=[ dummy | lxc | openvz | kvm ]
+
+## vmimage
+
+### std
+
+#image_id=wmi-centos1d${arch_type}
+
+## networking
+
+#vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
+
+### lbnode
+
+#image_id_lbnode=wmi-lbnode1d${arch_type}
+
+## dummy
+
+case "${hypervisor}" in
+  dummy)
+    function ping() { :; }
+    function nc()   { :; }
+    function ssh()  { :; }
+    ;;
+esac
+
+### mussel hack!!!
+
+#
+# top-level:
+#
+# + stdout
+# + stderr
+# + history
+# + statistics/:namespace/:cmd/:today/:txid/
+# + test/:category/:api_version/:script/:step/:today/:txid/
+#
+# curl logging:
+#
+# + api.request
+# + api.response
+# + bash.declare
+# + bash.funcname
+# + cmd.name
+# + cmd.command
+# + cmd.exit
+# + http.request.header
+# + http.request.method
+# + http.request.params
+# + http.request.uri
+# + http.response.header
+# + http.trace
+# + mussel.cmd
+# + mussel.namespace
+#
+
+front_offset=$((${#BASH_SOURCE[@]} - 1))
+front_filename=${BASH_SOURCE[${front_offset}]}
+front_path=$(cd ${front_filename%%/*} && pwd)/${front_filename##*/}
+front_shortpath=${front_path##*/client/mussel/}
+log_store_dir=${HOME}/.mussel.log
+mkdir -p ${log_store_dir}
+ 
+function gen_txid() {
+  LANG=C date +%Y%m%d.%H%M%S.%N
+}
+mussel_build_id=${mussel_build_id:-$(gen_txid)}
+
+function mussel_curl_beautify() {
+  local line=
+  while read line; do
+    set ${line}
+    while [[ "$1" ]]; do
+      case $1 in
+        curl) echo -n "$1" ;;
+      -fsSkL) echo " $1 \\ " ;;
+       -H|-X) echo " $1 $2 \\" ; shift ;;
+      --data-urlencode) echo " $1 $2 \\"; shift ;;
+          -D) shift ;;
+      *) echo " $1 " ;;
+      esac
+      shift
+    done | sed "s,${DCMGR_HOST}:${DCMGR_PORT},localhost:9001,"
+  done < <(cat "${@}")
+}
+
+# command subsutitutions
+ 
+function cmdlog() {
+  local core_cmd=${FUNCNAME[1]}
+  local today=$(LANG=C date +%Y%m%d)
+  local sub_log_store_dir=${log_store_dir}/${front_shortpath}/${_shunit_test_:-${core_cmd}}/${today}/$(gen_txid)
+  mkdir -p ${sub_log_store_dir}
+
+  local cmd_opts=
+  local stdout_paths=${sub_log_store_dir}/cmd.stdout
+  local stderr_paths=${sub_log_store_dir}/cmd.stderr
+ 
+  echo "${FUNCNAME[@]}" >${sub_log_store_dir}/bash.funcname
+  declare               >${sub_log_store_dir}/bash.declare
+
+  echo "${core_cmd}"      >${sub_log_store_dir}/cmd.name
+  echo "${core_cmd} ${@}" >${sub_log_store_dir}/cmd.command
+
+  case "${core_cmd}" in
+    curl)
+      echo "${namespace}" >${sub_log_store_dir}/mussel.namespace
+      echo "${cmd}"       >${sub_log_store_dir}/mussel.cmd
+      if [[ -n "${namespace}" ]] && [[ -n "${cmd}" ]]; then
+        local sub_log_store_dir_mussel=${log_store_dir}/statistics/${namespace}/${cmd}/${today}
+        [[ -d "${sub_log_store_dir_mussel}" ]] || mkdir -p ${sub_log_store_dir_mussel}
+        ln -s ${sub_log_store_dir} ${sub_log_store_dir_mussel}
+      fi
+      unset namespace cmd # make sure to unset following values for next task(s)
+
+      echo "${core_cmd} ${@}" \
+       | tee ${sub_log_store_dir}/api.request \
+       | mussel_curl_beautify | tee \
+         >(egrep -- -X               | awk '{print $2}' >${sub_log_store_dir}/http.request.method) \
+         >(egrep -- -H               | awk '{print $2}' >${sub_log_store_dir}/http.request.header) \
+         >(egrep -- --data-urlencode | awk '{print $2}' >${sub_log_store_dir}/http.request.params) \
+         >(tail -1                   | xargs echo       >${sub_log_store_dir}/http.request.uri)    \
+         >/dev/null
+      stdout_paths="${stdout_paths} ${sub_log_store_dir}/cmd.stdout ${sub_log_store_dir}/api.response"
+      cmd_opts="-D ${sub_log_store_dir}/http.response.header --trace-ascii ${sub_log_store_dir}/http.trace"
+      ;;
+  esac
+
+  exec 1> >(tee ${stdout_paths} >/dev/stdout)
+  exec 2> >(tee ${stderr_paths} >/dev/stderr)
+  eval "$(type -P ${core_cmd}) ${cmd_opts} ${@}" </dev/stdin # "</dev/stdin" for here-document
+
+  local retval=$?
+  echo  "${retval}" >${sub_log_store_dir}/cmd.exit
+
+  {
+    LANG=C date "+# %F %T %N #${mussel_build_id}"
+    echo "${core_cmd} ${@} # => ${retval} (${front_shortpath}) #${mussel_build_id}" 
+  } >>${log_store_dir}/history
+
+  return ${retval}
+}
+ 
+function nc() {
+  cmdlog "${@}"
+}
+
+function ping() {
+  cmdlog "${@}"
+}
+
+function openssl() {
+  cmdlog "${@}"
+}
+
+function ssh() {
+  cmdlog "-o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile /dev/null' ${@}"
+}
+
+function curl() {
+  case "${@}" in
+    *${DCMGR_BASE_URI}*)
+      cmdlog "${@/&/\&}"
+      ;;
+    *)
+      eval "$(type -P curl) ${@/&/\&}"
+      ;;
+  esac
+}
+
+function shlog() {
+  exec 1> >(tee -a ${log_store_dir}/stdout >/dev/stdout)
+  exec 2> >(tee -a ${log_store_dir}/stderr >/dev/stderr)
+  eval "${@}"
+}
