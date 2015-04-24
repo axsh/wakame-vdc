@@ -144,7 +144,7 @@ _mussel.sh() {
               COMPREPLY=($(compgen -W "std lb" -- ${cur}))
               ;;
             --state)
-              COMPREPLY=($(compgen -W "alive alive_with_terminated without_terminated running stopped terminated" -- ${cur}))
+              COMPREPLY=($(compgen -W "alive alive_with_terminated without_terminated running stopped halted terminated" -- ${cur}))
               ;;
             *)
               COMPREPLY=($(compgen -W "--service-type --state" -- ${cur}))
