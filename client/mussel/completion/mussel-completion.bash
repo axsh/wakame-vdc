@@ -140,11 +140,14 @@ _mussel.sh() {
       case "${task}" in
         index)
           case "${prev}" in
+            --service-type)
+              COMPREPLY=($(compgen -W "std lb" -- ${cur}))
+              ;;
             --state)
               COMPREPLY=($(compgen -W "alive alive_with_terminated without_terminated running stopped terminated" -- ${cur}))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--state" -- ${cur}))
+              COMPREPLY=($(compgen -W "--service-type --state" -- ${cur}))
               ;;
           esac
           ;;
