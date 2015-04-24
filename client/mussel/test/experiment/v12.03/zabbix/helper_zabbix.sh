@@ -70,7 +70,7 @@ function zabbix_api_authenticate() {
 }
 
 function query_mysql() {
-  local query=${1}
+  local node=${1} query=${2}
   declare mysql_opts=""
 
   [[ -n "${MYSQL_HOST}" ]] && {
@@ -80,11 +80,14 @@ function query_mysql() {
   [[ -n "${MYSQL_PASSWORD}" ]] && {
     mysql_opts="${mysql_opts} --password=${MYSQL_PASSWORD}"
   }
-  /usr/bin/mysql -s ${mysql_opts} --execute="${query}" -u${MYSQL_USER} ${MYSQL_DB}
+  ssh ${node} <<-EOS
+	/usr/bin/mysql -s ${mysql_opts} --execute="${query}" -u${MYSQL_USER} ${MYSQL_DB}
+	EOS
 }
 
 function delete_sessions() {
-  query_mysql "delete from sessions where userid=3"
+  node=${API_HOST}
+  query_mysql ${node} "delete from sessions where userid=3 and sessionid != '${auth}'"
 }
 
 ### instance

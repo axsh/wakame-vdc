@@ -52,8 +52,6 @@ function test_retry_zabbix_api_authenticate() {
 }
 
 function test_retry_zabbix_api_authenticate_for_zabbix() {
-  auth=$(zabbix_api_authenticate)
-
   local item_key="icmpping[{\$IPADRESS1},,,,1000]"
 
   retry_until "zabbix_document_pair? item get /result/0/status 0"
