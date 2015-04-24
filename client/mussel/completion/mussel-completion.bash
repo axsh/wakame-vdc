@@ -75,7 +75,7 @@ _mussel.sh() {
         COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron backup" -- ${cur}))
         ;;
       load_balancer)
-        COMPREPLY=($(compgen -W "${tasks_rw} register unregister" -- ${cur}))
+        COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron register unregister" -- ${cur}))
         ;;
       image | ssh_key_pair | security_group)
         COMPREPLY=($(compgen -W "${tasks_rw}" -- ${cur}))
