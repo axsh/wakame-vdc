@@ -11,7 +11,7 @@ set -o pipefail
 
 readonly installed_path=/opt/axsh/wakame-vdc/client/mussel
 
-if [[ -d "a${installed_path}" ]]; then
+if [[ -d "${installed_path}" ]]; then
   # rpm
   PATH=${installed_path}:${PATH}
 else
