@@ -116,29 +116,5 @@ function test_network_vif_monitor_destroy() {
   assertEquals 0 $?
 }
 
-function test_retry_zabbix_api_authenticate() {
-  delete_sessions
-  assertEquals 0 $?
-
-  local enabled=true
-  local title=PING
-  local params="notification_id=mussel"
-
-  monitoring_uuid=$(run_cmd network_vif_monitor create ${vif_uuid} | hash_value uuid)
-  assertEquals 0 $?
-
-  run_cmd network_vif_monitor show ${vif_uuid} ${monitoring_uuid}
-  assertEquals 0 $?
-}
-
-function test_retry_zabbix_api_authenticate_for_zabbix() {
-  auth=$(zabbix_api_authenticate)
-
-  local item_key="icmpping[{\$IPADRESS1},,,,1000]"
-
-  retry_until "zabbix_document_pair? item get /result/0/status 0"
-  assertEquals 0 $?
-}
-
 ## shunit2
 . ${shunit2_file}
