@@ -443,7 +443,7 @@ mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/volumes
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/snap
 
 # mussel
-ln -s %{prefix}/%{oname}client/mussel/bin/mussel /usr/bin/mussel
+ln -s %{prefix}/%{oname}/client/mussel/bin/mussel /usr/bin/mussel
 
 %clean
 RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules clean
