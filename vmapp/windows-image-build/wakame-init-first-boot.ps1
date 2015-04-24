@@ -53,7 +53,11 @@ try {
     netsh.exe advfirewall firewall add rule name="Open Zabbix agentd port 10050 outbound" dir=out action=allow protocol=TCP localport=10050 2>&1 | Write-Host
     netsh.exe advfirewall firewall add rule name="Open Zabbix trapper port 10051 outbound" dir=out action=allow protocol=TCP localport=10051 2>&1 | Write-Host
 
-    netsh.exe advfirewall firewall set rule group="remote desktop" new enable=Yes
+    # Tried this: netsh.exe advfirewall firewall set rule group="remote desktop" new enable=Yes
+    # as suggested on this page: https://support.microsoft.com/en-us/kb/947709
+    # but it did not work, so changed to open the RDP ports directly:
+    netsh.exe advfirewall firewall add rule name="Open RDP TCP port 3389 inbound" dir=in action=allow protocol=TCP localport=3389 2>&1 | Write-Host
+    netsh.exe advfirewall firewall add rule name="Open RDP UDP port 3389 inbound" dir=in action=allow protocol=UDP localport=3389 2>&1 | Write-Host
 }
 catch {
     $Error[0] | Write-Host
