@@ -96,7 +96,10 @@ _mussel.sh() {
       poweroff)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state running | hash_value id)" -- ${cur}))
         ;;
-      poweron | backup)
+      poweron)
+        COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state halted  | hash_value id)" -- ${cur}))
+        ;;
+      backup)
         COMPREPLY=($(compgen -W "$(mussel.sh ${COMP_WORDS[1]} index --state alive   | hash_value id)" -- ${cur}))
         ;;
       register | unregister)
