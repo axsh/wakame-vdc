@@ -443,6 +443,7 @@ mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/volumes
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/snap
 
 # mussel
+mkdir -p ${RPM_BUILD_ROOT}/usr/bin
 ln -s %{prefix}/%{oname}/client/mussel/bin/mussel ${RPM_BUILD_ROOT}/usr/bin/mussel
 
 %clean
