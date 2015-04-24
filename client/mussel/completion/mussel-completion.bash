@@ -285,3 +285,4 @@ _mussel.sh() {
 }
 
 complete -F _mussel.sh mussel.sh
+complete -F _mussel.sh mussel
