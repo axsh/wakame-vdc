@@ -184,7 +184,7 @@ _mussel.sh() {
         index)
           case "${prev}" in
             --state)
-              COMPREPLY=($(compgen -W "alive alive_with_deleted running terminated" -- ${cur}))
+              COMPREPLY=($(compgen -W "alive alive_with_deleted running halted terminated" -- ${cur}))
               ;;
             *)
               COMPREPLY=($(compgen -W "--state" -- ${cur}))
