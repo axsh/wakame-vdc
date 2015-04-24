@@ -6,7 +6,7 @@ require 'amqp'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   LOAD_BALANCER_META_STATE = ['alive', 'alive_with_deleted'].freeze
-  LOAD_BALANCER_STATE=['running', 'terminated'].freeze
+  LOAD_BALANCER_STATE=['running', 'halted', 'terminated'].freeze
   LOAD_BALANCER_STATE_ALL=(LOAD_BALANCER_STATE + LOAD_BALANCER_META_STATE).freeze
 
   register Sinatra::InternalRequest
