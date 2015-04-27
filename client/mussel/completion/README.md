@@ -1,4 +1,4 @@
-# bash/zsh completion support for mussel.sh
+# bash/zsh completion support for mussel
 
 ## Installation
 
