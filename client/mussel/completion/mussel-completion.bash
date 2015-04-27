@@ -222,7 +222,7 @@ _mussel() {
         register | unregister)
           case "${prev}" in
             --vifs)
-              COMPREPLY=($(compgen -W "$(mussel instance index | hash_value vif_id)" -- ${cur}))
+              COMPREPLY=($(compgen -W "$(mussel instance index --state alive | hash_value vif_id)" -- ${cur}))
               ;;
             *)
               COMPREPLY=($(compgen -W "--vifs" -- ${cur}))
