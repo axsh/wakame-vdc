@@ -8,6 +8,9 @@
   <title>Installation - Wakame-vdc Documentation</title>
   
 
+  <link rel="shortcut icon" href="../favicon.ico">
+  
+
   
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
@@ -16,16 +19,12 @@
   <link rel="stylesheet" href="../css/highlight.css">
   <link href="../custom.css" rel="stylesheet">
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
   <script type="text/javascript" src="../js/highlight.pack.js"></script>
-  <script src="../js/theme.js"></script>
+  <script src="../js/theme.js"></script> 
 
-  <style>
-    body {font-size: 90%;}
-    pre, code {font-size: 100%;}
-    h3, h4, h5, h6 {color: #2980b9; font-weight: 300}
-  </style> 
+  
 </head>
 
 <body class="wy-body-for-nav" role="document">
@@ -44,36 +43,45 @@
     
         
             <li class="toctree-l1 ">
-                <a class="" href="../concept">Concept</a>
+                <a class="" href="..">Home</a>
+                
             </li>
         
 
     
         
-        <span>Getting started</span>
+            <li class="toctree-l1 ">
+                <a class="" href="../concept/">Concept</a>
+                
+            </li>
+        
+
+    
+        
+            <span>Getting started</span>
             
-                <li class="toctree-l1 current">
-                    <a class="current" href=".">Installation</a>
+                <li class="toctree-l2 current">
+                    <a class="current" href="./">Installation</a>
                     
                         <ul>
                         
-                            <li class="toctree-l2"><a href="#wakame-vdc-install-guide">Wakame-vdc install guide</a></li>
+                            <li class="toctree-l3"><a href="#wakame-vdc-install-guide">Wakame-vdc install guide</a></li>
                             
-                                <li><a class="toctree-l3" href="#what-are-we-installing">What are we installing?</a></li>
+                                <li><a class="toctree-l4" href="#what-are-we-installing">What are we installing?</a></li>
                             
-                                <li><a class="toctree-l3" href="#installation-requirements">Installation requirements</a></li>
+                                <li><a class="toctree-l4" href="#installation-requirements">Installation requirements</a></li>
                             
-                                <li><a class="toctree-l3" href="#what-will-this-guide-do-to-my-machine">What will this guide do to my machine?</a></li>
+                                <li><a class="toctree-l4" href="#what-will-this-guide-do-to-my-machine">What will this guide do to my machine?</a></li>
                             
-                                <li><a class="toctree-l3" href="#lets-get-started">Let's get started</a></li>
+                                <li><a class="toctree-l4" href="#lets-get-started">Let's get started</a></li>
                             
                         
                         </ul>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../development">Development</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../development/">Development</a>
                     
                 </li>
             
@@ -81,26 +89,15 @@
 
     
         
-        <span>Usage</span>
+            <span>Usage</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../usage">Basics</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../usage/">Basics</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../usage/advanced">Advanced</a>
-                    
-                </li>
-            
-        
-
-    
-        
-        <span>Instance Backup</span>
-            
-                <li class="toctree-l1 ">
-                    <a class="" href="../instance-backup">About</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../usage/advanced/">Advanced</a>
                     
                 </li>
             
@@ -108,10 +105,10 @@
 
     
         
-        <span>Security Groups</span>
+            <span>Instance Backup</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../security-groups">About</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../instance-backup/">About</a>
                     
                 </li>
             
@@ -119,20 +116,31 @@
 
     
         
-        <span>Support</span>
+            <span>Security Groups</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../jargon-dictionary">Jargon Dictionary</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../security-groups/">About</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../faq">FAQ</a>
+        
+
+    
+        
+            <span>Support</span>
+            
+                <li class="toctree-l2 ">
+                    <a class="" href="../jargon-dictionary/">Jargon Dictionary</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../community">Community</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../faq/">FAQ</a>
+                    
+                </li>
+            
+                <li class="toctree-l2 ">
+                    <a class="" href="../community/">Community</a>
                     
                 </li>
             
@@ -149,8 +157,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href=".."></a>
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Wakame-vdc Documentation</a>
       </nav>
 
       
@@ -159,6 +167,11 @@
           <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        <li>Getting started &raquo;</li>
+      
+    
     <li>Installation</li>
       <li class="wy-breadcrumbs-aside">
         
@@ -180,10 +193,10 @@
 <p>We will have a simple <em>machine image</em> running Ubuntu 10.04 (Lucid Lynx). We will be able to start instances of this image.</p>
 </li>
 <li>
-<p>We will be able to create dynamic firewalls using <a href="../security-groups">Security Groups</a>.</p>
+<p>We will be able to create dynamic firewalls using <a href="../security-groups/">Security Groups</a>.</p>
 </li>
 <li>
-<p>We will be able to <a href="../instance-backup">back up running instances</a> and turn them into new machine images.</p>
+<p>We will be able to <a href="../instance-backup/">back up running instances</a> and turn them into new machine images.</p>
 </li>
 <li>
 <p>We will be able to use either password or rsa key authentication when logging into instances.</p>
@@ -475,18 +488,17 @@ sudo start vdc-webui
 </code></pre>
 <p>If everything went right, Wakame-vdc is now up and running. Start a web browser and surf to your machine's IP address on port 9000. If you're using the same IP address as this guide, that would be <code>192.168.3.100:9000</code>. Log in with user <code>demo</code> and password <code>demo</code>.</p>
 <p>The <code>lucid5d</code> image has password login through ssh enabled. After starting instances you are able to log in using username <code>ubuntu</code> and password <code>ubuntu</code>. You are of course also able to log in using username <code>ubuntu</code> and a key pair registered with Wakame-vdc.</p>
-<p>Check out the <a href="../usage">basic usage guide</a> if you're not sure were to go from here.</p>
-
+<p>Check out the <a href="../usage/">basic usage guide</a> if you're not sure were to go from here.</p>
             </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../development" class="btn btn-neutral float-right" title="Development"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../development/" class="btn btn-neutral float-right" title="Development"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../concept" class="btn btn-neutral" title="Concept"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../concept/" class="btn btn-neutral" title="Concept"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -512,11 +524,16 @@ sudo start vdc-webui
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
         
-            <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
         
-      <span><a href="../concept" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      <span style="margin-left: 15px"><a href="../development" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../concept/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../development/" style="color: #fcfcfc">Next &raquo;</a></span>
     </span>
 </div>
+
+<!--
+MkDocs version  : 0.12.2
+Docs Build Date : 2015-04-27 07:42:06.380080
+-->
 </body>
 </html>

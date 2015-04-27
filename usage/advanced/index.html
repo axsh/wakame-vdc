@@ -8,6 +8,9 @@
   <title>Advanced - Wakame-vdc Documentation</title>
   
 
+  <link rel="shortcut icon" href="../../favicon.ico">
+  
+
   
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
@@ -16,16 +19,12 @@
   <link rel="stylesheet" href="../../css/highlight.css">
   <link href="../../custom.css" rel="stylesheet">
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+  <script src="../../js/jquery-2.1.1.min.js"></script>
+  <script src="../../js/modernizr-2.8.3.min.js"></script>
   <script type="text/javascript" src="../../js/highlight.pack.js"></script>
-  <script src="../../js/theme.js"></script>
+  <script src="../../js/theme.js"></script> 
 
-  <style>
-    body {font-size: 90%;}
-    pre, code {font-size: 100%;}
-    h3, h4, h5, h6 {color: #2980b9; font-weight: 300}
-  </style> 
+  
 </head>
 
 <body class="wy-body-for-nav" role="document">
@@ -44,21 +43,30 @@
     
         
             <li class="toctree-l1 ">
-                <a class="" href="../../concept">Concept</a>
+                <a class="" href="../..">Home</a>
+                
             </li>
         
 
     
         
-        <span>Getting started</span>
+            <li class="toctree-l1 ">
+                <a class="" href="../../concept/">Concept</a>
+                
+            </li>
+        
+
+    
+        
+            <span>Getting started</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../../installation">Installation</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../../installation/">Installation</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../../development">Development</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../../development/">Development</a>
                     
                 </li>
             
@@ -66,31 +74,31 @@
 
     
         
-        <span>Usage</span>
+            <span>Usage</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="..">Basics</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../">Basics</a>
                     
                 </li>
             
-                <li class="toctree-l1 current">
-                    <a class="current" href=".">Advanced</a>
+                <li class="toctree-l2 current">
+                    <a class="current" href="./">Advanced</a>
                     
                         <ul>
                         
-                            <li class="toctree-l2"><a href="#overview">Overview</a></li>
+                            <li class="toctree-l3"><a href="#overview">Overview</a></li>
                             
-                                <li><a class="toctree-l3" href="#step-1-install-an-os-into-a-bootable-disk-or-directory-structure">Step 1: Install an OS into a bootable disk or directory structure</a></li>
+                                <li><a class="toctree-l4" href="#step-1-install-an-os-into-a-bootable-disk-or-directory-structure">Step 1: Install an OS into a bootable disk or directory structure</a></li>
                             
-                                <li><a class="toctree-l3" href="#step-2-specialize-the-os-installation-for-the-intended-purpose">Step 2: Specialize the OS installation for the intended purpose</a></li>
+                                <li><a class="toctree-l4" href="#step-2-specialize-the-os-installation-for-the-intended-purpose">Step 2: Specialize the OS installation for the intended purpose</a></li>
                             
-                                <li><a class="toctree-l3" href="#step-3-specialize-the-os-installation-for-wakame-vdc">Step 3: Specialize the OS installation for Wakame-vdc</a></li>
+                                <li><a class="toctree-l4" href="#step-3-specialize-the-os-installation-for-wakame-vdc">Step 3: Specialize the OS installation for Wakame-vdc</a></li>
                             
-                                <li><a class="toctree-l3" href="#step-4-package-it-all-into-one-machine-image-file">Step 4: Package it all into one machine image file</a></li>
+                                <li><a class="toctree-l4" href="#step-4-package-it-all-into-one-machine-image-file">Step 4: Package it all into one machine image file</a></li>
                             
-                                <li><a class="toctree-l3" href="#step-5-register-this-machine-image-file-with-wakame-vdc">Step 5: Register this machine image file with Wakame-vdc</a></li>
+                                <li><a class="toctree-l4" href="#step-5-register-this-machine-image-file-with-wakame-vdc">Step 5: Register this machine image file with Wakame-vdc</a></li>
                             
-                                <li><a class="toctree-l3" href="#using-and-testing-the-new-image">Using and testing the new image</a></li>
+                                <li><a class="toctree-l4" href="#using-and-testing-the-new-image">Using and testing the new image</a></li>
                             
                         
                         </ul>
@@ -101,10 +109,10 @@
 
     
         
-        <span>Instance Backup</span>
+            <span>Instance Backup</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../../instance-backup">About</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../../instance-backup/">About</a>
                     
                 </li>
             
@@ -112,10 +120,10 @@
 
     
         
-        <span>Security Groups</span>
+            <span>Security Groups</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../../security-groups">About</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../../security-groups/">About</a>
                     
                 </li>
             
@@ -123,20 +131,20 @@
 
     
         
-        <span>Support</span>
+            <span>Support</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../../jargon-dictionary">Jargon Dictionary</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../../jargon-dictionary/">Jargon Dictionary</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../../faq">FAQ</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../../faq/">FAQ</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../../community">Community</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../../community/">Community</a>
                     
                 </li>
             
@@ -153,8 +161,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href="../.."></a>
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Wakame-vdc Documentation</a>
       </nav>
 
       
@@ -163,6 +171,11 @@
           <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        <li>Usage &raquo;</li>
+      
+    
     <li>Advanced</li>
       <li class="wy-breadcrumbs-aside">
         
@@ -179,9 +192,9 @@
               <h2 id="overview">Overview</h2>
 <p>Although there are a variety of pre-built machine images for Wakame-vdc, in
 most cases it will be necessary to install extra software and do other
-miscellaneous setup after starting an <a href="../../jargon-dictionary#instance">instance</a>.  To reduce this setup
+miscellaneous setup after starting an <a href="../../jargon-dictionary/#instance">instance</a>.  To reduce this setup
 effort, in some cases it makes sense for users to create their own
-custom <a href="../../jargon-dictionary#machine-image">machine images</a>.  Then by simply starting an instance in Wakame-vdc, it is
+custom <a href="../../jargon-dictionary/#machine-image">machine images</a>.  Then by simply starting an instance in Wakame-vdc, it is
 possible to have a virtual machine up and running that is already
 perfectly set up.  All necessary software and services, for whatever
 purpose, can be "ready-to-go".</p>
@@ -219,7 +232,7 @@ installations of the major Linux distributions are available.</p>
 <h4 id="step-2-specialize-the-os-installation-for-the-intended-purpose">Step 2: Specialize the OS installation for the intended purpose</h4>
 <p>The most straightforward way to install and configure the installed OS
 distribution is from inside OpenVZ itself.  An environment created by
-following the <a href="../../installation">installation guide</a> or the <a href="http://wakameusersgroup.org/demo_image.html">VirtualBox
+following the <a href="../../installation/">installation guide</a> or the <a href="http://wakameusersgroup.org/demo_image.html">VirtualBox
 demo image guide</a> provides
 enough OpenVZ functionality to do this.</p>
 <p>As an example, running
@@ -255,10 +268,10 @@ configuring software.</p>
 specialization that is necessary when each instance is booted.  For
 example, the wakame-init script sets up network addresses and routing
 and installs ssh keys.  It also ensures that instances can access
-information from special <a href="../../jargon-dictionary#meta-data">meta-data</a> storage.
+information from special <a href="../../jargon-dictionary/#meta-data">meta-data</a> storage.
 One use of this storage is to allow scripts inside an instance to do
 additional specialization based on
-<a href="../../jargon-dictionary#user-data">user-data</a>.  Users can enter this data
+<a href="../../jargon-dictionary/#user-data">user-data</a>.  Users can enter this data
 on-the-fly while starting an instance, and scripts can read it from a
 special file at <code>/metadata/user-data</code>.</p>
 <pre><code>curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
@@ -353,9 +366,9 @@ already be there.)</p>
 <pre><code>mv wakame-vdc-custom-image.raw.gz /var/lib/wakame-vdc/images
 </code></pre>
 <p>Registering the machine image file requires two vdc-manage commands.
-The first registers the file as a <a href="../../jargon-dictionary#backup-object">backup object</a> and assigns it to a
-<a href="../../jargon-dictionary#backup-storage">backup storage</a>.  For example, to
-register the machine image created above into <a href="../../jargon-dictionary#backup-storage">backup storage</a> named <code>bkst-local</code>, the
+The first registers the file as a <a href="../../jargon-dictionary/#backup-object">backup object</a> and assigns it to a
+<a href="../../jargon-dictionary/#backup-storage">backup storage</a>.  For example, to
+register the machine image created above into <a href="../../jargon-dictionary/#backup-storage">backup storage</a> named <code>bkst-local</code>, the
 following command could be used:</p>
 <pre><code>/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupobject add \
   --uuid bo-customimage \
@@ -367,7 +380,7 @@ following command could be used:</p>
   --container-format gz \
   --checksum $(cat /tmp/remember.md5)
 </code></pre>
-<p>The second vdc-manage command tells Wakame-vdc that this <a href="../../jargon-dictionary#backup-object">backup object</a>
+<p>The second vdc-manage command tells Wakame-vdc that this <a href="../../jargon-dictionary/#backup-object">backup object</a>
 is a machine image that we can start instances of.</p>
 <pre><code>/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image add local bo-customimage \
   --account-id a-shpoolxx \
@@ -379,11 +392,11 @@ is a machine image that we can start instances of.</p>
 details about the machine image, assuming it was collected as in the example
 steps above.  The names <code>bkst-local</code> and <code>a-shpoolxx</code> will work if
 your are installing into an environment that was created by following
-the <a href="../../installation">Wakame-vdc install guide</a>.  The correct values for
+the <a href="../../installation/">Wakame-vdc install guide</a>.  The correct values for
 other situations can be typed directly into the command line.</p>
 <h3 id="using-and-testing-the-new-image">Using and testing the new image</h3>
 <p>It should now be possible to start an instance from the machine image
-by following the instructions in the <a href="..">basic usage guide</a>.  The only necessary modification to these instructions
+by following the instructions in the <a href="../">basic usage guide</a>.  The only necessary modification to these instructions
 is to use your new image name (such as <code>customimage</code> in the example above) instead of lucid5d.
 You can find the IP address of your instance from the "Instances" User Interface screen.</p>
 <p>If your image came from the instructions on this page, you can confirm that everything
@@ -393,17 +406,16 @@ works by doing the following:</p>
 <li>Point a web browser to the instance's IP address.</li>
 </ol>
 <p>The web browser should now be displaying the text: "An Example top web page."</p>
-
             </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../../instance-backup" class="btn btn-neutral float-right" title="About"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../../instance-backup/" class="btn btn-neutral float-right" title="About"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href=".." class="btn btn-neutral" title="Basics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../" class="btn btn-neutral" title="Basics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -429,11 +441,16 @@ works by doing the following:</p>
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
         
-            <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
         
-      <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
-      <span style="margin-left: 15px"><a href="../../instance-backup" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../../instance-backup/" style="color: #fcfcfc">Next &raquo;</a></span>
     </span>
 </div>
+
+<!--
+MkDocs version  : 0.12.2
+Docs Build Date : 2015-04-27 07:42:06.433462
+-->
 </body>
 </html>

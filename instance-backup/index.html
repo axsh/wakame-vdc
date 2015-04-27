@@ -8,6 +8,9 @@
   <title>About - Wakame-vdc Documentation</title>
   
 
+  <link rel="shortcut icon" href="../favicon.ico">
+  
+
   
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
@@ -16,16 +19,12 @@
   <link rel="stylesheet" href="../css/highlight.css">
   <link href="../custom.css" rel="stylesheet">
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
   <script type="text/javascript" src="../js/highlight.pack.js"></script>
-  <script src="../js/theme.js"></script>
+  <script src="../js/theme.js"></script> 
 
-  <style>
-    body {font-size: 90%;}
-    pre, code {font-size: 100%;}
-    h3, h4, h5, h6 {color: #2980b9; font-weight: 300}
-  </style> 
+  
 </head>
 
 <body class="wy-body-for-nav" role="document">
@@ -44,21 +43,30 @@
     
         
             <li class="toctree-l1 ">
-                <a class="" href="../concept">Concept</a>
+                <a class="" href="..">Home</a>
+                
             </li>
         
 
     
         
-        <span>Getting started</span>
+            <li class="toctree-l1 ">
+                <a class="" href="../concept/">Concept</a>
+                
+            </li>
+        
+
+    
+        
+            <span>Getting started</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../installation">Installation</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../installation/">Installation</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../development">Development</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../development/">Development</a>
                     
                 </li>
             
@@ -66,15 +74,15 @@
 
     
         
-        <span>Usage</span>
+            <span>Usage</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../usage">Basics</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../usage/">Basics</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../usage/advanced">Advanced</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../usage/advanced/">Advanced</a>
                     
                 </li>
             
@@ -82,20 +90,20 @@
 
     
         
-        <span>Instance Backup</span>
+            <span>Instance Backup</span>
             
-                <li class="toctree-l1 current">
-                    <a class="current" href=".">About</a>
+                <li class="toctree-l2 current">
+                    <a class="current" href="./">About</a>
                     
                         <ul>
                         
-                            <li class="toctree-l2"><a href="#backup-instances">Backup instances</a></li>
+                            <li class="toctree-l3"><a href="#backup-instances">Backup instances</a></li>
                             
-                                <li><a class="toctree-l3" href="#overview">Overview</a></li>
+                                <li><a class="toctree-l4" href="#overview">Overview</a></li>
                             
-                                <li><a class="toctree-l3" href="#requirements">Requirements</a></li>
+                                <li><a class="toctree-l4" href="#requirements">Requirements</a></li>
                             
-                                <li><a class="toctree-l3" href="#usage">Usage</a></li>
+                                <li><a class="toctree-l4" href="#usage">Usage</a></li>
                             
                         
                         </ul>
@@ -106,10 +114,10 @@
 
     
         
-        <span>Security Groups</span>
+            <span>Security Groups</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../security-groups">About</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../security-groups/">About</a>
                     
                 </li>
             
@@ -117,20 +125,20 @@
 
     
         
-        <span>Support</span>
+            <span>Support</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../jargon-dictionary">Jargon Dictionary</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../jargon-dictionary/">Jargon Dictionary</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../faq">FAQ</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../faq/">FAQ</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../community">Community</a>
+                <li class="toctree-l2 ">
+                    <a class="" href="../community/">Community</a>
                     
                 </li>
             
@@ -147,8 +155,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href=".."></a>
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Wakame-vdc Documentation</a>
       </nav>
 
       
@@ -157,6 +165,11 @@
           <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        <li>Instance Backup &raquo;</li>
+      
+    
     <li>About</li>
       <li class="wy-breadcrumbs-aside">
         
@@ -172,10 +185,10 @@
             <div class="section">
               <h1 id="backup-instances">Backup instances</h1>
 <h3 id="overview">Overview</h3>
-<p>In Wakame-vdc it is possible to take a running <a href="../jargon-dictionary#instance">instance</a> and turn it into a new <a href="../jargon-dictionary#machine-image">machine image</a>. We simply call this process <em>backup</em>.</p>
+<p>In Wakame-vdc it is possible to take a running <a href="../jargon-dictionary/#instance">instance</a> and turn it into a new <a href="../jargon-dictionary/#machine-image">machine image</a>. We simply call this process <em>backup</em>.</p>
 <p>This is a quick and easy way to create new machine images. For example, you could start up an instance, install a web server in it and then back it up. Now you'll have a machine image with a web server installed and you'll immediately be able to start a any amount of web server instances.</p>
 <h3 id="requirements">Requirements</h3>
-<p>You of course need a working Wakame-vdc installation. You can use either the <a href="http://wakameusersgroup.org/demo_image.html">VirtualBox demo image</a> or create your own environment using the <a href="../installation">installation guide</a>.</p>
+<p>You of course need a working Wakame-vdc installation. You can use either the <a href="http://wakameusersgroup.org/demo_image.html">VirtualBox demo image</a> or create your own environment using the <a href="../installation/">installation guide</a>.</p>
 <p>You need to tell Wakame-vdc which [backup storage](../jargon-dictionary.md#backup-storage] to use when backing up instances. Both the VirtualBox image and the installation guide will set that up but just in case, here it is again.</p>
 <p>Figure out which backup storage you want to use with <code>vdc-manage</code>.</p>
 <pre><code>/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupstorage show
@@ -192,7 +205,7 @@ bkst-local      local                file:///var/lib/wakame-vdc/images/
 </code></pre>
 <p>If it does not show the UUID of the backup storage you want to use, open the file with a text editor and change that line.</p>
 <h3 id="usage">Usage</h3>
-<p>You need to have started an <a href="../jargon-dictionary#instance">instance</a> in order to back it up. If you don't know how to start an instance, you can find the instructions in <a href="../usage">the basic usage guide</a>.</p>
+<p>You need to have started an <a href="../jargon-dictionary/#instance">instance</a> in order to back it up. If you don't know how to start an instance, you can find the instructions in <a href="../usage/">the basic usage guide</a>.</p>
 <p>Before you can create a backup, you have to power off your instance. On the Instances page of the GUI, tick the checkbox next to your instance and click on <code>Select an Action</code>.</p>
 <p><img alt="screenshot" src="../img/instance-backup/01_select_an_action.png" /></p>
 <p>Next, click on <code>Power Off</code>.</p>
@@ -204,7 +217,7 @@ bkst-local      local                file:///var/lib/wakame-vdc/images/
 <p><img alt="screenshot" src="../img/instance-backup/03_halting.png" /></p>
 <p>Now tick the checkbox next to your instance again and click <code>Backup</code>.</p>
 <p><img alt="screenshot" src="../img/instance-backup/04_backup.png" /></p>
-<p>The <code>Create Instance Backup</code> dialog will pop up. Fill in the <code>Backup Display Name</code> field. This will become the name of your new <a href="../jargon-dictionary#machine-image">machine image</a>. Click on <code>Backup</code> when you've filled it in.</p>
+<p>The <code>Create Instance Backup</code> dialog will pop up. Fill in the <code>Backup Display Name</code> field. This will become the name of your new <a href="../jargon-dictionary/#machine-image">machine image</a>. Click on <code>Backup</code> when you've filled it in.</p>
 <p><img alt="screenshot" src="../img/instance-backup/05_create_backup_dialog.png" /></p>
 <p>You'll be taken back to the instances page. Click on <code>Machine Images</code> in the menu on the left.</p>
 <p><img alt="screenshot" src="../img/instance-backup/06_instance_after_backup.png" /></p>
@@ -212,17 +225,16 @@ bkst-local      local                file:///var/lib/wakame-vdc/images/
 <p><img alt="screenshot" src="../img/instance-backup/07_machine_image_creating.png" /></p>
 <p>Once your image has reached the state of <code>available</code>, you are done. You are now free to <code>Power On</code> the original instance again and/or start new instances of this machine image.</p>
 <p><img alt="screenshot" src="../img/instance-backup/08_create_image_available.png" /></p>
-
             </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../security-groups" class="btn btn-neutral float-right" title="About"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../security-groups/" class="btn btn-neutral float-right" title="About"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../usage/advanced" class="btn btn-neutral" title="Advanced"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../usage/advanced/" class="btn btn-neutral" title="Advanced"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -248,11 +260,16 @@ bkst-local      local                file:///var/lib/wakame-vdc/images/
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
         
-            <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
         
-      <span><a href="../usage/advanced" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      <span style="margin-left: 15px"><a href="../security-groups" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../usage/advanced/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../security-groups/" style="color: #fcfcfc">Next &raquo;</a></span>
     </span>
 </div>
+
+<!--
+MkDocs version  : 0.12.2
+Docs Build Date : 2015-04-27 07:42:06.446171
+-->
 </body>
 </html>
