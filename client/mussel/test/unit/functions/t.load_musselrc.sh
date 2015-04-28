@@ -14,10 +14,12 @@
 
 function setUp() {
   musselrc_path=${BASH_SOURCE[0]%/*}/musselrc.$$
+  musselrc_system_path=${BASH_SOURCE[0]%/*}/musselrc_system.$$
 
   DCMGR_HOST=
   DCMGR_PORT=
   MUSSEL_RC=/dev/null
+  MUSSEL_RC_SYSTEM=/dev/null
 
   dcmgr_host=192.0.2.10
   dcmgr_port=9001
@@ -26,10 +28,16 @@ function setUp() {
 	DCMGR_HOST=${dcmgr_host}
 	DCMGR_PORT=${dcmgr_port}
 	EOS
+
+  cat <<-EOS > ${musselrc_system_path}
+	DCMGR_HOST=${dcmgr_host}
+	DCMGR_PORT=${dcmgr_port}
+	EOS
 }
 
 function tearDown() {
   rm -f ${musselrc_path}
+  rm -f ${musselrc_system_path}
 }
 
 function test_load_musselrc() {
