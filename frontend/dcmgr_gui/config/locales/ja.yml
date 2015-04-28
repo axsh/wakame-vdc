@@ -612,7 +612,7 @@ ja:
       network_id: "ネットワークID"
       display_name: "ネットワーク名"
       domain_name: "ドメインネーム"
-      ipv4_network: "ネットワーク
+      ipv4_network: "ネットワーク"
       ipv4_gw: "ゲートウエイ"
       created_at: "作成日"
       updated_at: "更新日"
