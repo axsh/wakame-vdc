@@ -1,0 +1,17 @@
+# /etc/wakame-vdc/musselrc
+
+# System wide functions and aliases
+# Environment stuff goes in /etc/wakame-vdc/musselrc
+
+# It's NOT a good idea to change this file unless you know what you
+# are doing. It's much better to create a custom.sh shell script in
+# ~/.musselrc to make custom changes to your environment, as this
+# will prevent the need for merging in future updates.
+
+#DCMGR_API_VERSION=12.03
+#DCMGR_HOST=127.0.0.1
+#DCMGR_PORT=9001
+#DCMGR_RESPONSE_FORMAT=yml
+#DCMGR_CLIENT_ADDR=
+
+account_id=a-shpoolxx
