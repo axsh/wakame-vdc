@@ -168,6 +168,7 @@ function set_network_configuration() {
     cat <<_IFCFG > "/etc/sysconfig/network-scripts/ifcfg-${nic}"
 DEVICE="${nic}"
 BOOTPROTO="static"
+MACADDR="${mac}"
 IPV6INIT="${IPV6INIT:-yes}"
 IPV6_AUTOCONF="${IPV6_AUTOCONF:-yes}"
 NM_CONTROLLED="yes"
