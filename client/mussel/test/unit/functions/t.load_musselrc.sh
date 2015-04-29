@@ -29,9 +29,12 @@ function setUp() {
 	DCMGR_PORT=${dcmgr_port}
 	EOS
 
+  system_dcmgr_host=192.0.2.110
+  system_dcmgr_port=9101
+
   cat <<-EOS > ${musselrc_system_path}
-	DCMGR_HOST=${dcmgr_host}
-	DCMGR_PORT=${dcmgr_port}
+	DCMGR_HOST=${system_dcmgr_host}
+	DCMGR_PORT=${system_dcmgr_port}
 	EOS
 }
 
@@ -56,6 +59,16 @@ function test_load_musselrc_defined_rcfile_path() {
 
   assertEquals "${DCMGR_HOST}" "${dcmgr_host}"
   assertEquals "${DCMGR_PORT}" "${dcmgr_port}"
+}
+
+function test_load_musselrc_defined_system_rcfile_path() {
+  MUSSEL_RC_SYSTEM=${musselrc_system_path}
+
+  load_musselrc
+  assertEquals 0 $?
+
+  assertEquals "${DCMGR_HOST}" "${system_dcmgr_host}"
+  assertEquals "${DCMGR_PORT}" "${system_dcmgr_port}"
 }
 
 ## shunit2
