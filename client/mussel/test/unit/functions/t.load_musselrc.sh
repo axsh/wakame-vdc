@@ -21,12 +21,12 @@ function setUp() {
   MUSSEL_RC=/dev/null
   MUSSEL_RC_SYSTEM=/dev/null
 
-  dcmgr_host=192.0.2.10
-  dcmgr_port=9001
+  user_dcmgr_host=192.0.2.10
+  usre_dcmgr_port=9001
 
   cat <<-EOS > ${musselrc_path}
-	DCMGR_HOST=${dcmgr_host}
-	DCMGR_PORT=${dcmgr_port}
+	DCMGR_HOST=${user_dcmgr_host}
+	DCMGR_PORT=${user_dcmgr_port}
 	EOS
 
   system_dcmgr_host=192.0.2.110
@@ -57,8 +57,8 @@ function test_load_musselrc_defined_rcfile_path() {
   load_musselrc
   assertEquals 0 $?
 
-  assertEquals "${DCMGR_HOST}" "${dcmgr_host}"
-  assertEquals "${DCMGR_PORT}" "${dcmgr_port}"
+  assertEquals "${DCMGR_HOST}" "${user_dcmgr_host}"
+  assertEquals "${DCMGR_PORT}" "${user_dcmgr_port}"
 }
 
 function test_load_musselrc_defined_system_rcfile_path() {
@@ -71,7 +71,7 @@ function test_load_musselrc_defined_system_rcfile_path() {
   assertEquals "${DCMGR_PORT}" "${system_dcmgr_port}"
 }
 
-function test_load_musselrc_system_and_local() {
+function test_load_musselrc_system_and_home() {
   MUSSEL_RC_SYSTEM=${musselrc_system_path}
   MUSSEL_RC=/dev/null
 
@@ -82,15 +82,15 @@ function test_load_musselrc_system_and_local() {
   assertEquals "${DCMGR_PORT}" "${system_dcmgr_port}"
 }
 
-function test_load_musselrc_system_and_local_overwritten() {
+function test_load_musselrc_system_and_home_overwritten() {
   MUSSEL_RC_SYSTEM=${musselrc_system_path}
   MUSSEL_RC=${musselrc_path}
 
   load_musselrc
   assertEquals 0 $?
 
-  assertEquals "${DCMGR_HOST}" "${dcmgr_host}"
-  assertEquals "${DCMGR_PORT}" "${dcmgr_port}"
+  assertEquals "${DCMGR_HOST}" "${user_dcmgr_host}"
+  assertEquals "${DCMGR_PORT}" "${user_dcmgr_port}"
 }
 
 ## shunit2
