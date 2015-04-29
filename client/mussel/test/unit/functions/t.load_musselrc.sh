@@ -71,6 +71,28 @@ function test_load_musselrc_defined_system_rcfile_path() {
   assertEquals "${DCMGR_PORT}" "${system_dcmgr_port}"
 }
 
+function test_load_musselrc_system_and_local() {
+  MUSSEL_RC_SYSTEM=${musselrc_system_path}
+  MUSSEL_RC=/dev/null
+
+  load_musselrc
+  assertEquals 0 $?
+
+  assertEquals "${DCMGR_HOST}" "${system_dcmgr_host}"
+  assertEquals "${DCMGR_PORT}" "${system_dcmgr_port}"
+}
+
+function test_load_musselrc_system_and_local_overwritten() {
+  MUSSEL_RC_SYSTEM=${musselrc_system_path}
+  MUSSEL_RC=${musselrc_path}
+
+  load_musselrc
+  assertEquals 0 $?
+
+  assertEquals "${DCMGR_HOST}" "${dcmgr_host}"
+  assertEquals "${DCMGR_PORT}" "${dcmgr_port}"
+}
+
 ## shunit2
 
 . ${shunit2_file}
