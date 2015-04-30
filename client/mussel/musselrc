@@ -22,27 +22,27 @@
 account_id=a-shpoolxx
 
 # For instance
-#cpu_cores=1
+#cpu_cores= # [ 1 | 2 | 4 | ... ]
 #display_name=
 #hostname=
-#hypervisor=openvz
-#image_id=wmi-centos1d64
-#memory_size=1024
-#security_groups=sg-demo
-#service_type=std
-#ssh_key_id=ssh-demo
-#user_data=asdf
-#vifs="{}"
+#hypervisor= # [ openvz | kvm | lxc ]
+#image_id= # wmi-***
+#memory_size= # [ 128 | 256 | 512 | 1024 | ... ]
+#security_groups= # sg-***
+#service_type= # [ std | lb ]
+#ssh_key_id= # ssh-***
+#user_data= # asdf
+#vifs= # [ "{}" | vifs.txt ]
 
 # For load_balancer
-#balance_algorithm=leastconn
-#cookie_name=shunit2_cookie
-#display_name=shunit_disp
-#engine=haproxy
-#httpchk_path="/index.html"
-#instance_port=80
-#max_connection=1000
-#port=80
-#private_key=cert.prv
-#protocol=http
-#public_key=cert.pub
+#balance_algorithm= # [ leastconn | source ]
+#cookie_name=
+#display_name=
+#engine= # [ haproxy ]
+#httpchk_path= # "/index.html"
+#instance_port=# [ 80 | 443 | ... ]
+#max_connection= # [ 1000 | 5000 ]
+#port= # [ 80 | 443 | ... ]
+#private_key= # cert.prv
+#protocol= # [ http | https | tcp | ssl ]
+#public_key= # cert.pub
