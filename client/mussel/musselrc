@@ -41,6 +41,7 @@ account_id=a-shpoolxx
 #engine= # [ haproxy ]
 #httpchk_path= # "/index.html"
 #instance_port=# [ 80 | 443 | ... ]
+#instance_protocol= # [ http | https | tcp | ssl ]
 #max_connection= # [ 1000 | 5000 ]
 #port= # [ 80 | 443 | ... ]
 #private_key= # cert.prv
