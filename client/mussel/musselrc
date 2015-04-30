@@ -20,3 +20,16 @@
 #DCMGR_CLIENT_ADDR=
 
 account_id=a-shpoolxx
+
+# For instance
+#cpu_cores=1
+#display_name=
+#hostname=
+#hypervisor=openvz
+#image_id=wmi-centos1d64
+#memory_size=1024
+#security_groups=sg-demo
+#service_type=std
+#ssh_key_id=ssh-demo
+#user_data=asdf
+#vifs="{}"
