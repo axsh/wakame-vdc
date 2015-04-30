@@ -33,3 +33,16 @@ account_id=a-shpoolxx
 #ssh_key_id=ssh-demo
 #user_data=asdf
 #vifs="{}"
+
+# For load_balancer
+#balance_algorithm=leastconn
+#cookie_name=shunit2_cookie
+#display_name=shunit_disp
+#engine=haproxy
+#httpchk_path="/index.html"
+#instance_port=80
+#max_connection=1000
+#port=80
+#private_key=cert.prv
+#protocol=http
+#public_key=cert.pub
