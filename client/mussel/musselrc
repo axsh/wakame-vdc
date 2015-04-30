@@ -22,28 +22,35 @@
 account_id=a-shpoolxx
 
 # For instance
+#
+# **required**
 #cpu_cores= # [ 1 | 2 | 4 | ... ]
-#display_name=
-#hostname=
 #hypervisor= # [ openvz | kvm | lxc ]
 #image_id= # wmi-***
 #memory_size= # [ 128 | 256 | 512 | 1024 | ... ]
-#security_groups= # sg-***
-#service_type= # [ std | lb ]
+#
+# **optional**
 #ssh_key_id= # ssh-***
-#user_data= # asdf
 #vifs= # [ "{}" | vifs.txt ]
+#user_data= # asdf
+#display_name=
+#hostname=
+#service_type= # [ std | lb ]
 
 # For load_balancer
+#
+# **required**
 #balance_algorithm= # [ leastconn | source ]
-#cookie_name=
-#display_name=
 #engine= # [ haproxy ]
-#httpchk_path= # "/index.html"
-#instance_port=# [ 80 | 443 | ... ]
-#instance_protocol= # [ http | https | tcp | ssl ]
 #max_connection= # [ 1000 | 5000 ]
 #port= # [ 80 | 443 | ... ]
-#private_key= # cert.prv
 #protocol= # [ http | https | tcp | ssl ]
+#instance_port=# [ 80 | 443 | ... ]
+#instance_protocol= # [ http | https | tcp | ssl ]
+#
+# **optional**
+#cookie_name=
+#display_name=
+#httpchk_path= # "/index.html"
+#private_key= # cert.prv
 #public_key= # cert.pub
