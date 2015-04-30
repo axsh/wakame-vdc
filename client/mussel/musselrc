@@ -8,6 +8,10 @@
 # ~/.musselrc to make custom changes to your environment, as this
 # will prevent the need for merging in future updates.
 
+#MUSSEL_FRONTEND=noninteractive # [ interactive | noninteractive ]
+#MUSSEL_LOGLEVEL=info # [ info | debug ]
+#MUSSEL_DRY_RUN= #  [ y | yes | n | no ]
+
 #DCMGR_API_VERSION=12.03
 #DCMGR_HOST=127.0.0.1
 #DCMGR_PORT=9001
