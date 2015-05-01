@@ -432,6 +432,57 @@ get-decode-password()
     umount-image 2>/dev/null 1>/dev/null
 }
 
+file-size()
+{
+    lsout="$(ls -l "$1")" && read t1 t2 t3 t4 fsize rest <<<"$lsout"
+    echo "$fsize"
+}
+
+output-image-install-script()
+{
+    seedtar="$1"
+    md5="$(head -c 32 "$seedtar".md5)"
+    cat >"$seedtar.install" <<EOF
+bo-add()
+{
+/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupobject add \\
+  --uuid=bo-windows${LABEL}r2 \\
+  --account-id=a-shpoolxx \\
+  --storage-id=bkst-local \\
+  --display-name="windows${LABEL}r2 30G" \\
+  --object-key=$seedtar \\
+  --container-format=tgz \\
+  --size=32212254720 \\
+  --allocation-size=$(file-size "$seedtar") \\
+  --checksum=$md5
+}
+
+image-add()
+{
+/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image add local bo-windows${LABEL}r2 \\
+  --uuid=wmi-windows${LABEL}r2 \\
+  --account-id=a-shpoolxx \\
+  --arch=x86_64 \\
+  --description="windows${LABEL}r2.x86_64.kvm.md.raw.tar.gz local" \\
+  --file-format=raw \\
+  --root-device=label:root \\
+  --service-type=std \\
+  --display-name="windows${LABEL}r2 30G" \\
+  --is-public \\
+  --is-cacheable
+/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image features wmi-windows${LABEL}r2 --virtio
+/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image modify wmi-windows${LABEL}r2 --os-type=windows
+}
+
+if [ "\$DOIT" == "" ]; then
+  echo "bo-add && image-add"
+else
+  bo-add && image-add
+fi
+
+EOF
+}
+
 final-seed-image-packaging()
 {
     loopstatus="$(sudo losetup -a)"
@@ -456,6 +507,7 @@ final-seed-image-packaging()
     evalcheck sudo losetup -d /dev/loop0
     time evalcheck 'tar czvSf "$seedtar" "${seedtar%.tar.gz}"'
     time evalcheck 'md5sum "$seedtar" >"$seedtar".md5'
+    output-image-install-script "$seedtar"
 }
 
 updatescripts-raw()
