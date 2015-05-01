@@ -211,7 +211,7 @@ BuildArch: noarch
 Summary: Configuration set for hva LXC VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
-Requires: lxc
+Requires: lxc >= 1.0.0
 %description  hva-lxc-vmapp-config
 <insert long description, indented with spaces>
 
