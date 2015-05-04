@@ -90,3 +90,31 @@ su - ${user} <<'_EOS_'
   history -c
 _EOS_
 EOS
+
+##
+
+cat <<'_EOS_' > $1/etc/init/hubot.conf
+description Hubot
+
+respawn
+respawn limit 5 60
+
+chdir /home/wakame-vdc/myhubot
+
+script
+  sleep 3
+  su - wakame-vdc -c /bin/bash <<EOS >>/var/log/hubot.log 2>&1
+    [ -f /etc/default/hubot.conf ] && . /etc/default/hubot.conf
+    export HUBOT_JENKINS_URL="${HUBOT_JENKINS_URL:-"http://127.0.0.1:8080/"}"
+    cd /home/wakame-vdc/myhubot
+    ./bin/hubot -a hipchat
+EOS
+end script
+_EOS_
+
+cat <<'_EOS_' > $1/etc/default/hubot.conf
+#export HUBOT_HIPCHAT_JID="********@chat.hipchat.com"
+#export HUBOT_HIPCHAT_PASSWORD="********"
+#export HUBOT_LOG_LEVEL="debug"
+#export HUBOT_JENKINS_URL="http://127.0.0.1:8080/"
+_EOS_
