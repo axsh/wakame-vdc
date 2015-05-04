@@ -69,3 +69,24 @@ chroot $1 $SHELL -ex <<'EOS'
   # cleanup
   history -c
 EOS
+
+##
+
+user=wakame-vdc
+
+chroot $1 $SHELL -ex <<EOS
+su - ${user} <<'_EOS_'
+  set -e
+  set -o pipefail
+  set -x
+  mkdir myhubot
+  cd    myhubot
+  yo hubot \
+   --adapter=hipchat \
+   --name=hubot \
+   --owner=hubot \
+   --description=hubot \
+   <<< "Y"
+  history -c
+_EOS_
+EOS
