@@ -111,7 +111,7 @@ chdir /home/wakame-vdc/myhubot
 script
   sleep 3
   su - wakame-vdc -c /bin/bash <<EOS >>/var/log/hubot.log 2>&1
-    [ -f /etc/default/hubot.conf ] && . /etc/default/hubot.conf
+    [ -f /etc/default/hubot ] && . /etc/default/hubot
     export HUBOT_JENKINS_URL="${HUBOT_JENKINS_URL:-"http://127.0.0.1:8080/"}"
     cd /home/wakame-vdc/myhubot
     ./bin/hubot -a hipchat
@@ -119,7 +119,7 @@ EOS
 end script
 _EOS_
 
-cat <<'_EOS_' > $1/etc/default/hubot.conf
+cat <<'_EOS_' > $1/etc/default/hubot
 #export HUBOT_HIPCHAT_JID="********@chat.hipchat.com"
 #export HUBOT_HIPCHAT_PASSWORD="********"
 #export HUBOT_LOG_LEVEL="debug"
