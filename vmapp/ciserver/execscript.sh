@@ -93,6 +93,7 @@ su - ${user} <<'_EOS_'
    --owner=hubot \
    --description=hubot \
    <<< "Y"
+  echo '["jenkins.coffee"]' > hubot-scripts.json
   history -c
 _EOS_
 EOS
