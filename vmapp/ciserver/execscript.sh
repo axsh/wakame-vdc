@@ -70,6 +70,12 @@ chroot $1 $SHELL -ex <<'EOS'
   history -c
 EOS
 
+## user-data script
+
+chroot $1 $SHELL -ex <<'EOS'
+  echo '[ -f /metadata/user-data ] && . /metadata/user-data' >> /etc/rc.d/rc.local
+EOS
+
 ##
 
 user=wakame-vdc
