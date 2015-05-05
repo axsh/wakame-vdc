@@ -171,11 +171,14 @@ _mussel() {
             --ssh-key-id)
               COMPREPLY=($(compgen -W "$(mussel ssh_key_pair index | hash_value id)" -- ${cur}))
               ;;
+            --user-data)
+              COMPREPLY=($(compgen -f ${cur}))
+              ;;
             --vifs)
               COMPREPLY=($(compgen -f ${cur}))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--hypervisor --cpu-cores --image-id --memory-size --ssh-key-id --vifs" -- ${cur}))
+              COMPREPLY=($(compgen -W "--hypervisor --cpu-cores --image-id --memory-size --ssh-key-id --user-data --vifs" -- ${cur}))
               ;;
           esac
           ;;
