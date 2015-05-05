@@ -28,6 +28,7 @@ install_wakame_init ${chroot_dir} ${VDC_METADATA_TYPE} ${VDC_DISTRO_NAME}
 chroot $1 $SHELL -ex <<'EOS'
   # pre-setup
   yum install -y --disablerepo=updates git
+  yum install -y --disablerepo=updates wakame-vdc-client-mussel
 
   # installation
   addpkgs="
