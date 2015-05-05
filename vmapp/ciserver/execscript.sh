@@ -115,7 +115,7 @@ script
     [ -f /etc/default/hubot ] && . /etc/default/hubot
     export HUBOT_JENKINS_URL="${HUBOT_JENKINS_URL:-"http://127.0.0.1:8080"}"
     cd /home/wakame-vdc/myhubot
-    ./bin/hubot -a hipchat
+    exec ./bin/hubot -a hipchat
 EOS
 end script
 _EOS_
