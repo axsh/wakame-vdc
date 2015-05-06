@@ -184,6 +184,9 @@ _mussel() {
           ;;
         update)
           case "${prev}" in
+            --ssh-key-id)
+              COMPREPLY=($(compgen -W "$(mussel ssh_key_pair index | hash_value id)" -- ${cur}))
+              ;;
             *)
               COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
               ;;
