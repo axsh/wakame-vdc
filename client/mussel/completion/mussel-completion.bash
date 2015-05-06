@@ -166,7 +166,7 @@ _mussel() {
               COMPREPLY=($(compgen -W "$(mussel image index --is-public true | hash_value id)" -- ${cur}))
               ;;
             --memory-size)
-              COMPREPLY=($(compgen -W "256 512" -- ${cur}))
+              COMPREPLY=($(compgen -W "256 512 1024" -- ${cur}))
               ;;
             --ssh-key-id)
               COMPREPLY=($(compgen -W "$(mussel ssh_key_pair index | hash_value id)" -- ${cur}))
