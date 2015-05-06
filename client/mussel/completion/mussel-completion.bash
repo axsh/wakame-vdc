@@ -183,12 +183,19 @@ _mussel() {
           esac
           ;;
         update)
-          case "${prev}" in
-            --ssh-key-id)
-              COMPREPLY=($(compgen -W "$(mussel ssh_key_pair index | hash_value id)" -- ${cur}))
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
               ;;
             *)
-              COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
+              case "${prev}" in
+                --ssh-key-id)
+                  COMPREPLY=($(compgen -W "$(mussel ssh_key_pair index | hash_value id)" -- ${cur}))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--ssh-key-id" -- ${cur}))
+                  ;;
+              esac
               ;;
           esac
           ;;
@@ -233,9 +240,34 @@ _mussel() {
           esac
           ;;
         update)
-          case "${prev}" in
-            *)
+          case "${offset}" in
+            4)
               COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
+              ;;
+            *)
+              case "${prev}" in
+                --balance-algorithm)
+                  COMPREPLY=($(compgen -W "leastconn source" -- ${cur}))
+                  ;;
+                --cookie)
+                  COMPREPLY=($(compgen -W "haproxy" -- ${cur}))
+                  ;;
+                --engine)
+                  COMPREPLY=($(compgen -W "haproxy" -- ${cur}))
+                  ;;
+                --port | --instance-port)
+                  COMPREPLY=($(compgen -W "80 443" -- ${cur}))
+                  ;;
+                --protocol | --instance-protocol)
+                  COMPREPLY=($(compgen -W "http https tcp ssl" -- ${cur}))
+                  ;;
+                --max-connection)
+                  COMPREPLY=($(compgen -W "1000" -- ${cur}))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--balance-algorithm --engine --port --instance-port --protocol --instance-protocol --max-connection" -- ${cur}))
+                  ;;
+              esac
               ;;
           esac
           ;;
@@ -267,9 +299,19 @@ _mussel() {
           esac
           ;;
         update)
-          case "${prev}" in
-            *)
+          case "${offset}" in
+            4)
               COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
+              ;;
+            *)
+              case "${prev}" in
+                --rule)
+                  COMPREPLY=($(compgen -f ${cur}))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--rule" -- ${cur}))
+                  ;;
+              esac
               ;;
           esac
           ;;
@@ -291,9 +333,19 @@ _mussel() {
           esac
           ;;
         update)
-          case "${prev}" in
-            *)
+          case "${offset}" in
+            4)
               COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
+              ;;
+            *)
+              case "${prev}" in
+                --public-key)
+                  COMPREPLY=($(compgen -f ${cur}))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--public-key" -- ${cur}))
+                  ;;
+              esac
               ;;
           esac
           ;;
