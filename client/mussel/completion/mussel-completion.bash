@@ -90,7 +90,10 @@ _mussel() {
         # this options will be ignored in other namespace.
         COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --is-public true | hash_value id)" -- ${cur}))
         ;;
-      update | destroy)
+      destroy)
+        COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive   | hash_value id)" -- ${cur}))
+        ;;
+      update)
         COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive   | hash_value id)" -- ${cur}))
         ;;
       poweroff)
