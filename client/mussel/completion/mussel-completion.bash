@@ -93,9 +93,6 @@ _mussel() {
       destroy)
         COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive   | hash_value id)" -- ${cur}))
         ;;
-      update)
-        COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive   | hash_value id)" -- ${cur}))
-        ;;
       poweroff)
         COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state running | hash_value id)" -- ${cur}))
         ;;
@@ -185,6 +182,13 @@ _mussel() {
               ;;
           esac
           ;;
+        update)
+          case "${prev}" in
+            *)
+              COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
+              ;;
+          esac
+          ;;
       esac
       ;;
 
@@ -225,6 +229,13 @@ _mussel() {
               ;;
           esac
           ;;
+        update)
+          case "${prev}" in
+            *)
+              COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
+              ;;
+          esac
+          ;;
         register | unregister)
           case "${prev}" in
             --vifs)
@@ -252,6 +263,13 @@ _mussel() {
               ;;
           esac
           ;;
+        update)
+          case "${prev}" in
+            *)
+              COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
+              ;;
+          esac
+          ;;
       esac
       ;;
 
@@ -266,6 +284,13 @@ _mussel() {
               ;;
             *)
               COMPREPLY=($(compgen -W "--public-key" -- ${cur}))
+              ;;
+          esac
+          ;;
+        update)
+          case "${prev}" in
+            *)
+              COMPREPLY=($(compgen -W "$(mussel ${COMP_WORDS[1]} index --state alive | hash_value id)" -- ${cur}))
               ;;
           esac
           ;;
