@@ -5,6 +5,14 @@
 
 . ${BASH_SOURCE[0]%/*}/base.sh
 
+task_index() {
+  # --service-type=(std|lb)
+  if [[ -n "${service_type}" ]]; then
+    xquery="service_type=${service_type}"
+  fi
+  cmd_index $*
+}
+
 task_create() {
   call_api -X POST $(urlencode_data \
     $(add_param service_type    string) \
