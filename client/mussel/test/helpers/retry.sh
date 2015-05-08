@@ -48,7 +48,7 @@ function open_port?() {
     *) ;;
   esac
 
-  echo | nc ${nc_opts} ${ipaddr} ${port} >/dev/null
+  nc ${nc_opts} ${ipaddr} ${port} <<< "" >/dev/null
 }
 
 function network_connection?() {
