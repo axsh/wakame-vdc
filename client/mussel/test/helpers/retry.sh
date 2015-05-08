@@ -43,9 +43,9 @@ function open_port?() {
 
   local nc_opts="-w 3"
   case ${protocol} in
-  tcp) ;;
-  udp) nc_opts="${nc_opts} -u";;
-    *) ;;
+    tcp) ;;
+    udp) nc_opts="${nc_opts} -u";;
+      *) ;;
   esac
 
   nc ${nc_opts} ${ipaddr} ${port} <<< "" >/dev/null
