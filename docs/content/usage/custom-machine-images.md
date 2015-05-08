@@ -1,4 +1,4 @@
-## Custom Machine Images
+## Overview
 
 Although there are a variety of pre-built machine images for Wakame-vdc, in
 most cases it will be necessary to install extra software and do other
