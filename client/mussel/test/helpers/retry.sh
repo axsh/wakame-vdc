@@ -13,6 +13,7 @@ function retry_until() {
   local sleep_sec=${RETRY_SLEEP_SEC:-3}
   local tries=0
   local start_at=$(date +%s)
+  local chk_cmd=
 
   while :; do
     eval "${blk}" && {
