@@ -810,6 +810,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
   end
 
+  namespace '/:instance_id/password' do
+    before do
+      @instance = find_by_uuid(:Instance, params[:instance_id])
+    end
+
+    # list attached volumes to the instance.
+    get '' do
+      respond_with(R::InstancePassword.new(@instance).generate)
+    end
+  end
+
   namespace '/:instance_id/volumes' do
     before do
       @instance = find_by_uuid(:Instance, params[:instance_id])
