@@ -18,7 +18,7 @@ pages:
 #- ['configuration.md', 'Getting started', 'Configuration']
 - ['development.md', 'Getting started', 'Development']
 - ['usage/index.md', 'Usage', 'Basics']
-- ['usage/advanced.md', 'Usage', 'Advanced']
+- ['usage/custom-machine-images.md', 'Usage', 'Custom Machine Images']
 - ['instance-backup/index.md', 'Instance Backup', 'About']
 #- ['instance-backup/configuration.md', 'Instance Backup', 'Configuration']
 #- ['instance-backup/usage.md', 'Instance Backup', 'Usage']
