@@ -1,6 +1,11 @@
 # Jargon Dictionary
 
 ## A
+
+### Account
+
+Accounts are used to manage resources on Wakame-vdc. Every command sent to the WebAPI must include an account UUID. Based on this account, Wakame-vdc will decide which resources to make available.
+
 ## B
 
 ### Backup Storage
@@ -88,6 +93,12 @@ Wakame-vdc's dynamically updating firewall. You can put [vnics](#vnic-/-vif) int
 
 ## T
 ## U
+
+### User
+
+A user is a name and password combination that you use to log into Wakame-vdc's GUI. A user can be associated to one or more [accounts](#account) which will decide what resources this user has access to.
+
+**Remark:** Users is a concept exclusive to the GUI. The Wakame-vdc backend is only aware of [accounts](#account).
 
 ### User data
 
