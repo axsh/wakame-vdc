@@ -170,6 +170,9 @@ function cmdlog() {
         local sub_log_store_dir_mussel=${log_store_dir}/statistics/${namespace}/${cmd}/${today}
         [[ -d "${sub_log_store_dir_mussel}" ]] || mkdir -p ${sub_log_store_dir_mussel}
         ln -s ${sub_log_store_dir} ${sub_log_store_dir_mussel}
+        local sub_log_store_dir_mussel_current=$(dirname ${sub_log_store_dir_mussel})/current
+        rm -f                      ${sub_log_store_dir_mussel_current}
+        ln -s ${sub_log_store_dir} ${sub_log_store_dir_mussel_current}
       fi
       unset namespace cmd # make sure to unset following values for next task(s)
 
