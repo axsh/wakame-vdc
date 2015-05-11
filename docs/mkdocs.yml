@@ -17,24 +17,31 @@ pages:
 - ['installation.md', 'Getting started', 'Installation']
 #- ['configuration.md', 'Getting started', 'Configuration']
 - ['development.md', 'Getting started', 'Development']
+
 - ['usage/index.md', 'Usage', 'Basics']
 - ['usage/custom-machine-images.md', 'Usage', 'Custom Machine Images']
-- ['instance-backup/index.md', 'Instance Backup', 'About']
+- ['instance-backup/index.md', 'Usage', 'Instance Backup']
+- ['security-groups/index.md', 'Usage', 'Security Groups']
+
+#- ['instance-backup/index.md', 'Instance Backup', 'About']
 #- ['instance-backup/configuration.md', 'Instance Backup', 'Configuration']
 #- ['instance-backup/usage.md', 'Instance Backup', 'Usage']
 #- ['instance-backup/troubleshooting.md', 'Instance Backup', 'Troubleshooting']
+
 #- ['load-balancer/index.md', 'Feature: Load Balancer', 'About']
 #- ['load-balancer/installation.md', 'Feature: Load Balancer', 'Installation']
 #- ['load-balancer/configuration.md', 'Feature: Load Balancer', 'Configuration']
 #- ['load-balancer/usage.md', 'Feature: Load Balancer', 'Usage']
 #- ['load-balancer/troubleshooting.md', 'Feature: Load Balancer', 'Troubleshooting']
-- ['security-groups/index.md', 'Security Groups', 'About']
+
+#- ['security-groups/index.md', 'Security Groups', 'About']
 #- ['security-groups/configuration.md', 'Security Groups', 'Configuration']
 #- ['security-groups/usage.md', 'Security Groups', 'Usage']
 #- ['security-groups/troubleshooting.md', 'Security Groups', 'Troubleshooting']
+
 - ['jargon-dictionary.md', 'Support', 'Jargon Dictionary']
 - ['faq.md', 'Support', 'FAQ']
 #- ['troubleshooting.md', 'Support', 'Troubleshooting']
-#- ['support.md', 'Support', 'Contact']  
+#- ['support.md', 'Support', 'Contact']
 - ['community.md', 'Support', 'Community']
 
