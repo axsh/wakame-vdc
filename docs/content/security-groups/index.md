@@ -1,15 +1,5 @@
 # Security Groups
 
-### Contents
-
-* [Overview](#Overview)
-* [Features](#Features)
-  - [Isolation](#Isolation)
-  - [Rules](#Rules)
-  - [Reference](#Reference)
-* [Creating security groups using the Wakame-vdc GUI](#Creating-security-groups-using-the-Wakame-vdc-GUI)
-* [Adding and removing vnics from security groups using the Wakame-vdc GUI](#Adding-and-removing-vnics-from-security-groups-using-the-Wakame-vdc-GUI)
-
 ### Overview
 
 In Wakame-vdc, every virtual network interface (vnic) will have its own firewall. These firewalls are implemented using [Netfilter](http://www.netfilter.org). Even if one instance has multiple vnics, they will still each have their own firewall.
