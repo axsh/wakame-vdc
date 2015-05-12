@@ -1,6 +1,6 @@
 ![Wakame logo](img/Wakame2-logo-large.png)
 
-### What is Wakame-vdc?
+## What is Wakame-vdc?
 
 There are a couple of ways you could answer this question.
 
@@ -21,7 +21,7 @@ The following companies are currently using Wakame-vdc in production.
 
 Don't hesitate to let us know if you also use Wakame-vdc.
 
-### Quick Start
+## Quick Start
 
 [Wakame-vdc pre-installed in VirtualBox](http://wakameusersgroup.org/demo_image.html)
 
@@ -31,7 +31,7 @@ This is the fastest most painless way to get yourself a working Wakame-vdc envir
 
 This guide will teach you how to install Wakame-vdc on your own server. The end result will be similar to the VirtualBox image but since you're installing everything yourself, you will learn much more about the different components that make up Wakame-vdc.
 
-### Contact us
+## Contact us
 
 The best way to contact us is to send an e-mail to the [Wakame Users Group](https://groups.google.com/forum/?hl=en-GB#!forum/wakame-ug) on Google Groups. Please don't hesitate to ask us any questions. We realise Wakame-vdc is difficult to set up and that our documentation is limited at this time. If you want to try it out, we'll do our best to help you.
 
