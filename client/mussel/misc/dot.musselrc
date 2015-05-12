@@ -76,7 +76,7 @@ account_id=${account_id:-a-shpoolxx}
 
 ## dummy
 
-case "${hypervisor}" in
+case "${hypervisor:-""}" in
   dummy)
     function ping() { :; }
     function nc()   { :; }
