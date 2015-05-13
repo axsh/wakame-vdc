@@ -29,6 +29,7 @@ chroot $1 $SHELL -ex <<'EOS'
   # pre-setup
   yum install -y --disablerepo=updates git
   yum install -y --disablerepo=updates wakame-vdc-client-mussel
+  yum install -y --disablerepo=updates iputils nc
 
   # installation
   addpkgs="
