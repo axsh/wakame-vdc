@@ -1,6 +1,4 @@
-# Wakame-vdc install guide
-
-### What are we installing?
+## What are we installing?
 
 This guide will set up a basic Wakame-vdc environment on a single host. When we are done with this guide we will have the following features available:
 
@@ -12,7 +10,7 @@ This guide will set up a basic Wakame-vdc environment on a single host. When we 
 
   * We will be able to use either password or rsa key authentication when logging into instances.
 
-### Installation requirements
+## Installation requirements
 
   * A machine running [Centos](http://www.centos.org) 6.6 with x86 64 bit processor architecture. This can be either bare metal or a virtual machine. Instances are going to run as
 [OpenVZ](http://openvz.org/Main_Page) containers so you don't need to worry about nested virtualization.
@@ -28,15 +26,15 @@ This guide will set up a basic Wakame-vdc environment on a single host. When we 
 
   * Internet access. (to download rpm packages and machine images)
 
-### What will this guide do to my machine?
+## What will this guide do to my machine?
 
   * Since we are going to use [OpenVZ](http://openvz.org/Main_Page), we will install OpenVZ's [modified Linux kernel](http://en.wikipedia.org/wiki/OpenVZ#Kernel).
 
   * We are going to set up a [Linux Bridge](http://www.linuxfoundation.org/collaborate/workgroups/networking/bridge) and connect the host's network interface to it.
 
-### Let's get started
+## Let's get started
 
-#### Yum repository setup
+### Yum repository setup
 
 Add the official Wakame-vdc yum repository to `/etc/yum.repos.d`.
 
@@ -50,7 +48,7 @@ Install [EPEL](https://fedoraproject.org/wiki/EPEL). We need to pull some OpenVZ
 
     sudo yum install -y epel-release
 
-#### Install Dcmgr
+### Install Dcmgr
 
 The dcmgr package contains two things.
 
@@ -63,7 +61,7 @@ Install the dcmgr package with the following command.
 
     sudo yum install -y wakame-vdc-dcmgr-vmapp-config
 
-#### Install HVA
+### Install HVA
 
 The HVA (HyperVisor Agent) is the part of Wakame-vdc that actually starts instances. On a production environment, you would likely have several dedicated bare metal hosts for this. Right now we are
 just going to install one HVA on the same machine as dcmgr.
@@ -72,17 +70,17 @@ just going to install one HVA on the same machine as dcmgr.
 
     sudo yum install -y wakame-vdc-hva-openvz-vmapp-config
 
-#### Install webui
+### Install webui
 
 This is Wakame-vdc's GUI. It's actually a [Rails application](http://rubyonrails.org) that sits in front of the dcmgr web API.
 
     sudo yum install -y wakame-vdc-webui-vmapp-config
 
-#### Reboot to load OpenVZ kernel
+### Reboot to load OpenVZ kernel
 
 These Wakame-vdc packages have installed OpenVZ as a dependency. OpenVZ runs on a custom kernel. Reboot your machine so that kernel gets loaded.
 
-#### Set up bridged networking
+### Set up bridged networking
 
 Wakame-vdc uses bridged networking to allow users to connect to instances. We are going to set up a [Linux Bridge](http://www.linuxfoundation.org/collaborate/workgroups/networking/bridge) to
 attach instances to.
