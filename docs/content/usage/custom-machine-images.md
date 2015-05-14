@@ -58,25 +58,25 @@ The first few commands log into the demo VM and download a template image:
 
     ssh centos@a.b.c.d  # where a.b.c.d is the demo VM's IP address
     [centos@wakame-vdc-1box ~]$ sudo su
-    [root@wakame-vdc-1box centos]# cd /vz/template/cache
-    [root@wakame-vdc-1box cache]# wget http://download.openvz.org/template/precreated/centos-6-x86_64-minimal.tar.gz
+    [root@wakame-vdc-1box centos]$ cd /vz/template/cache
+    [root@wakame-vdc-1box cache]$ wget http://download.openvz.org/template/precreated/centos-6-x86_64-minimal.tar.gz
 
 Next, an OpenVZ container based on this image is started.
 Note that the 101 that appears many times below can be any number that
 is not in use by OpenVZ.
 
-    [root@wakame-vdc-1box cache]# vzctl create 101 --ostemplate centos-6-x86_64-minimal --ipadd a.b.c.vv --hostname localhost
-    [root@wakame-vdc-1box cache]# vzctl set 101 --nameserver 8.8.8.8 --save
-    [root@wakame-vdc-1box cache]# vzctl start 101
+    [root@wakame-vdc-1box cache]$ vzctl create 101 --ostemplate centos-6-x86_64-minimal --ipadd a.b.c.vv --hostname localhost
+    [root@wakame-vdc-1box cache]$ vzctl set 101 --nameserver 8.8.8.8 --save
+    [root@wakame-vdc-1box cache]$ vzctl start 101
 
 Now we can go inside the container and specialize it by installing and
 configuring software.
 
-    [root@wakame-vdc-1box cache]# vzctl enter 101
-    [root@localhost /]# yum install httpd
-    [root@localhost /]# echo "<html>An Example top web page.</html>" >/var/www/html/index.html
-    [root@localhost /]# service httpd start
-    [root@localhost /]# chkconfig httpd on
+    [root@wakame-vdc-1box cache]$ vzctl enter 101
+    [root@localhost /]$ yum install httpd
+    [root@localhost /]$ echo "<html>An Example top web page.</html>" >/var/www/html/index.html
+    [root@localhost /]$ service httpd start
+    [root@localhost /]$ chkconfig httpd on
 
 ### Step 3: Specialize the OS installation for Wakame-vdc
 
@@ -123,17 +123,17 @@ not have this file.
 
 Exit the OpenVZ container.
 
-    [root@localhost etc]# exit
+    [root@localhost etc]$ exit
 
 Now we are back at the demo box prompt. The following instructions are adapted from
 the [OpenVZ wiki](http://wiki.openvz.org/Updating_Ubuntu_template):
 
-    [root@wakame-vdc-1box cache]# vzctl stop 101
-    [root@wakame-vdc-1box cache]# vzctl set 101 --ipdel all --save
-    [root@wakame-vdc-1box cache]# cd /vz/private/101
-    [root@wakame-vdc-1box 101]# tar  --numeric-owner -czf /vz/template/cache/new-custom-image-temp.tar.gz .
-    [root@wakame-vdc-1box 101]# cd ..
-    [root@wakame-vdc-1box private]# vzctl destroy 101
+    [root@wakame-vdc-1box cache]$ vzctl stop 101
+    [root@wakame-vdc-1box cache]$ vzctl set 101 --ipdel all --save
+    [root@wakame-vdc-1box cache]$ cd /vz/private/101
+    [root@wakame-vdc-1box 101]$ tar  --numeric-owner -czf /vz/template/cache/new-custom-image-temp.tar.gz .
+    [root@wakame-vdc-1box 101]$ cd ..
+    [root@wakame-vdc-1box private]$ vzctl destroy 101
 
 Wakame-vdc's preferred method of packaging machine images is inside of
 partitioned VM images files. The following commands show one way to
@@ -145,8 +145,8 @@ directory and create a 10G empty image there. Other directories will
 work. The advantage of choosing this directory is so that the image
 file will already be in the right place for testing with Wakame-vdc.
 
-    [root@wakame-vdc-1box private]# cd /var/lib/wakame-vdc/images/
-    [root@wakame-vdc-1box images]# truncate -s 10G wakame-vdc-custom-image.raw
+    [root@wakame-vdc-1box private]$ cd /var/lib/wakame-vdc/images/
+    [root@wakame-vdc-1box images]$ truncate -s 10G wakame-vdc-custom-image.raw
 
 The next commands add a partition table to the image, and then make
 the first partition be an ext2 partition (i.e. which in this context,
@@ -154,28 +154,28 @@ means any Linux partition) that takes up the whole image, except
 the first 63 sectors.  The new unformatted partition is then mounted
 on a loop device.
 
-    [root@wakame-vdc-1box images]# parted wakame-vdc-custom-image.raw mklabel msdos
-    [root@wakame-vdc-1box images]# parted --script -- wakame-vdc-custom-image.raw mkpart primary ext2 63s -0
-    [root@wakame-vdc-1box images]# kpartx -va wakame-vdc-custom-image.raw
+    [root@wakame-vdc-1box images]$ parted wakame-vdc-custom-image.raw mklabel msdos
+    [root@wakame-vdc-1box images]$ parted --script -- wakame-vdc-custom-image.raw mkpart primary ext2 63s -0
+    [root@wakame-vdc-1box images]$ kpartx -va wakame-vdc-custom-image.raw
 
 Next, the mounted partition is formatted and then mounted.  Note:
 Before doing this next command, be sure the output from previous
 kpartx command says that the partition was mounted at loop0p1, and if
 not adjust the parameter accordingly.
 
-    [root@wakame-vdc-1box images]# mkfs.ext4 -F -E lazy_itable_init=1 -L root /dev/mapper/loop0p1
-    [root@wakame-vdc-1box images]# tune2fs -o acl /dev/mapper/loop0p1
-    [root@wakame-vdc-1box images]# mkdir tmp-mount
-    [root@wakame-vdc-1box images]# mount /dev/mapper/loop0p1 tmp-mount/
+    [root@wakame-vdc-1box images]$ mkfs.ext4 -F -E lazy_itable_init=1 -L root /dev/mapper/loop0p1
+    [root@wakame-vdc-1box images]$ tune2fs -o acl /dev/mapper/loop0p1
+    [root@wakame-vdc-1box images]$ mkdir tmp-mount
+    [root@wakame-vdc-1box images]$ mount /dev/mapper/loop0p1 tmp-mount/
 
 Next, we copy the OpenVZ directory contents into the file system and
 then unmount the file system.
 
-    [root@wakame-vdc-1box images]# cd tmp-mount/
-    [root@wakame-vdc-1box tmp-mount]# tar xzf /vz/template/cache/new-custom-image-temp.tar.gz
-    [root@wakame-vdc-1box tmp-mount]# cd ..
-    [root@wakame-vdc-1box images]# umount tmp-mount/
-    [root@wakame-vdc-1box images]# rmdir tmp-mount/
+    [root@wakame-vdc-1box images]$ cd tmp-mount/
+    [root@wakame-vdc-1box tmp-mount]$ tar xzf /vz/template/cache/new-custom-image-temp.tar.gz
+    [root@wakame-vdc-1box tmp-mount]$ cd ..
+    [root@wakame-vdc-1box images]$ umount tmp-mount/
+    [root@wakame-vdc-1box images]$ rmdir tmp-mount/
 
 Because in some use cases disk images can have multiple partitions,
 Wakame-vdc needs to know the UUID of the formatted disk partition to
@@ -183,18 +183,18 @@ reliably identify it when booting instances.  This UUID needs to be
 found before the partition is removed from the loop device, so we
 determine it first and then release the loop device.
 
-    [root@wakame-vdc-1box images]# blkid -o export /dev/mapper/loop0p1 | tee /tmp/remember.uuid-etc
-    [root@wakame-vdc-1box images]# kpartx -vd wakame-vdc-custom-image.raw
+    [root@wakame-vdc-1box images]$ blkid -o export /dev/mapper/loop0p1 | tee /tmp/remember.uuid-etc
+    [root@wakame-vdc-1box images]$ kpartx -vd wakame-vdc-custom-image.raw
 
 Before compressing the machine image, remember its size.
 
-    [root@wakame-vdc-1box images]# ls -l wakame-vdc-custom-image.raw | awk '{print $5}' | tee /tmp/remember.size
+    [root@wakame-vdc-1box images]$ ls -l wakame-vdc-custom-image.raw | awk '{print $5}' | tee /tmp/remember.size
 
 Finally, compress the image and remember the compressed size and the checksum of the compressed machine image.
 
-    [root@wakame-vdc-1box images]# gzip wakame-vdc-custom-image.raw
-    [root@wakame-vdc-1box images]# ls -l wakame-vdc-custom-image.raw.gz | awk '{print $5}' | tee /tmp/remember.alloc_size
-    [root@wakame-vdc-1box images]# md5sum /var/lib/wakame-vdc/images/wakame-vdc-custom-image.raw.gz | head -c 32 | tee /tmp/remember.md5
+    [root@wakame-vdc-1box images]$ gzip wakame-vdc-custom-image.raw
+    [root@wakame-vdc-1box images]$ ls -l wakame-vdc-custom-image.raw.gz | awk '{print $5}' | tee /tmp/remember.alloc_size
+    [root@wakame-vdc-1box images]$ md5sum /var/lib/wakame-vdc/images/wakame-vdc-custom-image.raw.gz | head -c 32 | tee /tmp/remember.md5
 
 ### Step 5: Register this machine image file with Wakame-vdc
 
