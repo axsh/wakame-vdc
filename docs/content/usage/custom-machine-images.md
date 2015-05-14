@@ -31,14 +31,14 @@ static web page to show.  The steps for other combinations are
 similar, but differ in subtle ways that will be documented later.
 
 
-#### Step 1: Install an OS into a bootable disk or directory structure
+### Step 1: Install an OS into a bootable disk or directory structure
 
 For OpenVZ, specialized techniques are required to install an OS, so
 the recommended procedure is to use one of the *precreated templates*
 that can be found at the [OpenVZ wiki](https://wiki.openvz.org/Download/template/precreated).  Minimal
 installations of the major Linux distributions are available.
 
-#### Step 2: Specialize the OS installation for the intended purpose
+### Step 2: Specialize the OS installation for the intended purpose
 
 The most straightforward way to install and configure the installed OS
 distribution is from inside OpenVZ itself.  An environment created by
@@ -78,10 +78,10 @@ configuring software.
     [root@localhost /]# service httpd start
     [root@localhost /]# chkconfig httpd on
 
-#### Step 3: Specialize the OS installation for Wakame-vdc
+### Step 3: Specialize the OS installation for Wakame-vdc
 
 
-##### Insert the wakame-init script and run it from /etc/rc.local:
+#### Insert the wakame-init script and run it from /etc/rc.local:
 
 Note: This step is necessary so that Wakame-vdc can do last-minute
 specialization that is necessary when each instance is booted.  For
@@ -98,20 +98,20 @@ special file at `/metadata/user-data`.
 
     yum install -y wakame-init
 
-##### Clear shell history:
+#### Clear shell history:
 
 Note: This step is optional.
 
     rm /home/*/.bash_history /root/.bash_history
 
-##### Remove ssh host keys:
+#### Remove ssh host keys:
 
 Note: This step is optional but recommended so that different
 instances appear as different ssh hosts.
 
     rm /etc/ssh/ssh_host*
 
-##### Remove net rules file so eth0 doesn't become eth1 at start:
+#### Remove net rules file so eth0 doesn't become eth1 at start:
 
 Note: This step is not necessary for OpenVZ, but will not cause any
 problems.  In fact, most of the OpenVZ precreated template caches do
@@ -119,7 +119,7 @@ not have this file.
 
     rm /etc/udev/rules.d/70-persistent-net.rules
 
-#### Step 4: Package it all into one machine image file
+### Step 4: Package it all into one machine image file
 
 Exit the OpenVZ container.
 
@@ -196,7 +196,7 @@ Finally, compress the image and remember the compressed size and the checksum of
     [root@wakame-vdc-1box images]# ls -l wakame-vdc-custom-image.raw.gz | awk '{print $5}' | tee /tmp/remember.alloc_size
     [root@wakame-vdc-1box images]# md5sum /var/lib/wakame-vdc/images/wakame-vdc-custom-image.raw.gz | head -c 32 | tee /tmp/remember.md5
 
-#### Step 5: Register this machine image file with Wakame-vdc
+### Step 5: Register this machine image file with Wakame-vdc
 
 First, move the new machine image to Wakame-vdc's directory for keeping
 images.  (If the machine image was created by the above steps, it might
@@ -236,7 +236,7 @@ your are installing into an environment that was created by following
 the [Wakame-vdc install guide](../installation.md).  The correct values for
 other situations can be typed directly into the command line.
 
-### Using and testing the new image
+## Using and testing the new image
 
 It should now be possible to start an instance from the machine image
 by following the instructions in the [basic usage guide](index.md).  The only necessary modification to these instructions
