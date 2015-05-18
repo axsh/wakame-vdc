@@ -16,7 +16,7 @@ if [[ -d "${installed_path}" ]]; then
   PATH=${installed_path}:${PATH}
 else
   # non-rpm
-  PATH=${BASH_SOURCE[0]%%/*}/../:${PATH}
+  PATH=${BASH_SOURCE[0]%/*}/../:${PATH}
 fi
 
 mussel.sh "${@}"
