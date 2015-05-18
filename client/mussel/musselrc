@@ -1,44 +1,60 @@
 # /etc/wakame-vdc/musselrc
 
-# System wide functions and aliases
-# Environment stuff goes in /etc/wakame-vdc/musselrc
+# System wide configuration file for the Mussel.
+# Mussel is a CLI client and integration test framework for Wakame-vdc.
 
-# It's NOT a good idea to change this file unless you know what you
-# are doing. It's much better to create a custom.sh shell script in
-# ~/.musselrc to make custom changes to your environment, as this
-# will prevent the need for merging in future updates.
-
-#MUSSEL_FRONTEND=noninteractive # [ interactive | noninteractive ]
-#MUSSEL_LOGLEVEL=info # [ info | debug ]
-#MUSSEL_DRY_RUN= #  [ y | yes | n | no ]
+# It's *not* a good idea to change this file unless you know what you are doing.
+# It's much better to create a ~/.musselrc file to keep your configuration.
+# The ~/.musselrc file will be loaded *after* this file and override any
+# variables defined here.
 
 #DCMGR_API_VERSION=12.03
 #DCMGR_HOST=127.0.0.1
 #DCMGR_PORT=9001
 #DCMGR_BASE_URI=http://${DCMGR_HOST}:${DCMGR_PORT}/api/${DCMGR_API_VERSION}
-#DCMGR_RESPONSE_FORMAT=yml
+#DCMGR_RESPONSE_FORMAT=yml # [ yml | json ]
 
 account_id=a-shpoolxx
 
-# For instance
-#
-# **required**
+# When using mussel as an integration test suite, setting the following to
+# interactive will pause between test until the user presses ctrl-D.
+# This is mainly intended for debugging failing test cases.
+#MUSSEL_FRONTEND=noninteractive # [ interactive | noninteractive ]
+
+#MUSSEL_LOGLEVEL=info # [ info | debug ]
+#MUSSEL_DRY_RUN= #  [ y | yes | n | no ]
+
+
+# The following variables are related to creating instances.
+# Any variables set here will be used as default values in case the corresponding
+# command-line options were not provided when creating an instance.
+
+
 #cpu_cores= # [ 1 | 2 | 4 | ... ]
 #hypervisor= # [ openvz | kvm | lxc ]
 #image_id= # wmi-***
 #memory_size= # [ 128 | 256 | 512 | 1024 | ... ]
-#
-# **optional**
 #ssh_key_id= # ssh-***
-#vifs= # [ "{}" | vifs.txt ]
+
+# The vifs variable takes a string containing a JSON formatted description of
+# this instance's network interfaces. You can either write the JSON string
+# directly in this variable or instead provide the path of a file containing it.
+#vifs= # [ '{"eth0":{"network":"nw-demo1","security_groups":["sg-grp1", sg-grp2]}' | /path/to/vifs.json ]
+
+# User data is an arbitrary field that can contain anything the user wants.
+# This data will be readable from inside the instance and can be used in custom scripts.
 #user_data= # asdf
+
 #display_name=
 #hostname=
 #service_type= # [ std | lb ]
 
-# For load_balancer
-#
-# **required**
+
+# The following variables are related to creating load balancers.
+# Any variables set here will be used as default values in case the corresponding
+# command-line options were not provided when creating a load balancer.
+
+
 #balance_algorithm= # [ leastconn | source ]
 #engine= # [ haproxy ]
 #max_connection= # [ 1000 | 5000 ]
@@ -46,8 +62,6 @@ account_id=a-shpoolxx
 #protocol= # [ http | https | tcp | ssl ]
 #instance_port=# [ 80 | 443 | ... ]
 #instance_protocol= # [ http | https | tcp | ssl ]
-#
-# **optional**
 #cookie_name=
 #display_name=
 #httpchk_path= # "/index.html"
