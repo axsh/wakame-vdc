@@ -287,6 +287,14 @@ _mussel() {
     security_group)
       case "${task}" in
         index)
+          case "${prev}" in
+            --service-type)
+              COMPREPLY=($(compgen -W "std lb" -- ${cur}))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "--service-type" -- ${cur}))
+              ;;
+          esac
           ;;
         create)
           case "${prev}" in
