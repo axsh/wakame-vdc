@@ -156,6 +156,9 @@ _mussel() {
           ;;
         create)
           case "${prev}" in
+            --display-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
             --hypervisor)
               COMPREPLY=($(compgen -W "openvz lxc kvm" -- "${cur}"))
               ;;
@@ -178,7 +181,7 @@ _mussel() {
               COMPREPLY=($(compgen -f "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--hypervisor --cpu-cores --image-id --memory-size --ssh-key-id --user-data --vifs" -- "${cur}"))
+              COMPREPLY=($(compgen -W "--display-name --hypervisor --cpu-cores --image-id --memory-size --ssh-key-id --user-data --vifs" -- "${cur}"))
               ;;
           esac
           ;;
@@ -189,11 +192,14 @@ _mussel() {
               ;;
             *)
               case "${prev}" in
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
                 --ssh-key-id)
                   COMPREPLY=($(compgen -W "$(mussel ssh_key_pair index | hash_value id)" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--ssh-key-id" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "--display-name --ssh-key-id" -- "${cur}"))
                   ;;
               esac
               ;;
@@ -222,6 +228,9 @@ _mussel() {
             --cookie)
               COMPREPLY=($(compgen -W "haproxy" -- "${cur}"))
               ;;
+            --display-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
             --engine)
               COMPREPLY=($(compgen -W "haproxy" -- "${cur}"))
               ;;
@@ -235,7 +244,7 @@ _mussel() {
               COMPREPLY=($(compgen -W "1000" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--balance-algorithm --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
+              COMPREPLY=($(compgen -W "--balance-algorithm --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
               ;;
           esac
           ;;
@@ -252,6 +261,9 @@ _mussel() {
                 --cookie)
                   COMPREPLY=($(compgen -W "haproxy" -- "${cur}"))
                   ;;
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
                 --engine)
                   COMPREPLY=($(compgen -W "haproxy" -- "${cur}"))
                   ;;
@@ -265,7 +277,7 @@ _mussel() {
                   COMPREPLY=($(compgen -W "1000" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--balance-algorithm --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "--balance-algorithm --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
                   ;;
               esac
               ;;
@@ -298,11 +310,14 @@ _mussel() {
           ;;
         create)
           case "${prev}" in
+            --display-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
             --rule)
               COMPREPLY=($(compgen -f "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--rule" -- "${cur}"))
+              COMPREPLY=($(compgen -W "--display-name --rule" -- "${cur}"))
               ;;
           esac
           ;;
@@ -313,11 +328,14 @@ _mussel() {
               ;;
             *)
               case "${prev}" in
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
                 --rule)
                   COMPREPLY=($(compgen -f "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--rule" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "--display-name --rule" -- "${cur}"))
                   ;;
               esac
               ;;
@@ -332,11 +350,14 @@ _mussel() {
           ;;
         create)
           case "${prev}" in
+            --display-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
             --public-key)
               COMPREPLY=($(compgen -f "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--public-key" -- "${cur}"))
+              COMPREPLY=($(compgen -W "--display-name --public-key" -- "${cur}"))
               ;;
           esac
           ;;
@@ -347,11 +368,14 @@ _mussel() {
               ;;
             *)
               case "${prev}" in
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
                 --public-key)
                   COMPREPLY=($(compgen -f "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--public-key" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "--display-name --public-key" -- "${cur}"))
                   ;;
               esac
               ;;
