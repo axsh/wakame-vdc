@@ -18,7 +18,7 @@ The file [dcmgr/lib/dcmgr.rb](https://github.com/axsh/wakame-vdc/blob/master/dcm
 
 The WebAPI code uses [Sinatra](http://www.sinatrarb.com) and is in the [dcmgr/lib/dcmgr/endpoints/12.03](https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/endpoints/12.03) directory.
 
-#### Hypervisor drivers
+### Hypervisor drivers
 
 The code that actually starts instances is in the [dcmgr/lib/dcmgr/drivers/hypervisor](https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/drivers/hypervisor) directory.
 
