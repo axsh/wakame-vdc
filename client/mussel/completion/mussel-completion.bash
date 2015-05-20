@@ -241,7 +241,7 @@ _mussel() {
               COMPREPLY=($(compgen -W "http https tcp ssl" -- "${cur}"))
               ;;
             --max-connection)
-              COMPREPLY=($(compgen -W "1000" -- "${cur}"))
+              COMPREPLY=($(compgen -W "1000 5000" -- "${cur}"))
               ;;
             *)
               COMPREPLY=($(compgen -W "--balance-algorithm --cookie --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
@@ -274,7 +274,7 @@ _mussel() {
                   COMPREPLY=($(compgen -W "http https tcp ssl" -- "${cur}"))
                   ;;
                 --max-connection)
-                  COMPREPLY=($(compgen -W "1000" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "1000 5000" -- "${cur}"))
                   ;;
                 *)
                   COMPREPLY=($(compgen -W "--balance-algorithm --cookie --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
