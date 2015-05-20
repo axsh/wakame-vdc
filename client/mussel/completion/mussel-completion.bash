@@ -244,7 +244,7 @@ _mussel() {
               COMPREPLY=($(compgen -W "1000" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--balance-algorithm --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
+              COMPREPLY=($(compgen -W "--balance-algorithm --cookie --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
               ;;
           esac
           ;;
@@ -277,7 +277,7 @@ _mussel() {
                   COMPREPLY=($(compgen -W "1000" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--balance-algorithm --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "--balance-algorithm --cookie --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
                   ;;
               esac
               ;;
