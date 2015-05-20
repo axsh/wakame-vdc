@@ -156,14 +156,14 @@ _mussel() {
           ;;
         create)
           case "${prev}" in
+            --cpu-cores)
+              COMPREPLY=($(compgen -W "1 2 4" -- "${cur}"))
+              ;;
             --display-name)
               COMPREPLY=($(compgen -W "" -- "${cur}"))
               ;;
             --hypervisor)
               COMPREPLY=($(compgen -W "openvz lxc kvm" -- "${cur}"))
-              ;;
-            --cpu-cores)
-              COMPREPLY=($(compgen -W "1 2 4" -- "${cur}"))
               ;;
             --image-id)
               COMPREPLY=($(compgen -W "$(mussel image index --is-public true | hash_value id)" -- "${cur}"))
@@ -181,7 +181,7 @@ _mussel() {
               COMPREPLY=($(compgen -f "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--display-name --hypervisor --cpu-cores --image-id --memory-size --ssh-key-id --user-data --vifs" -- "${cur}"))
+              COMPREPLY=($(compgen -W "--cpu-cores --display-name --hypervisor --image-id --memory-size --ssh-key-id --user-data --vifs" -- "${cur}"))
               ;;
           esac
           ;;
