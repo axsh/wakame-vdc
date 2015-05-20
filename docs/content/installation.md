@@ -123,11 +123,11 @@ you're running this guide on a remote machine!
 
     sudo service network restart
 
-#### Configuration
+### Configuration
 
 Next we are going to configure Wakame-vdc and download a machine image containing Ubuntu 10.04 that we can start instances of. You can either do it manually or run a script we have provided. Both methods will amount to the same result. The script should be easier but doing it manually will teach you more about Wakame-vdc.
 
-##### Using the script
+#### Using the script
 
 The script can be found here: [install_guide_demo_data.sh](https://raw.githubusercontent.com/axsh/wakame-vdc/master/scripts/install_guide_demo_data.sh)
 
@@ -137,7 +137,7 @@ You need to tell it about the network you want to start your instances in. Run t
 
 After running the script and [optionally reserving ip addresses](#reserve-ip), skip over to the [Start Wakame-vdc](#start-wakame-vdc) section.
 
-##### Manual configuration
+#### Manual configuration
 
 The different Wakame-vdc services require their own config files. Unfortunately they currently aren't automatically installed with the rpm packages. Until we have that fixed, you will have to copy them over manually.
 
@@ -153,7 +153,7 @@ The different Wakame-vdc services require their own config files. Unfortunately 
 
     sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/load_balancer_spec.yml.example /etc/wakame-vdc/dcmgr_gui/load_balancer_spec.yml
 
-##### Create the Wakame-vdc database
+#### Create the Wakame-vdc database
 
 Wakame-vdc uses a [MySQL](http://www.mysql.com) database. Start MySQL and create the database.
 
@@ -165,7 +165,7 @@ We can use [Rake](https://github.com/ruby/rake) to create the database tables. W
     cd /opt/axsh/wakame-vdc/dcmgr
     /opt/axsh/wakame-vdc/ruby/bin/rake db:up
 
-##### Register the HVA
+#### Register the HVA
 
 As describe above, the HVA or host node is the part of Wakame-vdc that actually starts instances. Wakame-vdc can manage any number of these. The words HVA and host node will be use interchangeably in this guide.
 
@@ -198,7 +198,7 @@ Remarks:
 
   * The *force* flag is set so we can register the host node even though Wakame-vdc can't currently see it through AMQP. Since we haven't started the Wakame-vdc services yet, it's only natural that it can't see it yet. It will once we start them.
 
-##### Download and register a machine image
+#### Download and register a machine image
 
 Of course we can't start any instances if we don't have a machine image to instantiate. For this guide we are just going to download a simple machine image containing Ubuntu 10.04 (Lucid Lynx).
 
@@ -252,7 +252,7 @@ Next we tell Wakame-vdc that this backup object is a machine image that we can s
       --root-device uuid:148bc5df-3fc5-4e93-8a16-7328907cb1c0 \
       --display-name "Ubuntu 10.04 (Lucid Lynx)"
 
-##### Register a network
+#### Register a network
 
 Wakame-vdc needs to know which network instances will be connected to. You can register more than one network and then decide which one to use when you start instances.
 
@@ -302,7 +302,7 @@ Earlier in this guide we have set up a bridge named `br0` and it's connected to 
       bridge 'br0'
     }
 
-##### Configure the GUI
+#### Configure the GUI
 
 The GUI is a rails application that requires its own database. Create it and initialize its tables using Rake.
 
@@ -340,7 +340,7 @@ We're done with gui-manage. Exit the shell.
 
     exit
 
-#### Start Wakame-vdc
+### Start Wakame-vdc
 
 Start the rabbitmq server. Wakame-vdc's different processes use AMQP to communicate. Rabbitmq-server is the AMQP exchange managing all that traffic.
 
