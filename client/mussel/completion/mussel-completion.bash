@@ -226,7 +226,7 @@ _mussel() {
               COMPREPLY=($(compgen -W "leastconn source" -- "${cur}"))
               ;;
             --cookie)
-              COMPREPLY=($(compgen -W "haproxy" -- "${cur}"))
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
               ;;
             --display-name)
               COMPREPLY=($(compgen -W "" -- "${cur}"))
@@ -259,7 +259,7 @@ _mussel() {
                   COMPREPLY=($(compgen -W "leastconn source" -- "${cur}"))
                   ;;
                 --cookie)
-                  COMPREPLY=($(compgen -W "haproxy" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
                   ;;
                 --display-name)
                   COMPREPLY=($(compgen -W "" -- "${cur}"))
