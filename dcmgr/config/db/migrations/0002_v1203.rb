@@ -411,6 +411,26 @@ Sequel.migration do
     drop_table(:host_node_vnets)
     drop_table(:network_services)
     drop_table(:network_vif_security_groups)
+
+    create_table(:security_group_rules) do
+      primary_key :id, :type=>"int(11)"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      column :security_group_id, "int(11)", :null=>false
+      column :permission, "varchar(255)", :null=>false
+
+      index [:security_group_id]
+    end
+
+    create_table(:instance_security_groups) do
+      primary_key :id, :type=>"int(11)"
+      column :instance_id, "int(11)", :null=>false
+      column :security_group_id, "int(11)", :null=>false
+
+      index [:instance_id]
+      index [:security_group_id]
+    end
+
     drop_table(:accounting_logs)
     drop_table(:load_balancers)
     drop_table(:load_balancer_targets)
