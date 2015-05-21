@@ -407,8 +407,15 @@ Sequel.migration do
   end
 
   down do
+    drop_table(:security_group_references)
     drop_table(:host_node_vnets)
     drop_table(:network_services)
+    drop_table(:network_vif_security_groups)
+    drop_table(:accounting_logs)
+    drop_table(:load_balancers)
+    drop_table(:load_balancer_targets)
+    drop_table(:backup_objects)
+    drop_table(:backup_storages)
     drop_table(:mac_ranges)
     drop_table(:network_vif_monitors)
     drop_table(:instance_monitor_attrs)
