@@ -156,11 +156,14 @@ _mussel() {
           ;;
         create)
           case "${prev}" in
-            --hypervisor)
-              COMPREPLY=($(compgen -W "openvz lxc kvm" -- "${cur}"))
-              ;;
             --cpu-cores)
               COMPREPLY=($(compgen -W "1 2 4" -- "${cur}"))
+              ;;
+            --display-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --hypervisor)
+              COMPREPLY=($(compgen -W "openvz lxc kvm" -- "${cur}"))
               ;;
             --image-id)
               COMPREPLY=($(compgen -W "$(mussel image index --is-public true | hash_value id)" -- "${cur}"))
@@ -178,7 +181,7 @@ _mussel() {
               COMPREPLY=($(compgen -f "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--hypervisor --cpu-cores --image-id --memory-size --ssh-key-id --user-data --vifs" -- "${cur}"))
+              COMPREPLY=($(compgen -W "--cpu-cores --display-name --hypervisor --image-id --memory-size --ssh-key-id --user-data --vifs" -- "${cur}"))
               ;;
           esac
           ;;
@@ -189,11 +192,14 @@ _mussel() {
               ;;
             *)
               case "${prev}" in
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
                 --ssh-key-id)
                   COMPREPLY=($(compgen -W "$(mussel ssh_key_pair index | hash_value id)" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--ssh-key-id" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "--display-name --ssh-key-id" -- "${cur}"))
                   ;;
               esac
               ;;
@@ -220,7 +226,10 @@ _mussel() {
               COMPREPLY=($(compgen -W "leastconn source" -- "${cur}"))
               ;;
             --cookie)
-              COMPREPLY=($(compgen -W "haproxy" -- "${cur}"))
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --display-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
               ;;
             --engine)
               COMPREPLY=($(compgen -W "haproxy" -- "${cur}"))
@@ -232,10 +241,10 @@ _mussel() {
               COMPREPLY=($(compgen -W "http https tcp ssl" -- "${cur}"))
               ;;
             --max-connection)
-              COMPREPLY=($(compgen -W "1000" -- "${cur}"))
+              COMPREPLY=($(compgen -W "1000 5000" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--balance-algorithm --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
+              COMPREPLY=($(compgen -W "--balance-algorithm --cookie --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
               ;;
           esac
           ;;
@@ -250,7 +259,10 @@ _mussel() {
                   COMPREPLY=($(compgen -W "leastconn source" -- "${cur}"))
                   ;;
                 --cookie)
-                  COMPREPLY=($(compgen -W "haproxy" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
                   ;;
                 --engine)
                   COMPREPLY=($(compgen -W "haproxy" -- "${cur}"))
@@ -262,10 +274,10 @@ _mussel() {
                   COMPREPLY=($(compgen -W "http https tcp ssl" -- "${cur}"))
                   ;;
                 --max-connection)
-                  COMPREPLY=($(compgen -W "1000" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "1000 5000" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--balance-algorithm --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "--balance-algorithm --cookie --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
                   ;;
               esac
               ;;
@@ -298,11 +310,14 @@ _mussel() {
           ;;
         create)
           case "${prev}" in
+            --display-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
             --rule)
               COMPREPLY=($(compgen -f "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--rule" -- "${cur}"))
+              COMPREPLY=($(compgen -W "--display-name --rule" -- "${cur}"))
               ;;
           esac
           ;;
@@ -313,11 +328,14 @@ _mussel() {
               ;;
             *)
               case "${prev}" in
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
                 --rule)
                   COMPREPLY=($(compgen -f "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--rule" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "--display-name --rule" -- "${cur}"))
                   ;;
               esac
               ;;
@@ -332,11 +350,14 @@ _mussel() {
           ;;
         create)
           case "${prev}" in
+            --display-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
             --public-key)
               COMPREPLY=($(compgen -f "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--public-key" -- "${cur}"))
+              COMPREPLY=($(compgen -W "--display-name --public-key" -- "${cur}"))
               ;;
           esac
           ;;
@@ -347,11 +368,14 @@ _mussel() {
               ;;
             *)
               case "${prev}" in
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
                 --public-key)
                   COMPREPLY=($(compgen -f "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--public-key" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "--display-name --public-key" -- "${cur}"))
                   ;;
               esac
               ;;
