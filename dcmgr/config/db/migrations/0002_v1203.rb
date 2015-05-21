@@ -434,7 +434,7 @@ Sequel.migration do
 
     alter_table(:vlan_leases) do
       drop_column :dc_network_id
-      drop_index :tag_id
+      drop_index [:dc_network_id, :tag_id]
       add_index [:tag_id], :unique=>true
     end
 
@@ -449,8 +449,6 @@ Sequel.migration do
 
     alter_table(:physical_networks) do
       add_column :interface, "varchar(255)"
-      drop_column :bridge
-      drop_column :bridge_type
     end
 
     alter_table(:instances) do
@@ -498,15 +496,9 @@ Sequel.migration do
       drop_column :display_name
     end
 
-    drop_table(:backup_storages)
-
     alter_table(:job_states) do
-      drop_column :session_id
       drop_index [:session_id]
-    end
-
-    alter_table(:job_states) do
-      drop_column :command
+      drop_column :session_id
     end
 
     alter_table(:volumes) do
@@ -539,7 +531,7 @@ Sequel.migration do
       add_column :alloc_type, "int(11)", :default=>0, :null=>false
       set_column_type :description, "text"
 
-      add_index[:instance_nic_id, :network_id]
+      add_index [:instance_nic_id, :network_id]
     end
 
     alter_table(:dhcp_ranges) do
