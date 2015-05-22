@@ -6,18 +6,17 @@ LC_ALL=C
 
 #set -e
 
+## variables
+
 LOGFILE=/var/log/$(basename $0).log
 USER=${USER:-root}
 SSHDIR=$(getent passwd ${USER} | awk -F: '{print $6}')/.ssh/
 KEYSPATH=${SSHDIR}/authorized_keys
 
-METADATA_LOCATION=drive
+METADATA_LOCATION=${METADATA_LOCATION:-drive}
 METADATA_DRIVE_MOUNTPOINT=/metadata
 
-function shlog() {
-  echo "\$ $*"
-  eval $*
-}
+## functions
 
 function get_metadata_from_server() {
   local param=$1
@@ -47,24 +46,12 @@ function get_metadata() {
 }
 
 function logger() {
-  cat | tee -a ${LOGFILE}
+  tee -a ${LOGFILE}
 }
 
+### mount metadata drive
 
-case "$1" in
-ms|metadata-server)
-  METADATA_LOCATION=server
-  ;;
-md|metadata-drive)
-  METADATA_LOCATION=drive
-  ;;
-*)
-  METADATA_LOCATION=drive
-  ;;
-esac
-
-case "$METADATA_LOCATION" in
-drive)
+function set_mount_metadata_drive() {
   if [[ -f /proc/vz/veinfo ]]; then
     # OpenVZ mounts metadata drive from the outside script.
     METADATA_DRIVE_MOUNTPOINT="/metadata"
@@ -85,67 +72,69 @@ drive)
     fi
     echo "Mounting metadata drive on: ${METADATA_DRIVE_MOUNTPOINT}"
     mount LABEL=METADATA ${METADATA_DRIVE_MOUNTPOINT} || {
-      echo no such labeled device: METADATA | logger
+      echo "no such labeled device: METADATA"
       exit 1
     }
     echo "Mounted metadata drive successfully on: ${METADATA_DRIVE_MOUNTPOINT}"
   fi
-  ;;
-server)
-  ;;
-*)
-  exit 0
-  ;;
-esac
+}
 
+### Set up the host name
 
-# Set up the host name
-HN=`get_metadata local-hostname`
-if [ -n "$HN" ]; then
-  echo "Setting the hostname"
-  grep -q "HOSTNAME=$HN" /etc/sysconfig/network
-  if [ $? -ne 0 ]; then
-    hostname $HN
-    sed -i "s/HOSTNAME=.*/HOSTNAME=$HN/" /etc/sysconfig/network
+function set_host_name() {
+  HN=`get_metadata local-hostname`
+  if [ -n "$HN" ]; then
+    echo "Setting the hostname"
+    grep -q "HOSTNAME=$HN" /etc/sysconfig/network
+    if [ $? -ne 0 ]; then
+      hostname $HN
+      sed -i "s/HOSTNAME=.*/HOSTNAME=$HN/" /etc/sysconfig/network
+    fi
+
+    # Add it to the hosts file if not there yet
+    grep -q "$HN" /etc/hosts
+    if [ $? -ne 0 ]; then
+      sed -i "/127.0.0.1.*localhost/a\127.0.0.1 $HN" /etc/hosts
+    fi
   fi
+}
 
-  # Add it to the hosts file if not there yet
-  grep -q "$HN" /etc/hosts
-  if [ $? -ne 0 ]; then
-    echo '127.0.0.1 '$HN >> /etc/hosts
+### Set up the authorized keys for the users to login
+
+function set_authorized_keys() {
+  KEYS=`get_metadata public-keys/0/openssh-key`
+  if [ -n "$KEYS" ]; then
+    echo "Setting authorized keys" 
+    [ -d ${SSHDIR} ] || {
+      mkdir -m 700 ${SSHDIR}
+      chown ${USER}:${USER} ${SSHDIR}
+    }
+    # Check if the keys are already authorized
+    [ -f $KEYSPATH ] && grep -q "$KEYS" $KEYSPATH
+    if [ $? -ne 0 ]; then
+      echo $KEYS >> $KEYSPATH
+      chmod 600 $KEYSPATH
+      chown ${USER} $KEYSPATH
+    fi
   fi
-fi
+}
 
-# Set up the authorized keys for the users to login
-KEYS=`get_metadata public-keys/0/openssh-key`
-if [ -n "$KEYS" ]; then
-  echo "Setting authorized keys" | logger
-  [ -d ${SSHDIR} ] || {
-    mkdir -m 700 ${SSHDIR}
-    chown ${USER}:${USER} ${SSHDIR}
-  }
-  # Check if the keys are already authorized
-  [ -f $KEYSPATH ] && grep -q "$KEYS" $KEYSPATH
-  if [ $? -ne 0 ]; then
-    echo $KEYS > $KEYSPATH
-    chmod 600 $KEYSPATH
-    chown ${USER} $KEYSPATH
+### Generate ssh host keys
+
+function set_generate_ssh_host_keys() {
+  if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
+    echo "Generating DSA host key" 
+    ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
   fi
-fi
+  if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+    echo "Generating RSA host key" 
+    ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
+  fi
+}
 
-# Generate ssh host keys
-if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
-  echo "Generating DSA host key" | logger
-  ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
-fi
-if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
-  echo "Generating RSA host key" | logger
-  ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-fi
+### Set up network configuration
 
-# Set up network configuration
-case "$METADATA_LOCATION" in
-drive)
+function set_network_configuration() {
   echo "Detecting default gateway device."
   gw_if_mac=$(
     for macaddr in $(get_metadata network/interfaces/macs/); do
@@ -166,7 +155,6 @@ drive)
     mac_path=network/interfaces/macs/${macaddr%%/}
     mac=`get_metadata ${mac_path}/mac`
 
-    shlog "ifconfig -a | grep -i $mac | tr -s ' ' | cut -d ' ' -f1"
     nic=`ifconfig -a | grep -i $mac | tr -s ' ' | cut -d ' ' -f1`
 
     ip=`get_metadata ${mac_path}/local-ipv4s`
@@ -196,38 +184,59 @@ GATEWAY="${gateway}"
 _IFCFG
     }
 
-    service network restart
   done
-  ;;
-*)
-  ;;
-esac | logger
+}
 
-# Setup etc hosts.
-host_path="${METADATA_DRIVE_MOUNTPOINT}/meta-data/extra-hosts"
-if [ -d ${host_path} ]; then
-  comment="# Please do not modify lines from here by your hand since wakame-init will place entries from metadata."
-  egrep -w -q "^${comment}$" /etc/hosts && {
-    sed -i -n "1,/^${comment}$/p" /etc/hosts
-  } || {
-    echo ${comment} >> /etc/hosts
-  }
-  for i in `ls ${host_path}/*`; do
-    hostname=`basename $i`
-    hostip=`cat $i`
-    echo "${hostip} ${hostname}" >> /etc/hosts
-  done
-  chmod 0644 /etc/hosts
-fi
+### Setup etc hosts.
 
-#Add the metadata server to the routing table
-#for i in {1..1200}; do
-#  DEFAULT_GW=`ip route get 8.8.8.8 | head -n 1 | cut -d ' ' -f3`
-#  echo ... ${i} DEFAULT_GW=${DEFAULT_GW} | logger
-#  [ -z "${DEFAULT_GW}" ] || break
-#  sleep 3
-#done
-#[ -z ${DEFAULT_GW} ] || route add 169.254.169.254 gateway $DEFAULT_GW
+function set_extra_hosts() {
+  host_path="${METADATA_DRIVE_MOUNTPOINT}/meta-data/extra-hosts"
+  if [ -d ${host_path} ]; then
+    comment="# Please do not modify lines from here by your hand since wakame-init will place entries from metadata."
+    egrep -w -q "^${comment}$" /etc/hosts && {
+      sed -i -n "1,/^${comment}$/p" /etc/hosts
+    } || {
+      echo "${comment}" >> /etc/hosts
+    }
+    for i in `ls ${host_path}/*`; do
+      hostname=`basename $i`
+      hostip=`cat $i`
+      echo "${hostip} ${hostname}" >> /etc/hosts
+    done
+    chmod 0644 /etc/hosts
+  fi
+}
+
+### Add the metadata server to the routing table
+
+# function set_routing_table() {
+#   for i in {1..1200}; do
+#     DEFAULT_GW=`ip route get 8.8.8.8 | head -n 1 | cut -d ' ' -f3`
+#     echo ... ${i} DEFAULT_GW=${DEFAULT_GW} 
+#     [ -z "${DEFAULT_GW}" ] || break
+#     sleep 3
+#   done
+#   [ -z ${DEFAULT_GW} ] || route add 169.254.169.254 gateway $DEFAULT_GW
+# }
+
+function set_configuration() {
+  case "$METADATA_LOCATION" in
+  drive)
+    set_mount_metadata_drive
+    set_network_configuration
+    ;;
+  *)
+    ;;
+  esac
+  set_host_name
+  set_authorized_keys
+  set_generate_ssh_host_keys
+  set_extra_hosts
+}
+
+## exec
+
+set_configuration | logger
 
 # Important for remote storage.
 sync

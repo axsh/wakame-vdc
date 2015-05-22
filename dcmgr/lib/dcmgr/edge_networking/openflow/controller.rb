@@ -22,7 +22,7 @@ module Dcmgr
 
         def initialize service_openflow
           @service_openflow = service_openflow
-          @default_ofctl = OvsOfctl.new
+          @default_ofctl = OvsOfctl.new(Dcmgr::Configurations.hva.ovs_ofctl)
 
           @switches = {}
         end
