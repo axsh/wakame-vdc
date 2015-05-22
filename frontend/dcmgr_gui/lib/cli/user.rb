@@ -150,9 +150,9 @@ __END
     def primacc(uuid)
       user = User[uuid] || UnknownUUIDError.raise(uuid)
 
-      if options[:account_id]
-        acc = Account[options[:account_id]] || UnknownUUIDError.raise(options[:account_id])
-        user.primary_account_id = acc.uuid
+      if acc_id = options[:account_id]
+        acc = Account[acc_id] || UnknownUUIDError.raise(acc_id)
+        user.primary_account_id = acc.canonical_uuid
         user.save
         user.add_account(acc)
       end
