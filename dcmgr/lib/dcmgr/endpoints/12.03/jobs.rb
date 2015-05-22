@@ -32,7 +32,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/jobs' do
     job = find_by_uuid(:QueuedJob, params[:id])
 
     job.cancel
-    
+
     respond_with([job.canonical_uuid])
   end
 end

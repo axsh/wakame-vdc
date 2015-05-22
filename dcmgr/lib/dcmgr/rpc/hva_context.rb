@@ -6,9 +6,15 @@ require 'isono'
 module Dcmgr
   module Rpc
     class HvaContext
+      ACCEPTED_CLASSES = [
+        HvaHandler,
+        LocalStoreHandler,
+        MigrationHandler,
+        WindowsHandler
+      ]
 
       def initialize(subject)
-        unless [HvaHandler, LocalStoreHandler].member?(subject.class)
+        unless ACCEPTED_CLASSES.member?(subject.class)
           raise "Invalid Class: #{subject.class}"
         end
         @hva = subject
@@ -30,7 +36,7 @@ module Dcmgr
         if @hva.instance_variable_get(:@os_devpath)
           return @hva.instance_variable_get(:@os_devpath)
         end
-        
+
         boot_vol = inst[:volume][inst[:boot_volume_id]]
         raise "Unknown boot volume details: #{inst[:boot_volume_id]}" if boot_vol.nil?
 
@@ -48,7 +54,9 @@ module Dcmgr
             raise "Unsupoorted mount label: #{volume_hash[:volume_device][:mount_label]}"
           end
         when 'Dcmgr::Models::IscsiVolume'
-          raise NotImplementedError
+          hypervisor_driver_class.new.iscsi_target_dev_path(volume_hash)
+        when 'Dcmgr::Models::NfsVolume'
+          File.join(volume_hash[:volume_device][:nfs_storage_node][:mount_point], volume_hash[:volume_device][:path])
         else
           raise "Unsupported volume type: #{volume_hash[:volume_type]}"
         end
@@ -67,7 +75,7 @@ module Dcmgr
       end
 
       def inst_data_dir
-        File.expand_path("#{inst_id}", Dcmgr.conf.vm_data_dir)
+        File.expand_path("#{inst_id}", Dcmgr::Configurations.hva.vm_data_dir)
       end
 
       def hypervisor_driver_class
@@ -84,7 +92,7 @@ module Dcmgr
       def dump_instance_parameter(rel_path, buf)
         # ignore error when try to put file to deleted instance.
         return self unless File.directory?(self.inst_data_dir())
-        
+
         File.open(File.expand_path(rel_path, self.inst_data_dir()), 'w'){ |f|
           f.puts(buf)
         }

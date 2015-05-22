@@ -103,4 +103,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
     hn.update_fields(changed, changed.keys)
     respond_with(R::HostNode.new(hn).generate)
   end
+
+  put '/:id/evacuate' do
+    hn = find_by_uuid(:HostNode, params[:id])
+    raise E::UnknownHostNode, params[:id] if hn.nil?
+
+    # sync call
+    ret = Dcmgr.messaging.job_run("scheduler", 'evacuate_from',
+                                  hn.canonical_uuid)
+    respond_with(ret)
+  end
 end

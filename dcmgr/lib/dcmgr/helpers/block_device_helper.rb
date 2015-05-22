@@ -4,7 +4,7 @@ module Dcmgr
   module Helpers
     module BlockDeviceHelper
 
-      def mount_metadata_drive(ctx, mount_path)
+      def mount_metadata_drive(ctx, mount_path, options = "-o ro")
         raise "Mount point for metadata image does not exist: #{mount_path}" unless File.directory?(mount_path)
         raise "Metadata image file does not exist #{ctx.metadata_img_path}" unless File.exists?(ctx.metadata_img_path)
         # mount metadata drive
@@ -25,7 +25,7 @@ module Dcmgr
           detach_loop(ctx.metadata_img_path)
           raise
         end
-        sh("mount -o ro %s %s", [lodev, ve_metadata_path])
+        sh("mount #{options} %s %s", [lodev, ve_metadata_path])
       end
 
       def umount_metadata_drive(ctx, mount_path)

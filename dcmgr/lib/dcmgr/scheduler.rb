@@ -21,7 +21,7 @@ module Dcmgr
              else
                service_type_obj
              end
-        if Dcmgr.conf.service_types[st.to_s].nil?
+        if Dcmgr::Configurations.dcmgr.service_types[st.to_s].nil?
           raise "Unknown service type: #{service_type_obj}"
         end
         @service_type = st.to_s
@@ -59,7 +59,7 @@ module Dcmgr
 
       private
       def conf
-        Dcmgr.conf.service_types[@service_type]
+        Dcmgr::Configurations.dcmgr.service_types[@service_type]
       end
     end
 
@@ -69,32 +69,32 @@ module Dcmgr
 
     # Factory method for HostNode scheduler
     def self.host_node()
-      service_type(Dcmgr.conf.default_service_type).host_node
+      service_type(Dcmgr::Configurations.dcmgr.default_service_type).host_node
     end
 
     # Factory method for HostNode scheduler for HA
     def self.host_node_ha()
-      service_type(Dcmgr.conf.default_service_type).host_node_ha
+      service_type(Dcmgr::Configurations.dcmgr.default_service_type).host_node_ha
     end
 
     # Factory method for StorageNode scheduler
     def self.storage_node()
-      service_type(Dcmgr.conf.default_service_type).storage_node
+      service_type(Dcmgr::Configurations.dcmgr.default_service_type).storage_node
     end
 
     # Factory method for Network scheduler
     def self.network()
-      service_type(Dcmgr.conf.default_service_type).network
+      service_type(Dcmgr::Configurations.dcmgr.default_service_type).network
     end
 
     # Factory method for MAC Addres scheduler
     def self.mac_address()
-      service_type(Dcmgr.conf.default_service_type).mac_address
+      service_type(Dcmgr::Configurations.dcmgr.default_service_type).mac_address
     end
 
     # Factory method for IP Addres scheduler
     def self.ip_address()
-      service_type(Dcmgr.conf.default_service_type).ip_address
+      service_type(Dcmgr::Configurations.dcmgr.default_service_type).ip_address
     end
 
     # common scheduler class finder
@@ -218,6 +218,13 @@ module Dcmgr
       # @return Models::HostNode
       def schedule(instance)
         raise NotImplementedError
+      end
+
+      module AllowOverCommit
+        # allow the instances over commit during HA event.
+        def schedule_over_commit(instance)
+          raise NotImplementedError
+        end
       end
     end
 

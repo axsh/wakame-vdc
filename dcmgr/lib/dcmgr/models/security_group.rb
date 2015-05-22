@@ -8,7 +8,7 @@ module Dcmgr::Models
     accept_service_type
 
     plugin Plugins::ResourceLabel
-      
+
     many_to_many :network_vif, :join_table=>:network_vif_security_groups
     many_to_many :referencees, :class => self, :join_table => :security_group_references,:left_key => :referencer_id, :right_key => :referencee_id
     many_to_many :referencers, :class => self, :join_table => :security_group_references,:right_key => :referencer_id, :left_key => :referencee_id
@@ -32,7 +32,7 @@ module Dcmgr::Models
       }
 
       nd[:local_vnics] = {}
-      local_vnics_dataset = self.network_vif_dataset.filter(:instance => Instance.runnings.filter(:host_node => HostNode.filter(:node_id => host_node_id)))
+      local_vnics_dataset = self.network_vif_dataset.filter(:instance => Instance.running_or_initializing.filter(:host_node => HostNode.filter(:node_id => host_node_id)))
       local_vnics_dataset.all.each { |vnic|
         nd[:local_vnics][vnic.canonical_uuid] = vnic.to_netfilter_document
       }
@@ -61,7 +61,7 @@ module Dcmgr::Models
 
       nd
     end
-    
+
     def rules_array
       rules = []
       rule.to_s.each_line { |line|

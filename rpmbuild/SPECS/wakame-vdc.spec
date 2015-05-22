@@ -12,7 +12,7 @@
 %{?repo_uri:%define _vdc_git_uri %{repo_uri}}
 
 Name: %{oname}
-Version: 13.08
+Version: 15.03
 Release: %{release_id}%{?dist}
 Summary: The wakame virtual data center.
 Group: Development/Languages
@@ -26,7 +26,8 @@ License: see https://github.com/axsh/wakame-vdc/blob/master/README.md
 AutoReqProv: no
 
 # * build
-BuildRequires: rpm-build
+# rpm-build and etc...
+BuildRequires: rpmdevtools
 BuildRequires: createrepo
 BuildRequires: make
 BuildRequires: gcc-c++ gcc
@@ -126,6 +127,9 @@ Requires: %{oname}-rack-config = %{version}-%{release}
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
+# dcell
+Requires: zeromq3
+Requires: zeromq3-devel
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
@@ -180,10 +184,6 @@ Requires: iscsi-initiator-utils scsi-target-utils
 Requires: ebtables iptables ethtool vconfig iproute
 Requires: bridge-utils
 Requires: dracut-kernel
-Requires: kmod-openvswitch >= 1.6.1
-Requires: kmod-openvswitch <  1.6.2
-Requires: openvswitch      >= 1.6.1
-Requires: openvswitch      <  1.6.2
 Requires: kpartx
 Requires: libcgroup
 Requires: tunctl
@@ -211,7 +211,7 @@ BuildArch: noarch
 Summary: Configuration set for hva LXC VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
-Requires: lxc
+Requires: lxc >= 1.0.0
 %description  hva-lxc-vmapp-config
 <insert long description, indented with spaces>
 
@@ -282,6 +282,7 @@ BuildArch: noarch
 Summary: Configuration set for sta VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
+Requires: pv
 %description  sta-vmapp-config
 <insert long description, indented with spaces>
 
@@ -312,6 +313,15 @@ Requires: %{oname} = %{version}-%{release}
 %description  dolphin-vmapp-config
 <insert long description, indented with spaces>
 
+# hma-vmapp-config
+%package hma-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for hma VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description  hma-vmapp-config
+<insert long description, indented with spaces>
+
 # vdcsh
 %package vdcsh
 BuildArch: noarch
@@ -321,12 +331,13 @@ Requires: %{oname} = %{version}-%{release}
 %description vdcsh
 <insert long description, indented with spaces>
 
-# tests-cucumber
-%package tests-cucumber
-Summary: tests-cucumber
+# client-mussel
+%package client-mussel
+BuildArch: noarch
+Summary: api client
 Group: Development/Languages
-Requires: %{oname} = %{version}-%{release}
-%description tests-cucumber
+Requires: curl
+%description client-mussel
 <insert long description, indented with spaces>
 
 ## rpmbuild -bp
@@ -407,11 +418,8 @@ ln -s /etc/%{oname}/admin/admin.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/fro
 # vdcsh
 [ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d
 [ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder  ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder
-[ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/cucumber ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/cucumber
 rsync -aHA `pwd`/tests/vdc.sh   ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
 rsync -aHA `pwd`/tests/vdc.sh.d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
-rsync -aHA `pwd`/tests/builder/functions.sh ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder/functions.sh
-rsync -aHA `pwd`/tests/cucumber ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
 
 # log directory
 mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}
@@ -433,6 +441,13 @@ mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/instances/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/images
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/volumes
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/snap
+
+# mussel
+mkdir -p ${RPM_BUILD_ROOT}/usr/bin
+ln -s %{prefix}/%{oname}/client/mussel/bin/mussel ${RPM_BUILD_ROOT}/usr/bin/mussel
+rsync -aHA `pwd`/client/mussel/musselrc ${RPM_BUILD_ROOT}/etc/wakame-vdc/musselrc
+mkdir -p ${RPM_BUILD_ROOT}/etc/bash_completion.d
+ln -s %{prefix}/%{oname}/client/mussel/completion/mussel-completion.bash ${RPM_BUILD_ROOT}/etc/bash_completion.d/mussel
 
 %clean
 RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules clean
@@ -473,6 +488,18 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %dir /var/log/%{oname}
 %dir /var/lib/%{oname}
 %exclude %{prefix}/%{oname}/tests/
+%exclude %{prefix}/%{oname}/client/mussel
+%exclude /usr/bin/mussel
+%exclude /etc/wakame-vdc/musselrc
+%exclude /etc/bash_completion.d/mussel
+
+%files client-mussel
+%defattr(-,root,root)
+%{prefix}/%{oname}/client/mussel/
+/usr/bin/mussel
+%config(noreplace) /etc/wakame-vdc/musselrc
+%dir /etc/bash_completion.d
+/etc/bash_completion.d/mussel
 
 %files vdcsh
 %defattr(-,root,root)
@@ -481,11 +508,6 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %{prefix}/%{oname}/tests/builder/
 %dir %{prefix}/%{oname}/tests
 %attr(0600, root, root) %{prefix}/%{oname}/tests/vdc.sh.d/pri.pem
-
-%files tests-cucumber
-%defattr(-,root,root)
-%dir %{prefix}/%{oname}/tests/cucumber
-%{prefix}/%{oname}/tests/cucumber/
 
 %files debug-config
 %defattr(-,root,root)
@@ -612,5 +634,10 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-dolphin
 %config /etc/init/vdc-dolphin.conf
+
+%files hma-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-hma
+%config /etc/init/vdc-hma.conf
 
 %changelog

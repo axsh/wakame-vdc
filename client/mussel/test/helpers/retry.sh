@@ -13,6 +13,7 @@ function retry_until() {
   local sleep_sec=${RETRY_SLEEP_SEC:-3}
   local tries=0
   local start_at=$(date +%s)
+  local chk_cmd=
 
   while :; do
     eval "${blk}" && {
@@ -26,7 +27,7 @@ function retry_until() {
       echo "Retry Failure: Exceed ${wait_sec} sec: Retried ${tries} times" >&2
       return 1
     fi
-    echo [$(date +%FT%X) "#$$"] time:${tries} "eval:${blk}"
+    echo [$(date +%FT%X) "#$$"] time:${tries} "eval:${chk_cmd}" >&2
   done
 }
 
@@ -42,12 +43,12 @@ function open_port?() {
 
   local nc_opts="-w 3"
   case ${protocol} in
-  tcp) ;;
-  udp) nc_opts="${nc_opts} -u";;
-    *) ;;
+    tcp) ;;
+    udp) nc_opts="${nc_opts} -u";;
+      *) ;;
   esac
 
-  echo | nc ${nc_opts} ${ipaddr} ${port} >/dev/null
+  nc ${nc_opts} ${ipaddr} ${port} <<< "" >/dev/null
 }
 
 function network_connection?() {

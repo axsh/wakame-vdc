@@ -56,6 +56,36 @@ Sequel.migration do
     end
   end
 
+  down do
+    alter_table(:storage_nodes) do
+      add_column :ipaddr, "varchar(255)", :null=>false
+      add_column :transport_type, "varchar(255)", :null=>false
+    end
+
+    alter_table(:volumes) do
+      add_column :boot_dev, "int(11)", :default=>0, :null=>false
+      add_column :storage_node_id, "int(11)"
+      add_column :host_device_name, "varchar(255)"
+      add_column :transport_information, "text"
+      add_column :export_path, "varchar(255)", :null=>false
+      add_index [:storage_node_id]
+    end
+
+    #TODO <->MigrateLocalStoreToVolume.data_migrate
+
+    drop_table(:iscsi_storage_nodes)
+    drop_table(:iscsi_volumes)
+    drop_table(:local_volumes)
+
+    alter_table(:volumes) do
+      drop_column :volume_type
+    end
+
+    alter_table(:instances) do
+      drop_column :boot_volume_id
+    end
+  end
+
   module MigrateLocalStoreToVolume
     def self.data_migrate
       db = Sequel::DATABASES.first
@@ -101,7 +131,7 @@ Sequel.migration do
             if volume[:boot_dev] == 1
               db[:instances].filter(:id=>instance[:id]).update(:boot_volume_id=>"vol-#{volume[:uuid]}")
             end
-          
+
             trans_info = YAML.load(volume[:transport_information])
             db[:iscsi_volumes].insert(:id=>volume[:id],
                                       :sotrage_node_id => volume[:storage_node_id],

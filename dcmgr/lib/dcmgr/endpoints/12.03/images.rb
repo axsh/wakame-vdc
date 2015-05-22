@@ -10,11 +10,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
   register V1203::Helpers::ResourceLabel
   enable_resource_label(M::Image)
 
-  post do
-    # description 'Register new machine image'
-    raise NotImplementedError
-  end
-
   get do
     ds = M::Image.dataset
 
@@ -47,9 +42,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
            when *IMAGE_META_STATE
              case params[:state]
              when 'alive'
-               ds.lives
+               ds.alives
              when 'alive_with_deleted'
-               ds.alives_and_deleted
+               ds.alives_and_deleted(Dcmgr::Configurations.dcmgr.recent_terminated_instance_period)
              else
                raise E::InvalidParameter, :state
              end

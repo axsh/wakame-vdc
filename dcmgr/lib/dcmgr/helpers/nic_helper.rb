@@ -44,7 +44,7 @@ module Dcmgr
 
       # Lookup bridge device name from given DC network name.
       def bridge_if_name(dc_network_map)
-        local_conf = Dcmgr.conf.dc_networks[dc_network_map[:name]]
+        local_conf = Dcmgr::Configurations.hva.dc_networks[dc_network_map[:name]]
         if dc_network_map[:vlan_lease]
           dc_network_map[:uuid]
         else
@@ -52,6 +52,80 @@ module Dcmgr
         end
       end
 
+      def vif_uuid_pretty(uuid)
+        case Dcmgr::Configurations.hva.edge_networking
+        when 'openvnet' then uuid.gsub("vif-", "if-")
+        else                 uuid
+        end
+      end
+
+      def vif_uuid(vif)
+        case vif
+        when Hash   then vif_uuid_pretty(vif[:uuid])
+        when String then vif_uuid_pretty(vif)
+        else
+          raise "invalid format uuid.."
+        end
+      end
+
+      def vsctl(option)
+        list = {:attach => 'add-port', :detach => 'del-port', :create_bridge => 'add-br', :delete_bridge => 'del-br'}
+        "#{Dcmgr::Configurations.hva.vsctl_path} #{list[option]}"
+      end
+
+      def brctl(option)
+        list = {:attach => 'addif', :detach => 'delif', :create_bridge => 'addbr', :delete_bridge => 'delbr'}
+        "#{Dcmgr::Configurations.hva.brctl_path} #{list[option]}"
+      end
+
+      def get_bridge_cmd(bridge, vif, option)
+        case Dcmgr::Configurations.hva.edge_networking
+        when 'openvnet' then
+          "#{vsctl(option)} #{bridge} #{vif_uuid(vif)}"
+        else
+          "#{brctl(option)} #{bridge} #{vif_uuid(vif)}"
+        end
+      end
+
+      def attach_vif_to_bridge(bridge, vif)
+        get_bridge_cmd(bridge, vif, :attach)
+      end
+
+      def detach_vif_from_bridge(bridge, vif)
+        get_bridge_cmd(bridge, vif, :detach)
+      end
+
+      def cleanup_vif(hc)
+        hc.inst[:vif].each do |vif|
+          if vif[:ipv4] and vif[:ipv4][:network]
+            next if system("/sbin/ip link show %s" % [vif_uuid(vif)]) == false
+            sh("/sbin/ip link set %s down" % [vif_uuid(vif)])
+            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+
+            detach_vif_cmd = detach_vif_from_bridge(bridge, vif)
+            sh(detach_vif_cmd)
+          end
+        end
+      end
+
+      def minimize_stp_forward_delay(bridge)
+        case Dcmgr::Configurations.hva.edge_networking
+        when 'openvnet' then
+          "%s add bridge #{bridge} other_config stp-forward-delay 4" %
+            [Dcmgr::Configurations.hva.vsctl_path]
+        else
+          "#{Dcmgr::Configurations.hva.brctl_path} setfd #{bridge} 0"
+        end
+      end
+
+      def add_bridge_cmd(bridge)
+        case Dcmgr::Configurations.hva.edge_networking
+        when 'openvnet' then
+          "#{vsctl(:create_bridge)} #{bridge}"
+        else
+          "#{brctl(:create_bridge)} #{bridge}"
+        end
+      end
     end
   end
 end

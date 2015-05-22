@@ -9,7 +9,7 @@ module Dcmgr::Models
     accept_service_type
 
     include Dcmgr::Constants::Instance
-    
+
     many_to_one :image
     many_to_one :host_node
     one_to_many :volumes, :before_add=>lambda { |instance, volume|
@@ -32,15 +32,15 @@ module Dcmgr::Models
     plugin ArchiveChangedColumn, :histories
     plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size]
     plugin Plugins::ResourceLabel
-      
-    subset(:lives, {:terminated_at => nil})
+
     subset(:alives, {:terminated_at => nil})
     subset(:runnings, {:state => STATE_RUNNING})
+    subset(:running_or_initializing, {:state => [STATE_RUNNING, STATE_INITIALIZING]})
     subset(:stops, {:state => STATE_STOPPED})
 
     # lists the instances which alives and died within
     # term_period sec.
-    def_dataset_method(:alives_and_termed) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+    def_dataset_method(:alives_and_termed) { |term_period=Dcmgr::Configurations.dcmgr.recent_terminated_instance_period|
       filter("terminated_at IS NULL OR terminated_at >= ?", (Time.now.utc - term_period))
     }
 
@@ -136,12 +136,19 @@ module Dcmgr::Models
       end
     end
 
+    # Set true if you want to skip validations run in destroy().
+    attr_accessor :force_destroy
+
     def before_destroy
-      # cancel destroy while backup object is being created.
-      unless self.volumes.all? { |v| v.derived_backup_objects_dataset.exclude(:state=>Dcmgr::Const::BackupObject::ALLOW_INSTANCE_DESTROY_STATES).empty? }
-        return false
+      if !@force_destroy
+        # cancel destroy while backup object is being created.
+        if !self.volumes.all? { |v|
+            v.derived_backup_objects_dataset.exclude(:state=>Dcmgr::Const::BackupObject::ALLOW_INSTANCE_DESTROY_STATES).empty?
+          }
+          return false
+        end
       end
-      
+
       HostnameLease.filter(:account_id=>self.account_id, :hostname=>self.hostname).destroy
       self.instance_nic.each { |o| o.destroy }
       self.volumes_dataset.attached.each { |v|
@@ -170,6 +177,7 @@ module Dcmgr::Models
     # this is for internal use.
     def to_hash
       h = super
+
       h.merge!({:image=>image.to_hash,
                  :host_node=> (host_node.nil? ? nil : host_node.to_hash),
                  :instance_nics=>instance_nic.map {|n| n.to_hash },
@@ -179,6 +187,13 @@ module Dcmgr::Models
                  :volume=>{},
                  :ssh_key_data => self.ssh_key_pair ? self.ssh_key_pair.to_hash : nil,
               })
+
+      if image.backup_object
+        h[:image][:backup_object] = image.backup_object.to_hash
+        h[:image][:backup_object][:backup_storage] = image.backup_object.backup_storage.to_hash
+        h[:image][:backup_object][:uri] = image.backup_object.uri
+      end
+
       if self.volume
         self.volume.each { |v|
           h[:volume][v.canonical_uuid] = v.to_hash.tap { |h|
@@ -191,6 +206,7 @@ module Dcmgr::Models
           }
         }
       end
+
       if self.instance_nic
         self.instance_nic.each { |vif|
           ent = vif.to_hash.merge({
@@ -305,7 +321,7 @@ module Dcmgr::Models
       vendor_id = if vif_template[:vendor_id]
                     vif_template[:vendor_id]
                   else
-                    Dcmgr.conf.mac_address_vendor_id
+                    Dcmgr::Configurations.dcmgr.mac_address_vendor_id
                   end
       nic = NetworkVif.new({ :account_id => self.account_id })
       nic.instance = self
@@ -388,7 +404,7 @@ module Dcmgr::Models
       # Need to create boot volume first becase boot_volume_id is not
       # null column.
       boot_volume = image.create_volume(account)
-      
+
       instance = self.new &blk
       instance.account_id = account.canonical_uuid
       instance.image = image
@@ -402,7 +418,7 @@ module Dcmgr::Models
       instance.add_volume(boot_volume)
       boot_volume.state = Dcmgr::Constants::Volume::STATE_SCHEDULING
       boot_volume.save_changes
-      
+
       instance
     end
 
@@ -437,11 +453,11 @@ module Dcmgr::Models
       return {} if labels.empty?
 
       hlist={}
-     
+
       labels.each { |l|
         dummy, dummy, uuid, key = l.name.split('.', 4)
         h = (hlist[uuid] ||= {:enabled=>false, :title=>nil, :params=>{}})
-        
+
         h[key.to_sym] = case key
                         when 'enabled'
                           l.value == 'true'
@@ -453,7 +469,7 @@ module Dcmgr::Models
       }
       hlist
     end
-    
+
     # Add monitor item as resource label.
     def add_monitor_item(title, enabled, params={})
       # generate unique UUID uniqueness from instance's uuid.
@@ -464,7 +480,7 @@ module Dcmgr::Models
         retry_count -= 1
       end while !M::ResourceLabel.dataset.filter(:name=>"monitoring.items.#{uuid}.title").empty? && retry_count > 0
       raise "Failed to generate UUID for new monitor item." if retry_count <= 0
-      
+
       set_label("monitoring.items.#{uuid}.title", title.to_s)
       set_label("monitoring.items.#{uuid}.enabled", enabled.to_s)
       set_label("monitoring.items.#{uuid}.params", ::MultiJson.dump(params))
@@ -483,7 +499,7 @@ module Dcmgr::Models
       end
       monitor_item(uuid)
     end
-    
+
     # Delete monitor item from resource label.
     def delete_monitor_item(uuid)
       item = monitor_item(uuid)
@@ -504,6 +520,8 @@ module Dcmgr::Models
     end
 
     def add_shared_volume(volume)
+      # Do not set value to volumes.volume_type.
+      # the values can be set by either scheduler or API.
       self.add_volume(volume)
     end
 
@@ -529,6 +547,10 @@ module Dcmgr::Models
         return false
       end
       true
+    end
+
+    def ha_enabled?
+      self.ha_enabled.to_i == 1
     end
   end
 end

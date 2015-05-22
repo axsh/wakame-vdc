@@ -55,17 +55,13 @@ module Dcmgr::Drivers
     end
 
     def self.snapshot_storage(backup_storage, opts={})
-      driver_class(backup_storage[:storage_type]).new#(backup_storage, opts)
+      driver_class(backup_storage[:storage_type]).new
     end
 
     def self.driver_class(storage_type)
       case storage_type.to_s
       when 'local'
         LocalStorage
-      when 's3'
-        S3Storage
-      when 'iijgio'
-        IIJGIOStorage
       when 'ifs'
         IfsStorage
       when 'webdav'

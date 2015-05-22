@@ -21,7 +21,7 @@ Dcmgr.run_initializers('isono_messaging')
 Dcmgr.class_eval {
   def self.syncronized_message_ready
     if !(@messaging_client && @messaging_client.connected?)
-      set_messging_client
+      set_messaging_client
     end
   end
 }

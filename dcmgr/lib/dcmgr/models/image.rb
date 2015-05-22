@@ -7,14 +7,14 @@ module Dcmgr::Models
     accept_service_type
 
     include Dcmgr::Constants::Image
-    
+
     plugin Plugins::ResourceLabel
-      
+
     many_to_one :backup_object, :class=>BackupObject, :dataset=> lambda { BackupObject.filter(:uuid=>self.backup_object_id[BackupObject.uuid_prefix.size + 1, 255]) }
 
     subset(:alives, {:deleted_at => nil})
 
-    def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+    def_dataset_method(:alives_and_deleted) { |term_period|
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
     }
 
@@ -35,6 +35,10 @@ module Dcmgr::Models
 
       unless BOOT_DEV_FLAGS.member?(self.boot_dev_type)
         errors.add(:boot_dev_type, "Invalid boot dev type: #{self.boot_dev_type}")
+      end
+
+      unless OS_TYPES.member?(self.os_type)
+        errors.add(:os_type, "Invalid os type: #{self.os_type}")
       end
 
       unless HostNode::SUPPORTED_ARCH.member?(self.arch)
@@ -136,14 +140,6 @@ module Dcmgr::Models
     end
 
     private
-    def before_destroy
-      if !Instance.alives.filter(:image_id=>self.canonical_uuid).empty?
-        raise "There are one or more running instances refers this record."
-      end
-
-      super
-    end
-
     def before_validation
       # symbolize feature's key
       self.features.keys.each { |k|

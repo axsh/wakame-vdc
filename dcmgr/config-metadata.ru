@@ -5,10 +5,8 @@ $LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
 require 'dcmgr/rubygems'
 require 'dcmgr'
 
-Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
-                ['/etc/wakame-vdc/dcmgr.conf',
-                 File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
-                ])
+Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr
+
 Dcmgr.run_initializers('logger', 'sequel')
 
 if defined?(::Unicorn)

@@ -10,59 +10,93 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::ByteUnit
 
-      def select_backing_store
-        backing_store = Dcmgr.conf.backing_store
-        @backing_store = Dcmgr::Drivers::BackingStore.select_backing_store(backing_store)
+      def backing_store
+        @backing_store = Dcmgr::Drivers::BackingStore.driver_class(Dcmgr::Configurations.sta.backing_store_driver).new
       end
 
-      def select_iscsi_target
-        iscsi_target = Dcmgr.conf.iscsi_target
-        @iscsi_target = Dcmgr::Drivers::IscsiTarget.select_iscsi_target(iscsi_target, @node)
+      def storage_target
+        @storage_target = Dcmgr::Drivers::StorageTarget.driver_class(Dcmgr::Configurations.sta.storage_target_driver).new
+      end
+
+      def setup_and_export_volume_new
+        @sta_ctx = StaContext.new(self)
+
+        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:creating})
+
+        if @volume[:backup_object_id]
+          @backup_object = rpc.request('sta-collector', 'get_backup_object', @volume[:backup_object_id])
+          raise "Invalid backup_object state: #{@backup_object[:state]}" unless @backup_object[:state].to_s == 'available'
+
+          if backing_store.local_backup_object?(@backup_object)
+            # the backup data exists on the same storage and also
+            # is known how to convert to volume by the backing
+            # store driver. e.g. filesystem level snapshot.
+            logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{convert_byte(@volume[:size], MB)} MB)")
+            backing_store.create_volume_from_local_backup(@sta_ctx)
+          else
+            backing_store.create_volume_from_backup(@sta_ctx)
+          end
+        else
+          logger.info("Creating new blank volume #{@volume_id} (#{convert_byte(@volume[:size], MB)} MB)")
+          backing_store.create_blank_volume(@sta_ctx)
+        end
+        logger.info("Finished creating new volume #{@volume_id}.")
+
+        logger.info("Registering to storage target: #{@volume_id}")
+        opt = storage_target.create(@sta_ctx)
+        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :volume_device=>opt})
+        logger.info("Finished registering storage target: #{@volume_id}")
       end
 
       # Setup volume file from snapshot storage and register to
       # sotrage target.
       def setup_and_export_volume
-        select_backing_store
         @sta_ctx = StaContext.new(self)
 
-        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:creating, :export_path=>@volume[:uuid]})
+        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:creating})
 
         if @volume[:backup_object_id]
-          begin
-            snap_tmp_path = File.expand_path("#{@volume[:uuid]}.tmp", Dcmgr.conf.tmp_dir)
+          @backup_object = rpc.request('sta-collector', 'get_backup_object', @volume[:backup_object_id])
+          raise "Invalid backup_object state: #{@backup_object[:state]}" unless @backup_object[:state].to_s == 'available'
 
-            @backup_object = @snapshot = rpc.request('sta-collector', 'get_backup_object', @volume[:backup_object_id])
-            raise "Invalid backup_object state: #{@backup_object[:state]}" unless @backup_object[:state].to_s == 'available'
+          if backing_store.local_backup_object?(@backup_object)
+            # the backup data exists on the same storage and also
+            # is known how to convert to volume by the backing
+            # store driver. e.g. filesystem level snapshot.
 
-            begin
-              # download backup object to the tmporary place.
-              snapshot_storage = Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])
-              logger.info("Downloading to #{@backup_object[:uuid]}: #{snap_tmp_path}")
-              snapshot_storage.download(@backup_object, snap_tmp_path)
-              logger.info("Finished downloading #{@backup_object[:uuid]}: #{snap_tmp_path}")
-            rescue => e
-              logger.error(e)
-              raise "snapshot not downloaded"
-            end
             logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{convert_byte(@volume[:size], MB)} MB)")
+            backing_store.create_volume(@sta_ctx, @backup_object[:object_key])
+          else
+            # download backup data from backup storage. then create
+            # volume from the snapshot.
+            begin
+              snap_tmp_path = File.expand_path("#{@volume[:uuid]}.tmp", Dcmgr::Configurations.sta.tmp_dir)
+              begin
+                # download backup object to the tmporary place.
+                backup_storage = Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])
+                logger.info("Downloading to #{@backup_object[:uuid]}: #{snap_tmp_path}")
+                backup_storage.download(@backup_object, snap_tmp_path)
+                logger.info("Finished downloading #{@backup_object[:uuid]}: #{snap_tmp_path}")
+              rescue => e
+                logger.error(e)
+                raise "Failed to download backup object: #{@backup_object[:uuid]}"
+              end
+              logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{convert_byte(@volume[:size], MB)} MB)")
 
-            @backing_store.create_volume(@sta_ctx, snap_tmp_path)
-          ensure
-            File.unlink(snap_tmp_path) rescue nil
+              backing_store.create_volume(@sta_ctx, snap_tmp_path)
+            ensure
+              File.unlink(snap_tmp_path) rescue nil
+            end
           end
-
         else
-          logger.info("Creating new empty volume #{@volume_id} (#{convert_byte(@volume[:size], MB)} MB)")
-          @backing_store.create_volume(@sta_ctx, nil)
+          logger.info("Creating new blank volume #{@volume_id} (#{convert_byte(@volume[:size], MB)} MB)")
+          backing_store.create_volume(@sta_ctx, nil)
         end
         logger.info("Finished creating new volume #{@volume_id}.")
-
-        logger.info("Registering to iscsi target: #{@volume_id}")
-        select_iscsi_target
-        opt = @iscsi_target.create(@sta_ctx)
-        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :transport_information=>opt})
-        logger.info("Finished registering iscsi target: #{@volume_id}")
+        logger.info("Registering to storage target: #{@volume_id}")
+        opt = storage_target.create(@sta_ctx)
+        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :volume_device=>opt})
+        logger.info("Finished registering storage target: #{@volume_id}")
       end
 
       job :create_volume, proc {
@@ -70,7 +104,11 @@ module Dcmgr
         @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
         raise "Invalid volume state: #{@volume[:state]}" unless @volume[:state].to_s == 'pending'
 
-        setup_and_export_volume
+        if backing_store.kind_of?(Drivers::BackingStore::CreateVolumeInterface)
+          setup_and_export_volume_new
+        else
+          setup_and_export_volume
+        end
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
@@ -88,7 +126,7 @@ module Dcmgr
         setup_and_export_volume
 
         @instance = rpc.request('hva-collector', 'get_instance', @instance_id)
-        jobreq.submit("hva-handle.#{@instance[:host_node][:node_id]}", 'run_vol_store', @instance_id, @volume_id)
+        jobreq.submit("hva-handle.#{@instance[:host_node][:node_id]}", 'wait_volumes_available', @instance_id)
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
@@ -108,34 +146,143 @@ module Dcmgr
           logger.warn("#{@volume_id}: Unexpected volume state but try destroy resource: #{@volume[:state]}")
         end
 
-        # deregisterd iscsi target
-        select_iscsi_target
+        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleting})
+
+        # deregister from storage target
         begin
-          @iscsi_target.delete(StaContext.new(self))
+          storage_target.delete(StaContext.new(self))
         rescue => e
-          logger.error("#{@volume_id}: Failed to delete ISCSI target entry.")
+          logger.error("#{@volume_id}: Failed to delete storage target entry.")
+          logger.error(e)
           errcount += 1
         end
 
-        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleting})
-
         # delete volume
-        select_backing_store
         begin
-          @backing_store.delete_volume(StaContext.new(self))
+          backing_store.delete_volume(StaContext.new(self))
         rescue => e
-          logger.error("#{@volume_id}: Failed to delete volume: #{@volume[:storage_node][:export_path]}/#{@volume[:uuid]}")
+          logger.error("#{@volume_id}: Failed to delete volume.")
+          logger.error(e)
+          logger.error(e.backtrace.join("\n"))
           errcount += 1
         end
 
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
         if errcount > 0
-          logger.info("#{@volume_id}: Encountered one or more errors during deleting.")
+          raise "#{@volume_id}: Encountered one or more errors during deleting."
         else
           logger.info("#{@volume_id}: Deleted volume successfully.")
         end
       end
 
+      class ProgressCallback
+        def initialize(&blk)
+          @callee = blk
+        end
+
+        def setattr(checksum, alloc_size)
+          @callee.call(:setattr, checksum, alloc_size)
+        end
+
+        def progress(percent)
+          if !(0.0 > percent.to_f)
+            percent = 0
+          elsif 100.0 < percent.to_f
+            percent = 100
+          end
+          @callee.call(:progress, percent)
+        end
+      end
+      
+      def backup_single_volume()
+        new_object_key = nil
+        raise "Missing volume hash object" if @sta_ctx.volume.nil?
+        
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:state=>:creating})
+
+        progress_callback = ProgressCallback.new { |cmd, *value|
+            case cmd
+            when :setattr
+              # update checksum & allocation_size of the backup object
+              rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {
+                            :checksum=>value[0],
+                            :allocation_size => value[1],
+                          })
+            when :progress
+              # update upload progress of backup object
+              rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:progress=>value[0]}) do |req|
+                req.oneshot = true
+              end
+            else
+              raise "Unknown callback command: #{cmd}"
+            end
+        }
+        
+        # backup volume
+        if backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvideBackupVolume)
+          backing_store.backup_volume(@sta_ctx, progress_callback)
+          new_object_key = backing_store.backup_object_key_created(@sta_ctx)
+        elsif backing_store.kind_of?(Dcmgr::Drivers::BackingStore::ProvidePointInTimeSnapshot)
+          # take one generation snapshot -> copy data -> delete snapshot.
+          raise NotImplementedError
+        else
+          raise "None of backup operation types are supported by #{backing_store.class}."
+        end
+
+        return new_object_key
+      end
+
+      job :backup_volume, proc {
+        @volume_id = request.args[0]
+        @backup_object_id = request.args[1]
+
+        @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
+        @backup_object = rpc.request('sta-collector', 'get_backup_object', @backup_object_id)
+        @sta_ctx = StaContext.new(self)
+
+        new_object_key = backup_single_volume
+
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
+                    {:state=>:available, :object_key=>new_object_key})
+        logger.info("Created new backup from #{@volume_id}: #{@backup_object_id}")
+      }, proc {
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
+                    {:state=>:deleted})
+      }
+
+      job :backup_image, proc {
+        @volume_id = request.args[0]
+        @backup_object_id = request.args[1]
+        @image_id = request.args[2]
+
+        @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
+        @image = rpc.request('sta-collector', 'get_image', @image_id)
+        @backup_object = rpc.request('sta-collector', 'get_backup_object', @backup_object_id) unless @backup_object_id.nil?
+        @sta_ctx = StaContext.new(self)
+
+        if @image[:state] == 'deleted'
+          raise "Skip to backup volume since the associated image #{@image_id} had been destroyed already: #{@backup_object_id}"
+        elsif @image[:state] != 'creating'
+          raise "Unexpected image state: #{@image_id}, #{@image[:state]}"
+        end
+
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:state=>:creating})
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating})
+        
+        new_object_key = backup_single_volume
+
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
+                    {:state=>:available, :object_key=>new_object_key})
+        logger.info("Created new backup from #{@volume_id} for image #{@image_id}: #{@backup_object_id}")
+        rpc.request('sta-collector', 'post_process_backup_image',
+                    @image_id)
+      }, proc {
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
+                    {:state=>:deleted, :deleted_at=>Time.now.utc})
+        rpc.request('sta-collector', 'update_image', @image_id,
+                    {:state=>:deleted, :deleted_at=>Time.now.utc})
+      }
+      
       job :create_snapshot, proc {
         @volume_id = request.args[0]
         @backup_object_id = request.args[1]
@@ -148,24 +295,22 @@ module Dcmgr
 
         begin
           snapshot_storage = Dcmgr::Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])
-          select_backing_store
 
           logger.info("Taking new snapshot for #{@volume_id}")
-          @backing_store.create_snapshot(@sta_ctx)
+          backing_store.create_snapshot(@sta_ctx)
           logger.info("Finish to create snapshot for #{@volume_id}")
           logger.info("Uploading #{@backup_object_id} to #{@backup_object[:backup_storage][:base_uri]}")
-          snapshot_storage.upload(@backing_store.snapshot_path(@sta_ctx), @backup_object)
+          snapshot_storage.upload(backing_store.snapshot_path_created(@sta_ctx), @backup_object)
           logger.info("Finish to upload #{@backup_object_id}")
         rescue => e
           logger.error(e)
           raise "snapshot has not be uploaded"
         ensure
-          @backing_store.delete_snapshot(@sta_ctx)
+          backing_store.delete_snapshot(@sta_ctx)
         end
 
-        rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:state=>:available}) do |req|
-          req.oneshot = true
-        end
+        rpc.request('sta-collector', 'update_backup_object', @backup_object_id,
+                    {:state=>:available, :path=>backing_store.snapshot_path_created(@sta_ctx)})
         logger.info("created new backup: #{@backup_object_id}")
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.

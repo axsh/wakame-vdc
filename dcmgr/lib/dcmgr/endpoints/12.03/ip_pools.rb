@@ -49,7 +49,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
     }
 
     respond_with(R::IpPool.new(ip_pool).generate)
-  end  
+  end
 
   delete '/:id' do
     # description "Remove IP pool information"
@@ -77,7 +77,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
     raise E::UnknownIpPool, params[:id] if ip_pool.nil?
 
     ds = ip_pool.ip_handles_dataset
-    
+
     collection_respond_with(ds) do |paging_ds|
       R::IpHandleCollection.new(paging_ds).generate
     end
@@ -96,9 +96,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
     raise(E::UnknownNetwork, nil) unless network
     raise(E::NetworkNotInDcNetwork, nil) unless ip_pool.has_dc_network(network.dc_network)
 
-    st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)      
+    st = Dcmgr::Scheduler.service_type(Dcmgr::Configurations.dcmgr.default_service_type)
     lease = st.ip_address.schedule({:network => network, :ip_pool => ip_pool})
-    
+
     respond_with({ :ip_handle_id => lease.ip_handle.canonical_uuid,
                    :dc_network_id => lease.network.dc_network.canonical_uuid,
                    :network_id => lease.network.canonical_uuid,
@@ -123,4 +123,4 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
   end
 
 end
-    
+

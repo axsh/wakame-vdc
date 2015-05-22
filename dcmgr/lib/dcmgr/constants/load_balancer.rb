@@ -9,4 +9,7 @@ module Dcmgr::Constants::LoadBalancer
   SECURE_PROTOCOLS = ['https', 'ssl'].freeze
   SUPPORTED_PROTOCOLS = (PROTOCOLS + SECURE_PROTOCOLS).freeze
   SUPPORTED_INSTANCE_PROTOCOLS = PROTOCOLS
+
+  STATE_RUNNING = 'running'.freeze
+  STATE_TERMINATED = 'terminated'.freeze
 end

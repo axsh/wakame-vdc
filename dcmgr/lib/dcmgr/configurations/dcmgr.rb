@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require "fuguta"
 
 module Dcmgr
   module Configurations
     # Configuration loader for dcmgr.conf.
-    class Dcmgr < Fuguta::Configuration
+    class Dcmgr < Features
+
+      usual_paths [
+        ENV['CONF_PATH'].to_s,
+        '/etc/wakame-vdc/dcmgr.conf',
+        File.expand_path('config/dcmgr.conf', ::Dcmgr::DCMGR_ROOT)
+      ]
+
 
       class Scheduler < Fuguta::Configuration
         alias_param  :scheduler, :scheduler_class
@@ -232,6 +240,20 @@ module Dcmgr
       param :cassandra_uri, :default => '127.0.0.1:9160'
       param :cassandra_cf
 
+      param :dcell_adapter
+      param :dcell_host
+      param :dcell_port
+
+      # DCell connection (dcmgr)
+      param :dcmgr_dcell_node_id
+      param :dcmgr_dcell_node_uri
+
+      # DCell connection (collector)
+      param :collector_dcell_node_id
+      param :collector_dcell_node_uri
+
+      param :vdc_manage_host
+
       # AMQP broker to be connected.
       param :amqp_server_uri
 
@@ -268,6 +290,8 @@ module Dcmgr
       param :default_force_poweroff_instance, :default => true
 
       param :enable_instance_poweron_readiness_validation, :default => true
+
+      deprecated_warn_param :instance_ha
 
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]

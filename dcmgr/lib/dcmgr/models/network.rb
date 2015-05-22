@@ -78,7 +78,7 @@ module Dcmgr::Models
         return ip_lease.network_vif if ip_lease
       end
 
-      m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
+      m = MacLease.lease(Dcmgr::Configurations.dcmgr.mac_address_vendor_id)
 
       vif_data = {
         :account_id => self.account_id,
@@ -289,6 +289,7 @@ module Dcmgr::Models
       }
     end
 
+    private
     def before_destroy
       #Make sure no other networks are natted to this one
       Network.filter(:nat_network_id => self[:id]).each { |n|
@@ -304,7 +305,6 @@ module Dcmgr::Models
       super
     end
 
-    private
     def validate_range_args(range_begin, range_end)
       if range_begin.is_a?(IPAddress::IPv4)
         raise "Different prefix length: range_begin" if range_begin.prefix != self.prefix

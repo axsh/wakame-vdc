@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require 'uri'
 require 'fuguta'
 
 module Dcmgr
   module Configurations
-    class Bksta < Fuguta::Configuration
+    class Bksta < Features
+
+      usual_paths [
+        ENV['CONF_PATH'].to_s,
+        '/etc/wakame-vdc/bksta.conf',
+        File.expand_path('config/bksta.conf', ::Dcmgr::DCMGR_ROOT)
+      ]
+
       # AMQP broker to be connected.
       param :amqp_server_uri
 
@@ -15,7 +23,7 @@ module Dcmgr
       param :site_over_rpc_timeout, :default=>10.0
 
       param :default_retry_max_per_job, :default=>2
-      
+
       DSL do
         def driver(driver_name, &blk)
           @config[:driver_class] = klass = ::Dcmgr::Drivers::NetworkMonitoring.driver_class(driver_name)
@@ -53,7 +61,7 @@ module Dcmgr
             errors << "Unsupported type for export_uri: #{self.export_uri.class}"
           end
         end
-        
+
         #unless self.driver
         #  errors << "driver is unset"
         #end

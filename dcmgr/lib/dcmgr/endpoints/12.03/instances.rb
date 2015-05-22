@@ -9,7 +9,7 @@ require 'ipaddress'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_META_STATE=['alive', 'alive_with_terminated', 'without_terminated'].freeze
-  INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
+  INSTANCE_STATE=['running', 'stopped', 'halted', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
 
   register V1203::Helpers::ResourceLabel
@@ -30,6 +30,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
     end
+  end
+
+  def check_dc_network(network_id)
+    nw = M::Network[network_id]
+    dc = M::DcNetwork[nw[:dc_network_id].to_i]
+    raise E::UnknownDcNetwork, network_id unless dc
   end
 
   # monitoring.items nested parameters are accepted only at POST
@@ -65,7 +71,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     return false
   end
-  
+
   def set_monitoring_parameters(instance)
     dirty = [false]
     # monitoring parameter is optional.
@@ -123,7 +129,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
            when *INSTANCE_META_STATE
              case params[:state]
              when 'alive'
-               ds.lives
+               ds.alives
              when 'alive_with_terminated'
                ds.alives_and_termed
              when 'without_terminated'
@@ -157,7 +163,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
 
     if params[:service_type]
-      Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
+      Dcmgr::Configurations.dcmgr.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
       ds = ds.filter(:service_type=>params[:service_type])
     end
 
@@ -197,9 +203,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # param :display_name, string, :optional
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
 
-    if params[:hypervisor]
-      if M::HostNode.online_nodes.filter(:hypervisor=>params[:hypervisor]).empty?
-        raise E::InvalidParameter, :hypervisor
+    if params['hypervisor']
+      if M::HostNode.online_nodes.filter(:hypervisor=>params['hypervisor']).empty?
+        raise E::InvalidParameter, "Unknown/Inactive hypervisor:#{params['hypervisor']}"
       end
     else
       raise E::InvalidParameter, :hypervisor
@@ -265,6 +271,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       [temp["security_groups"]].flatten.select{|s| !s.blank?}.each do |security_group_uuid|
         raise E::UnknownSecurityGroup unless find_by_uuid(M::SecurityGroup, security_group_uuid)
       end
+
+      check_dc_network(temp["network"])
     }
 
     # params is a Mash object. so coverts to raw Hash object.
@@ -332,7 +340,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
             raise E::InvalidParameter, 'volumes.size'
           end
         end
-        
+
         if !vparam['size'].blank? && bo
           # create volume from the backup object and grow its size.
           # check size is larger or equal than backup object's size.
@@ -352,7 +360,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
 
         # common parameters
-        ['guest_device_name', 'display_name', 'description'].each { |pname|
+        ['display_name', 'description'].each { |pname|
           if !vparam[pname].blank?
             vol.send("#{pname}=", vparam[pname])
           end
@@ -370,7 +378,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
       }
     end
-    
+
     #
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
@@ -429,7 +437,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     unless i.ready_destroy?
       raise E::InvalidInstanceState, i.state
     end
-    
+
     case i.state
     when C::Instance::STATE_STOPPED
       # just destroy the record.
@@ -561,7 +569,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
       end
     end
-    
+
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 
@@ -587,7 +595,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     boot_bko = nil
     bko_list = []
 
-    if params[:all]
+    if params['all'] && params['all'] == 'true'
       instance.volumes_dataset.attached.each { |v|
         bo = v.create_backup_object(@account) do |b|
           b.state = C::BackupObject::STATE_PENDING
@@ -595,12 +603,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
             b.backup_storage = bkst
           end
         end
-        
+
         if instance.boot_volume_id == v.canonical_uuid
           boot_bko = bo
         end
-        
-        bko_list << bo
+        bko_list << [v, bo]
       }
     else
       # only takes backup for the boot volume. (default behavior)
@@ -611,7 +618,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
       end
       boot_bko = bo
-      bko_list << bo
+      bko_list << [instance.boot_volume, bo]
     end
 
     image = instance.image.entry_clone do |i|
@@ -623,16 +630,37 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       i.account_id = @account.canonical_uuid
       i.backup_object_id = boot_bko.canonical_uuid
-      i.state = C::Image::STATE_PENDING
+      i.state = C::Image::STATE_CREATING
+      
+      i.volumes = bko_list.dup.delete_if { |volume, bo|
+        boot_bko == bo
+      }.map { |volume, bo|
+        {:backup_object_id => bo.canonical_uuid}
+      }
     end
 
-    on_after_commit do
-      Dcmgr.messaging.submit("local-store-handle.#{instance.host_node.node_id}", 'backup_image',
-                             instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+    if instance.boot_volume.local_volume?
+      on_after_commit do
+        Dcmgr.messaging.submit("local-store-handle.#{instance.host_node.node_id}", 'backup_image',
+                               instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+      end
+    else
+      bko_list.each { |volume, bo|
+        on_after_commit do
+          if boot_bko == bo
+            Dcmgr.messaging.submit("sta-handle.#{volume.storage_node.node_id}", 'backup_image',
+                                   volume.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+          else
+            Dcmgr.messaging.submit("sta-handle.#{volume.storage_node.node_id}", 'backup_volume',
+                                   volume.canonical_uuid, bo.canonical_uuid)
+          end
+        end
+      }
     end
+
     respond_with({:instance_id=>instance.canonical_uuid,
-                   :backup_object_id => bo.canonical_uuid,
                    :image_id => image.canonical_uuid,
+                   :backup_object_ids => ([boot_bko.canonical_uuid] + image.volumes.map { |hash| hash[:backup_object_id] })
                  })
   end
 
@@ -648,10 +676,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       when 'false'
         false
       else
-        Dcmgr.conf.default_force_poweroff_instance
+        Dcmgr::Configurations.dcmgr.default_force_poweroff_instance
       end
     job_name = force ? 'poweroff' : 'soft_poweroff'
-    
+
     instance.state = :halting
     instance.save
 
@@ -667,17 +695,45 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   put '/:id/poweron' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless [C::Instance::STATE_HALTED].member?(instance.state)
-    if Dcmgr.conf.enable_instance_poweron_readiness_validation
+    if Dcmgr::Configurations.dcmgr.enable_instance_poweron_readiness_validation
       unless instance.ready_poweron?
         raise E::InvalidInstanceState, "not ready for poweron operation"
       end
     end
-    
+
     instance.state = C::Instance::STATE_STARTING
     instance.save_changes
 
     on_after_commit do
       Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'poweron',
+                             instance.canonical_uuid)
+    end
+    respond_with({:instance_id=>instance.canonical_uuid,
+                 })
+  end
+
+  put '/:id/move' do
+    instance = find_by_uuid(:Instance, params[:id])
+    case instance.state
+    when *C::Instance::MIGRATION_STATES
+    else
+      raise E::InvalidInstanceState, "Unsupported instance state for migration: #{instance.state}"
+    end
+
+    if params['host_node_id']
+      dest_host_node = find_by_uuid(:HostNode, params['host_node_id'])
+      if dest_host_node == instance.host_node
+        raise "Can not move to same host node"
+      end
+    else
+      raise "host_node_id has to be set"
+    end
+
+    instance.state = 'migrating'
+    instance.save_changes
+
+    on_after_commit do
+      Dcmgr.messaging.submit("migration-handle.#{dest_host_node.node_id}", 'run_vol_store',
                              instance.canonical_uuid)
     end
     respond_with({:instance_id=>instance.canonical_uuid,
@@ -728,7 +784,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
                                       :args=>[{:instance_id=>@instance.canonical_uuid, :monitor_id=>params[:monitor_id]}])
       end
-      
+
       respond_with([params[:monitor_id]])
     end
 
@@ -781,7 +837,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
 
       bkst = find_target_backup_storage(@instance.service_type)
-      
+
       bo = @volume.create_backup_object(@volume.account) do |b|
         b.state = C::BackupObject::STATE_PENDING
         if bkst

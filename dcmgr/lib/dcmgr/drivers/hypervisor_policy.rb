@@ -5,7 +5,7 @@ module Dcmgr
     # check/validate API request/Model parameters specifically for selected hypervisor.
     class HypervisorPolicy
       ValidationError = Class.new(StandardError)
-      
+
       def validate_instance_model(instance)
       end
 

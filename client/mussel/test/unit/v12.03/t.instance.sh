@@ -25,7 +25,7 @@ function setUp() {
 function test_instance_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|destroy|index|poweroff|poweron|reboot|show|show_volumes|xcreate]" "${res}"
+  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|destroy|index|move|poweroff|poweron|reboot|show|show_volumes|update|xcreate]" "${res}"
 }
 
 ### index
@@ -127,6 +127,20 @@ function test_instance_poweron_no_uuid() {
 
 function test_instance_poweron_uuid() {
   extract_args ${namespace} poweron i-xxx
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals 0 $?
+}
+
+### update
+
+function test_instance_update_no_uuid() {
+  extract_args ${namespace} update
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals 0 $?
+}
+
+function test_instance_update_uuid() {
+  extract_args ${namespace} update i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals 0 $?
 }

@@ -6,7 +6,7 @@ require 'amqp'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   LOAD_BALANCER_META_STATE = ['alive', 'alive_with_deleted'].freeze
-  LOAD_BALANCER_STATE=['running', 'terminated'].freeze
+  LOAD_BALANCER_STATE=['running', 'halted', 'terminated'].freeze
   LOAD_BALANCER_STATE_ALL=(LOAD_BALANCER_STATE + LOAD_BALANCER_META_STATE).freeze
 
   register Sinatra::InternalRequest
@@ -19,9 +19,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
            when *LOAD_BALANCER_META_STATE
              case params[:state]
              when 'alive'
-               ds.lives
+               ds.alives
              when 'alive_with_deleted'
-               ds.alives_and_deleted
+               ds.alives_and_deleted(Dcmgr::Configurations.dcmgr.recent_terminated_instance_period)
              else
                raise E::InvalidParameter, :state
              end
@@ -69,7 +69,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     secure_port = connect_port
     secure_protocol = secure_protocol(inbounds)
 
-    lb_conf = Dcmgr.conf.service_types['lb']
+    lb_conf = Dcmgr::Configurations.dcmgr.service_types['lb']
     allow_list = params[:allow_list] || ['0.0.0.0']
 
     raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
@@ -204,6 +204,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       Dcmgr::Messaging::LoadBalancer.update_load_balancer_config(config_params.merge(queue_params))
     end
     respond_with(R::LoadBalancer.new(lb).generate)
+  end
+
+  before do
+    # skip all PUT requests if it was terminated.
+    if request.put? && !params[:id].nil?
+      @lb = find_by_uuid(:LoadBalancer, params[:id])
+      if !@lb.nil? && @lb.state == C::LoadBalancer::STATE_TERMINATED
+        raise E::InvalidLoadBalancerState, "#{@lb.canonical_uuid} is terminated"
+      end
+    end
+    true
   end
 
   put '/:id/register' do
@@ -553,7 +564,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       raise E::InvalidLoadBalancerState, lb.state
     end
 
-    respond_with(R::LoadBalancer.new(lb).generate)
+    respond_with([lb.canonical_uuid])
   end
 
  private

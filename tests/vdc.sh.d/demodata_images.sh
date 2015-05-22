@@ -32,8 +32,11 @@ EOF
 # download demo image files.
 (
   cd ${vdc_data}/images
-  # remove md5sum cache files.
-  rm -f *.md5
+
+  if [[ -n "${remove_md5}" ]]; then
+    # remove md5sum cache files.
+    rm -f *.md5
+  fi
 
   for meta in $metalst; do
     (
@@ -71,7 +74,7 @@ for meta in $metalst; do
     }
 
     localpath="${vdc_data}/images/${localname}"
-    if [[ -f "${localpath}.md5" ]] && [[ "$localpath" -nt "${localpath}.md5" ]]; then
+    if [[ -f "${localpath}.md5" ]] && [[ "${localpath}.md5" -nt "${localpath}" ]]; then
       chksum=$(cat "${localpath}.md5")
     else
       echo "calculating checksum of $localpath ..."
@@ -108,6 +111,8 @@ for meta in $metalst; do
       --container-format="$container_format" \
       --description="'kvm 32bit'"
 
+    os_type=${os_type:-'linux'}
+
     case $storetype in
       "local")
         shlog ./bin/vdc-manage image add local "bo-${uuid}" \
@@ -120,7 +125,8 @@ for meta in $metalst; do
           --service-type ${service_type} \
           --is_public \
 	  --display-name "'${display_name}'" \
-	  --is-cacheable
+	  --is-cacheable \
+          --os-type "${os_type}"
         ;;
 
       "volume")
@@ -133,7 +139,8 @@ for meta in $metalst; do
           --root-device ${root_device} \
           --service-type ${service_type} \
           --is_public \
-	  --display-name "'${display_name}'"
+	  --display-name "'${display_name}'" \
+          --os-type "${os_type}"
         ;;
     esac
 

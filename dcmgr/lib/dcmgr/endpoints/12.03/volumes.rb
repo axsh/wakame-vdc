@@ -17,9 +17,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
            when *VOLUME_META_STATE
              case params[:state]
              when 'alive'
-               ds.lives
+               ds.alives
              when 'alive_with_deleted'
-               ds.alives_and_deleted
+               ds.alives_and_deleted(Dcmgr::Configurations.dcmgr.recent_terminated_instance_period)
              else
                raise E::InvalidParameter, :state
              end
@@ -81,11 +81,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
   post do
     sp = vs = vol = nil
     # input parameter validation
-    if params[:backup_object_id]
+    if !params[:backup_object_id].blank?
       bo = vs = find_by_uuid(:BackupObject, params[:backup_object_id])
-    elsif params[:volume_size]
-      if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
-          !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
+    elsif !params[:volume_size].blank?
+      if !(Dcmgr::Configurations.dcmgr.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
+          !(params[:volume_size].to_i >= Dcmgr::Configurations.dcmgr.create_volume_min_size.to_i)
         raise E::InvalidVolumeSize, params[:volume_size]
       end
     else
@@ -93,7 +93,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     end
 
     # TODO: storage node group assignment
-    if params[:storage_node_id]
+    if !params[:storage_node_id].blank?
       sp = find_by_uuid(:StorageNode, params[:storage_node_id])
       raise E::UnknownStorageNode, params[:storage_node_id] if sp.nil?
     end
@@ -112,12 +112,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
         v.backup_object_id = vs.canonical_uuid
       end
 
-      if params[:service_type]
+      if !params[:service_type].blank?
         validate_service_type(params[:service_type])
         v.service_type = params[:service_type]
       end
 
-      if params[:display_name]
+      if !params[:display_name].blank?
         v.display_name = params[:display_name]
       end
     end
@@ -126,27 +126,25 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     if sp.nil?
       # going to storage node scheduling mode.
       vol.state = :scheduling
-      vol.save
 
       on_after_commit do
         Dcmgr.messaging.submit("scheduler", 'schedule_volume', vol.canonical_uuid)
       end
     else
       begin
-        vol.storage_node = sp
-        vol.save
+        sp.associate_volume(vol)
       rescue M::Volume::CapacityError => e
         logger.error(e)
         raise E::OutOfDiskSpace
       end
 
       vol.state = :pending
-      vol.save
 
       on_after_commit do
         Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid)
       end
     end
+    vol.save_changes
 
     respond_with(R::Volume.new(vol).generate)
   end
@@ -178,22 +176,33 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     # description 'Attachd the volume'
     # params id, string, required
     # params instance_id, string, required
-    raise E::UndefinedInstanceID if params[:instance_id].nil?
-    raise E::UndefinedVolumeID if params[:id].nil?
+    raise E::UndefinedInstanceID if params[:instance_id].blank?
+    raise E::UndefinedVolumeID if params[:id].blank?
 
     i = find_by_uuid(:Instance, params[:instance_id])
     raise E::UnknownInstance, params[:instance_id] if i.nil?
-    raise E::InvalidInstanceState unless i.live? && i.state == 'running'
+    raise E::InvalidInstanceState unless i.live? && ['running', 'halted'].member?(i.state)
 
     v = find_by_uuid(:Volume, params[:id])
     raise E::UnknownVolume, params[:id] if v.nil?
-    raise E::AttachVolumeFailure, "Volume is attached to running instance." if v.instance
+    if v.instance && v.state == C::Volume::STATE_ATTACHED
+      raise E::AttachVolumeFailure, "Volume is attached to running instance."
+    end
 
-    v.instance = i
-    v.save
+    v.attach_to_instance(i)
 
-    on_after_commit do
-      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
+    case i.state
+    when C::Instance::STATE_RUNNING
+      # hot attach
+      on_after_commit do
+        Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
+      end
+    when C::Instance::STATE_HALTED
+      # cold attach
+      v.state = C::Volume::STATE_ATTACHED
+      v.save_changes
+    else
+      raise E::InvalidInstanceState, i.state.to_s
     end
 
     respond_with(R::Volume.new(v).generate)
@@ -213,11 +222,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       raise E::DetachVolumeFailure, "boot device can not be detached"
     end
     i = v.instance
-    raise E::InvalidInstanceState unless i.live? && i.state == 'running'
+    raise E::InvalidInstanceState unless i.live? && ['running', 'halted'].member?(i.state)
 
-    on_after_commit do
-      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
+    case i.state
+    when C::Instance::STATE_RUNNING
+      # hot detach
+      on_after_commit do
+        Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
+      end
+    when C::Instance::STATE_HALTED
+      # cold detach
+      v.detach_from_instance
+      v.state = C::Volume::STATE_AVAILABLE
+      v.save_changes
+    else
+      raise E::InvalidInstanceState, i.state
     end
+
     respond_with(R::Volume.new(v).generate)
   end
 
@@ -240,9 +261,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     if @volume.instance && !['running', 'halted'].member?(@volume.instance.state.to_s)
       raise E::InvalidInstanceState, @volume.instance.canonical_uuid
     end
-    
+
     bkst = find_target_backup_storage(@volume.service_type)
-    
+
     bo = @volume.create_backup_object(@account) do |b|
       b.state = C::BackupObject::STATE_PENDING
       if bkst

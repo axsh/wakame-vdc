@@ -31,7 +31,7 @@ module Dcmgr
           DolphinClient.domain = Dcmgr.conf.dolphin_server_uri
           DolphinClient::Event.post(value)
         end
-      end        
+      end
     end
   end
 end

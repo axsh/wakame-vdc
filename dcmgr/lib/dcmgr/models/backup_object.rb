@@ -6,7 +6,7 @@ module Dcmgr::Models
     accept_service_type
 
     include Dcmgr::Constants::BackupObject
-    
+
     many_to_one :backup_storage
     plugin ArchiveChangedColumn, :histories
     # TODO put logs to accounting log.
@@ -14,7 +14,7 @@ module Dcmgr::Models
 
     subset(:alives, {:deleted_at => nil})
 
-    def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+    def_dataset_method(:alives_and_deleted) { |term_period|
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
     }
 
@@ -24,6 +24,7 @@ module Dcmgr::Models
     end
 
     def validate
+      self.container_format ||= :raw
       unless CONTAINER_FORMAT.keys.member?(self.container_format.to_sym)
         errors.add(:container_format, "Unsupported container format: #{self.container_format}")
       end
@@ -33,7 +34,7 @@ module Dcmgr::Models
         # allocation_size is NULL column. so check only if not null.
         errors.add(:allocation_size, "Invalid size: #{self.allocation_size}") if self.allocation_size.to_i < 0
       end
-      
+
       unless self.progress.to_f.between?(0.0, 100.0)
         errors.add(:progress, "Must be set between 0.0-100.0.")
       end
@@ -73,7 +74,7 @@ module Dcmgr::Models
     end
 
     private
-    
+
     def before_save
       if self.state == STATE_AVAILABLE
         self.progress = 100.0

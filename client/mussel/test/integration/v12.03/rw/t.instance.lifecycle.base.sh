@@ -24,10 +24,13 @@ function oneTimeTearDown() {
 ###
 
 function test_create_instance() {
+  local output=$(run_cmd instance create)
+  assertEquals 0 $?
+  echo "$output"
+
   # :state: scheduling
   # :status: init
-  instance_uuid=$(run_cmd instance create | hash_value id)
-  assertEquals 0 $?
+  instance_uuid=$(echo "$output" | hash_value id)
 
   # :state: running
   # :status: init
@@ -41,7 +44,7 @@ function test_create_instance() {
 function test_destroy_instance() {
   # :state: shuttingdown
   # :status: online
-  run_cmd instance destroy ${instance_uuid} >/dev/null
+  run_cmd instance destroy ${instance_uuid}
   assertEquals 0 $?
 
   # :state: terminated

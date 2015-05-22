@@ -9,6 +9,9 @@ class Network < Base
 
   no_tasks {
     include Dcmgr::Constants::Network
+
+    @@conf = Dcmgr::Configurations.dcmgr
+
     def validate_ipv4_range
       @network_addr = IPAddress::IPv4.new("#{options[:ipv4_network]}/#{options[:prefix]}").network
       if options[:ipv4_gw] && !@network_addr.include?(IPAddress::IPv4.new(options[:ipv4_gw]))
@@ -34,26 +37,37 @@ class Network < Base
       }
     end
     private :map_network_params
+
+    def self.common_options
+      method_option :uuid, :type => :string, :desc => "UUID of the network"
+      method_option :ipv4_network, :type => :string, :desc => "IPv4 network address"
+      method_option :ipv4_gw, :type => :string, :desc => "Gateway address for IPv4 network"
+      method_option :prefix, :type => :numeric, :desc => "IP network mask size (1 < prefix < 32)"
+      method_option :domain, :type => :string, :desc => "DNS domain name of the network"
+      method_option :dns, :type => :string, :desc => "IP address for DNS server of the network"
+      method_option :dhcp, :type => :string, :desc => "IP address for DHCP server of the network"
+      method_option :metadata, :type => :string, :desc => "IP address for metadata server of the network"
+      method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network"
+      method_option :bandwidth, :type => :numeric,  :desc => "The maximum bandwidth for the network in Mbit/s"
+      method_option :description, :type => :string,  :desc => "Description for the network"
+      method_option :account_id, :type => :string, :desc => "The account ID to own this"
+      method_option :metric, :type => :numeric, :desc => "Routing priority order of this network segment"
+      method_option :network_mode, :type => :string, :desc => "Network mode: #{NETWORK_MODES.join(', ')}"
+      method_option :service_type, :type => :string, :desc => "Service type of the network. (#{@@conf.service_types.keys.sort.join(', ')})"
+      method_option :display_name, :type => :string, :desc => "Display name of the network"
+      method_option :ip_assignment, :type => :string, :desc => "How to assign the IP address of the network"
+    end
   }
 
   desc "add [options]", "Register a new network entry"
-  method_option :uuid, :type => :string, :desc => "UUID of the network"
-  method_option :ipv4_network, :type => :string, :required=>true, :desc => "IPv4 network address"
-  method_option :ipv4_gw, :type => :string, :desc => "Gateway address for IPv4 network"
-  method_option :prefix, :type => :numeric, :required => true, :desc => "IP network mask size (1 < prefix < 32)"
-  method_option :domain, :type => :string, :desc => "DNS domain name of the network"
-  method_option :dns, :type => :string, :desc => "IP address for DNS server of the network"
-  method_option :dhcp, :type => :string, :desc => "IP address for DHCP server of the network"
-  method_option :metadata, :type => :string, :desc => "IP address for metadata server of the network"
-  method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network"
-  method_option :bandwidth, :type => :numeric,  :desc => "The maximum bandwidth for the network in Mbit/s"
-  method_option :description, :type => :string,  :desc => "Description for the network"
-  method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :desc => "The account ID to own this"
-  method_option :metric, :type => :numeric, :default=>100, :desc => "Routing priority order of this network segment"
-  method_option :network_mode, :type => :string, :default=>'securitygroup', :desc => "Network mode: #{NETWORK_MODES.join(', ')}"
-  method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
-  method_option :display_name, :type => :string, :required => true, :desc => "Display name of the network"
-  method_option :ip_assignment, :type => :string, :default=>'asc', :desc => "How to assign the IP address of the network"
+  common_options
+  method_options[:ipv4_network].required = true
+  method_options[:prefix].required = true
+  method_options[:account_id].default = 'a-shpoolxx'
+  method_options[:metric].default = 100
+  method_options[:network_mode].default = 'securitygroup'
+  method_options[:service_type].default = @@conf.default_service_type
+  method_options[:ip_assignment].default = 'asc'
   def add
     validate_ipv4_range
 
@@ -68,21 +82,7 @@ class Network < Base
   end
 
   desc "modify UUID [options]", "Update network information"
-  method_option :ipv4_network, :type => :string, :desc => "IPv4 network address"
-  method_option :ipv4_gw, :type => :string, :desc => "Gateway address for IPv4 network"
-  method_option :prefix, :type => :numeric, :desc => "IP network mask size (1 < prefix < 32)"
-  method_option :domain, :type => :string, :desc => "DNS domain name of the network"
-  method_option :dns, :type => :string, :desc => "IP address for DNS server of the network"
-  method_option :dhcp, :type => :string, :desc => "IP address for DHCP server of the network"
-  method_option :metadata, :type => :string, :desc => "IP address for metadata server of the network"
-  method_option :metric, :type => :numeric, :desc => "Routing priority order of this network segment"
-  method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network"
-  method_option :bandwidth, :type => :numeric, :desc => "The maximum bandwidth for the network in Mbit/s"
-  method_option :description, :type => :string, :desc => "Description for the network"
-  method_option :account_id, :type => :string, :desc => "The account ID to own this"
-  method_option :network_mode, :type => :string, :desc => "Network mode: #{NETWORK_MODES.join(', ')}"
-  method_option :service_type, :type => :string, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
-  method_option :display_name, :type => :string, :desc => "Display name of the network"
+  common_options
   def modify(uuid)
     validate_ipv4_range if options[:ipv4_network]
 
@@ -318,7 +318,7 @@ __END
 
       puts super(M::IpPool, fields)
     end
-    
+
     desc "add-dcn POOL DCN [options]", "Add DC Network to IP pool."
     def add_dcn(pool_uuid, dcn_uuid)
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
@@ -372,9 +372,9 @@ __END
 
       network || Error.raise("Could not find appropriate network for leasing an IP.", 100)
 
-      st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)      
+      st = Dcmgr::Scheduler.service_type(@@conf.default_service_type)
       lease = st.ip_address.schedule({:network => network, :ip_pool => ip_pool})
-      
+
       puts "#{lease.ip_handle.canonical_uuid} #{lease.ipv4_s}"
     end
 
@@ -456,7 +456,7 @@ __END
         else
           UnknownUUIDError.raise(inner_uuid)
         end
-        
+
         ds
       end
     }

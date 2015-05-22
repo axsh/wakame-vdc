@@ -4,7 +4,7 @@ module Dcmgr::Models
   class BackupStorage < BaseNew
     taggable 'bkst'
 
-    STORAGE_TYPES=[:local, :webdav, :s3, :iijgio, :ifs].freeze
+    STORAGE_TYPES=[:local, :webdav, :ifs].freeze
     one_to_many :backup_objects
 
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
@@ -16,7 +16,7 @@ module Dcmgr::Models
     end
 
     subset(:alives, {:deleted_at => nil})
-    
+
     def validate
       unless STORAGE_TYPES.member?(self.storage_type.to_sym)
         errors.add(:storage_type, "Unknown storage type: #{self.storage_type}")

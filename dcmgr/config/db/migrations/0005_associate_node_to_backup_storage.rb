@@ -9,9 +9,9 @@ Sequel.migration do
   end
 
   down do
-    drop_table(:backup_storages) do
+    alter_table(:backup_storages) do
       drop_column :node_id
     end
   end
 end
-  
+

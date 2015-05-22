@@ -35,8 +35,23 @@ cassandra_keyspace 'wakame_vdc_log_store'
 cassandra_uri '127.0.0.1:9160'
 cassandra_cf 'events'
 
+# # DCell connection
+# dcell_adapter 'redis'
+# dcell_host '127.0.0.1'
+# dcell_port 6379
+# 
+# # DCell connection (dcmgr)
+# dcmgr_dcell_node_id 'dcmgr'
+# dcmgr_dcell_node_uri '127.0.0.1:9098'
+# 
+# # DCell connection (collector)
+# collector_dcell_node_id 'collector'
+# collector_dcell_node_uri '127.0.0.1:9099'
+#
+# vdc_manage_host '127.0.0.1'
+
 service_type("std", "StdServiceType") {
-  backup_storage_id 'bkst-demo2'
+  backup_storage_id 'bkst-local'
 
   #
   # Scheduling Algorithms

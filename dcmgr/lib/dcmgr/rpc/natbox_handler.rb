@@ -8,7 +8,7 @@ module Dcmgr
     class NatboxHandler < EndpointBuilder
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
-      
+
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end

@@ -9,6 +9,9 @@ Sequel.migration do
   end
 
   down do
+    alter_table(:host_nodes) do
+      drop_column :offering_disk_space_mb
+    end
   end
 end
-  
+

@@ -16,12 +16,20 @@ module Dcmgr::Models
 
     one_to_many :local_volumes
 
+    # Returns only online nodes with scheduling_enabled=true for
+    # compatiblity. Since online_nodes method is used for two components:
+    # host node schedulers and host node list API. list API expects to
+    # filter only for status of each node but the schedulers expect to
+    # return only scheduling_enabled=true node.
+    # Schedulers should use new separate dataset method then this
+    # method will back to original behavior.
     def_dataset_method(:online_nodes) do
       # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
-      filter(:node_id => r)
+      filter(:node_id => r, :scheduling_enabled=>true)
     end
 
+    # Returns offline nodes.
     def_dataset_method(:offline_nodes) do
       # SELECT `host_nodes`.* FROM `host_nodes` LEFT JOIN `node_states` ON (`host_nodes`.`node_id` = `node_states`.`node_id`) WHERE ((`node_states`.`state` IS NULL) OR (`node_states`.`state` = 'offline'))
       select_all(:host_nodes).join_table(:left, :node_states, {:host_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'})
@@ -44,11 +52,14 @@ module Dcmgr::Models
         errors.add(:arch, "unknown architecture type: #{self.arch}")
       end
 
-      unless self.offering_cpu_cores > 0
-        errors.add(:offering_cpu_cores, "it must have digit more than zero")
+      if self.offering_cpu_cores < 0
+        errors.add(:offering_cpu_cores, "it can not be less than zero")
       end
-      unless self.offering_memory_size > 0
-        errors.add(:offering_memory_size, "it must have digit more than zero")
+      if self.offering_memory_size < 0
+        errors.add(:offering_memory_size, "it can not be less than zero")
+      end
+      if self.offering_disk_space_mb.to_i < 0
+        errors.add(:offering_disk_space_mb, "it can not be less than zero")
       end
     end
 
@@ -72,7 +83,7 @@ module Dcmgr::Models
     def check_capacity(instance)
       raise ArgumentError unless instance.is_a?(Instance)
 
-      using_cpu_cores, using_memory_size = self.instances_dataset.lives.select { [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map {|i| i || 0}
+      using_cpu_cores, using_memory_size = self.instances_dataset.alives.select { [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map {|i| i || 0}
 
       (self.offering_cpu_cores >= using_cpu_cores + instance.cpu_cores) &&
         (self.offering_memory_size >= using_memory_size + instance.memory_size)
@@ -102,29 +113,44 @@ module Dcmgr::Models
     end
 
     def cpu_core_usage_percent()
-      (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100.0
+      if offering_memory_size.to_i > 0
+        (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100.0
+      else
+        # Show 100% if offering is zero.
+        100.0
+      end
     end
-    
+
     # Returns reserved memory size used by running/scheduled instances.
     def memory_size_usage
       instances_usage(:memory_size)
     end
 
     def memory_size_usage_percent()
-      (memory_size_usage.to_f / offering_memory_size.to_f) * 100.0
+      if offering_memory_size.to_i > 0
+        (memory_size_usage.to_f / offering_memory_size.to_f) * 100.0
+      else
+        # Show 100% if offering is zero.
+        100.0
+      end
     end
-    
+
     # Calc all local volume size on this host node.
     def disk_space_usage
       instances_dataset.alives.map { |i|
         i.local_volumes_dataset.sum(:size).to_i
       }.inject{|r, i| r + i }.to_i
     end
-    
+
     def disk_space_usage_percent()
-      (disk_space_usage.to_f / (offering_disk_space_mb * (1024 ** 2)).to_f) * 100.0
+      if offering_disk_space_mb.to_i > 0
+        (disk_space_usage.to_f / (offering_disk_space_mb * (1024 ** 2)).to_f) * 100.0
+      else
+        # Show 100% if offering is zero.
+        100.0
+      end
     end
-    
+
     # Returns a usage percentage to show admins in quick overviews
     def usage_percent
       cpu_percent = (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100
@@ -147,10 +173,10 @@ module Dcmgr::Models
     def available_disk_space
       (self.offering_disk_space_mb * 1024 * 1024) - self.disk_space_usage
     end
-    
+
     # Check the free resource capacity across entire local VDC domain.
     def self.check_domain_capacity?(cpu_cores, memory_size, num=1)
-      ds = Instance.dataset.lives.filter(:host_node => HostNode.online_nodes)
+      ds = Instance.dataset.alives.filter(:host_node => HostNode.online_nodes)
       alives_cpu_cores, alives_mem_size = ds.select{[sum(:cpu_cores), sum(:memory_size)]}.naked.first.values.map { |i| i || 0 }
       stopped_cpu_cores, stopped_mem_size = ds.filter(:state=>'stopped').select{ [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map { |i| i || 0 }
       # instance releases the resources during stopped state normally. however admins may
@@ -163,7 +189,7 @@ module Dcmgr::Models
       # * stopped_instance_usage_factor == 0.5 means that 50% of
       # resources for stopped instances are reserved and rest of 50%
       # may fail to start again.
-      usage_factor = (Dcmgr.conf.stopped_instance_usage_factor || 1.0).to_f
+      usage_factor = (Dcmgr::Configurations.dcmgr.stopped_instance_usage_factor || 1.0).to_f
 
       offer_cpu, offer_mem = self.online_nodes.select { [sum(:offering_cpu_cores), sum(:offering_memory_size)] }.naked.first.values.map {|i| i || 0 }
       avail_mem_size = offer_mem - ((alives_mem_size - stopped_mem_size) + (stopped_mem_size * usage_factor).floor)
@@ -173,7 +199,7 @@ module Dcmgr::Models
     end
 
     def add_vnet(network)
-      m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
+      m = MacLease.lease(Dcmgr::Configurations.dcmgr.mac_address_vendor_id)
       hn_vnet = HostNodeVnet.new
       hn_vnet.host_node = self
       hn_vnet.network = network
@@ -193,7 +219,7 @@ module Dcmgr::Models
 
     protected
     def instances_usage(colname)
-      instances_dataset.lives.sum(colname).to_i
+      instances_dataset.alives.sum(colname).to_i
     end
   end
 end

@@ -11,18 +11,8 @@ require 'fuguta'
 
 include Isono::Runner::RpcServer
 
-path = [ENV['CONF_PATH'].to_s, '/etc/wakame-vdc/natbox.conf', File.expand_path('config/natbox.conf', Dcmgr::DCMGR_ROOT)].find { |i| File.exists?(i) }
-abort("ERROR: Failed to load natbox.conf") if path.nil?
 
-begin
-  Dcmgr.instance_eval {
-    @conf = Dcmgr::Configurations::Natbox.load(path)
-  }
-rescue NoMethodError => e
-  abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
-rescue Fuguta::Configuration::ValidationError => e
-  abort("Validation Error: #{path}\n  " + e.errors.join("\n  "))
-end
+Dcmgr::Configurations.load Dcmgr::Configurations::Natbox
 
 Dcmgr.run_initializers('logger')
 

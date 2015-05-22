@@ -28,4 +28,4 @@ Sequel.migration do
     drop_table(:queued_jobs)
   end
 end
-  
+

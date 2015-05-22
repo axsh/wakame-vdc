@@ -130,7 +130,7 @@ module Dcmgr
     define_error(:DestroyedUUIDResource, 404, '154')
     define_error(:UndefinedBackupObject, 404, '155')
     define_error(:UnknownBackupObject, 404, '156')
-    define_error(:InvalidBackupObjectState, 500, '157')
+    define_error(:InvalidBackupObjectState, 400, '157')
     define_error(:ExistsRegisteredInstance, 400, '158')
     define_error(:InvalidLoadBalancerState, 400, '159')
     define_error(:InvalidLoadBalancerPort, 400, '160')

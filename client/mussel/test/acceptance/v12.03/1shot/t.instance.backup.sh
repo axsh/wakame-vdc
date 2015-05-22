@@ -8,6 +8,8 @@
 ## include files
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
+. ${BASH_SOURCE[0]%/*}/helper_instance.sh
+
 
 ## variables
 
@@ -15,6 +17,8 @@ description=${description:-}
 display_name=${display_name:-}
 is_cacheable=${is_cacheable:-}
 is_public=${is_public:-}
+
+ssh_user=${ssh_user:-root}
 
 ## hook functions
 
@@ -25,6 +29,23 @@ function setUp() {
 
   # reset command parameters
   volumes_args=
+}
+
+function render_secg_rule() {
+  cat <<-EOS
+	icmp:-1,-1,ip4:0.0.0.0/0
+	tcp:22,22,ip4:0.0.0.0/0
+	EOS
+}
+
+### shunit2 setup
+
+function oneTimeSetUp() {
+  :
+}
+
+function oneTimeTearDown() {
+  :
 }
 
 ### step
@@ -159,7 +180,7 @@ function test_image_backup_just_for_boot_volume() {
   test -n "$image_uuid"
   assertEquals 0 $?
 
-  local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+  local backup_object_uuid=$(yfind ':backup_object_ids:/0' < $last_result_path)
   test -n "$backup_object_uuid"
   assertEquals 0 $?
 
@@ -216,7 +237,7 @@ function test_image_backup_and_verify_new_image() {
   test -n "$image_uuid"
   assertEquals 0 $?
 
-  local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+  local backup_object_uuid=$(yfind ':backup_object_ids:/0' < $last_result_path)
   test -n "$backup_object_uuid"
   assertEquals 0 $?
 
@@ -240,8 +261,17 @@ function test_image_backup_and_verify_new_image() {
   #vifs_args="vifs[eth0][index]=0 vifs[eth0][network]=nw-pub vifs[eth0][security_groups][]=default"
   create_instance
 
-  # TODO: ssh login to new instance
-  #ssh ....
+  # get ipaddress for booting new instance.
+  instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
+  assertEquals 0 $?
+
+  # verify network.
+  wait_for_network_to_be_ready ${instance_ipaddr}
+  assertEquals 0 $?
+
+  # verify ssh login.
+  wait_for_sshd_to_be_ready ${instance_ipaddr}
+  assertEquals 0 $?
 
   run_cmd instance destroy ${instance_uuid} >/dev/null
   assertEquals 0 $?
@@ -273,7 +303,7 @@ function test_expect_failure_at_instance_terminate() {
   test -n "$image_uuid"
   assertEquals 0 $?
 
-  local backup_object_uuid=$(yfind ':backup_object_id:' < $last_result_path)
+  local backup_object_uuid=$(yfind ':backup_object_ids:/0' < $last_result_path)
   test -n "$backup_object_uuid"
   assertEquals 0 $?
 

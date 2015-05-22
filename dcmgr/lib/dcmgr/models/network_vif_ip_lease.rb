@@ -25,7 +25,7 @@ module Dcmgr::Models
 
       self.network_vif = vif
       self.save_changes
-      
+
       if self.ip_handle && self.ip_handle.expires_at
         self.ip_handle.expires_at = nil
         self.ip_handle.save_changes

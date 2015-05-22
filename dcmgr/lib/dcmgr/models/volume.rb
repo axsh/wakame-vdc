@@ -12,19 +12,18 @@ module Dcmgr::Models
     plugin ChangedColumnEvent, :accounting_log => [:state, :size]
     plugin Plugins::ResourceLabel
 
-    subset(:lives, {:deleted_at => nil})
     subset(:alives, {:deleted_at => nil})
     dataset_module do
       def attached
         filter_by_state(STATE_ATTACHED)
       end
-      
+
       def filter_by_state(state)
         filter({:state=>state})
       end
     end
 
-    def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+    def_dataset_method(:alives_and_deleted) { |term_period|
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
     }
 
@@ -54,14 +53,14 @@ module Dcmgr::Models
       #   %w(hdaz hdaa hdc hdz hdn) => hdd (= "hdc".succ)
       device_names.zip(device_names.dup.tap(&:shift)).inject(device_names.first) {|r,l|  r.succ == l.last ? l.last : r }.succ
     end
-    
+
     def validate
       # do not run validation if the row is maked as deleted.
       return true if self.deleted_at
 
       errors.add(:size, "Invalid volume size: #{self.size}") if self.size < 0
 
-      if self.instance
+      if self.instance(:reload=>true)
         # check if volume parameters are conformant for hypervisor.
         hypervisor_class = Dcmgr::Drivers::Hypervisor.driver_class(self.instance.hypervisor.to_sym)
         hypervisor_class.policy.validate_volume_model(self)
@@ -73,10 +72,10 @@ module Dcmgr::Models
         # uniqueness check for device names per instance
         names = self.instance.volumes_dataset.attached.all.map{|v| v.guest_device_name }.sort
         unless names.size == names.uniq.size
-          errors.add(:guest_device_nam, "found duplicate device name (#{names.join(', ')}) for #{instance.caonnical_uuid}")
+          errors.add(:guest_device_name, "found duplicate device name (#{names.join(', ')}) for #{instance.canonical_uuid}")
         end
       end
-      
+
       super
     end
 
@@ -133,7 +132,7 @@ module Dcmgr::Models
 
     def to_hash
       super().merge(:is_local_volume=>local_volume?,
-                    :volume_device=>(self.volume_device.nil? ? nil : self.volume_device.to_hash)
+                    :volume_device=>(self.volume_device.nil? ? nil : self.volume_device.values)
                     )
     end
 
@@ -169,11 +168,19 @@ module Dcmgr::Models
     # Sequel's class_table_inheritance plugin caused many changes for our
     # model base class. so I stopped to use it.
     def volume_class
+      return nil if self.volume_type.nil?
       self.volume_type.split('::').unshift(Object).inject{|r, i| r.const_get(i) }
     end
 
     def volume_device
-      self.volume_class.find(:id=>self.id.to_i)
+      return nil if self.volume_class.nil?
+      self.volume_class.with_pk(self.pk)
+    end
+
+    # Shortcut to get StorageNode from volume device.
+    def storage_node
+      (volume_device && volume_device.respond_to?(:storage_node)) ? \
+        volume_device.storage_node : nil
     end
 
     def boot_volume?
@@ -190,12 +197,6 @@ module Dcmgr::Models
       convert_byte(self[:size], byte_unit)
     end
 
-    def detach_from_instance
-      self.instance_id = nil
-      self.state = STATE_AVAILABLE
-      self.save_changes
-    end
-
     def create_backup_object(account, &blk)
       bo = BackupObject.new(:account_id => (account.nil? ? self.account_id : account.canonical_uuid),
                             :service_type => self.service_type,
@@ -207,18 +208,32 @@ module Dcmgr::Models
         bo.display_name = src_bo.display_name
         bo.description = src_bo.description
       }
-      
+
       if self.backup_object
         self.backup_object.tap(&copy_attrs)
       elsif self.instance && self.instance.image.backup_object
         self.instance.image.backup_object.tap(&copy_attrs)
       end
-      
+
       blk.call(bo)
       bo.save
       bo
     end
-    
+
+    def attach_to_instance(instance, guest_device_name=nil)
+      if guest_device_name
+        self.guest_device_name = guest_device_name
+      end
+      instance.add_volume(self)
+    end
+
+    def detach_from_instance
+      if self.instance
+        self.guest_device_name = nil
+        self.instance.remove_volume(self)
+      end
+    end
+
     private
     def _destroy_delete
       self.deleted_at ||= Time.now

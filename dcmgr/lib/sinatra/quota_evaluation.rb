@@ -127,7 +127,7 @@ module Sinatra
     module ClassMethods
       class EndpointCondition
         attr_reader :request_amount_block
-        
+
         def initialize
           # return 0 as default for *.count quota keys.
           @request_amount_block = lambda { 0 }
@@ -145,13 +145,13 @@ module Sinatra
           def initialize(subject)
             @subject = subject
           end
-          
+
           def request_amount(&blk)
             @subject.instance_variable_set(:@request_amount_block, blk)
           end
         end
       end
-      
+
       # Set sinatra condition for this quota key to the endpoint.
       # quota('xxx.count')
       # quota('yyy.count') do
@@ -166,7 +166,7 @@ module Sinatra
         tuple = QuotaEvaluation.quota_defs[quota_key]
         raise ArgumentError, "#{quota_key} is unknown quota key. (Defined at around #{caller[3]})" unless tuple
 
-        return self if Dcmgr.conf.skip_quota_evaluation
+        return self if Dcmgr::Configurations.dcmgr.skip_quota_evaluation
 
         condparam = blk ? EndpointCondition.parse(&blk) : EndpointCondition.new
 
@@ -177,7 +177,7 @@ module Sinatra
           # JSON document. Missing X-VDC-Account-ID header also
           # results in skipping evaluation.
           return true unless @quota_request.is_a?(Hash) && @quota_request.has_key?(quota_key)
-          
+
           begin
             @current_quota_type = quota_key
 
@@ -189,7 +189,7 @@ module Sinatra
           ensure
             @current_quota_type = nil
           end
-          
+
           true
         }
 

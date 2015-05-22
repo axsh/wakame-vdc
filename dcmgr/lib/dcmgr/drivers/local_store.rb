@@ -4,6 +4,9 @@ module Dcmgr
   module Drivers
     class LocalStore < Task::Tasklet
       helpers Task::LoggerHelper
+      include Fuguta::Configuration::ConfigurationMethods
+
+      def_configuration
 
       # download and prepare image files to ctx.os_devpath.
       def deploy_image(inst,ctx)
@@ -19,7 +22,7 @@ module Dcmgr
       def deploy_blank_volume(hva_ctx, volume, opts={})
         raise NotImplementedError
       end
-      
+
       # delete an image file.
       def delete_volume(hva_ctx, volume)
         raise NotImplementedError

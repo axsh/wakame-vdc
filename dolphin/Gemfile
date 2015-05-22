@@ -2,6 +2,25 @@ source 'https://rubygems.org'
 
 gem 'wakame-dolphin', '0.0.5'
 
+# *** work-around ***
+#
+# sub package dependency for wakame-dolphin 0.0.5
+#
+# wakame-dolphin (0.0.5)
+#   reel (0.3.0)
+#     http_parser.rb # should be 0.5.3
+#   celluloid (0.12.04)
+#     facter # should be 2.0.1
+#     timers # should be 2.0.0
+#
+# in wakame-dolphin.gemspec, http_parser.rb version is not fixed.
+# in wakame-dolphin.gemspec, facter version is not fixed.
+# in wakame-dolphin.gemspec, timers version is not fixed.
+#
+gem 'http_parser.rb', '0.5.3'
+gem 'timers', '2.0.0'
+gem 'facter', '2.0.1'
+
 # 1. vdc-dolphin requires gem packages
 # 2. *should be* same version of wakame-dolphin/Gemfile
 

@@ -9,6 +9,10 @@ Sequel.migration do
   end
 
   down do
+    alter_table(:queued_jobs) do
+      rename_column :finish_message, :failure_reason
+      set_column_type :failure_reason, "varchar(255)", :null=>true
+    end
   end
 end
-  
+

@@ -107,12 +107,14 @@ function test_multiple_backup_tasks_without_confliction() {
 
   run_cmd volume backup $boot_volume_uuid | ydump > $last_result_path
   assertEquals 0 $?
+cat $last_result_path
   local backup_obj_uuid1=$(yfind ':backup_object_id:' < $last_result_path)
   test -n "$backup_obj_uuid1"
   assertEquals 0 $?
 
   run_cmd volume backup $boot_volume_uuid | ydump > $last_result_path
   assertEquals 0 $?
+cat $last_result_path
   local backup_obj_uuid2=$(yfind ':backup_object_id:' < $last_result_path)
   test -n "$backup_obj_uuid2"
   assertEquals 0 $?

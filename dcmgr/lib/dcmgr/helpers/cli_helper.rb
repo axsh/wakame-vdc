@@ -20,7 +20,7 @@ module POSIX
       progname = argv.shift[0]
       ::Process::spawn(env, progname, *argv, options)
     end
-    
+
     private
     def adjust_process_spawn_argv(args)
       if args.size == 1 && args[0] =~ /[ |><]/

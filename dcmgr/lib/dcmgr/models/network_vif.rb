@@ -167,19 +167,23 @@ module Dcmgr::Models
 
     def before_destroy
       maclease = MacLease.find(:mac_addr=>self.mac_addr.hex)
+
       if maclease
         maclease.destroy
       else
         logger.info "Warning: Mac address lease for '#{self.mac_addr}' not found in database."
       end
+
       release_ip_lease
-      if self.instance.service_type == Dcmgr::Constants::LoadBalancer::SERVICE_TYPE
+
+      if self.instance && self.instance.service_type == Dcmgr::Constants::LoadBalancer::SERVICE_TYPE
         groups = self.security_groups
         self.remove_all_security_groups
         groups.each {|g| g.destroy}
       else
         self.remove_all_security_groups
       end
+
       self.network_routes.each {|i| i.destroy }
       self.network_services.each {|i| i.destroy }
       self.network_vif_monitors.each {|i| i.destroy }
@@ -253,7 +257,7 @@ module Dcmgr::Models
       end
 
       return nil unless lease.network == network
-      
+
       lease.attach_vif(self)
       lease
     end
@@ -269,6 +273,21 @@ module Dcmgr::Models
       else
         lease.destroy
       end
+    end
+
+    def add_security_group(security_group)
+      NetworkVifSecurityGroup.create(
+        :network_vif => self,
+        :security_group => security_group
+      )
+    end
+
+    def remove_security_group(security_group)
+      Dcmgr::Logger.logger.info("remove_security_group. network_vif: #{self.inspect} security_group: #{security_group.inspect}")
+      NetworkVifSecurityGroup.filter(
+        :network_vif_id => self.id,
+        :security_group_id => security_group.id
+      ).first.destroy
     end
 
     private

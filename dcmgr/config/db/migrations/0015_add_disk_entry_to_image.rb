@@ -17,6 +17,14 @@ Sequel.migration do
   end
 
   down do
+    alter_table(:images) do
+      drop_column :volumes
+      drop_column :vifs
+    end
+
+    alter_table(:backup_objects) do
+      drop_column :source_volume_id
+    end
   end
 end
-  
+

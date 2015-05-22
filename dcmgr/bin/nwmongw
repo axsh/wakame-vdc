@@ -16,7 +16,7 @@ class MonitoringGateway < Isono::NodeModules::Base
   initialize_hook do
     event = Isono::NodeModules::EventChannel.new(node)
     @worker = Isono::ThreadPool.new(1)
-    @driver = Dcmgr.conf.driver_class.new
+    @driver = Dcmgr::Configurations.nwmongw.driver_class.new
 
     event.subscribe('hva/instance_started', '#') do |args|
       @worker.pass {
@@ -61,11 +61,7 @@ end
 
 include Isono::Runner::RpcServer
 
-Dcmgr.load_conf(Dcmgr::Configurations::Nwmongw,
-                [ENV['CONF_PATH'].to_s,
-                 '/etc/wakame-vdc/nwmongw.conf',
-                 File.expand_path('config/nwmongw.conf', Dcmgr::DCMGR_ROOT)
-                ])
+Dcmgr::Configurations.load Dcmgr::Configurations::Nwmongw
 
 Dcmgr.run_initializers('logger', 'sequel')
 
