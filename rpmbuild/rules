@@ -8,12 +8,13 @@ VDC_BUILD_ID  ?= HEAD
 VDC_REPO_URI  ?= git://github.com/axsh/wakame-vdc.git
 VDC_SPEC_BASE := rpmbuild/SPECS/wakame-vdc.spec
 VDC_SPEC_SUBS := rpmbuild/SPECS/wakame-vdc-example-1box.spec
+VDC_SPEC_INIT := rpmbuild/SPECS/wakame-init.spec
 
 RPM_BUILD_ROOT ?= $(CURDIR)/rpmbuild/wakame-vdc
 RPMBUILD_CMD  ?= rpmbuild
 RPMBUILD_OPTS := --target=`arch`
 RPMCLEAN_SPEC := $(VDC_SPEC_BASE)
-RPMBUILD_SPEC := $(VDC_SPEC_BASE) $(VDC_SPEC_SUBS)
+RPMBUILD_SPEC := $(VDC_SPEC_BASE) $(VDC_SPEC_SUBS) $(VDC_SPEC_INIT)
 
 # .deb
 #TMP_INSTALL_ROOT ?= debian/wakame-vdc

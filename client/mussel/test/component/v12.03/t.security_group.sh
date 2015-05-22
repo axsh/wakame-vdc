@@ -16,6 +16,8 @@ declare rule_file=${BASH_SOURCE[0]%/*}/rule.$$.txt
 ## functions
 
 function setUp() {
+  xquery=
+  service_type=
   cat <<-EOS > ${rule_file}
 	icmp:-1,-1,ip4:0.0.0.0/0
 	tcp:22,22,ip4:0.0.0.0/0
@@ -25,6 +27,25 @@ function setUp() {
 
 function tearDown() {
   rm -f ${rule_file}
+}
+
+  state=
+
+### index
+
+function test_security_group_index_no_opts() {
+  local cmd=index
+  local service_type=
+  assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
+               "curl -X GET $(base_uri)/${namespace}s.$(suffix)"
+}
+
+function test_security_group_index_opts() {
+  local cmd=index
+  local service_type=std
+
+  assertEquals "$(cli_wrapper ${namespace} ${cmd} --service-type=${service_type})" \
+               "curl -X GET $(base_uri)/${namespace}s.$(suffix)?service_type=${service_type}"
 }
 
 ### create
