@@ -1,38 +1,44 @@
-# Backup instances
-
-### Overview
+## Overview
 
 In Wakame-vdc it is possible to take a running [instance](../jargon-dictionary.md#instance) and turn it into a new [machine image](../jargon-dictionary.md#machine-image). We simply call this process *backup*.
 
 This is a quick and easy way to create new machine images. For example, you could start up an instance, install a web server in it and then back it up. Now you'll have a machine image with a web server installed and you'll immediately be able to start a any amount of web server instances.
 
-### Requirements
+## Requirements
 
 You of course need a working Wakame-vdc installation. You can use either the [VirtualBox demo image](http://wakameusersgroup.org/demo_image.html) or create your own environment using the [installation guide](../installation.md).
 
-You need to tell Wakame-vdc which [backup storage](../jargon-dictionary.md#backup-storage] to use when backing up instances. Both the VirtualBox image and the installation guide will set that up but just in case, here it is again.
+You need to tell Wakame-vdc which [backup storage](../jargon-dictionary.md#backup-storage) to use when backing up instances. Both the VirtualBox image and the installation guide will set that up but just in case, here it is again.
 
 Figure out which backup storage you want to use with `vdc-manage`.
 
-    /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupstorage show
+```bash
+/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupstorage show
+```
 
 On an environment installed according to the installation guide, it will have this output
 
-    UUID            Storage Type         Base URI
-    bkst-local      local                file:///var/lib/wakame-vdc/images/
+```bash
+UUID            Storage Type         Base URI
+bkst-local      local                file:///var/lib/wakame-vdc/images/
+```
 
 There's only one backup storage defined and its UUID is `bkst-local`. We need to make sure this is set in `dcmgr.conf`.
 
-    grep backup_storage_id /etc/wakame-vdc/dcmgr.conf
+```bash
+grep backup_storage_id /etc/wakame-vdc/dcmgr.conf
+```
 
 That command should have an output similar to this.
 
-    backup_storage_id 'bkst-local'
+```bash
+backup_storage_id 'bkst-local'
+```
 
 If it does not show the UUID of the backup storage you want to use, open the file with a text editor and change that line.
 
 
-### Usage
+## Usage
 
 You need to have started an [instance](../jargon-dictionary.md#instance) in order to back it up. If you don't know how to start an instance, you can find the instructions in [the basic usage guide](../usage/index.md).
 
