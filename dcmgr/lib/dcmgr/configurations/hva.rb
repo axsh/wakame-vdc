@@ -45,9 +45,6 @@ module Dcmgr
 
         param :password_generation_sleeptime, default: 2
         param :password_generation_timeout, default: 60 * 15
-
-        param :delete_password_on_request, default: true
-        param :delete_password_after, default: 60
       end
 
       class LocalStore < Fuguta::Configuration
