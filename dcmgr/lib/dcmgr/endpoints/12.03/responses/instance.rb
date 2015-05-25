@@ -126,7 +126,7 @@ module Dcmgr::Endpoints::V1203::Responses
 
   class InstancePassword < Dcmgr::Endpoints::ResponseGenerator
     def initialize(instance)
-      raise ArgumentError if !instance.is_a?(Dcmgr::Models::Instance)
+      raise ArgumentError, "Instance must be a #{Dcmgr::Models::Instance}" if !instance.is_a?(Dcmgr::Models::Instance)
       @instance = instance
     end
 
