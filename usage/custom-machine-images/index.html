@@ -98,7 +98,8 @@
                             
                                 <li><a class="toctree-l4" href="#step-5-register-this-machine-image-file-with-wakame-vdc">Step 5: Register this machine image file with Wakame-vdc</a></li>
                             
-                                <li><a class="toctree-l4" href="#using-and-testing-the-new-image">Using and testing the new image</a></li>
+                        
+                            <li class="toctree-l3"><a href="#using-and-testing-the-new-image">Using and testing the new image</a></li>
                             
                         
                         </ul>
@@ -212,12 +213,12 @@ packaging, and to make things a little more interesting, set up the
 machine image to automatically start up a web server with a single
 static web page to show.  The steps for other combinations are
 similar, but differ in subtle ways that will be documented later.</p>
-<h4 id="step-1-install-an-os-into-a-bootable-disk-or-directory-structure">Step 1: Install an OS into a bootable disk or directory structure</h4>
+<h3 id="step-1-install-an-os-into-a-bootable-disk-or-directory-structure">Step 1: Install an OS into a bootable disk or directory structure</h3>
 <p>For OpenVZ, specialized techniques are required to install an OS, so
 the recommended procedure is to use one of the <em>precreated templates</em>
 that can be found at the <a href="https://wiki.openvz.org/Download/template/precreated">OpenVZ wiki</a>.  Minimal
 installations of the major Linux distributions are available.</p>
-<h4 id="step-2-specialize-the-os-installation-for-the-intended-purpose">Step 2: Specialize the OS installation for the intended purpose</h4>
+<h3 id="step-2-specialize-the-os-installation-for-the-intended-purpose">Step 2: Specialize the OS installation for the intended purpose</h3>
 <p>The most straightforward way to install and configure the installed OS
 distribution is from inside OpenVZ itself.  An environment created by
 following the <a href="../../installation/">installation guide</a> or the <a href="http://wakameusersgroup.org/demo_image.html">VirtualBox
@@ -230,28 +231,31 @@ software.  For an example of miscellaneous configuration, the shell commands
 create a top Web page and set up the web service to automatically start when the
 machine image is instantiated.</p>
 <p>The first few commands log into the demo VM and download a template image:</p>
-<pre><code>ssh centos@a.b.c.d  # where a.b.c.d is the demo VM's IP address
+<pre><code class="bash">ssh centos@a.b.c.d  # where a.b.c.d is the demo VM's IP address
 [centos@wakame-vdc-1box ~]$ sudo su
-[root@wakame-vdc-1box centos]# cd /vz/template/cache
-[root@wakame-vdc-1box cache]# wget http://download.openvz.org/template/precreated/centos-6-x86_64-minimal.tar.gz
+[root@wakame-vdc-1box centos]$ cd /vz/template/cache
+[root@wakame-vdc-1box cache]$ wget http://download.openvz.org/template/precreated/centos-6-x86_64-minimal.tar.gz
 </code></pre>
+
 <p>Next, an OpenVZ container based on this image is started.
 Note that the 101 that appears many times below can be any number that
 is not in use by OpenVZ.</p>
-<pre><code>[root@wakame-vdc-1box cache]# vzctl create 101 --ostemplate centos-6-x86_64-minimal --ipadd a.b.c.vv --hostname localhost
-[root@wakame-vdc-1box cache]# vzctl set 101 --nameserver 8.8.8.8 --save
-[root@wakame-vdc-1box cache]# vzctl start 101
+<pre><code class="bash">[root@wakame-vdc-1box cache]$ vzctl create 101 --ostemplate centos-6-x86_64-minimal --ipadd a.b.c.vv --hostname localhost
+[root@wakame-vdc-1box cache]$ vzctl set 101 --nameserver 8.8.8.8 --save
+[root@wakame-vdc-1box cache]$ vzctl start 101
 </code></pre>
+
 <p>Now we can go inside the container and specialize it by installing and
 configuring software.</p>
-<pre><code>[root@wakame-vdc-1box cache]# vzctl enter 101
-[root@localhost /]# yum install httpd
-[root@localhost /]# echo "&lt;html&gt;An Example top web page.&lt;/html&gt;" &gt;/var/www/html/index.html
-[root@localhost /]# service httpd start
-[root@localhost /]# chkconfig httpd on
+<pre><code class="bash">[root@wakame-vdc-1box cache]$ vzctl enter 101
+[root@localhost /]$ yum install httpd
+[root@localhost /]$ echo &quot;&lt;html&gt;An Example top web page.&lt;/html&gt;&quot; &gt;/var/www/html/index.html
+[root@localhost /]$ service httpd start
+[root@localhost /]$ chkconfig httpd on
 </code></pre>
-<h4 id="step-3-specialize-the-os-installation-for-wakame-vdc">Step 3: Specialize the OS installation for Wakame-vdc</h4>
-<h5 id="insert-the-wakame-init-script-and-run-it-from-etcrclocal">Insert the wakame-init script and run it from /etc/rc.local:</h5>
+
+<h3 id="step-3-specialize-the-os-installation-for-wakame-vdc">Step 3: Specialize the OS installation for Wakame-vdc</h3>
+<h4 id="insert-the-wakame-init-script-and-run-it-from-etcrclocal">Insert the wakame-init script and run it from /etc/rc.local:</h4>
 <p>Note: This step is necessary so that Wakame-vdc can do last-minute
 specialization that is necessary when each instance is booted.  For
 example, the wakame-init script sets up network addresses and routing
@@ -262,38 +266,44 @@ additional specialization based on
 <a href="../../jargon-dictionary/#user-data">user-data</a>.  Users can enter this data
 on-the-fly while starting an instance, and scripts can read it from a
 special file at <code>/metadata/user-data</code>.</p>
-<pre><code>curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
+<pre><code class="bash">curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
 
 yum install -y wakame-init
 </code></pre>
-<h5 id="clear-shell-history">Clear shell history:</h5>
+
+<h4 id="clear-shell-history">Clear shell history:</h4>
 <p>Note: This step is optional.</p>
-<pre><code>rm /home/*/.bash_history /root/.bash_history
+<pre><code class="bash">rm /home/*/.bash_history /root/.bash_history
 </code></pre>
-<h5 id="remove-ssh-host-keys">Remove ssh host keys:</h5>
+
+<h4 id="remove-ssh-host-keys">Remove ssh host keys:</h4>
 <p>Note: This step is optional but recommended so that different
 instances appear as different ssh hosts.</p>
-<pre><code>rm /etc/ssh/ssh_host*
+<pre><code class="bash">rm /etc/ssh/ssh_host*
 </code></pre>
-<h5 id="remove-net-rules-file-so-eth0-doesnt-become-eth1-at-start">Remove net rules file so eth0 doesn't become eth1 at start:</h5>
+
+<h4 id="remove-net-rules-file-so-eth0-doesnt-become-eth1-at-start">Remove net rules file so eth0 doesn't become eth1 at start:</h4>
 <p>Note: This step is not necessary for OpenVZ, but will not cause any
 problems.  In fact, most of the OpenVZ precreated template caches do
 not have this file.</p>
-<pre><code>rm /etc/udev/rules.d/70-persistent-net.rules
+<pre><code class="bash">rm /etc/udev/rules.d/70-persistent-net.rules
 </code></pre>
-<h4 id="step-4-package-it-all-into-one-machine-image-file">Step 4: Package it all into one machine image file</h4>
+
+<h3 id="step-4-package-it-all-into-one-machine-image-file">Step 4: Package it all into one machine image file</h3>
 <p>Exit the OpenVZ container.</p>
-<pre><code>[root@localhost etc]# exit
+<pre><code class="bash">[root@localhost etc]$ exit
 </code></pre>
+
 <p>Now we are back at the demo box prompt. The following instructions are adapted from
 the <a href="http://wiki.openvz.org/Updating_Ubuntu_template">OpenVZ wiki</a>:</p>
-<pre><code>[root@wakame-vdc-1box cache]# vzctl stop 101
-[root@wakame-vdc-1box cache]# vzctl set 101 --ipdel all --save
-[root@wakame-vdc-1box cache]# cd /vz/private/101
-[root@wakame-vdc-1box 101]# tar  --numeric-owner -czf /vz/template/cache/new-custom-image-temp.tar.gz .
-[root@wakame-vdc-1box 101]# cd ..
-[root@wakame-vdc-1box private]# vzctl destroy 101
+<pre><code class="bash">[root@wakame-vdc-1box cache]$ vzctl stop 101
+[root@wakame-vdc-1box cache]$ vzctl set 101 --ipdel all --save
+[root@wakame-vdc-1box cache]$ cd /vz/private/101
+[root@wakame-vdc-1box 101]$ tar  --numeric-owner -czf /vz/template/cache/new-custom-image-temp.tar.gz .
+[root@wakame-vdc-1box 101]$ cd ..
+[root@wakame-vdc-1box private]$ vzctl destroy 101
 </code></pre>
+
 <p>Wakame-vdc's preferred method of packaging machine images is inside of
 partitioned VM images files. The following commands show one way to
 create such an image file and store the new customized OS distribution
@@ -302,65 +312,73 @@ inside it using standard GNU/Linux commands.</p>
 directory and create a 10G empty image there. Other directories will
 work. The advantage of choosing this directory is so that the image
 file will already be in the right place for testing with Wakame-vdc.</p>
-<pre><code>[root@wakame-vdc-1box private]# cd /var/lib/wakame-vdc/images/
-[root@wakame-vdc-1box images]# truncate -s 10G wakame-vdc-custom-image.raw
+<pre><code class="bash">[root@wakame-vdc-1box private]$ cd /var/lib/wakame-vdc/images/
+[root@wakame-vdc-1box images]$ truncate -s 10G wakame-vdc-custom-image.raw
 </code></pre>
+
 <p>The next commands add a partition table to the image, and then make
 the first partition be an ext2 partition (i.e. which in this context,
 means any Linux partition) that takes up the whole image, except
 the first 63 sectors.  The new unformatted partition is then mounted
 on a loop device.</p>
-<pre><code>[root@wakame-vdc-1box images]# parted wakame-vdc-custom-image.raw mklabel msdos
-[root@wakame-vdc-1box images]# parted --script -- wakame-vdc-custom-image.raw mkpart primary ext2 63s -0
-[root@wakame-vdc-1box images]# kpartx -va wakame-vdc-custom-image.raw
+<pre><code class="bash">[root@wakame-vdc-1box images]$ parted wakame-vdc-custom-image.raw mklabel msdos
+[root@wakame-vdc-1box images]$ parted --script -- wakame-vdc-custom-image.raw mkpart primary ext2 63s -0
+[root@wakame-vdc-1box images]$ kpartx -va wakame-vdc-custom-image.raw
 </code></pre>
+
 <p>Next, the mounted partition is formatted and then mounted.  Note:
 Before doing this next command, be sure the output from previous
 kpartx command says that the partition was mounted at loop0p1, and if
 not adjust the parameter accordingly.</p>
-<pre><code>[root@wakame-vdc-1box images]# mkfs.ext4 -F -E lazy_itable_init=1 -L root /dev/mapper/loop0p1
-[root@wakame-vdc-1box images]# tune2fs -o acl /dev/mapper/loop0p1
-[root@wakame-vdc-1box images]# mkdir tmp-mount
-[root@wakame-vdc-1box images]# mount /dev/mapper/loop0p1 tmp-mount/
+<pre><code class="bash">[root@wakame-vdc-1box images]$ mkfs.ext4 -F -E lazy_itable_init=1 -L root /dev/mapper/loop0p1
+[root@wakame-vdc-1box images]$ tune2fs -o acl /dev/mapper/loop0p1
+[root@wakame-vdc-1box images]$ mkdir tmp-mount
+[root@wakame-vdc-1box images]$ mount /dev/mapper/loop0p1 tmp-mount/
 </code></pre>
+
 <p>Next, we copy the OpenVZ directory contents into the file system and
 then unmount the file system.</p>
-<pre><code>[root@wakame-vdc-1box images]# cd tmp-mount/
-[root@wakame-vdc-1box tmp-mount]# tar xzf /vz/template/cache/new-custom-image-temp.tar.gz
-[root@wakame-vdc-1box tmp-mount]# cd ..
-[root@wakame-vdc-1box images]# umount tmp-mount/
-[root@wakame-vdc-1box images]# rmdir tmp-mount/
+<pre><code class="bash">[root@wakame-vdc-1box images]$ cd tmp-mount/
+[root@wakame-vdc-1box tmp-mount]$ tar xzf /vz/template/cache/new-custom-image-temp.tar.gz
+[root@wakame-vdc-1box tmp-mount]$ cd ..
+[root@wakame-vdc-1box images]$ umount tmp-mount/
+[root@wakame-vdc-1box images]$ rmdir tmp-mount/
 </code></pre>
+
 <p>Because in some use cases disk images can have multiple partitions,
 Wakame-vdc needs to know the UUID of the formatted disk partition to
 reliably identify it when booting instances.  This UUID needs to be
 found before the partition is removed from the loop device, so we
 determine it first and then release the loop device.</p>
-<pre><code>[root@wakame-vdc-1box images]# blkid -o export /dev/mapper/loop0p1 | tee /tmp/remember.uuid-etc
-[root@wakame-vdc-1box images]# kpartx -vd wakame-vdc-custom-image.raw
+<pre><code class="bash">[root@wakame-vdc-1box images]$ blkid -o export /dev/mapper/loop0p1 | tee /tmp/remember.uuid-etc
+[root@wakame-vdc-1box images]$ kpartx -vd wakame-vdc-custom-image.raw
 </code></pre>
+
 <p>Before compressing the machine image, remember its size.</p>
-<pre><code>[root@wakame-vdc-1box images]# ls -l wakame-vdc-custom-image.raw | awk '{print $5}' | tee /tmp/remember.size
+<pre><code class="bash">[root@wakame-vdc-1box images]$ ls -l wakame-vdc-custom-image.raw | awk '{print $5}' | tee /tmp/remember.size
 </code></pre>
+
 <p>Finally, compress the image and remember the compressed size and the checksum of the compressed machine image.</p>
-<pre><code>[root@wakame-vdc-1box images]# gzip wakame-vdc-custom-image.raw
-[root@wakame-vdc-1box images]# ls -l wakame-vdc-custom-image.raw.gz | awk '{print $5}' | tee /tmp/remember.alloc_size
-[root@wakame-vdc-1box images]# md5sum /var/lib/wakame-vdc/images/wakame-vdc-custom-image.raw.gz | head -c 32 | tee /tmp/remember.md5
+<pre><code class="bash">[root@wakame-vdc-1box images]$ gzip wakame-vdc-custom-image.raw
+[root@wakame-vdc-1box images]$ ls -l wakame-vdc-custom-image.raw.gz | awk '{print $5}' | tee /tmp/remember.alloc_size
+[root@wakame-vdc-1box images]$ md5sum /var/lib/wakame-vdc/images/wakame-vdc-custom-image.raw.gz | head -c 32 | tee /tmp/remember.md5
 </code></pre>
-<h4 id="step-5-register-this-machine-image-file-with-wakame-vdc">Step 5: Register this machine image file with Wakame-vdc</h4>
+
+<h3 id="step-5-register-this-machine-image-file-with-wakame-vdc">Step 5: Register this machine image file with Wakame-vdc</h3>
 <p>First, move the new machine image to Wakame-vdc's directory for keeping
 images.  (If the machine image was created by the above steps, it might
 already be there.)</p>
-<pre><code>mv wakame-vdc-custom-image.raw.gz /var/lib/wakame-vdc/images
+<pre><code class="bash">mv wakame-vdc-custom-image.raw.gz /var/lib/wakame-vdc/images
 </code></pre>
+
 <p>Registering the machine image file requires two vdc-manage commands.
 The first registers the file as a <a href="../../jargon-dictionary/#backup-object">backup object</a> and assigns it to a
 <a href="../../jargon-dictionary/#backup-storage">backup storage</a>.  For example, to
 register the machine image created above into <a href="../../jargon-dictionary/#backup-storage">backup storage</a> named <code>bkst-local</code>, the
 following command could be used:</p>
-<pre><code>/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupobject add \
+<pre><code class="bash">/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupobject add \
   --uuid bo-customimage \
-  --display-name "New image with web server and one static page" \
+  --display-name &quot;New image with web server and one static page&quot; \
   --storage-id bkst-local \
   --object-key wakame-vdc-custom-image.raw.gz \
   --size $(cat /tmp/remember.size) \
@@ -368,21 +386,23 @@ following command could be used:</p>
   --container-format gz \
   --checksum $(cat /tmp/remember.md5)
 </code></pre>
+
 <p>The second vdc-manage command tells Wakame-vdc that this <a href="../../jargon-dictionary/#backup-object">backup object</a>
 is a machine image that we can start instances of.</p>
-<pre><code>/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image add local bo-customimage \
+<pre><code class="bash">/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image add local bo-customimage \
   --account-id a-shpoolxx \
   --uuid wmi-customimage \
   --root-device uuid:$(source /tmp/remember.uuid-etc ; echo $UUID) \
-  --display-name "New image with web server and one static page"
+  --display-name &quot;New image with web server and one static page&quot;
 </code></pre>
+
 <p>Note that the $() expressions here supply the command with necessary
 details about the machine image, assuming it was collected as in the example
 steps above.  The names <code>bkst-local</code> and <code>a-shpoolxx</code> will work if
 your are installing into an environment that was created by following
 the <a href="../../installation/">Wakame-vdc install guide</a>.  The correct values for
 other situations can be typed directly into the command line.</p>
-<h3 id="using-and-testing-the-new-image">Using and testing the new image</h3>
+<h2 id="using-and-testing-the-new-image">Using and testing the new image</h2>
 <p>It should now be possible to start an instance from the machine image
 by following the instructions in the <a href="../">basic usage guide</a>.  The only necessary modification to these instructions
 is to use your new image name (such as <code>customimage</code> in the example above) instead of lucid5d.
@@ -438,7 +458,7 @@ works by doing the following:</p>
 
 <!--
 MkDocs version  : 0.12.2
-Docs Build Date : 2015-05-11 09:04:34.632418
+Docs Build Date : 2015-05-25 08:09:28.475266
 -->
 </body>
 </html>

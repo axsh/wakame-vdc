@@ -96,17 +96,22 @@
                     
                         <ul>
                         
-                            <li class="toctree-l3"><a href="#security-groups">Security Groups</a></li>
+                            <li class="toctree-l3"><a href="#overview">Overview</a></li>
                             
-                                <li><a class="toctree-l4" href="#contents">Contents</a></li>
+                        
+                            <li class="toctree-l3"><a href="#features">Features</a></li>
                             
-                                <li><a class="toctree-l4" href="#overview">Overview</a></li>
+                                <li><a class="toctree-l4" href="#isolation">Isolation</a></li>
                             
-                                <li><a class="toctree-l4" href="#features">Features</a></li>
+                                <li><a class="toctree-l4" href="#rules">Rules</a></li>
                             
-                                <li><a class="toctree-l4" href="#creating-security-groups-using-the-wakame-vdc-gui">Creating security groups using the Wakame-vdc GUI</a></li>
+                                <li><a class="toctree-l4" href="#reference">Reference</a></li>
                             
-                                <li><a class="toctree-l4" href="#adding-and-removing-vnics-from-security-groups-using-the-wakame-vdc-gui">Adding and removing vnics from security groups using the Wakame-vdc GUI</a></li>
+                        
+                            <li class="toctree-l3"><a href="#creating-security-groups-using-the-wakame-vdc-gui">Creating security groups using the Wakame-vdc GUI</a></li>
+                            
+                        
+                            <li class="toctree-l3"><a href="#adding-and-removing-vnics-from-security-groups-using-the-wakame-vdc-gui">Adding and removing vnics from security groups using the Wakame-vdc GUI</a></li>
                             
                         
                         </ul>
@@ -175,25 +180,14 @@
 </div>
           <div role="main">
             <div class="section">
-              <h1 id="security-groups">Security Groups</h1>
-<h3 id="contents">Contents</h3>
-<ul>
-<li><a href="#Overview">Overview</a></li>
-<li><a href="#Features">Features</a></li>
-<li><a href="#Isolation">Isolation</a></li>
-<li><a href="#Rules">Rules</a></li>
-<li><a href="#Reference">Reference</a></li>
-<li><a href="#Creating-security-groups-using-the-Wakame-vdc-GUI">Creating security groups using the Wakame-vdc GUI</a></li>
-<li><a href="#Adding-and-removing-vnics-from-security-groups-using-the-Wakame-vdc-GUI">Adding and removing vnics from security groups using the Wakame-vdc GUI</a></li>
-</ul>
-<h3 id="overview">Overview</h3>
+              <h2 id="overview">Overview</h2>
 <p>In Wakame-vdc, every virtual network interface (vnic) will have its own firewall. These firewalls are implemented using <a href="http://www.netfilter.org">Netfilter</a>. Even if one instance has multiple vnics, they will still each have their own firewall.</p>
 <p>These firewalls are implemented on the <a href="../jargon-dictionary/#hva">HVA</a> and network traffic is filtered before it reaches the instance's vnic.</p>
 <p><img alt="screenshot" src="../img/security-groups/low_level_overview.png" /></p>
 <p>From the user's perspective, this firewall is controlled through <em>security groups</em>. A user can create security groups and place vnics in them. Depending on what groups a vnic is in, its firewall will decide what network traffic is allowed to pass through.</p>
 <p>Security groups are dynamic. Instances can enter and leave groups on the fly and groups can change their rules of allowed network traffic at any time. No restarts of any kind are required. Whenever a change happens in the security groups layout, the firewall of every vnic affected will update itself automatically.</p>
 <p><img alt="screenshot" src="../img/security-groups/high_level_overview.png" /></p>
-<h3 id="features">Features</h3>
+<h2 id="features">Features</h2>
 <p>Security groups come with three distinct features.</p>
 <ul>
 <li>Isolation</li>
@@ -201,17 +195,17 @@
 <li>Reference</li>
 </ul>
 <p><strong>Remark:</strong> Technically we don't put instances in security groups. We put their virtual network interfaces (vnics) in security groups. An instance with multiple vnics is able to have different security groups for each vnic.</p>
-<h4 id="isolation">Isolation</h4>
+<h3 id="isolation">Isolation</h3>
 <p>By default all instances are isolated from each other. That means that all L2 traffic including ARP and IPv4 between them is blocked.</p>
 <p>Why do we block ARP? Because Wakame-vdc supports multi-tenancy. Imagine two users managing their own instances on the same Wakame-vdc installation. In reality those instances are probably started in the same network. We don't want user A's instances to be able to see user B's instances and vice versa. That would be an obvious security issue. That is why all ARP is blocked in addition to IPv4.</p>
 <p>By putting two vnics in the same Security Group, they will get <strong>full ARP and IPv4 access</strong> to each other.</p>
 <p>The following image shows a couple of instances with vnics in different security groups and isolation between them works.</p>
 <p><img alt="screenshot" src="../img/security-groups/isolation.png" /></p>
-<h4 id="rules">Rules</h4>
+<h3 id="rules">Rules</h3>
 <p>By default all incoming traffic to instances is blocked. Security Group rules allow you to open specific TCP ports, UDP ports, or ICMP traffic.</p>
 <p>The following image shows an example of a security group that opens TCP port 22 with 3 vnics in it.</p>
 <p><img alt="screenshot" src="../img/security-groups/rules.png" /></p>
-<h5 id="syntax">Syntax</h5>
+<h4 id="syntax">Syntax</h4>
 <p>For TCP and UDP protocols:</p>
 <pre><code>&lt;protocol&gt;:&lt;start-port&gt;,&lt;end-port&gt;,ip4:&lt;ip-address&gt;
 </code></pre>
@@ -235,24 +229,24 @@
 <p>A rule that accepts <em>network unreachable</em> ICMP messages (type/code: 3/0) from ip address 192.168.2.1.</p>
 <pre><code>icmp:3,0,ip4:192.168.2.1
 </code></pre>
-<h4 id="reference">Reference</h4>
+<h3 id="reference">Reference</h3>
 <p>A reference rule is a special type of rule. Instead of opening up a port to an ip range, you can open up a port to another security group. Take the following example.</p>
 <p>Imagine you have a database server instance and a bunch of other instances that run database clients. You could put them all in one security group together. The clients would get access to the server but they'd have full access rather than just the port that the database server is listening on. You could put the database server in one security group and add a rule for each client instance that opens just the database port. This time the instances don't have unneeded full access but you will have to go add a new rule manually every time a new client instance is started. Neither solutions are ideal.</p>
 <p>This is where reference comes in. Reference allows you to put the database server in one security group and all clients together in another. You can add a <em>reference rule</em> to the server's group that will open only the listening database port <strong>to all vnics in the clients' group</strong>. When vnics are added to or removed from the clients' group, the firewall is updated automatically to take them into account.</p>
 <p><img alt="screenshot" src="../img/security-groups/reference.png" /></p>
-<h5 id="syntax_1">Syntax</h5>
+<h4 id="syntax_1">Syntax</h4>
 <p>The instances is the same as regular rules, except you write another security group's uuid insetad of an IP address.</p>
 <p><strong>Example</strong></p>
 <p>The database rule described above would look like this:</p>
 <p>For this example two security groups exist. <em>sg-dbsrv</em> which has the database server in it and sg-dbclnts which has the clients in it. <em>sg-dbsrv</em> would contain the following rule that opens MySQL's listening port 3306 to all vnics in the client group.</p>
 <pre><code>tcp:3306,3306,sg-dbclnts
 </code></pre>
-<h3 id="creating-security-groups-using-the-wakame-vdc-gui">Creating security groups using the Wakame-vdc GUI</h3>
+<h2 id="creating-security-groups-using-the-wakame-vdc-gui">Creating security groups using the Wakame-vdc GUI</h2>
 <p>After logging into the GUI, click on <code>Security Groups</code> in the menu on the left. Next click on <code>Create Security Group</code>.</p>
 <p><img alt="screenshot" src="../img/security-groups/06_security_groups_create.png" /></p>
 <p>The following dialog will pop up. In here you will be able to write rules for your security group.</p>
 <p><img alt="screenshot" src="../img/security-groups/07_security_groups_dialog.png" /></p>
-<h3 id="adding-and-removing-vnics-from-security-groups-using-the-wakame-vdc-gui">Adding and removing vnics from security groups using the Wakame-vdc GUI</h3>
+<h2 id="adding-and-removing-vnics-from-security-groups-using-the-wakame-vdc-gui">Adding and removing vnics from security groups using the Wakame-vdc GUI</h2>
 <p>When starting an instance using the Wakame-vdc GUI, you will be required to put its vnic(s) in at least one security group. Although it is possible to start instances with vnic(s) that aren't in any security groups (which results in all incoming network traffic being blocked) by querying the WebAPI directly, the GUI requires one or more to be set.</p>
 <p>When starting an instance, you'll see the following dialog. The instance's security groups can be set here. When using the GUI, all vnics of this instance will be placed in the same security groups. If you wish to have one instance with multiple vnics in different security groups, you will need to call the <a href="../jargon-dictionary/#webapi">WebAPI</a> directly.</p>
 <p><img alt="screenshot" src="../img/security-groups/start_instance.png" /></p>
@@ -304,7 +298,7 @@
 
 <!--
 MkDocs version  : 0.12.2
-Docs Build Date : 2015-05-11 09:04:34.662254
+Docs Build Date : 2015-05-25 08:09:28.504994
 -->
 </body>
 </html>

@@ -178,43 +178,43 @@
 <p>Now that you know where the code is, let's see what we can tell you about how it's structured.</p>
 <p>The main backend source code is in the <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr">dcmgr</a> directory.</p>
 <p>The file <a href="https://github.com/axsh/wakame-vdc/blob/master/dcmgr/lib/dcmgr.rb">dcmgr/lib/dcmgr.rb</a> provides a nice overview of the code. It shows the module and class structure.</p>
-<h4 id="webapi">WebAPI</h4>
+<h3 id="webapi">WebAPI</h3>
 <p>The WebAPI code uses <a href="http://www.sinatrarb.com">Sinatra</a> and is in the <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/endpoints/12.03">dcmgr/lib/dcmgr/endpoints/12.03</a> directory.</p>
-<h4 id="hypervisor-drivers">Hypervisor drivers</h4>
+<h3 id="hypervisor-drivers">Hypervisor drivers</h3>
 <p>The code that actually starts instances is in the <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/drivers/hypervisor">dcmgr/lib/dcmgr/drivers/hypervisor</a> directory.</p>
-<h4 id="scheduling">Scheduling</h4>
+<h3 id="scheduling">Scheduling</h3>
 <p>All decisions that need to be made in order to start instances (assignment of <a href="../jargon-dictionary/#hva">host node</a>, IP address, MAC address, etc.) are referred to as scheduling and are located in the <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/scheduler">dcmgr/lib/dcmgr/scheduler</a> directory. The code that actually executes these schedulers can be found here: <a href="https://github.com/axsh/wakame-vdc/blob/master/dcmgr/lib/dcmgr/node_modules/scheduler.rb">dcmgr/lib/dcmgr/node_modules/scheduler.rb</a></p>
-<h4 id="security-groups">Security Groups</h4>
+<h3 id="security-groups">Security Groups</h3>
 <p>The firewall (<a href="../security-groups/">Security Groups</a>) related code is located in the <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/edge_networking">dcmgr/lib/dcmgr/edge_networking</a> directory. This code is executed from the following file: <a href="https://github.com/axsh/wakame-vdc/blob/master/dcmgr/lib/dcmgr/node_modules/service_netfilter.rb">dcmgr/lib/dcmgr/node_modules/service_netfilter.rb</a>.</p>
 <p>The <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/edge_networking/openflow">dcmgr/lib/dcmgr/edge_networking/openflow</a> directory is actually a leftover from an obsolete feature concerning virtual networks. That feature got split off and turned into <a href="https://github.com/axsh/openvnet">OpenVNet</a>. The directory is still there because <a href="../jargon-dictionary#natbox">the NATbox</a> uses <a href="http://archive.openflow.org">OpenFlow</a> to provide network address translation.</p>
-<h4 id="amqp-messaging">AMQP messaging</h4>
+<h3 id="amqp-messaging">AMQP messaging</h3>
 <p>Wakame-vdc uses an in-house developed framework that handles all the <a href="http://www.amqp.org">AMQP</a> messaging. It's called Isono and can be found in its own <a href="https://github.com/axsh/isono">github repository</a>.</p>
 <p>The classes that implement Isono can be found in the <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/node_modules">dcmgr/lib/dcmgr/node_modules</a> and <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/rpc">dcmgr/lib/dcmgr/rpc</a> directories.</p>
-<h4 id="database-access">Database access</h4>
+<h3 id="database-access">Database access</h3>
 <p>We use <a href="http://sequel.jeremyevans.net">Sequel</a> to handle database access. The model classes are in the <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/models">dcmgr/lib/dcmgr/models</a> directory.</p>
 <p>The database schema is managed using <a href="http://sequel.jeremyevans.net/rdoc/files/doc/migration_rdoc.html">Sequel Migrations</a>. The migration files are in <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/config/db/migrations">config/db/migrations</a>.</p>
-<h4 id="gui">GUI</h4>
+<h3 id="gui">GUI</h3>
 <p>The GUI is a <a href="http://rubyonrails.org">Rails</a> application and is located in the <a href="https://github.com/axsh/wakame-vdc/tree/master/frontend/dcmgr_gui">frontend/dcmgr_gui</a> directory. There's also a not quite as pretty admin GUI available if you want to play around with it. <a href="https://github.com/axsh/wakame-vdc/tree/master/frontend/admin">frontend/admin</a></p>
-<h4 id="cli-vdc-manage-and-gui-manage">CLI (vdc-manage and gui-manage)</h4>
+<h3 id="cli-vdc-manage-and-gui-manage">CLI (vdc-manage and gui-manage)</h3>
 <p>Both CLI's used by Wakame-vdc are implemented using <a href="http://whatisthor.com">Thor</a>.</p>
 <p>The <em>vdc-manage</em> CLI is located in the <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/cli">dcmgr/lib/dcmgr/cli</a> directory and is executed from <a href="https://github.com/axsh/wakame-vdc/blob/master/dcmgr/bin/vdc-manage">dcmgr/bin/vdc-manage</a>.</p>
 <p>The <em>gui-manage</em> CLI can be found in <a href="https://github.com/axsh/wakame-vdc/tree/master/frontend/dcmgr_gui/lib/cli">frontend/dcmgr_gui/lib/cli</a> and is executed from <a href="https://github.com/axsh/wakame-vdc/blob/master/frontend/dcmgr_gui/bin/gui-manage">frontend/dcmgr_gui/bin/gui-manage</a>.</p>
-<h4 id="configuration-files">Configuration files</h4>
+<h3 id="configuration-files">Configuration files</h3>
 <p>The configuration files use an in-house developed framework called <a href="https://github.com/axsh/fuguta">Fuguta</a>. Their definitions can be found in the <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/lib/dcmgr/configurations">dcmgr/lib/dcmgr/configurations</a> directory. Examples of the configuration files themselves can be found here: <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/config">dcmgr/config</a></p>
-<h4 id="rpm-packaging">RPM packaging</h4>
+<h3 id="rpm-packaging">RPM packaging</h3>
 <p>The RPM packaging scripts are in the aptly named <a href="https://github.com/axsh/wakame-vdc/tree/master/rpmbuild">rpmbuild</a> directory.</p>
-<h4 id="debian-packaging">Debian packaging</h4>
+<h3 id="debian-packaging">Debian packaging</h3>
 <p>You might notice a <a href="https://github.com/axsh/wakame-vdc/tree/master/debian">debian</a> directory in the main repository. Even though the directory is there, Debian packaging is currently <strong>not</strong> officially supported. Feel free to play around with the packaging info in this directory but don't expect it to work.</p>
-<h4 id="mussel">Mussel</h4>
+<h3 id="mussel">Mussel</h3>
 <p>Mussel is an API client and autotesting framework for Wakame-vdc written in bash. It can be found here: <a href="https://github.com/axsh/wakame-vdc/tree/master/client/mussel">client/mussel</a></p>
-<h4 id="autotesting">Autotesting</h4>
+<h3 id="autotesting">Autotesting</h3>
 <p>There are currently three autotest suites for Wakame-vdc.</p>
 <p>Unit tests using <a href="http://rspec.info">RSpec</a> are here: <a href="https://github.com/axsh/wakame-vdc/tree/master/dcmgr/spec">dcmgr/spec</a></p>
 <p>Integration tests using the Mussel framework are here: <a href="https://github.com/axsh/wakame-vdc/tree/master/client/mussel/test">client/mussel/test</a></p>
 <p>Integration tests using <a href="http://rspec.info">RSpec</a> are here: <a href="https://github.com/axsh/wakame-vdc/tree/master/spec_integration">spec_integration</a></p>
-<h4 id="instance-init-scripts">Instance init scripts</h4>
+<h3 id="instance-init-scripts">Instance init scripts</h3>
 <p>The instances need to be made aware of meta-data that Wakame-vdc sets for them like IP address, hostname, etc. Scripts to do this are located here: <a href="https://github.com/axsh/wakame-vdc/tree/master/wakame-init">wakame-init</a></p>
-<h4 id="upstart-jobs">Upstart jobs</h4>
+<h3 id="upstart-jobs">Upstart jobs</h3>
 <p>The upstart jobs that are used to start Wakame-vdc services are located here: <a href="https://github.com/axsh/wakame-vdc/tree/master/contrib/etc">contrib/etc</a></p>
 <h2 id="contributing-code">Contributing code</h2>
 <p>We encourage you to send some of your code back to us. You can do so by using github's <em>fork &amp; pull</em> method as described <a href="https://help.github.com/articles/using-pull-requests/#fork--pull">here</a>. You will need to have a github account.</p>
@@ -263,7 +263,7 @@
 
 <!--
 MkDocs version  : 0.12.2
-Docs Build Date : 2015-05-11 09:04:34.597029
+Docs Build Date : 2015-05-25 08:09:28.430956
 -->
 </body>
 </html>

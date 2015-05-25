@@ -176,15 +176,15 @@
           <div role="main">
             <div class="section">
               <h1 id="faq">F.A.Q.</h1>
-<h3 id="what-operating-system-will-wakame-vdc-run-on">What operating system will Wakame-vdc run on?</h3>
+<h2 id="what-operating-system-will-wakame-vdc-run-on">What operating system will Wakame-vdc run on?</h2>
 <p>We are officially supporting Centos 6.6 x86 64 bit. It is possible that it'll run on other operating systems as well but this is the only one we're testing on. All current production environments also run on it.</p>
-<h3 id="is-wakame-vdc-currently-being-used-in-production-anywhere">Is Wakame-vdc currently being used in production anywhere?</h3>
+<h2 id="is-wakame-vdc-currently-being-used-in-production-anywhere">Is Wakame-vdc currently being used in production anywhere?</h2>
 <p>Yes, it is. Check our section on the <a href="..">homepage</a> for references.</p>
-<h3 id="can-i-run-wakame-vdc-in-a-virtual-machine">Can I run Wakame-vdc in a virtual machine?</h3>
+<h2 id="can-i-run-wakame-vdc-in-a-virtual-machine">Can I run Wakame-vdc in a virtual machine?</h2>
 <p>Absolutely. We do it all the time in development.</p>
 <p>It works really well when you use OpenVZ as your hypervisor. Since OpenVZ is a container and not full virtualization, it doesn't have the usual overhead that comes with nested virtualization. LXC should work just as well but isn't tested as extensively. Nested KVM also works if the host's cpu supports it but is a lot slower.</p>
 <p>Our <a href="http://wakameusersgroup.org/demo_image.html">VirtualBox demo image</a> implements Wakame-vdc in a virtual machine using OpenVZ and our <a href="../installation/">installation guide</a> can be used to do the same.</p>
-<h3 id="what-hypervisors-does-wakame-vdc-support">What Hypervisors does Wakame-vdc support?</h3>
+<h2 id="what-hypervisors-does-wakame-vdc-support">What Hypervisors does Wakame-vdc support?</h2>
 <p>Currently the following:</p>
 <ul>
 <li>
@@ -200,7 +200,7 @@
 <p><a href="http://www.vmware.com/products/esxi-and-esx/overview">VMWare ESXi</a> (Experimental only)</p>
 </li>
 </ul>
-<h3 id="what-os-can-i-run-on-wakame-vdcs-instances">What OS can I run on Wakame-vdc's instances?</h3>
+<h2 id="what-os-can-i-run-on-wakame-vdcs-instances">What OS can I run on Wakame-vdc's instances?</h2>
 <p>Depends on which hypervisor you use. If you use a container like OpenVZ or LXC, all instances will use the same kernel as your host OS. Therefore your instances will be running either the same OS as your host or something very close to it.</p>
 <p>If you use a full virtualization hypervisor like KVM, you can run any OS that you want in your instances.</p>
             </div>
@@ -247,7 +247,7 @@
 
 <!--
 MkDocs version  : 0.12.2
-Docs Build Date : 2015-05-11 09:04:34.687667
+Docs Build Date : 2015-05-25 08:09:28.531622
 -->
 </body>
 </html>

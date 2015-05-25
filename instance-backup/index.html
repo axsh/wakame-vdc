@@ -91,13 +91,13 @@
                     
                         <ul>
                         
-                            <li class="toctree-l3"><a href="#backup-instances">Backup instances</a></li>
+                            <li class="toctree-l3"><a href="#overview">Overview</a></li>
                             
-                                <li><a class="toctree-l4" href="#overview">Overview</a></li>
+                        
+                            <li class="toctree-l3"><a href="#requirements">Requirements</a></li>
                             
-                                <li><a class="toctree-l4" href="#requirements">Requirements</a></li>
-                            
-                                <li><a class="toctree-l4" href="#usage">Usage</a></li>
+                        
+                            <li class="toctree-l3"><a href="#usage">Usage</a></li>
                             
                         
                         </ul>
@@ -171,28 +171,31 @@
 </div>
           <div role="main">
             <div class="section">
-              <h1 id="backup-instances">Backup instances</h1>
-<h3 id="overview">Overview</h3>
+              <h2 id="overview">Overview</h2>
 <p>In Wakame-vdc it is possible to take a running <a href="../jargon-dictionary/#instance">instance</a> and turn it into a new <a href="../jargon-dictionary/#machine-image">machine image</a>. We simply call this process <em>backup</em>.</p>
 <p>This is a quick and easy way to create new machine images. For example, you could start up an instance, install a web server in it and then back it up. Now you'll have a machine image with a web server installed and you'll immediately be able to start a any amount of web server instances.</p>
-<h3 id="requirements">Requirements</h3>
+<h2 id="requirements">Requirements</h2>
 <p>You of course need a working Wakame-vdc installation. You can use either the <a href="http://wakameusersgroup.org/demo_image.html">VirtualBox demo image</a> or create your own environment using the <a href="../installation/">installation guide</a>.</p>
-<p>You need to tell Wakame-vdc which [backup storage](../jargon-dictionary.md#backup-storage] to use when backing up instances. Both the VirtualBox image and the installation guide will set that up but just in case, here it is again.</p>
+<p>You need to tell Wakame-vdc which <a href="../jargon-dictionary/#backup-storage">backup storage</a> to use when backing up instances. Both the VirtualBox image and the installation guide will set that up but just in case, here it is again.</p>
 <p>Figure out which backup storage you want to use with <code>vdc-manage</code>.</p>
-<pre><code>/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupstorage show
+<pre><code class="bash">/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupstorage show
 </code></pre>
+
 <p>On an environment installed according to the installation guide, it will have this output</p>
-<pre><code>UUID            Storage Type         Base URI
+<pre><code class="bash">UUID            Storage Type         Base URI
 bkst-local      local                file:///var/lib/wakame-vdc/images/
 </code></pre>
+
 <p>There's only one backup storage defined and its UUID is <code>bkst-local</code>. We need to make sure this is set in <code>dcmgr.conf</code>.</p>
-<pre><code>grep backup_storage_id /etc/wakame-vdc/dcmgr.conf
+<pre><code class="bash">grep backup_storage_id /etc/wakame-vdc/dcmgr.conf
 </code></pre>
+
 <p>That command should have an output similar to this.</p>
-<pre><code>backup_storage_id 'bkst-local'
+<pre><code class="bash">backup_storage_id 'bkst-local'
 </code></pre>
+
 <p>If it does not show the UUID of the backup storage you want to use, open the file with a text editor and change that line.</p>
-<h3 id="usage">Usage</h3>
+<h2 id="usage">Usage</h2>
 <p>You need to have started an <a href="../jargon-dictionary/#instance">instance</a> in order to back it up. If you don't know how to start an instance, you can find the instructions in <a href="../usage/">the basic usage guide</a>.</p>
 <p>Before you can create a backup, you have to power off your instance. On the Instances page of the GUI, tick the checkbox next to your instance and click on <code>Select an Action</code>.</p>
 <p><img alt="screenshot" src="../img/instance-backup/01_select_an_action.png" /></p>
@@ -257,7 +260,7 @@ bkst-local      local                file:///var/lib/wakame-vdc/images/
 
 <!--
 MkDocs version  : 0.12.2
-Docs Build Date : 2015-05-11 09:04:34.644341
+Docs Build Date : 2015-05-25 08:09:28.488060
 -->
 </body>
 </html>
