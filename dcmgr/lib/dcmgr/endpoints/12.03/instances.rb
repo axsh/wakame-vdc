@@ -183,6 +183,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     respond_with(R::Instance.new(i).generate)
   end
 
+  get '/:instance_id/password' do
+    @instance = find_by_uuid(:Instance, params[:instance_id])
+    respond_with(R::InstancePassword.new(@instance).generate)
+  end
+
   quota('instance.quota_weight') do
     request_amount do
       params[:quota_weight].to_f
@@ -807,17 +812,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
 
       respond_with(R::InstanceMonitorItem.new(@instance, params[:monitor_id]).generate)
-    end
-  end
-
-  namespace '/:instance_id/password' do
-    before do
-      @instance = find_by_uuid(:Instance, params[:instance_id])
-    end
-
-    # list attached volumes to the instance.
-    get '' do
-      respond_with(R::InstancePassword.new(@instance).generate)
     end
   end
 
