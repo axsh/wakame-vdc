@@ -185,8 +185,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
   get '/:instance_id/password' do
     @instance = find_by_uuid(:Instance, params[:instance_id])
-    respond_with(R::InstancePassword.new(@instance).generate)
-  end
+    theresponse = R::InstancePassword.new(@instance).generate
+    
+    if Dcmgr::Configurations.dcmgr.windows.delete_password_on_request
+      logger.info "Deleting encrypted_password for #{:instance_id}"
+      @instance.set({ :encrypted_password => nil }).save_changes
+    end
+
+    respond_with(theresponse)
+end
 
   quota('instance.quota_weight') do
     request_amount do
