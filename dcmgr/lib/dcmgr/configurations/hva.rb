@@ -45,6 +45,13 @@ module Dcmgr
 
         param :password_generation_sleeptime, default: 2
         param :password_generation_timeout, default: 60 * 15
+
+        # The time in minutes for the Windows password to remain in
+        # the database. This timer starts running the moment the
+        # password is first inserted in the database. When this time
+        # is expired, the password will be deleted. Set to 0 for
+        # unlimited.
+        param :delete_password_after, default: 0
       end
 
       class LocalStore < Fuguta::Configuration
