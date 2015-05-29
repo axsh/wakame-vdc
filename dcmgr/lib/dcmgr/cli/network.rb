@@ -834,16 +834,16 @@ __END
 Network UUID:
   <%= nw.canonical_uuid %>
 Dynamic IP Address Range:
-<%- unless nw.ipv4_u32_dynamic_range_array.empty? -%>
-  <%= IPAddress::IPv4::parse_u32(nw.ipv4_u32_dynamic_range_array.shift) %> - <%= IPAddress::IPv4::parse_u32(nw.ipv4_u32_dynamic_range_array.last) %>
-<%- end -%>
+<%- nw.dhcp_range_dataset.each { |r| -%>
+  <%= IPAddress::IPv4::parse_u32(r.range_begin.to_u32) %> - <%= IPAddress::IPv4::parse_u32(r.range_end.to_u32) %>
+<%- }
 __END
       else
         cond = {}
         nw = M::Network.filter(cond).all
         print ERB.new(<<__END, nil, '-').result(binding)
 <%- nw.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= IPAddress::IPv4::parse_u32(row.ipv4_u32_dynamic_range_array.shift) %>\t<%= IPAddress::IPv4::parse_u32(row.ipv4_u32_dynamic_range_array.last) %>
+<%= row.canonical_uuid %>\t<%= r.dhcp_range_dataset.count %>
 <%- } -%>
 __END
       end
