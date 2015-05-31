@@ -74,11 +74,11 @@ task_reboot() {
   cmd_put $*
 }
 
-_task_stop() {
+task_stop() {
   cmd_put $*
 }
 
-_task_start() {
+task_start() {
   cmd_put $*
 }
 

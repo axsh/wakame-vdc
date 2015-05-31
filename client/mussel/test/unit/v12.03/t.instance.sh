@@ -25,7 +25,7 @@ function setUp() {
 function test_instance_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|destroy|index|move|poweroff|poweron|reboot|show|show_volumes|update|xcreate]" "${res}"
+  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|destroy|index|move|poweroff|poweron|reboot|show|show_volumes|start|stop|update|xcreate]" "${res}"
 }
 
 ### index
@@ -73,13 +73,13 @@ function test_instance_reboot_uuid() {
 
 ### stop
 
-function _test_instance_stop_no_uuid() {
+function test_instance_stop_no_uuid() {
   extract_args ${namespace} stop
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
   assertNotEquals 0 $?
 }
 
-function _test_instance_stop_uuid() {
+function test_instance_stop_uuid() {
   extract_args ${namespace} stop i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals 0 $?
@@ -87,26 +87,26 @@ function _test_instance_stop_uuid() {
 
 ### start
 
-function _test_instance_start_no_uuid() {
+function test_instance_start_no_uuid() {
   extract_args ${namespace} start
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
   assertNotEquals 0 $?
 }
 
-function _test_instance_start_uuid() {
+function test_instance_start_uuid() {
   extract_args ${namespace} start i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals 0 $?
 }
 
 ### poweroff
-function _test_instance_poweroff_no_uuid() {
+function test_instance_poweroff_no_uuid() {
   extract_args ${namespace} poweroff
   run_cmd ${MUSSEL_ARGS} 2>/dev/null
   assertNotEquals 0 $?
 }
 
-function _test_instance_poweroff_uuid() {
+function test_instance_poweroff_uuid() {
   extract_args ${namespace} poweroff i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals 0 $?
