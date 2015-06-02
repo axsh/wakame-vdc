@@ -441,7 +441,7 @@ module Dcmgr
 
         @hva_ctx.logger.info("Turning power off")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                            :poweroff_instance, [@hva_ctx])
+                            :terminate_instance, [@hva_ctx])
         update_instance_state({:state=>:stopped}, ['hva/instance_turnedoff'])
         destroy_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power off")
