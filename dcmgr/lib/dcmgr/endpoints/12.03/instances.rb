@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/instance'
+require 'dcmgr/endpoints/12.03/responses/instance_password'
 require 'dcmgr/endpoints/12.03/responses/volume'
 require 'multi_json'
 
