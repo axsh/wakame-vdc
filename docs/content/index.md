@@ -18,6 +18,7 @@ The following companies are currently using Wakame-vdc in production.
     * [NTT PC Web Arena VPS Cloud](http://web.arena.ne.jp/vps-cloud/)
 * [Kyocera Communication Systems Co., Ltd.](http://www.kccs.co.jp/english/)
     * [KCCS GreenOffice Unified Cloud](https://gouc.datacenter.ne.jp)
+* [TIS Inc.](http://www.tis.com/)
 
 Don't hesitate to let us know if you also use Wakame-vdc.
 
