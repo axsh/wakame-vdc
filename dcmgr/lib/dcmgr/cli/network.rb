@@ -835,7 +835,7 @@ Network UUID:
   <%= nw.canonical_uuid %>
 Dynamic IP Address Range:
 <%- nw.dhcp_range_dataset.each { |r| -%>
-  <%= IPAddress::IPv4::parse_u32(r.range_begin.to_u32) %> - <%= IPAddress::IPv4::parse_u32(r.range_end.to_u32) %>
+  <%= r.range_begin.to_s %> - <%= r.range_end.to_s %>
 <%- }
 __END
       else
