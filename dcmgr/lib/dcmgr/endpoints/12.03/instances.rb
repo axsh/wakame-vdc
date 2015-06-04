@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/instance'
+require 'dcmgr/endpoints/12.03/responses/instance_password'
 require 'dcmgr/endpoints/12.03/responses/volume'
 require 'multi_json'
 
@@ -181,6 +182,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     raise E::UnknownInstance, params[:id] if i.nil?
 
     respond_with(R::Instance.new(i).generate)
+  end
+
+  get '/:instance_id/password' do
+    @instance = find_by_uuid(:Instance, params[:instance_id])
+    respond_with(R::InstancePassword.new(@instance).generate)
   end
 
   quota('instance.quota_weight') do
