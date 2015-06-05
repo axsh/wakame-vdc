@@ -242,7 +242,7 @@ module Dcmgr
       on_initialize_hook do
         @config[:windows] = Windows.new(self)
       end
-      
+
       # Database connection string
       deprecated_warn_param :database_url
       param :database_uri
