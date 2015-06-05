@@ -12,8 +12,6 @@ module Dcmgr::Endpoints::V1203::Responses
         :id => @instance.canonical_uuid,
         :encrypted_password => @instance.encrypted_password
       }
-      # TODO: Clear the password field at specified instances record
-      #       if the flag delete_password_on_request flag is set.
     end
   end
 end
