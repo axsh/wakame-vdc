@@ -22,7 +22,7 @@ module Dcmgr::Rpc
       )
 
       after_in_minutes = Dcmgr::Configurations.hva.windows.delete_password_after
-      expire = Time.now + ( after_in_minutes * 60 )
+      expire = Time.now.utc + ( after_in_minutes * 60 )
 
       rpc.request(
         'hva-collector',
