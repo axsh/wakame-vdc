@@ -190,7 +190,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     if Dcmgr::Configurations.dcmgr.windows.delete_password_on_request
       logger.info "Deleting encrypted_password for #{:instance_id}"
-      @instance.set({ :encrypted_password => nil }).save_changes
+      @instance.delete_windows_password
     end
 
     respond_with(theresponse)

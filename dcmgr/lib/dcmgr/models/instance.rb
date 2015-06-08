@@ -530,6 +530,11 @@ module Dcmgr::Models
       self.volumes_dataset.alives.all.map{|v| v.guest_device_name }
     end
 
+    def delete_windows_password
+      self.set({ :encrypted_password => nil, :password_will_be_deleted_at => nil })
+      self.save_changes
+    end
+
     def ready_poweron?
       # the poweron operation should only be performed to the instance
       # with backup objects don't have working state.
