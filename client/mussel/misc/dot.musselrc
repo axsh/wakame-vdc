@@ -41,6 +41,7 @@
 #                  +- http.trace
 #                  +- mussel.cmd
 #                  +- mussel.namespace
+#                  +- mussel.command
 #
 
 # if you want to define some your variables, you can define them using ${HOME}/.musselrc.local.
@@ -112,6 +113,7 @@ esac
 # + http.trace
 # + mussel.cmd
 # + mussel.namespace
+# + mussel.command
 #
 
 front_offset=$((${#BASH_SOURCE[@]} - 1))
@@ -166,6 +168,12 @@ function cmdlog() {
     curl)
       echo "${namespace}" >${sub_log_store_dir}/mussel.namespace
       echo "${cmd}"       >${sub_log_store_dir}/mussel.cmd
+      {
+        for ((idx=${#BASH_ARGV[@]}-1 ; idx>=0 ; idx--)) ; do
+          echo "${BASH_ARGV[idx]}"
+        done | tr "\n" " "
+        echo
+      } >${sub_log_store_dir}/mussel.command
       if [[ -n "${namespace}" ]] && [[ -n "${cmd}" ]]; then
         local sub_log_store_dir_mussel=${log_store_dir}/statistics/${namespace}/${cmd}/${today}
         [[ -d "${sub_log_store_dir_mussel}" ]] || mkdir -p ${sub_log_store_dir_mussel}
@@ -203,7 +211,7 @@ function cmdlog() {
 
   return ${retval}
 }
- 
+
 function nc() {
   cmdlog "${@}"
 }
