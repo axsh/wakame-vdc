@@ -37,7 +37,7 @@ module Dcmgr::Models
     subset(:runnings, {:state => STATE_RUNNING})
     subset(:running_or_initializing, {:state => [STATE_RUNNING, STATE_INITIALIZING]})
     subset(:stops, {:state => STATE_STOPPED})
-    subset(:expired) { (password_will_be_deleted_at > 0) && (password_will_be_deleted_at <= Time.now.utc) }
+    subset(:expired) { password_will_be_deleted_at <= Time.now.utc }
 
     # lists the instances which alives and died within
     # term_period sec.
