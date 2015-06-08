@@ -52,6 +52,13 @@ module Dcmgr
         # is expired, the password will be deleted. Set to 0 for
         # unlimited.
         param :delete_password_after, default: 0
+
+        def validate(errors)
+          super
+          unless self.delete_password_after.is_a?(Integer) && self.delete_password_after >= 0
+            errors << "delete_password_after needs to be an integer >= 0: #{self.delete_password_after}"
+          end
+        end
       end
 
       class LocalStore < Fuguta::Configuration
