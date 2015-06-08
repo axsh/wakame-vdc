@@ -22,3 +22,10 @@ task_xcreate() {
 task_default() {
   cmd_default $*
 }
+
+piped_task_create() {
+  case "${output_format:-""}" in
+    id) egrep '^:id:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
+}
