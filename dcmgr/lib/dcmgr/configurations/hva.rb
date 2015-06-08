@@ -255,6 +255,8 @@ module Dcmgr
       # Allow hva to change instance state seems to be incomplete
       # transition.
       param :enable_instance_state_recovery, :default=>true
+      # Wait second for instance state recovery at "shuttingdown -> terminated"
+      param :wait_sec_until_force_terminate_from_shuttingdown, :default=>60*15
 
       # Dolphin server connection string
       param :dolphin_server_uri, :default=> 'http://127.0.0.1:9004/'

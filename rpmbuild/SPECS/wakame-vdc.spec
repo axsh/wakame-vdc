@@ -445,6 +445,7 @@ mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/snap
 # mussel
 mkdir -p ${RPM_BUILD_ROOT}/usr/bin
 ln -s %{prefix}/%{oname}/client/mussel/bin/mussel ${RPM_BUILD_ROOT}/usr/bin/mussel
+rsync -aHA `pwd`/client/mussel/musselrc ${RPM_BUILD_ROOT}/etc/wakame-vdc/musselrc
 mkdir -p ${RPM_BUILD_ROOT}/etc/bash_completion.d
 ln -s %{prefix}/%{oname}/client/mussel/completion/mussel-completion.bash ${RPM_BUILD_ROOT}/etc/bash_completion.d/mussel
 
@@ -489,12 +490,14 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %exclude %{prefix}/%{oname}/tests/
 %exclude %{prefix}/%{oname}/client/mussel
 %exclude /usr/bin/mussel
+%exclude /etc/wakame-vdc/musselrc
 %exclude /etc/bash_completion.d/mussel
 
 %files client-mussel
 %defattr(-,root,root)
 %{prefix}/%{oname}/client/mussel/
 /usr/bin/mussel
+%config(noreplace) /etc/wakame-vdc/musselrc
 %dir /etc/bash_completion.d
 /etc/bash_completion.d/mussel
 
