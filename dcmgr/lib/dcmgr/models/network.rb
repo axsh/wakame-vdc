@@ -155,14 +155,8 @@ module Dcmgr::Models
 
     def add_ipv4_dynamic_range(range_begin, range_end)
       range_begin_u32, range_end_u32 = validate_range_args(range_begin, range_end)
-      include_range_ds = dhcp_range_dataset.filter("range_begin >= ? AND range_end <= ?",
-                                                   range_begin_u32, range_end_u32
-                                                   )
-      include_range_ds.destroy
-      hit_range_ds = dhcp_range_dataset.filter("(range_begin <= ? AND range_end >= ?) OR (range_begin <= ? AND range_end >= ?)", 
-                                               range_begin_u32, range_begin_u32,
-                                               range_end_u32, range_end_u32,
-                                               ).order(Sequel.asc(:range_begin))
+      dhcp_range_dataset.included_ranges(range_begin_u32, range_end_u32).destroy
+      hit_range_ds = dhcp_range_dataset.hit_ranges(range_begin_u32, range_end_u32)
       if hit_range_ds.empty?
         # no overwrap ranges. add new range.
         return self.add_dhcp_range(range_begin: range_begin_u32,
@@ -237,15 +231,8 @@ module Dcmgr::Models
 
     def del_ipv4_dynamic_range(range_begin, range_end)
       range_begin_u32, range_end_u32 = validate_range_args(range_begin, range_end)
-      include_range_ds = dhcp_range_dataset.filter("range_begin >= ? AND range_end <= ?",
-                                                   range_begin_u32, range_end_u32
-                                                   )
-      include_range_ds.destroy
-      
-      hit_range_ds = dhcp_range_dataset.filter("(range_begin <= ? AND range_end >= ?) OR (range_begin <= ? AND range_end >= ?)", 
-                                               range_begin_u32, range_begin_u32,
-                                               range_end_u32, range_end_u32,
-                                               ).order(Sequel.asc(:range_begin))
+      dhcp_range_dataset.included_ranges(range_begin_u32, range_end_u32).destroy
+      hit_range_ds = dhcp_range_dataset.hit_ranges(range_begin_u32, range_end_u32)
       if hit_range_ds.empty?
         return nil
       end
