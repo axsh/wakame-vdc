@@ -21,7 +21,7 @@ module Dcmgr::Rpc
         [@hva_ctx]
       )
 
-      after_in_minutes = Dcmgr::Configurations.hva.windows.delete_password_after
+      after_in_minutes = Dcmgr::Configurations.hva.windows.delete_password_after_minutes
       if after_in_minutes == 0
         expire = nil
       else
