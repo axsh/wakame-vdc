@@ -164,9 +164,7 @@ module Dcmgr::Models
       end
 
       to_be_merged=[nil, nil]
-      to_be_destroy=[]
       hit_range_ds.each { |r|
-        edge_equality = [r.range_begin == range_begin, r.range_end == range_end]
         existing_range = (r.range_begin.to_u32 .. r.range_end.to_u32)
         case [existing_range.include?(range_begin_u32), existing_range.include?(range_end_u32)]
         when [true, true]
@@ -189,12 +187,11 @@ module Dcmgr::Models
           to_be_merged[1] = r
         when [false, false]
           # given range includes existing range.
-          # => destroy the existing range "r"
-          to_be_destroy << r
+          # => this case sholud be handled at above ``included_ranges().destroy``
+          raise "BUG: Dead Code Path"
         end
       }
 
-      to_be_destroy.each(&:destroy)
       case to_be_merged.map(&:class)
       when [NilClass, NilClass]
         # no marge targets.
@@ -225,7 +222,7 @@ module Dcmgr::Models
         }
         to_be_merged[1].destroy
       else
-        raise "Fatal: this case should not happen."
+        raise "BUG: Dead Code Path"
       end
     end
 
@@ -276,16 +273,15 @@ module Dcmgr::Models
             elsif r.range_end.to_u32 == range_end_u32
               r.range_end = r.range_end.to_u32 - 1
             else
-              raise "BUG"
+              raise "BUG: Dead Code Path"
             end
             r.save_changes
           else
             # given range includes existing range.
             # existing: 192.168.0.10-20
             # given: 192.168.0.9-21
-            # result: destroyed
-            # => destroy the existing range "r"
-            #r.destroy
+            # => this case sholud be handled at above ``included_ranges().destroy``
+            raise "BUG: Dead Code Path"
           end
         end
       }
