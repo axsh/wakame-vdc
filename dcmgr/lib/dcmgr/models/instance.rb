@@ -37,7 +37,6 @@ module Dcmgr::Models
     subset(:runnings, {:state => STATE_RUNNING})
     subset(:running_or_initializing, {:state => [STATE_RUNNING, STATE_INITIALIZING]})
     subset(:stops, {:state => STATE_STOPPED})
-    subset(:password_deletion_time_passed) { password_will_be_deleted_at <= Time.now.utc }
 
     # lists the instances which alives and died within
     # term_period sec.
@@ -528,6 +527,10 @@ module Dcmgr::Models
 
     def volume_guest_device_names(state=Dcmgr::Constants::Volume::STATE_ATTACHED)
       self.volumes_dataset.alives.all.map{|v| v.guest_device_name }
+    end
+
+    def_dataset_method(:password_deletion_time_passed) do
+      exclude(password_will_be_deleted_at: nil).where{ password_will_be_deleted_at <= Time.now.utc }
     end
 
     def delete_windows_password
