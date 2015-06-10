@@ -86,6 +86,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
   put '/:id/acquire' do
     # description ''
     # params id, string, required
+    # params network_id, string, required
     ip_pool = find_by_uuid(M::IpPool, params[:id])
     raise E::UnknownIpPool, params[:id] if ip_pool.nil?
 
