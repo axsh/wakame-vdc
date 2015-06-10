@@ -130,4 +130,3 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
   end
 
 end
-
