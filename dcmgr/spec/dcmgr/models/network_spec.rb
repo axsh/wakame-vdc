@@ -55,4 +55,52 @@ describe Dcmgr::Models::Network do
       }.to raise_error RuntimeError
     end
   end
+
+  context "#del_ipv4_dynamic_range" do
+    before do
+      network.add_ipv4_dynamic_range("192.168.0.1", "192.168.0.10")
+    end
+
+    it "works" do
+      network.del_ipv4_dynamic_range("192.168.0.1", "192.168.0.10")
+    end
+
+    it "works with only one address" do
+      network.add_ipv4_dynamic_range("192.168.0.100", "192.168.0.100")
+      network.del_ipv4_dynamic_range("192.168.0.100", "192.168.0.100")
+    end
+
+    it "fails with non-existing range" do
+      expect {
+        network.del_ipv4_dynamic_range("192.168.0.100", "192.168.0.110")
+      }.to raise_error RuntimeError
+    end
+
+    it "fails with left high and right low range" do
+      expect {
+        network.del_ipv4_dynamic_range("192.168.0.10", "192.168.0.1")
+      }.to raise_error RuntimeError
+    end
+
+    it "fails with IPs out of network" do
+      expect {
+        network.del_ipv4_dynamic_range("172.16.0.1", "172.16.0.10")
+      }.to raise_error RuntimeError
+      expect {
+        network.del_ipv4_dynamic_range("192.168.0.1", "172.16.0.10")
+      }.to raise_error RuntimeError
+      expect {
+        network.del_ipv4_dynamic_range("172.16.0.1", "192.168.0.10")
+      }.to raise_error RuntimeError
+    end
+
+    it "fails with partial matching range" do
+      expect {
+        network.del_ipv4_dynamic_range("192.168.0.1", "192.168.0.5")
+      }.to raise_error RuntimeError
+      expect {
+        network.del_ipv4_dynamic_range("192.168.0.5", "192.168.0.20")
+      }.to raise_error RuntimeError
+    end
+  end
 end
