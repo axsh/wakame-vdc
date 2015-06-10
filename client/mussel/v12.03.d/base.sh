@@ -29,3 +29,10 @@ piped_task_create() {
      *) cat ;;
   esac
 }
+
+piped_task_index() {
+  case "${output_format:-""}" in
+    id) egrep -- '- :id:' </dev/stdin | awk '{print $3}' ;;
+     *) cat ;;
+  esac
+}
