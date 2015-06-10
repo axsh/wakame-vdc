@@ -13,7 +13,7 @@
 
 ## functions
 
-function _test_stop_instance() {
+function test_stop_instance() {
   # :state: stopping
   # :status: online
   run_cmd instance stop ${instance_uuid} >/dev/null
@@ -25,7 +25,7 @@ function _test_stop_instance() {
   assertEquals 0 $?
 }
 
-function _test_start_instance() {
+function test_start_instance() {
   # :state: initializing
   # :status: online
   run_cmd instance start ${instance_uuid} >/dev/null

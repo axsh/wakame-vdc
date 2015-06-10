@@ -437,14 +437,14 @@ module Dcmgr
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
+        update_state_file(:stopping)
 
-        begin
-          update_instance_state({:state=>:stopping})
-          ignore_error { terminate_instance(false) }
-        ensure
-          #
-          update_instance_state_to_terminated({:state=>:stopped, :host_node_id=>nil})
-        end
+        @hva_ctx.logger.info("Turning power off")
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :terminate_instance, [@hva_ctx])
+        update_instance_state({:state=>:stopped}, ['hva/instance_turnedoff'])
+        destroy_instance_vnics(@inst)
+        @hva_ctx.logger.info("Turned power off")
       end
 
       job :attach, proc {

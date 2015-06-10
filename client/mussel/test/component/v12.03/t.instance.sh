@@ -301,7 +301,7 @@ function test_instance_reboot() {
 
 ### stop
 
-function _test_instance_stop() {
+function test_instance_stop() {
   local cmd=stop
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
@@ -310,7 +310,7 @@ function _test_instance_stop() {
 
 ### start
 
-function _test_instance_start() {
+function test_instance_start() {
   local cmd=start
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
