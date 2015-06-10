@@ -51,6 +51,13 @@ task_backup() {
    $(base_uri)/${namespace}s/${uuid}/backup.$(suffix)
 }
 
+piped_task_backup() {
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:image_id:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
+}
+
 task_show_volumes() {
   local namespace=$1 cmd=$2 uuid=$3
   call_api -X GET $(base_uri)/${namespace}s/${uuid}/volumes.$(suffix)
