@@ -109,6 +109,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
   put '/:id/release' do
     # description ''
     # params id, string, required
+    # params ip_handle_id, string, required
     ip_pool = find_by_uuid(M::IpPool, params[:id])
     raise E::UnknownIpPool, params[:id] if ip_pool.nil?
     ip_handle = ip_pool.ip_handles_dataset.alives.where(:uuid => M::IpHandle.trim_uuid(params[:ip_handle_id])).first
