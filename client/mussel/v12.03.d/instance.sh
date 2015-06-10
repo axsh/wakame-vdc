@@ -101,8 +101,22 @@ task_poweroff() {
    $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
 }
 
+piped_task_poweroff() {
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
+}
+
 task_poweron() {
   cmd_put $*
+}
+
+piped_task_poweron() {
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
 }
 
 task_move() {
