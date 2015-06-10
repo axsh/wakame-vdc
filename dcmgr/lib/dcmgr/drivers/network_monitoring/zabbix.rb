@@ -32,14 +32,14 @@ module Dcmgr::Drivers
     def connection
       @connection ||= Connection.new(configuration.api_uri,
                                      configuration.api_user,
-                                     configuration.api_password)
+                                     configuration.api_password,
+                                     logger)
     end
 
     def rpc_request(method, params)
       logger.debug("JSON-RPC Request: #{method}: #{params}")
       res = connection.request(method, params)
       logger.debug("JSON-RPC Response: #{method}: #{res.json_body}")
-      raise res.error_message if res.error?
 
       res
     end

@@ -10,12 +10,16 @@ module Dcmgr
 
       # Net::HTTP based JSON-RPC 2.0 + Zabbix Authentication Utility.
       class Connection
-        def initialize(uri, user, password)
+        attr_reader :logger
+
+        def initialize(uri, user, password, logger)
           @uri = uri.is_a?(::URI) ? uri : ::URI.parse(uri)
           @user = user
           @password = password
           @request_id = 0
           @auth_token = nil
+          @retry_max = 5
+          @logger = logger
         end
 
         class RpcResponse
@@ -34,7 +38,7 @@ module Dcmgr
           end
 
           def error_code
-            return unless error?
+            return 0 unless error?
             (self.code != 200 ? code : json_body['error']['code'].to_i) rescue 0
           end
 
@@ -79,32 +83,37 @@ module Dcmgr
         end
 
         def request(method, params)
-          login if @auth_token.nil?
+          zabbix_res = tryagain(@retry_max) do
+            login if @auth_token.nil?
 
-          http_res = send_request(method, params)
-
-          RpcResponse.new(http_res)
+            http_res = send_request(method, params)
+            response = RpcResponse.new(http_res)
+            if response.error? && response.error_code == -32602
+              @auth_token = nil
+              raise "Invalid Authentication Token. Try to fetch new token."
+            end
+            response
+          end
+          zabbix_res
         end
 
         def login
           # force @auth_token to set nil. send_request() will not send the old auth token.
           @auth_token = nil
-          http_res = tryagain do
-            send_request('user.login', {:user=>@user, :password=>@password})
-          end
+          http_res = send_request('user.login', {:user=>@user, :password=>@password})
 
           res = RpcResponse.new(http_res)
           raise "Login failed: #{res.error_message}" if res.error?
           @auth_token = res.result
+          logger.info("API login successful for #{@user}: #{@auth_token}")
           res
         end
 
         def logout
           raise "Connection is unauthorized." if @auth_token.nil?
 
-          http_res = tryagain do
-            send_request('user.logout', nil)
-          end
+          http_res = send_request('user.logout', nil)
+          @auth_token = nil
 
           res = RpcResponse.new(http_res)
           raise "Logout failed: #{res.error_message}" if res.error?
@@ -112,12 +121,20 @@ module Dcmgr
         end
 
         private
-        def tryagain(&blk)
+        def tryagain(retry_max=3, &blk)
           count=0
           begin
+            count += 1
             http_res = blk.call
-
-            #if http_res.code.to_i > 500
+          rescue => e
+            if count < retry_max
+              logger.error("Retrying (#{count}/#{retry_max}) due to #{e.class}: #{e.message}")
+              sleep 1
+              retry
+            else
+              logger.error("Giving up (#{count}/#{retry_max}) due to #{e.class}: #{e.message}")
+              raise e
+            end
           end
         end
 
