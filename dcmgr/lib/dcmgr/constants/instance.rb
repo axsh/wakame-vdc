@@ -12,6 +12,7 @@ module Dcmgr::Constants::Instance
   STATE_STOPPING = "stopping".freeze
   STATE_STOPPED = "stopped".freeze
   STATE_INITIALIZING = "initializing".freeze
+  STATE_MIGRATING = "migrating".freeze
 
   STATES=[STATE_INITIALIZING,
           STATE_SCHEDULING,
@@ -23,9 +24,11 @@ module Dcmgr::Constants::Instance
           STATE_HALTING,
           STATE_HALTED,
           STATE_STOPPING,
-          STATE_STOPPED].freeze
+          STATE_STOPPED,
+          STATE_MIGRATING,
+         ].freeze
 
-  MIGRATION_STATES=[STATE_RUNNING].freeze
+  MIGRATION_STATES=[STATE_RUNNING, STATE_HALTED].freeze
 
   STATUS_ONLINE = "online".freeze
   STATUS_OFFLINE = "offline".freeze
