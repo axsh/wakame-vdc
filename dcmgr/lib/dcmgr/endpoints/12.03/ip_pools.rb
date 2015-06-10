@@ -112,6 +112,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
     # params ip_handle_id, string, required
     ip_pool = find_by_uuid(M::IpPool, params[:id])
     raise E::UnknownIpPool, params[:id] if ip_pool.nil?
+
+    if params[:ip_handle_id]
+      ip_handle = M::IpHandle[params[:ip_handle_id]] || raise(UnknownIpHandle, params[:ip_handle_id])
+    end
+    raise E::UnknownIpHandle, params[:ip_handle_id] if ip_handle.nil?
+
     ip_handle = ip_pool.ip_handles_dataset.alives.where(:uuid => M::IpHandle.trim_uuid(params[:ip_handle_id])).first
 
     raise E::UnknownIpHandle, params[:ip_handle_id] if ip_handle.nil?
