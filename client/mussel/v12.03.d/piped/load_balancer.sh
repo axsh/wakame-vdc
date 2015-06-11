@@ -16,3 +16,11 @@ piped_task_poweroff() {
 piped_task_poweron() {
   piped_task_poweroff
 }
+
+piped_task_register() {
+  piped_task_create
+}
+
+piped_task_unregister() {
+  piped_task_register
+}
