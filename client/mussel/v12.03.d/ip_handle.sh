@@ -4,6 +4,7 @@
 #
 
 . ${BASH_SOURCE[0]%/*}/base.sh
+. ${BASH_SOURCE[0]%/*}/piped/${BASH_SOURCE[0]##*/}
 
 task_expire_at() {
   local namespace=$1 cmd=$2 uuid=$3
