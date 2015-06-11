@@ -4,6 +4,7 @@
 #
 
 . ${BASH_SOURCE[0]%/*}/base.sh
+. ${BASH_SOURCE[0]%/*}/piped/${BASH_SOURCE[0]##*/}
 
 task_create() {
   call_api -X POST $(urlencode_data \
