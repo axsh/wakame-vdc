@@ -3,7 +3,7 @@
 # 12.03
 #
 
-. ${BASH_SOURCE[0]%/*}/piped/${BASH_SOURCE[0]##*/}
+. ${BASH_SOURCE[0]%/*}/filter/${BASH_SOURCE[0]##*/}
 
 task_index() {
   cmd_index $*

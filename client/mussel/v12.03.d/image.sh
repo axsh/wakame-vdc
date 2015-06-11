@@ -4,7 +4,7 @@
 #
 
 . ${BASH_SOURCE[0]%/*}/base.sh
-. ${BASH_SOURCE[0]%/*}/piped/${BASH_SOURCE[0]##*/}
+. ${BASH_SOURCE[0]%/*}/filter/${BASH_SOURCE[0]##*/}
 
 task_index() {
   # --is-public=(true|false|0|1)
