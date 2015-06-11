@@ -133,10 +133,7 @@ piped_task_backup() {
 }
 
 piped_task_reboot() {
-  case "${mussel_output_format:-""}" in
-    id) tail -n 1 </dev/stdin | awk '{print $2}' ;;
-     *) cat ;;
-  esac
+  piped_task_destroy
 }
 
 piped_task_poweroff() {
