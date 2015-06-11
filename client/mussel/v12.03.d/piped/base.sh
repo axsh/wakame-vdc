@@ -9,9 +9,9 @@ piped_task_index() {
   esac
 }
 
-piped_task_destroy() {
+piped_task_update() {
   case "${mussel_output_format:-""}" in
-    id) tail -n 1 </dev/stdin | awk '{print $2}' ;;
+    id) >/dev/null ;;
      *) cat ;;
   esac
 }
@@ -23,6 +23,6 @@ piped_task_create() {
   esac
 }
 
-piped_task_update() {
-  piped_task_create
+piped_task_destroy() {
+  piped_task_update
 }
