@@ -23,6 +23,8 @@ task_default() {
   cmd_default $*
 }
 
+# piped_task
+
 piped_task_index() {
   case "${mussel_output_format:-""}" in
     id) egrep -- '- :id:' </dev/stdin | awk '{print $3}' ;;
