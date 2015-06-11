@@ -4,6 +4,7 @@
 #
 
 . ${BASH_SOURCE[0]%/*}/base.sh
+. ${BASH_SOURCE[0]%/*}/piped/${BASH_SOURCE[0]##*/}
 
 task_index() {
   # --state=(running|stopped|terminated|alive)
@@ -121,38 +122,4 @@ task_update() {
     $(add_param ssh_key_id          string) \
    ) \
    $(base_uri)/${namespace}s/${uuid}.$(suffix)
-}
-
-# piped_task
-
-piped_task_backup() {
-  case "${mussel_output_format:-""}" in
-    id) egrep '^:image_id:' </dev/stdin | awk '{print $2}' ;;
-     *) cat ;;
-  esac
-}
-
-piped_task_reboot() {
-  piped_task_destroy
-}
-
-piped_task_poweroff() {
-  case "${mussel_output_format:-""}" in
-    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
-     *) cat ;;
-  esac
-}
-
-piped_task_poweron() {
-  case "${mussel_output_format:-""}" in
-    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
-     *) cat ;;
-  esac
-}
-
-piped_task_move() {
-  case "${mussel_output_format:-""}" in
-    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
-     *) cat ;;
-  esac
 }
