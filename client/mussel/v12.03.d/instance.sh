@@ -51,13 +51,6 @@ task_backup() {
    $(base_uri)/${namespace}s/${uuid}/backup.$(suffix)
 }
 
-piped_task_backup() {
-  case "${mussel_output_format:-""}" in
-    id) egrep '^:image_id:' </dev/stdin | awk '{print $2}' ;;
-     *) cat ;;
-  esac
-}
-
 task_show_volumes() {
   local namespace=$1 cmd=$2 uuid=$3
   call_api -X GET $(base_uri)/${namespace}s/${uuid}/volumes.$(suffix)
@@ -81,13 +74,6 @@ task_reboot() {
   cmd_put $*
 }
 
-piped_task_reboot() {
-  case "${mussel_output_format:-""}" in
-    id) tail -n 1 </dev/stdin | awk '{print $2}' ;;
-     *) cat ;;
-  esac
-}
-
 _task_stop() {
   cmd_put $*
 }
@@ -108,22 +94,8 @@ task_poweroff() {
    $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
 }
 
-piped_task_poweroff() {
-  case "${mussel_output_format:-""}" in
-    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
-     *) cat ;;
-  esac
-}
-
 task_poweron() {
   cmd_put $*
-}
-
-piped_task_poweron() {
-  case "${mussel_output_format:-""}" in
-    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
-     *) cat ;;
-  esac
 }
 
 task_move() {
@@ -149,4 +121,34 @@ task_update() {
     $(add_param ssh_key_id          string) \
    ) \
    $(base_uri)/${namespace}s/${uuid}.$(suffix)
+}
+
+# piped_task
+
+piped_task_backup() {
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:image_id:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
+}
+
+piped_task_reboot() {
+  case "${mussel_output_format:-""}" in
+    id) tail -n 1 </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
+}
+
+piped_task_poweroff() {
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
+}
+
+piped_task_poweron() {
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
 }
