@@ -81,6 +81,13 @@ task_reboot() {
   cmd_put $*
 }
 
+piped_task_reboot() {
+  case "${mussel_output_format:-""}" in
+    id) tail -n 1 </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
+}
+
 _task_stop() {
   cmd_put $*
 }
