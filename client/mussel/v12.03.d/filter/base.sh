@@ -2,6 +2,8 @@
 #
 #
 
+mussel_output_format="${mussel_output_format:-"${MUSSEL_OUTPUT_FORMAT:-""}"}"
+
 filter_task_index() {
   case "${mussel_output_format:-""}" in
     id) egrep -- '- :id:' </dev/stdin | awk '{print $3}' ;;
