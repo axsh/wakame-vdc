@@ -12,7 +12,7 @@ filter_task_evacuate() {
   #> :scheduled: []
   #> :failed: []
   case "${mussel_output_format:-""}" in
-    id) sed 1,1d </dev/stdin ;;
+    minimal) sed 1,1d </dev/stdin ;;
      *) cat ;;
   esac
 }

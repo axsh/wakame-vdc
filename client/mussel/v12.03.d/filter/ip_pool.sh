@@ -8,7 +8,7 @@ filter_task_ip_handles() {
 
 filter_task_acquire() {
   case "${mussel_output_format:-""}" in
-    id) egrep '^:ipv4:' </dev/stdin | awk '{print $2}' ;;
+    minimal) egrep '^:ipv4:' </dev/stdin | awk '{print $2}' ;;
      *) cat ;;
   esac
 }

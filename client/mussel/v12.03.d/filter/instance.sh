@@ -4,14 +4,14 @@
 
 filter_task_backup() {
   case "${mussel_output_format:-""}" in
-    id) egrep '^:image_id:' </dev/stdin | awk '{print $2}' ;;
+    minimal) egrep '^:image_id:' </dev/stdin | awk '{print $2}' ;;
      *) cat ;;
   esac
 }
 
 filter_task_backup_volume() {
   case "${mussel_output_format:-""}" in
-    id) egrep '^:volume_id:' </dev/stdin | awk '{print $2}' ;;
+    minimal) egrep '^:volume_id:' </dev/stdin | awk '{print $2}' ;;
      *) cat ;;
   esac
 }
@@ -30,7 +30,7 @@ filter_task_poweron() {
 
 filter_task_move() {
   case "${mussel_output_format:-""}" in
-    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
+    minimal) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
      *) cat ;;
   esac
 }
