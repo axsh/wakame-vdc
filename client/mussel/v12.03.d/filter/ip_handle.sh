@@ -3,6 +3,8 @@
 #
 
 filter_task_expire_at() {
-  # TODO
-  filter_task_update
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:expires_at:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
 }
