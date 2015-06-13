@@ -3,6 +3,7 @@
 #
 
 # if mussel is called by completion, output always must return raw yaml document.
+# *** Don't define MUSSEL_CALLER in ~/.musselrc. ***
 if [[ "${MUSSEL_CALLER}" == "completion" ]]; then
   return 0
 fi
