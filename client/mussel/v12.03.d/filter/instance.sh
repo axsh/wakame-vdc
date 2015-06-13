@@ -9,6 +9,13 @@ filter_task_backup() {
   esac
 }
 
+filter_task_backup_volume() {
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:volume_id:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
+}
+
 filter_task_reboot() {
   filter_task_update
 }
