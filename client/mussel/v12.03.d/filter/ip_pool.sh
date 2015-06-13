@@ -7,8 +7,10 @@ filter_task_p_handles() {
 }
 
 filter_task_acquire() {
-  # TODO
-  filter_task_update
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:ipv4:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
 }
 
 filter_task_release() {
