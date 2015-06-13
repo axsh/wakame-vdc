@@ -7,7 +7,7 @@ filter_task_p_handles() {
 }
 
 filter_task_acquire() {
-  # TODO: add filter
+  # TODO
   filter_task_update
 }
 
