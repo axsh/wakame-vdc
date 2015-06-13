@@ -3,10 +3,16 @@
 #
 
 filter_task_evacuate() {
-  # TODO
-  #
+  # raw:
   #> ---
   #> :scheduled: []
   #> :failed: []
-  filter_task_update
+  #
+  # filterd:
+  #> :scheduled: []
+  #> :failed: []
+  case "${mussel_output_format:-""}" in
+    id) sed 1,1d </dev/stdin ;;
+     *) cat ;;
+  esac
 }
