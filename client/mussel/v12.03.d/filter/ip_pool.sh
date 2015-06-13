@@ -2,7 +2,7 @@
 #
 #
 
-filter_task_p_handles() {
+filter_task_ip_handles() {
   filter_task_update
 }
 
