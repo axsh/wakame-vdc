@@ -13,9 +13,6 @@
 #       source ~/.mussel-completion.bash
 #
 
-# This completion always expects raw yaml document.
-export MUSSEL_CALLER=completion
-
 function hash_value() {
   local key="${1}"
 
@@ -24,6 +21,11 @@ function hash_value() {
   # NF=3) "- :vif_id: vif-qqjr0ial"
   #
   egrep -w -- "- :${key}:" </dev/stdin | awk '{ if (NF == 2) {print $2} else if (NF == 3) {print $3} }'
+}
+
+function mussel() {
+  # This completion always expects raw yaml document.
+  MUSSEL_CALLER=completion $(type -P mussel) "${@}"
 }
 
 _mussel() {
