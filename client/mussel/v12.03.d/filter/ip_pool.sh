@@ -11,6 +11,6 @@ filter_task_acquire() {
   filter_task_update
 }
 
-filter_task_acquire() {
+filter_task_release() {
   filter_task_update
 }
