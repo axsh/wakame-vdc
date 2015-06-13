@@ -13,6 +13,9 @@
 #       source ~/.mussel-completion.bash
 #
 
+# This completion always expects raw yaml document.
+MUSSEL_OUTPUT_FORMAT=
+
 function hash_value() {
   local key="${1}"
 
