@@ -14,7 +14,7 @@
 #
 
 # This completion always expects raw yaml document.
-MUSSEL_OUTPUT_FORMAT=
+export MUSSEL_CALLER=completion
 
 function hash_value() {
   local key="${1}"

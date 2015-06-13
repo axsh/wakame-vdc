@@ -2,6 +2,11 @@
 #
 #
 
+# if mussel is called by completion, output always must return raw yaml document.
+if [[ "${MUSSEL_CALLER}" == "completion" ]]; then
+  return 0
+fi
+
 mussel_output_format="${mussel_output_format:-"${MUSSEL_OUTPUT_FORMAT:-""}"}"
 
 filter_task_index() {
