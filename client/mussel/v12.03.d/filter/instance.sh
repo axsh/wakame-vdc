@@ -22,6 +22,8 @@ filter_task_poweron() {
 }
 
 filter_task_move() {
-  # TODO
-  filter_task_update
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:instance_id:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
 }
