@@ -13,6 +13,6 @@ filter_task_evacuate() {
   #> :failed: []
   case "${mussel_output_format:-""}" in
     minimal) sed 1,1d </dev/stdin ;;
-     *) cat ;;
+    *) cat ;;
   esac
 }

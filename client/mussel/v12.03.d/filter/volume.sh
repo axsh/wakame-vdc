@@ -5,7 +5,7 @@
 filter_task_backup() {
   case "${mussel_output_format:-""}" in
     minimal) egrep '^:volume_id:' </dev/stdin | awk '{print $2}' ;;
-     *) cat ;;
+    *) cat ;;
   esac
 }
 
