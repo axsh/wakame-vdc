@@ -3,8 +3,10 @@
 #
 
 filter_backup() {
-  # TODO
-  filter_task_update
+  case "${mussel_output_format:-""}" in
+    id) egrep '^:volume_id:' </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
 }
 
 filter_attach() {
