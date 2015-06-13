@@ -3,6 +3,8 @@
 #
 
 filter_task_add_offering_modes() {
-  # TODO
-  filter_task_update
+  case "${mussel_output_format:-""}" in
+    id) sed 1,1d </dev/stdin | awk '{print $2}' ;;
+     *) cat ;;
+  esac
 }
