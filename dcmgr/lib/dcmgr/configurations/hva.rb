@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require "fuguta"
+require "dcmgr/edge_networking/openflow/ovs_ofctl"
 
 module Dcmgr
   module Configurations
-    class Hva < Fuguta::Configuration
+    class Hva < Features
 
       usual_paths [
         ENV['CONF_PATH'].to_s,
@@ -43,6 +45,20 @@ module Dcmgr
 
         param :password_generation_sleeptime, default: 2
         param :password_generation_timeout, default: 60 * 15
+
+        # The time in minutes for the Windows password to remain in
+        # the database. This timer starts running the moment the
+        # password is first inserted in the database. When this time
+        # is expired, the password will be deleted. Set to 0 for
+        # unlimited.
+        param :delete_password_after_minutes, default: 0
+
+        def validate(errors)
+          super
+          unless self.delete_password_after_minutes.is_a?(Integer) && self.delete_password_after_minutes >= 0
+            errors << "delete_password_after_minutes needs to be an integer >= 0: #{self.delete_password_after_minutes}"
+          end
+        end
       end
 
       class LocalStore < Fuguta::Configuration
@@ -117,8 +133,10 @@ module Dcmgr
         end
 
         def after_initialize
+          super
           @config[:path_list] = {}
         end
+        private :after_initialize
       end
 
       def hypervisor_driver(driver_class)
@@ -171,6 +189,17 @@ module Dcmgr
           conf = Fuguta::Configuration::ConfigurationMethods.find_configuration_class(c).new(self.instance_variable_get(:@subject)).parse_dsl(&blk)
           @config[:hypervisor_driver][c] = conf
         end
+
+        # backward compatibility
+        def ovs_ofctl_path(v)
+          @config[:ovs_ofctl].config[:ovs_ofctl_path] = v
+        end
+        alias_method :ovs_ofctl_path=, :ovs_ofctl_path
+
+        def verbose_openflow(v)
+          @config[:ovs_ofctl].config[:verbose_openflow] = v
+        end
+        alias_method :verbose_openflow=, :verbose_openflow
       end
 
       on_initialize_hook do
@@ -181,6 +210,7 @@ module Dcmgr
         @config[:metadata] = Metadata.new(self)
         @config[:windows] = Windows.new(self)
         @config[:hypervisor_driver] = {}
+        @config[:ovs_ofctl] = EdgeNetworking::OpenFlow::OvsOfctl::Configuration.new(self)
       end
 
       param :vm_data_dir
@@ -189,7 +219,6 @@ module Dcmgr
       param :hv_ifindex, :default=>2
       param :bridge_novlan, :default=>0
       param :verbose_netfilter, :default=>false
-      param :verbose_openflow, :default=>false
       param :verbose_netfilter_cache, :default=>false
       param :packet_drop_log, :default => false
       param :debug_iptables, :default=>false
@@ -209,8 +238,6 @@ module Dcmgr
       param :brctl_path, :default => '/usr/sbin/brctl'
       param :vsctl_path, :default => '/usr/bin/ovs-vsctl'
       param :ovs_run_dir, :default=>'/usr/var/run/openvswitch'
-      # Path for ovs-ofctl
-      param :ovs_ofctl_path, :default => '/usr/bin/ovs-ofctl'
       # Trema base directory
       param :trema_dir, :default=>'/home/demo/trema'
       param :trema_tmp, :default=> proc {
@@ -242,6 +269,8 @@ module Dcmgr
       # Allow hva to change instance state seems to be incomplete
       # transition.
       param :enable_instance_state_recovery, :default=>true
+      # Wait second for instance state recovery at "shuttingdown -> terminated"
+      param :wait_sec_until_force_terminate_from_shuttingdown, :default=>60*15
 
       # Dolphin server connection string
       param :dolphin_server_uri, :default=> 'http://127.0.0.1:9004/'

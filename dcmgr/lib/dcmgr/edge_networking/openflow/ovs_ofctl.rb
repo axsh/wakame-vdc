@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require "fuguta"
+
 module Dcmgr
   module EdgeNetworking
     module OpenFlow
@@ -11,13 +13,21 @@ module Dcmgr
         attr_accessor :verbose
         attr_accessor :switch_name
 
-        def initialize
-          # TODO: Make ovs_vsctl use a real config option.
-          @ovs_ofctl = Dcmgr::Configurations.hva.ovs_ofctl_path
-          @ovs_vsctl = Dcmgr::Configurations.hva.ovs_ofctl_path.dup
-          @ovs_vsctl[/ovs-ofctl/] = 'ovs-vsctl'
+        class Configuration < Fuguta::Configuration
+          param :ovs_ofctl_path, :default => "/usr/bin/ovs-ofctl"
+          param :ovs_vsctl_path, :default => "/usr/bin/ovs-vsctl"
+          param :verbose_openflow, :default => false
+        end
 
-          @verbose = Dcmgr::Configurations.hva.verbose_openflow
+        def initialize(conf)
+          if !conf.is_a?(Configuration)
+            raise ArgumentError, "#{Configuration} type is expected but #{conf.class}."
+          end
+          @conf = conf
+          @ovs_ofctl = conf.ovs_ofctl_path
+          @ovs_vsctl = conf.ovs_vsctl_path
+
+          @verbose = conf.verbose_openflow
         end
 
         def get_bridge_name datapath_id

@@ -22,7 +22,7 @@ gem 'posix-spawn'
 gem 'fuguta', ">= 1.0.4"
 
 gem 'eventmachine', :github=>'axsh/eventmachine', :ref=>'dc84f883b00f'
-gem 'isono', '0.2.19'
+gem 'isono', '>= 0.2.20'
 
 # Trema gem requires "rant" command during build.
 ENV['PATH']="#{Bundler.bundle_path}/bin:#{ENV['PATH']}"
