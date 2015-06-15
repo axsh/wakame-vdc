@@ -204,14 +204,14 @@ RUN_SH
 
         hc.inst[:vif].each do |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
-            sh("/sbin/ip link set %s up" % [vif_uuid(vif)])
+            sh("/sbin/ip link set %s up\n" % [vif_uuid(vif)])
             bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
 
             attach_vif_cmd = attach_vif_to_bridge(bridge, vif)
             sh(attach_vif_cmd)
 
-            run_sh += ("/sbin/ip link set %s up" % [vif_uuid(vif)])
-            run_sh += (attach_vif_cmd)
+            run_sh += ("/sbin/ip link set %s up\n" % [vif_uuid(vif)])
+            run_sh += ("%s\n" % attach_vif_cmd)
           end
         end
 

@@ -229,6 +229,18 @@ module Dcmgr
           @config[:service_types][name] = Dcmgr.const_get(class_name).new(name, @subject).parse_dsl(&blk)
           self
         end
+
+        def windows(&blk)
+          @config[:windows].parse_dsl(&blk)
+        end
+      end
+
+      class Windows < Fuguta::Configuration
+        param :delete_password_on_request, default: false
+      end
+
+      on_initialize_hook do
+        @config[:windows] = Windows.new(self)
       end
 
       # Database connection string

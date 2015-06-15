@@ -11,7 +11,7 @@
 %{?repo_uri:%define _vdc_git_uri %{repo_uri}}
 
 Name: %{oname}
-Version: 13.08
+Version: 15.03
 Release: %{release_id}%{?dist}
 Summary: sysvinit script set for wakame custom image.
 Group: Development/Languages

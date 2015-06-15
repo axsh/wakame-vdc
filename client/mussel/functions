@@ -259,6 +259,12 @@ function run_cmd() {
 }
 
 function load_musselrc() {
+  # system wide
+  MUSSEL_RC_SYSTEM=${MUSSEL_RC_SYSTEM:-/etc/wakame-vdc/musselrc}
+  if [[ -f ${MUSSEL_RC_SYSTEM} ]]; then
+    . ${MUSSEL_RC_SYSTEM}
+  fi
+
   MUSSEL_RC=${MUSSEL_RC:-${HOME}/.musselrc}
   if [[ -f "${MUSSEL_RC}" ]]; then
     . ${MUSSEL_RC}
