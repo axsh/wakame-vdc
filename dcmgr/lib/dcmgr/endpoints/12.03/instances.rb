@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/instance'
+require 'dcmgr/endpoints/12.03/responses/instance_password'
 require 'dcmgr/endpoints/12.03/responses/volume'
 require 'multi_json'
 
@@ -182,6 +183,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     respond_with(R::Instance.new(i).generate)
   end
+
+  get '/:instance_id/password' do
+    @instance = find_by_uuid(:Instance, params[:instance_id])
+    theresponse = R::InstancePassword.new(@instance).generate
+
+    if Dcmgr::Configurations.dcmgr.windows.delete_password_on_request
+      logger.info "Deleting encrypted_password for #{:instance_id}"
+      @instance.delete_windows_password
+    end
+
+    respond_with(theresponse)
+end
 
   quota('instance.quota_weight') do
     request_amount do

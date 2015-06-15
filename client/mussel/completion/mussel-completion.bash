@@ -136,6 +136,23 @@ _mussel() {
               ;;
           esac
           ;;
+        update)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--display-name" -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
       esac
       ;;
 
