@@ -9,7 +9,7 @@ use_directory_urls: true
 repo_url: https://github.com/axsh/wakame-vdc
 
 copyright: Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
-#google_analytics: ['UA-xxxxxxx-x', 'domain.com']
+google_analytics: ['UA-63388719-1', 'auto']
 
 pages:
 - ['index.md', 'Home']
