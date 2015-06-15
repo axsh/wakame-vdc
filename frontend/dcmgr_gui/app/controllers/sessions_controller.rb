@@ -41,7 +41,7 @@ class SessionsController < ApplicationController
     end
     user = User.authenticate(params[:login], params[:password])
 
-    if user
+    if user && user.primary_account
       self.current_user = user
       user.update_last_login
       redirect_back_or_default('/', :notice => "Logged in successfully")
