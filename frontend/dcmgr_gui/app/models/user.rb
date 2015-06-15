@@ -37,7 +37,7 @@ class User < BaseNew
   end
   
   def is_system_manager?
-    self.primary_account.is_admin
+    !! (self.primary_account && self.primary_account.is_admin)
   end
 
   def primary_account

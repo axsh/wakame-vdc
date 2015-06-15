@@ -360,6 +360,23 @@ function test_instance_backup_volume() {
                
 }
 
+### update
+
+function test_instance_update() {
+  local cmd=update
+
+  local display_name=shunit2
+  local ssh_key_id=ssh-demo
+
+  local params="
+    display_name=${display_name}
+    ssh_key_id=${ssh_key_id}
+  "
+
+  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
+               "curl -X PUT $(urlencode_data ${params}) $(base_uri)/${namespace}s/${uuid}.$(suffix)"
+}
+
 ## shunit2
 
 . ${shunit2_file}

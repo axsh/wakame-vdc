@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/instance'
+require 'dcmgr/endpoints/12.03/responses/instance_password'
 require 'dcmgr/endpoints/12.03/responses/volume'
 require 'multi_json'
 
@@ -9,7 +10,7 @@ require 'ipaddress'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_META_STATE=['alive', 'alive_with_terminated', 'without_terminated'].freeze
-  INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
+  INSTANCE_STATE=['running', 'stopped', 'halted', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
 
   register V1203::Helpers::ResourceLabel
@@ -30,6 +31,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
     end
+  end
+
+  def check_dc_network(network_id)
+    nw = M::Network[network_id]
+    dc = M::DcNetwork[nw[:dc_network_id].to_i]
+    raise E::UnknownDcNetwork, network_id unless dc
   end
 
   # monitoring.items nested parameters are accepted only at POST
@@ -177,6 +184,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     respond_with(R::Instance.new(i).generate)
   end
 
+  get '/:instance_id/password' do
+    @instance = find_by_uuid(:Instance, params[:instance_id])
+    theresponse = R::InstancePassword.new(@instance).generate
+
+    if Dcmgr::Configurations.dcmgr.windows.delete_password_on_request
+      logger.info "Deleting encrypted_password for #{:instance_id}"
+      @instance.delete_windows_password
+    end
+
+    respond_with(theresponse)
+end
+
   quota('instance.quota_weight') do
     request_amount do
       params[:quota_weight].to_f
@@ -265,6 +284,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       [temp["security_groups"]].flatten.select{|s| !s.blank?}.each do |security_group_uuid|
         raise E::UnknownSecurityGroup unless find_by_uuid(M::SecurityGroup, security_group_uuid)
       end
+
+      check_dc_network(temp["network"])
     }
 
     # params is a Mash object. so coverts to raw Hash object.

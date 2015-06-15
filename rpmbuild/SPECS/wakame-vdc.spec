@@ -12,7 +12,7 @@
 %{?repo_uri:%define _vdc_git_uri %{repo_uri}}
 
 Name: %{oname}
-Version: 13.08
+Version: 15.03
 Release: %{release_id}%{?dist}
 Summary: The wakame virtual data center.
 Group: Development/Languages
@@ -211,7 +211,7 @@ BuildArch: noarch
 Summary: Configuration set for hva LXC VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
-Requires: lxc
+Requires: lxc >= 1.0.0
 %description  hva-lxc-vmapp-config
 <insert long description, indented with spaces>
 
@@ -331,6 +331,15 @@ Requires: %{oname} = %{version}-%{release}
 %description vdcsh
 <insert long description, indented with spaces>
 
+# client-mussel
+%package client-mussel
+BuildArch: noarch
+Summary: api client
+Group: Development/Languages
+Requires: curl
+%description client-mussel
+<insert long description, indented with spaces>
+
 ## rpmbuild -bp
 %prep
 [ -d %{name}-%{version} ] && rm -rf %{name}-%{version}
@@ -433,6 +442,13 @@ mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/images
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/volumes
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/snap
 
+# mussel
+mkdir -p ${RPM_BUILD_ROOT}/usr/bin
+ln -s %{prefix}/%{oname}/client/mussel/bin/mussel ${RPM_BUILD_ROOT}/usr/bin/mussel
+rsync -aHA `pwd`/client/mussel/musselrc ${RPM_BUILD_ROOT}/etc/wakame-vdc/musselrc
+mkdir -p ${RPM_BUILD_ROOT}/etc/bash_completion.d
+ln -s %{prefix}/%{oname}/client/mussel/completion/mussel-completion.bash ${RPM_BUILD_ROOT}/etc/bash_completion.d/mussel
+
 %clean
 RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules clean
 rm -rf %{prefix}/%{oname}/ruby
@@ -472,6 +488,18 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %dir /var/log/%{oname}
 %dir /var/lib/%{oname}
 %exclude %{prefix}/%{oname}/tests/
+%exclude %{prefix}/%{oname}/client/mussel
+%exclude /usr/bin/mussel
+%exclude /etc/wakame-vdc/musselrc
+%exclude /etc/bash_completion.d/mussel
+
+%files client-mussel
+%defattr(-,root,root)
+%{prefix}/%{oname}/client/mussel/
+/usr/bin/mussel
+%config(noreplace) /etc/wakame-vdc/musselrc
+%dir /etc/bash_completion.d
+/etc/bash_completion.d/mussel
 
 %files vdcsh
 %defattr(-,root,root)
