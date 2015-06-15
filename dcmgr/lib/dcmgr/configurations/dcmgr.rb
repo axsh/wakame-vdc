@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require "fuguta"
 
 module Dcmgr
   module Configurations
     # Configuration loader for dcmgr.conf.
-    class Dcmgr < Fuguta::Configuration
+    class Dcmgr < Features
 
       usual_paths [
         ENV['CONF_PATH'].to_s,
@@ -228,6 +229,18 @@ module Dcmgr
           @config[:service_types][name] = Dcmgr.const_get(class_name).new(name, @subject).parse_dsl(&blk)
           self
         end
+
+        def windows(&blk)
+          @config[:windows].parse_dsl(&blk)
+        end
+      end
+
+      class Windows < Fuguta::Configuration
+        param :delete_password_on_request, default: false
+      end
+
+      on_initialize_hook do
+        @config[:windows] = Windows.new(self)
       end
 
       # Database connection string
@@ -250,6 +263,8 @@ module Dcmgr
       # DCell connection (collector)
       param :collector_dcell_node_id
       param :collector_dcell_node_uri
+
+      param :vdc_manage_host
 
       # AMQP broker to be connected.
       param :amqp_server_uri
@@ -289,10 +304,6 @@ module Dcmgr
       param :enable_instance_poweron_readiness_validation, :default => true
 
       deprecated_warn_param :instance_ha
-
-      def after_initialize
-      end
-      private :after_initialize
 
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]

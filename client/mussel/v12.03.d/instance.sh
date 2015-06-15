@@ -29,6 +29,7 @@ task_create() {
     $(add_param user_data          strfile) \
     $(add_param vifs               strfile) \
     $(add_param host_node_id        string) \
+    $(add_param ha_enabled          string) \
    ) \
    $(add_args_param volumes) \
    $(base_uri)/${namespace}s.$(suffix)
@@ -107,4 +108,17 @@ task_move() {
     $(add_param host_node_id string) \
    ) \
    $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
+}
+
+task_update() {
+  local namespace=$1 cmd=$2 uuid=$3
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  call_api -X PUT $(urlencode_data \
+    $(add_param display_name        string) \
+    $(add_param ssh_key_id          string) \
+   ) \
+   $(base_uri)/${namespace}s/${uuid}.$(suffix)
 }

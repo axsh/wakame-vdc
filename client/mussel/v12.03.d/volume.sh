@@ -5,6 +5,14 @@
 
 . ${BASH_SOURCE[0]%/*}/base.sh
 
+task_index() {
+  # --state=(alive|alive_with_deleted|available|attached|deleted)
+  if [[ -n "${state}" ]]; then
+    xquery="state=${state}"
+  fi
+  cmd_index $*
+}
+
 task_backup() {
   local namespace=$1 cmd=$2 uuid=$3
   [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }

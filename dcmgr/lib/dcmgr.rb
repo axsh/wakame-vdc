@@ -45,6 +45,7 @@ module Dcmgr
     autoload :Natbox, 'dcmgr/configurations/natbox'
     autoload :Nwmongw, 'dcmgr/configurations/nwmongw'
     autoload :Bksta, 'dcmgr/configurations/bksta'
+    autoload :Features, 'dcmgr/configurations/features'
   end
 
   require 'dcmgr/models/errors'
@@ -134,6 +135,7 @@ module Dcmgr
     require 'dcmgr/metadata'
 
     autoload :AWS, 'dcmgr/metadata/aws'
+    autoload :AWSWithFirstBoot, 'dcmgr/metadata/aws_with_first_boot'
   end
 
   module NodeModules
@@ -218,43 +220,69 @@ module Dcmgr
   autoload :Task, 'dcmgr/task'
 
   module Drivers
-    autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
-    autoload :LocalStorage, 'dcmgr/drivers/local_storage'
-    autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
-    autoload :DummyHypervisor, 'dcmgr/drivers/dummy_hypervisor'
-    autoload :LinuxHypervisor, 'dcmgr/drivers/linux_hypervisor'
-    autoload :Kvm , 'dcmgr/drivers/kvm'
-    autoload :Lxc , 'dcmgr/drivers/lxc'
-    autoload :ESXi, 'dcmgr/drivers/esxi'
-    autoload :Openvz, 'dcmgr/drivers/openvz'
+    #
+    # Backing store drivers
+    #
     autoload :BackingStore, 'dcmgr/drivers/backing_store'
-    autoload :Zfs,          'dcmgr/drivers/zfs'
-    autoload :Raw,          'dcmgr/drivers/raw'
-    autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
-    autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
-    autoload :Tgt,          'dcmgr/drivers/tgt'
-    autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
-    autoload :DummyLocalStore, 'dcmgr/drivers/dummy_local_store.rb'
-    autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
-    autoload :ESXiLocalStore, 'dcmgr/drivers/esxi_local_store.rb'
-    autoload :OpenvzLocalStore, 'dcmgr/drivers/openvz_local_store.rb'
-    autoload :Indelible, 'dcmgr/drivers/indelible'
-    autoload :IndelibleIscsi, 'dcmgr/drivers/indelible_iscsi'
-    autoload :IndelibleStorage, 'dcmgr/drivers/indelible_storage'
+    autoload :Zfs,          'dcmgr/drivers/backing_store/zfs'
+    autoload :Raw,          'dcmgr/drivers/backing_store/raw'
+    autoload :Indelible,    'dcmgr/drivers/backing_store/indelible'
+
+    #
+    # Backup storage drivers
+    #
+    autoload :BackupStorage,    'dcmgr/drivers/backup_storage'
+    autoload :Webdav,           'dcmgr/drivers/backup_storage/webdav'
+    autoload :IndelibleStorage, 'dcmgr/drivers/backup_storage/indelible_storage'
+    autoload :LocalStorage,     'dcmgr/drivers/backup_storage/local_storage'
+
+    #
+    # Hypervisor drivers
+    #
+    autoload :Hypervisor,      'dcmgr/drivers/hypervisor'
+    autoload :DummyHypervisor, 'dcmgr/drivers/hypervisor/dummy_hypervisor'
+    autoload :ESXi,            'dcmgr/drivers/hypervisor/esxi'
+    autoload :LinuxHypervisor, 'dcmgr/drivers/hypervisor/linux_hypervisor'
+    autoload :Kvm ,            'dcmgr/drivers/hypervisor/linux_hypervisor/kvm'
+    autoload :LinuxContainer,  'dcmgr/drivers/hypervisor/linux_hypervisor/linux_container'
+    autoload :Lxc ,            'dcmgr/drivers/hypervisor/linux_hypervisor/linux_container/lxc'
+    autoload :Openvz,          'dcmgr/drivers/hypervisor/linux_hypervisor/linux_container/openvz'
+
+    #
+    # Storage target drivers
+    #
+    autoload :StorageTarget,  'dcmgr/drivers/storage_target'
+    autoload :IscsiTarget,    'dcmgr/drivers/storage_target/iscsi_target'
+    autoload :IndelibleIscsi, 'dcmgr/drivers/storage_target/iscsi_target/indelible_iscsi'
+    autoload :SunIscsi,       'dcmgr/drivers/storage_target/iscsi_target/sun_iscsi'
+    autoload :Tgt,            'dcmgr/drivers/storage_target/iscsi_target/tgt'
+    autoload :Nfs,            'dcmgr/drivers/storage_target/nfs'
+
+    #
+    # Local store drivers
+    #
+    autoload :LocalStore,       'dcmgr/drivers/local_store'
+    autoload :DummyLocalStore,  'dcmgr/drivers/local_store/dummy_local_store'
+    autoload :ESXiLocalStore,   'dcmgr/drivers/local_store/esxi_local_store'
+    autoload :LinuxLocalStore,  'dcmgr/drivers/local_store/linux_local_store'
+    autoload :OpenvzLocalStore, 'dcmgr/drivers/local_store/linux_local_store/openvz_local_store'
+    autoload :KvmLocalStore,    'dcmgr/drivers/local_store/linux_local_store/kvm_local_store'
+
+    #
+    # Network monitoring drivers
+    #
+    autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
+    autoload :Zabbix,            'dcmgr/drivers/network_monitoring/zabbix'
+    autoload :PublicZabbix,      'dcmgr/drivers/network_monitoring/public_zabbix'
+
+    #
+    # Other drivers
+    #
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
-    autoload :Webdav, 'dcmgr/drivers/webdav'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'
     autoload :Stud, 'dcmgr/drivers/stud'
-    autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
-    autoload :Zabbix, 'dcmgr/drivers/zabbix'
-    autoload :PublicZabbix, 'dcmgr/drivers/public_zabbix'
-    autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
-    autoload :Natbox, 'dcmgr/drivers/natbox'
     autoload :Fluent, 'dcmgr/drivers/fluent'
     autoload :HypervisorPolicy, 'dcmgr/drivers/hypervisor_policy'
-    autoload :KvmLocalStore, 'dcmgr/drivers/kvm_local_store'
-    autoload :StorageTarget, 'dcmgr/drivers/storage_target'
-    autoload :Nfs, 'dcmgr/drivers/nfs'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'
@@ -305,82 +333,82 @@ module Dcmgr
     NAMESPACES=[HostNode, StorageNode, Network, MacAddress, IPAddress]
   end
 
-  require 'dcmgr/vnet'
-  module VNet
-    autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
+  require 'dcmgr/edge_networking'
+  module EdgeNetworking
+    autoload :TaskManagerFactory, 'dcmgr/edge_networking/factories'
 
     module NetworkModes
-      autoload :SecurityGroup, 'dcmgr/vnet/network_modes/security_group'
-      autoload :PassThrough, 'dcmgr/vnet/network_modes/passthrough'
-      autoload :L2Overlay, 'dcmgr/vnet/network_modes/l2overlay'
+      autoload :SecurityGroup, 'dcmgr/edge_networking/network_modes/security_group'
+      autoload :PassThrough, 'dcmgr/edge_networking/network_modes/passthrough'
+      autoload :L2Overlay, 'dcmgr/edge_networking/network_modes/l2overlay'
     end
 
     module Netfilter
-      autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'
-      autoload :Chain, 'dcmgr/vnet/netfilter/chain'
-      autoload :IptablesChain, 'dcmgr/vnet/netfilter/chain'
-      autoload :EbtablesChain, 'dcmgr/vnet/netfilter/chain'
-      autoload :EbtablesRule, 'dcmgr/vnet/netfilter/ebtables_rule'
-      autoload :IptablesRule, 'dcmgr/vnet/netfilter/iptables_rule'
-      autoload :NetfilterTaskManager, 'dcmgr/vnet/netfilter/task_manager'
-      autoload :VNicProtocolTaskManager, 'dcmgr/vnet/netfilter/task_manager'
-      autoload :CacheDumper, 'dcmgr/vnet/netfilter/cache_dumper'
+      autoload :NetfilterCache, 'dcmgr/edge_networking/netfilter/cache'
+      autoload :Chain, 'dcmgr/edge_networking/netfilter/chain'
+      autoload :IptablesChain, 'dcmgr/edge_networking/netfilter/chain'
+      autoload :EbtablesChain, 'dcmgr/edge_networking/netfilter/chain'
+      autoload :EbtablesRule, 'dcmgr/edge_networking/netfilter/ebtables_rule'
+      autoload :IptablesRule, 'dcmgr/edge_networking/netfilter/iptables_rule'
+      autoload :NetfilterTaskManager, 'dcmgr/edge_networking/netfilter/task_manager'
+      autoload :VNicProtocolTaskManager, 'dcmgr/edge_networking/netfilter/task_manager'
+      autoload :CacheDumper, 'dcmgr/edge_networking/netfilter/cache_dumper'
     end
 
     module OpenFlow
-      autoload :ArpHandler, 'dcmgr/vnet/openflow/arp_handler'
-      autoload :IcmpHandler, 'dcmgr/vnet/openflow/icmp_handler'
-      autoload :Flow, 'dcmgr/vnet/openflow/flow'
-      autoload :FlowGroup, 'dcmgr/vnet/openflow/flow_group'
-      autoload :NetworkPhysical, 'dcmgr/vnet/openflow/network_physical'
-      autoload :NetworkVirtual, 'dcmgr/vnet/openflow/network_virtual'
-      autoload :OpenFlowConstants, 'dcmgr/vnet/openflow/constants'
-      autoload :OpenFlowController, 'dcmgr/vnet/openflow/controller'
-      autoload :OpenFlowDatapath, 'dcmgr/vnet/openflow/datapath'
-      autoload :OpenFlowNetwork, 'dcmgr/vnet/openflow/network'
-      autoload :OpenFlowPort, 'dcmgr/vnet/openflow/port'
-      autoload :OpenFlowSwitch, 'dcmgr/vnet/openflow/switch'
-      autoload :OvsOfctl, 'dcmgr/vnet/openflow/ovs_ofctl'
-      autoload :PacketHandler, 'dcmgr/vnet/openflow/packet_handler'
-      autoload :PortPhysical, 'dcmgr/vnet/openflow/port_physical'
-      autoload :PortVirtual, 'dcmgr/vnet/openflow/port_virtual'
-      autoload :ServiceBase, 'dcmgr/vnet/openflow/service_base'
-      autoload :ServiceDhcp, 'dcmgr/vnet/openflow/service_dhcp'
-      autoload :ServiceDns, 'dcmgr/vnet/openflow/service_dns'
-      autoload :ServiceGateway, 'dcmgr/vnet/openflow/service_gateway'
-      autoload :ServiceMetadata, 'dcmgr/vnet/openflow/service_metadata'
+      autoload :ArpHandler, 'dcmgr/edge_networking/openflow/arp_handler'
+      autoload :IcmpHandler, 'dcmgr/edge_networking/openflow/icmp_handler'
+      autoload :Flow, 'dcmgr/edge_networking/openflow/flow'
+      autoload :FlowGroup, 'dcmgr/edge_networking/openflow/flow_group'
+      autoload :NetworkPhysical, 'dcmgr/edge_networking/openflow/network_physical'
+      autoload :NetworkVirtual, 'dcmgr/edge_networking/openflow/network_virtual'
+      autoload :OpenFlowConstants, 'dcmgr/edge_networking/openflow/constants'
+      autoload :OpenFlowController, 'dcmgr/edge_networking/openflow/controller'
+      autoload :OpenFlowDatapath, 'dcmgr/edge_networking/openflow/datapath'
+      autoload :OpenFlowNetwork, 'dcmgr/edge_networking/openflow/network'
+      autoload :OpenFlowPort, 'dcmgr/edge_networking/openflow/port'
+      autoload :OpenFlowSwitch, 'dcmgr/edge_networking/openflow/switch'
+      autoload :OvsOfctl, 'dcmgr/edge_networking/openflow/ovs_ofctl'
+      autoload :PacketHandler, 'dcmgr/edge_networking/openflow/packet_handler'
+      autoload :PortPhysical, 'dcmgr/edge_networking/openflow/port_physical'
+      autoload :PortVirtual, 'dcmgr/edge_networking/openflow/port_virtual'
+      autoload :ServiceBase, 'dcmgr/edge_networking/openflow/service_base'
+      autoload :ServiceDhcp, 'dcmgr/edge_networking/openflow/service_dhcp'
+      autoload :ServiceDns, 'dcmgr/edge_networking/openflow/service_dns'
+      autoload :ServiceGateway, 'dcmgr/edge_networking/openflow/service_gateway'
+      autoload :ServiceMetadata, 'dcmgr/edge_networking/openflow/service_metadata'
     end
 
     module Tasks
-      autoload :AcceptAllDNS, 'dcmgr/vnet/tasks/accept_all_dns'
-      autoload :AcceptArpBroadcast, 'dcmgr/vnet/tasks/accept_arp_broadcast'
-      autoload :AcceptARPFromFriends, 'dcmgr/vnet/tasks/accept_arp_from_friends'
-      autoload :AcceptARPFromGateway, 'dcmgr/vnet/tasks/accept_arp_from_gateway'
-      autoload :AcceptARPFromDNS, 'dcmgr/vnet/tasks/accept_arp_from_dns'
-      autoload :AcceptARPToHost, 'dcmgr/vnet/tasks/accept_arp_to_host'
-      autoload :AcceptIpFromFriends, 'dcmgr/vnet/tasks/accept_ip_from_friends'
-      autoload :AcceptIpToAnywhere, 'dcmgr/vnet/tasks/accept_ip_to_anywhere'
-      autoload :AcceptRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
-      autoload :AcceptTcpRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
-      autoload :AcceptUdpEstablished, 'dcmgr/vnet/tasks/accept_related_established'
-      autoload :AcceptIcmpRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
-      autoload :AcceptWakameDHCPOnly, 'dcmgr/vnet/tasks/accept_wakame_dhcp_only'
-      autoload :AcceptWakameDNSOnly, 'dcmgr/vnet/tasks/accept_wakame_dns_only'
-      autoload :DebugIptables, 'dcmgr/vnet/tasks/debug_iptables'
-      autoload :DropArpForwarding, 'dcmgr/vnet/tasks/drop_arp_forwarding'
-      autoload :DropArpToHost, 'dcmgr/vnet/tasks/drop_arp_to_host'
-      autoload :DropIpFromAnywhere, 'dcmgr/vnet/tasks/drop_ip_from_anywhere'
-      autoload :DropIpSpoofing, 'dcmgr/vnet/tasks/drop_ip_spoofing'
-      autoload :DropMacSpoofing, 'dcmgr/vnet/tasks/drop_mac_spoofing'
-      autoload :ExcludeFromNat, 'dcmgr/vnet/tasks/exclude_from_nat'
-      autoload :ExcludeFromNatIpSet, 'dcmgr/vnet/tasks/exclude_from_nat'
-      autoload :SecurityGroup, 'dcmgr/vnet/tasks/security_group'
-      autoload :StaticNat, 'dcmgr/vnet/tasks/static_nat'
-      autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
-      autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
-      autoload :TranslateLoggingAddress, 'dcmgr/vnet/tasks/translate_logging_address'
-      autoload :AcceptGARPFromGateway, 'dcmgr/vnet/tasks/accept_garp_from_gateway'
-      autoload :AcceptARPReply, 'dcmgr/vnet/tasks/accept_arp_reply'
+      autoload :AcceptAllDNS, 'dcmgr/edge_networking/tasks/accept_all_dns'
+      autoload :AcceptArpBroadcast, 'dcmgr/edge_networking/tasks/accept_arp_broadcast'
+      autoload :AcceptARPFromFriends, 'dcmgr/edge_networking/tasks/accept_arp_from_friends'
+      autoload :AcceptARPFromGateway, 'dcmgr/edge_networking/tasks/accept_arp_from_gateway'
+      autoload :AcceptARPFromDNS, 'dcmgr/edge_networking/tasks/accept_arp_from_dns'
+      autoload :AcceptARPToHost, 'dcmgr/edge_networking/tasks/accept_arp_to_host'
+      autoload :AcceptIpFromFriends, 'dcmgr/edge_networking/tasks/accept_ip_from_friends'
+      autoload :AcceptIpToAnywhere, 'dcmgr/edge_networking/tasks/accept_ip_to_anywhere'
+      autoload :AcceptRelatedEstablished, 'dcmgr/edge_networking/tasks/accept_related_established'
+      autoload :AcceptTcpRelatedEstablished, 'dcmgr/edge_networking/tasks/accept_related_established'
+      autoload :AcceptUdpEstablished, 'dcmgr/edge_networking/tasks/accept_related_established'
+      autoload :AcceptIcmpRelatedEstablished, 'dcmgr/edge_networking/tasks/accept_related_established'
+      autoload :AcceptWakameDHCPOnly, 'dcmgr/edge_networking/tasks/accept_wakame_dhcp_only'
+      autoload :AcceptWakameDNSOnly, 'dcmgr/edge_networking/tasks/accept_wakame_dns_only'
+      autoload :DebugIptables, 'dcmgr/edge_networking/tasks/debug_iptables'
+      autoload :DropArpForwarding, 'dcmgr/edge_networking/tasks/drop_arp_forwarding'
+      autoload :DropArpToHost, 'dcmgr/edge_networking/tasks/drop_arp_to_host'
+      autoload :DropIpFromAnywhere, 'dcmgr/edge_networking/tasks/drop_ip_from_anywhere'
+      autoload :DropIpSpoofing, 'dcmgr/edge_networking/tasks/drop_ip_spoofing'
+      autoload :DropMacSpoofing, 'dcmgr/edge_networking/tasks/drop_mac_spoofing'
+      autoload :ExcludeFromNat, 'dcmgr/edge_networking/tasks/exclude_from_nat'
+      autoload :ExcludeFromNatIpSet, 'dcmgr/edge_networking/tasks/exclude_from_nat'
+      autoload :SecurityGroup, 'dcmgr/edge_networking/tasks/security_group'
+      autoload :StaticNat, 'dcmgr/edge_networking/tasks/static_nat'
+      autoload :StaticNatLog, 'dcmgr/edge_networking/tasks/static_nat'
+      autoload :TranslateMetadataAddress, 'dcmgr/edge_networking/tasks/translate_metadata_address'
+      autoload :TranslateLoggingAddress, 'dcmgr/edge_networking/tasks/translate_logging_address'
+      autoload :AcceptGARPFromGateway, 'dcmgr/edge_networking/tasks/accept_garp_from_gateway'
+      autoload :AcceptARPReply, 'dcmgr/edge_networking/tasks/accept_arp_reply'
     end
 
   end

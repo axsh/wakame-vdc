@@ -16,15 +16,23 @@ module Dcmgr::Models
 
     one_to_many :local_volumes
 
+    # Returns only online nodes with scheduling_enabled=true for
+    # compatiblity. Since online_nodes method is used for two components:
+    # host node schedulers and host node list API. list API expects to
+    # filter only for status of each node but the schedulers expect to
+    # return only scheduling_enabled=true node.
+    # Schedulers should use new separate dataset method then this
+    # method will back to original behavior.
     def_dataset_method(:online_nodes) do
       # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
-      filter(:node_id => r, :enabled=>true)
+      filter(:node_id => r, :scheduling_enabled=>true)
     end
 
+    # Returns offline nodes.
     def_dataset_method(:offline_nodes) do
       # SELECT `host_nodes`.* FROM `host_nodes` LEFT JOIN `node_states` ON (`host_nodes`.`node_id` = `node_states`.`node_id`) WHERE ((`node_states`.`state` IS NULL) OR (`node_states`.`state` = 'offline'))
-      select_all(:host_nodes).join_table(:left, :node_states, {:host_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'} | {:host_nodes__enabled=>false})
+      select_all(:host_nodes).join_table(:left, :node_states, {:host_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'})
     end
 
     def validate
@@ -44,11 +52,14 @@ module Dcmgr::Models
         errors.add(:arch, "unknown architecture type: #{self.arch}")
       end
 
-      unless self.offering_cpu_cores > 0
-        errors.add(:offering_cpu_cores, "it must have digit more than zero")
+      if self.offering_cpu_cores < 0
+        errors.add(:offering_cpu_cores, "it can not be less than zero")
       end
-      unless self.offering_memory_size > 0
-        errors.add(:offering_memory_size, "it must have digit more than zero")
+      if self.offering_memory_size < 0
+        errors.add(:offering_memory_size, "it can not be less than zero")
+      end
+      if self.offering_disk_space_mb.to_i < 0
+        errors.add(:offering_disk_space_mb, "it can not be less than zero")
       end
     end
 
@@ -102,7 +113,12 @@ module Dcmgr::Models
     end
 
     def cpu_core_usage_percent()
-      (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100.0
+      if offering_memory_size.to_i > 0
+        (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100.0
+      else
+        # Show 100% if offering is zero.
+        100.0
+      end
     end
 
     # Returns reserved memory size used by running/scheduled instances.
@@ -111,7 +127,12 @@ module Dcmgr::Models
     end
 
     def memory_size_usage_percent()
-      (memory_size_usage.to_f / offering_memory_size.to_f) * 100.0
+      if offering_memory_size.to_i > 0
+        (memory_size_usage.to_f / offering_memory_size.to_f) * 100.0
+      else
+        # Show 100% if offering is zero.
+        100.0
+      end
     end
 
     # Calc all local volume size on this host node.
@@ -122,7 +143,12 @@ module Dcmgr::Models
     end
 
     def disk_space_usage_percent()
-      (disk_space_usage.to_f / (offering_disk_space_mb * (1024 ** 2)).to_f) * 100.0
+      if offering_disk_space_mb.to_i > 0
+        (disk_space_usage.to_f / (offering_disk_space_mb * (1024 ** 2)).to_f) * 100.0
+      else
+        # Show 100% if offering is zero.
+        100.0
+      end
     end
 
     # Returns a usage percentage to show admins in quick overviews

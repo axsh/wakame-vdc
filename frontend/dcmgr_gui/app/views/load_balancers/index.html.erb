@@ -103,10 +103,10 @@
 	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.load_balancer_port") %>:</td>
-	    <td class="load_balancer_size">${item.port}</td>
+	    <td class="load_balancer_size">${item.inbounds[0].port}</td>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.load_balancer_protocol") %>:</td>
-	    <td>${item.protocol}</td>
+	    <td>${item.inbounds[0].protocol}</td>
 	  </tr>
 	  <tr>
 	    <td class="padcell"></td>

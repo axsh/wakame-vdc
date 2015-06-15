@@ -136,10 +136,17 @@ module Dcmgr::Models
       end
     end
 
+    # Set true if you want to skip validations run in destroy().
+    attr_accessor :force_destroy
+
     def before_destroy
-      # cancel destroy while backup object is being created.
-      unless self.volumes.all? { |v| v.derived_backup_objects_dataset.exclude(:state=>Dcmgr::Const::BackupObject::ALLOW_INSTANCE_DESTROY_STATES).empty? }
-        return false
+      if !@force_destroy
+        # cancel destroy while backup object is being created.
+        if !self.volumes.all? { |v|
+            v.derived_backup_objects_dataset.exclude(:state=>Dcmgr::Const::BackupObject::ALLOW_INSTANCE_DESTROY_STATES).empty?
+          }
+          return false
+        end
       end
 
       HostnameLease.filter(:account_id=>self.account_id, :hostname=>self.hostname).destroy
@@ -522,6 +529,15 @@ module Dcmgr::Models
       self.volumes_dataset.alives.all.map{|v| v.guest_device_name }
     end
 
+    def_dataset_method(:password_deletion_time_passed) do
+      exclude(password_will_be_deleted_at: nil).where{ password_will_be_deleted_at <= Time.now.utc }
+    end
+
+    def delete_windows_password
+      self.set({ :encrypted_password => nil, :password_will_be_deleted_at => nil })
+      self.save_changes
+    end
+
     def ready_poweron?
       # the poweron operation should only be performed to the instance
       # with backup objects don't have working state.
@@ -540,6 +556,10 @@ module Dcmgr::Models
         return false
       end
       true
+    end
+
+    def ha_enabled?
+      self.ha_enabled.to_i == 1
     end
   end
 end

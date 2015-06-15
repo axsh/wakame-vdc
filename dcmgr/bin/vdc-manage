@@ -15,7 +15,7 @@ Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr
 
 Dcmgr.run_initializers('logger', 'sequel')
 
-if Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_uri
+if Dcmgr::Configurations.dcmgr.features.openvnet
   require 'dcell'
 
   #
@@ -25,7 +25,7 @@ if Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_uri
   port = `port=32768; while netstat -atn | grep -q :$port; do port=$(expr $port + 1); done; echo $port`
   raise "Fail to get an unused port" unless $? == 0
 
-  DCell.start(:addr => "tcp://127.0.0.1:#{port}",
+  DCell.start(:addr => "tcp://#{Dcmgr::Configurations.dcmgr.vdc_manage_host}:#{port}",
     :registry => {
       :adapter => Dcmgr::Configurations.dcmgr.dcell_adapter,
       :host => Dcmgr::Configurations.dcmgr.dcell_host,

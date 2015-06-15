@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+require 'yaml'
 require 'rubygems'
 require 'bundler'
+require 'net/ssh'
 Bundler.setup(:default)
 Bundler.require(:test)
 

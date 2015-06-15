@@ -1,0 +1,11 @@
+wakame-init (15.03-1) unstable; urgency=low
+
+  * Bump version
+
+ -- Axsh Co. LTD <dev@axsh.net>  Tue, 17 Mar 2015 20:36:24 +0900
+
+wakame-init (13.08-1) unstable; urgency=low
+
+  * Initial Release
+
+ -- Axsh Co. LTD <dev@axsh.net>  Fri, 27 Feb 2015 18:56:04 +0900
