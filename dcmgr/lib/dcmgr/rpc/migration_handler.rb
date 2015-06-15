@@ -20,9 +20,7 @@ module Dcmgr
         # incoming VM does not have to deal with chaging instance &
         # volume state.
         setup_shared_volume_instance
-        setup_metadata_drive
 
-        check_interface
         dest_params = task_session.invoke(@hva_ctx.hypervisor_driver_class,
                                           :run_migration_instance, [@hva_ctx])
         @hva_ctx.logger.info("Started migration waiting instance: #{dest_params}")
@@ -63,6 +61,22 @@ module Dcmgr
         ignore_error {
           update_instance_state({:state=>:running})
         }
+      }
+
+      job :initialize_halted_instance, proc {
+        @hva_ctx = HvaContext.new(self)
+        @inst_id = request.args[0]
+
+        @hva_ctx.logger.info("Start to initialize instance")
+        @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
+
+        unless %w(migrating).member?(@inst[:state].to_s)
+          raise "Invalid instance state: #{@inst[:state]}"
+        end
+        # it does not need to handle volume's state here.
+        setup_volume_instance
+        update_instance_state({:state=>:halted})
+        @hva_ctx.logger.info("Finish to initialize instance")
       }
 
       def event

@@ -727,9 +727,7 @@ end
 
   put '/:id/move' do
     instance = find_by_uuid(:Instance, params[:id])
-    case instance.state
-    when *C::Instance::MIGRATION_STATES
-    else
+    if ! C::Instance::MIGRATION_STATES.member?(instance.state.to_s)
       raise E::InvalidInstanceState, "Unsupported instance state for migration: #{instance.state}"
     end
 
@@ -742,13 +740,25 @@ end
       raise "host_node_id has to be set"
     end
 
-    instance.state = 'migrating'
+    instance.state = C::Instance::STATE_MIGRATING
+    case instance.state
+    when C::Instance::RUNNING
+      on_after_commit do
+        Dcmgr.messaging.submit("migration-handle.#{dest_host_node.node_id}", 'run_vol_store',
+                               instance.canonical_uuid)
+      end
+    when C::Instance::HALTED
+      # switch host node association.
+      instance.host_node = dest_host_node
+      on_after_commit do
+        Dcmgr.messaging.submit("migration-handle.#{dest_host_node.node_id}", 'initialize_halted_instance',
+                               instance.canonical_uuid)
+      end
+    else
+      raise "Invalid instance state to start migration: #{instance.canonical_uuid}: #{instance.state}"
+    end
     instance.save_changes
 
-    on_after_commit do
-      Dcmgr.messaging.submit("migration-handle.#{dest_host_node.node_id}", 'run_vol_store',
-                             instance.canonical_uuid)
-    end
     respond_with({:instance_id=>instance.canonical_uuid,
                  })
   end
