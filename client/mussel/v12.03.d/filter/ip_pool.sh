@@ -3,7 +3,7 @@
 #
 
 filter_task_ip_handles() {
-  filter_task_update
+  filter_task_index
 }
 
 filter_task_acquire() {
