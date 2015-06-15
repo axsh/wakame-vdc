@@ -21,11 +21,18 @@ module Dcmgr::Rpc
         [@hva_ctx]
       )
 
+      after_in_minutes = Dcmgr::Configurations.hva.windows.delete_password_after_minutes
+      if after_in_minutes == 0
+        expire = nil
+      else
+        expire = Time.now.utc + ( after_in_minutes * 60 )
+      end
+
       rpc.request(
         'hva-collector',
         'update_instance',
         @inst_id,
-        {encrypted_password: encrypted_password}
+        {encrypted_password: encrypted_password, password_will_be_deleted_at: expire}
       )
 
       update_instance_state({:state=>:running}, ['hva/instance_started'])
