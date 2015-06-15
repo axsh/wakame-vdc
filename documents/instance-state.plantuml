@@ -1,0 +1,18 @@
+@startuml
+title Wakame-vdc Instance State Diagram
+
+[*] --> initializing
+initializing --> starting
+starting --> running
+running --> stopping : poweroff
+stopping --> halted
+halted --> starting : poweron
+running --> migrating : move (hot)
+migrating --> running : move (hot)
+halted --> migrating : move (cold)
+migrating --> halted : move (cold)
+running --> shuttingdown : terminate
+shuttingdown --> terminated
+terminated --> [*]
+
+@enduml
