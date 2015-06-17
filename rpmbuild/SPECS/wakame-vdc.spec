@@ -3,16 +3,19 @@
 %define oname wakame-vdc
 
 # * rpmbuild -bb ./wakame-vdc.spec \
+# --define "version_tag [ tag ]"
 # --define "build_id $(../helpers/gen-release-id.sh)"
 # --define "build_id $(../helpers/gen-release-id.sh [ commit-hash ])"
 # --define "repo_uri git://github.com/axsh/wakame-vdc.git"
 
+%define version_id 15.03
 %define release_id 1.daily
+%{?version_tag:%define version_id %{version_tag}}
 %{?build_id:%define release_id %{build_id}}
 %{?repo_uri:%define _vdc_git_uri %{repo_uri}}
 
 Name: %{oname}
-Version: 15.03
+Version: %{version_id}
 Release: %{release_id}%{?dist}
 Summary: The wakame virtual data center.
 Group: Development/Languages
