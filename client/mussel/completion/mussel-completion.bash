@@ -79,7 +79,9 @@ _mussel() {
       load_balancer)
         COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron register unregister" -- "${cur}"))
         ;;
-      image | ssh_key_pair | security_group)
+      image \
+      | security_group \
+      | ssh_key_pair)
         COMPREPLY=($(compgen -W "${tasks_rw}" -- "${cur}"))
         ;;
     esac
