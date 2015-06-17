@@ -4,6 +4,7 @@
 CURDIR ?= $(PWD)
 RUBYDIR ?= $(CURDIR)/ruby
 
+VDC_VERSION_TAG ?=
 VDC_BUILD_ID  ?= HEAD
 VDC_REPO_URI  ?= git://github.com/axsh/wakame-vdc.git
 VDC_SPEC_BASE := rpmbuild/SPECS/wakame-vdc.spec
@@ -131,6 +132,6 @@ binary:
 	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
 
 binary-snap:
-	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh $(VDC_BUILD_ID))" --define "repo_uri $(VDC_REPO_URI)"
+	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh $(VDC_BUILD_ID))" --define "repo_uri $(VDC_REPO_URI)" --define "version_tag $(VDC_VERSION_TAG)"
 
 .PHONY: build clean binary-indep binary-arch binary binary-snap install ruby-build bundle-install
