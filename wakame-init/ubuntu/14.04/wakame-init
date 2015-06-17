@@ -8,7 +8,6 @@ LC_ALL=C
 
 ## variables
 
-LOGFILE=/var/log/$(basename $0).log
 USER=${USER:-ubuntu}
 SSHDIR=$(getent passwd ${USER} | awk -F: '{print $6}')/.ssh/
 KEYSPATH=${SSHDIR}/authorized_keys
@@ -43,10 +42,6 @@ function get_metadata() {
     sleep 3
   done
   exit 1
-}
-
-function logger() {
-  tee -a ${LOGFILE}
 }
 
 ### mount metadata drive
@@ -239,7 +234,7 @@ function set_configuration() {
 
 ## exec
 
-set_configuration | logger
+set_configuration
 
 # Important for remote storage.
 sync
