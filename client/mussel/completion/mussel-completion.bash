@@ -40,9 +40,9 @@ _mussel() {
       image
       instance_monitoring
       instance
-      load_balancer
       ip_handle
       ip_pool
+      load_balancer
       network
       network_vif_monitor
       network_vif
