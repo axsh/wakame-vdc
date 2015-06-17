@@ -64,6 +64,8 @@ _mussel() {
       | dc_network \
       | host_node \
       | instance_monitoring \
+      | ip_handle \
+      | ip_pool \
       | network \
       | network_vif_monitor \
       | network_vif \
