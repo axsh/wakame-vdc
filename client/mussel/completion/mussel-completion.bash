@@ -122,6 +122,21 @@ _mussel() {
   local task="${COMP_WORDS[2]}"
 
   case "${namespace}" in
+    alarm)
+      ;;
+
+    backup_object)
+      ;;
+
+    backup_storage)
+      ;;
+
+    dc_network)
+      ;;
+
+    host_node)
+      ;;
+
     image)
       case "${task}" in
         index)
@@ -229,6 +244,12 @@ _mussel() {
       esac
       ;;
 
+    ip_handle)
+      ;;
+
+    ip_pool)
+      ;;
+
     load_balancer)
       case "${task}" in
         index)
@@ -317,6 +338,15 @@ _mussel() {
       esac
       ;;
 
+    network)
+      ;;
+
+    network_vif_monitor)
+      ;;
+
+    network_vif)
+      ;;
+
     security_group)
       case "${task}" in
         index)
@@ -403,6 +433,12 @@ _mussel() {
           esac
           ;;
       esac
+      ;;
+
+    security_group)
+      ;;
+
+    storage_node)
       ;;
 
     volume)
