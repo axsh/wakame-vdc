@@ -64,7 +64,6 @@ _mussel() {
       | dc_network \
       | host_node \
       | instance_monitoring \
-      | ip_handle \
       | network \
       | network_vif_monitor \
       | network_vif \
@@ -74,6 +73,9 @@ _mussel() {
         ;;
       instance)
         COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron backup" -- "${cur}"))
+        ;;
+      ip_handle)
+        COMPREPLY=($(compgen -W "show expire_at" -- "${cur}"))
         ;;
       ip_pool)
         COMPREPLY=($(compgen -W "${tasks_rw} ip_handles acquire release" -- "${cur}"))
@@ -247,6 +249,27 @@ _mussel() {
       ;;
 
     ip_handle)
+      case "${task}" in
+        expire_at)
+          case "${offset}" in
+            4)
+              # it's impossible to get ip handle list in ip_handle comands without ip_pools command.
+              # $ mussel ip_pool ip_handles <ipp-***>
+              COMPREPLY=($(compgen -W "ip-" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --time-to)
+                  COMPREPLY=($(compgen -W "1 86400 604800 2592000 31536000" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--time-to" -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
+      esac
       ;;
 
     ip_pool)
