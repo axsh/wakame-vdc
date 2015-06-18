@@ -20,7 +20,14 @@ function hash_value() {
   # NF=2) ":id: i-xxx"
   # NF=3) "- :vif_id: vif-qqjr0ial"
   #
-  egrep -w -- "- :${key}:" </dev/stdin | awk '{ if (NF == 2) {print $2} else if (NF == 3) {print $3} }'
+  case "${key}" in
+    id)
+      egrep -w "^  - :${key}:" </dev/stdin | awk '{ if (NF == 2) {print $2} else if (NF == 3) {print $3} }'
+      ;;
+    *)
+      egrep -w -- "- :${key}:" </dev/stdin | awk '{ if (NF == 2) {print $2} else if (NF == 3) {print $3} }'
+      ;;
+  esac
 }
 
 _mussel() {
