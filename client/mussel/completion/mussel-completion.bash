@@ -65,7 +65,6 @@ _mussel() {
       | host_node \
       | instance_monitoring \
       | ip_handle \
-      | ip_pool \
       | network \
       | network_vif_monitor \
       | network_vif \
@@ -75,6 +74,9 @@ _mussel() {
         ;;
       instance)
         COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron backup" -- "${cur}"))
+        ;;
+      ip_pool)
+        COMPREPLY=($(compgen -W "${tasks_rw} ip_handles acquire release" -- "${cur}"))
         ;;
       load_balancer)
         COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron register unregister" -- "${cur}"))
@@ -248,6 +250,62 @@ _mussel() {
       ;;
 
     ip_pool)
+      case "${task}" in
+        create)
+          case "${prev}" in
+            --dc-networks)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --display-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "--dc-networks --display-name" -- "${cur}"))
+              ;;
+          esac
+          ;;
+        ip_handles)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              ;;
+          esac
+          ;;
+        acquire)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --network-id)
+                  COMPREPLY=($(compgen -W "$(mussel network index | hash_value id)" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--network-id" -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
+        release)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --ip-handle-id)
+                  COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" ip_handles "${COMP_WORDS[3]}" | hash_value id)" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--ip-handle-id" -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
+      esac
       ;;
 
     load_balancer)
