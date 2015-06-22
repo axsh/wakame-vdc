@@ -68,7 +68,6 @@ _mussel() {
       alarm \
       | backup_object \
       | backup_storage \
-      | host_node \
       | instance_monitoring \
       | network \
       | network_vif_monitor \
@@ -79,6 +78,9 @@ _mussel() {
         ;;
       dc_network)
         COMPREPLY=($(compgen -W "${tasks_rw} add_offering_modes" -- "${cur}"))
+        ;;
+      host_node)
+        COMPREPLY=($(compgen -W "${tasks_ro} evacuate" -- "${cur}"))
         ;;
       instance)
         COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron backup" -- "${cur}"))
@@ -205,6 +207,17 @@ _mussel() {
       ;;
 
     host_node)
+      case "${task}" in
+        index)
+          ;;
+        evacuate)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              ;;
+          esac
+          ;;
+      esac
       ;;
 
     image)
