@@ -523,9 +523,6 @@ _mussel() {
       esac
       ;;
 
-    security_group)
-      ;;
-
     storage_node)
       ;;
 
