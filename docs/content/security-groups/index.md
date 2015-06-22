@@ -1,16 +1,4 @@
-# Security Groups
-
-### Contents
-
-* [Overview](#Overview)
-* [Features](#Features)
-  - [Isolation](#Isolation)
-  - [Rules](#Rules)
-  - [Reference](#Reference)
-* [Creating security groups using the Wakame-vdc GUI](#Creating-security-groups-using-the-Wakame-vdc-GUI)
-* [Adding and removing vnics from security groups using the Wakame-vdc GUI](#Adding-and-removing-vnics-from-security-groups-using-the-Wakame-vdc-GUI)
-
-### Overview
+## Overview
 
 In Wakame-vdc, every virtual network interface (vnic) will have its own firewall. These firewalls are implemented using [Netfilter](http://www.netfilter.org). Even if one instance has multiple vnics, they will still each have their own firewall.
 
@@ -24,7 +12,7 @@ Security groups are dynamic. Instances can enter and leave groups on the fly and
 
 ![screenshot](img/security-groups/high_level_overview.png)
 
-### Features
+## Features
 
 Security groups come with three distinct features.
 
@@ -34,7 +22,7 @@ Security groups come with three distinct features.
 
 **Remark:** Technically we don't put instances in security groups. We put their virtual network interfaces (vnics) in security groups. An instance with multiple vnics is able to have different security groups for each vnic.
 
-#### Isolation
+### Isolation
 
 By default all instances are isolated from each other. That means that all L2 traffic including ARP and IPv4 between them is blocked.
 
@@ -46,7 +34,7 @@ The following image shows a couple of instances with vnics in different security
 
 ![screenshot](img/security-groups/isolation.png)
 
-#### Rules
+### Rules
 
 By default all incoming traffic to instances is blocked. Security Group rules allow you to open specific TCP ports, UDP ports, or ICMP traffic.
 
@@ -54,7 +42,7 @@ The following image shows an example of a security group that opens TCP port 22 
 
 ![screenshot](img/security-groups/rules.png)
 
-##### Syntax
+#### Syntax
 
 For TCP and UDP protocols:
 
@@ -88,7 +76,7 @@ A rule that accepts *network unreachable* ICMP messages (type/code: 3/0) from ip
 
     icmp:3,0,ip4:192.168.2.1
 
-#### Reference
+### Reference
 
 A reference rule is a special type of rule. Instead of opening up a port to an ip range, you can open up a port to another security group. Take the following example.
 
@@ -98,7 +86,7 @@ This is where reference comes in. Reference allows you to put the database serve
 
 ![screenshot](img/security-groups/reference.png)
 
-##### Syntax
+#### Syntax
 
 The instances is the same as regular rules, except you write another security group's uuid insetad of an IP address.
 
@@ -110,7 +98,7 @@ For this example two security groups exist. *sg-dbsrv* which has the database se
 
     tcp:3306,3306,sg-dbclnts
 
-### Creating security groups using the Wakame-vdc GUI
+## Creating security groups using the Wakame-vdc GUI
 
 After logging into the GUI, click on `Security Groups` in the menu on the left. Next click on `Create Security Group`.
 
@@ -120,7 +108,7 @@ The following dialog will pop up. In here you will be able to write rules for yo
 
 ![screenshot](img/security-groups/07_security_groups_dialog.png)
 
-### Adding and removing vnics from security groups using the Wakame-vdc GUI
+## Adding and removing vnics from security groups using the Wakame-vdc GUI
 
 When starting an instance using the Wakame-vdc GUI, you will be required to put its vnic(s) in at least one security group. Although it is possible to start instances with vnic(s) that aren't in any security groups (which results in all incoming network traffic being blocked) by querying the WebAPI directly, the GUI requires one or more to be set.
 
