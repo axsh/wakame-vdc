@@ -71,7 +71,6 @@ _mussel() {
       | instance_monitoring \
       | network \
       | network_vif_monitor \
-      | network_vif \
       | storage_node)
         COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
         ;;
@@ -97,6 +96,9 @@ _mussel() {
       | security_group \
       | ssh_key_pair)
         COMPREPLY=($(compgen -W "${tasks_rw}" -- "${cur}"))
+        ;;
+      network_vif)
+        COMPREPLY=($(compgen -W "${tasks_ro} show_external_ip add_security_group remove_security_group attach_external_ip detach_external_ip" -- "${cur}"))
         ;;
       volume)
         COMPREPLY=($(compgen -W "${tasks_rw} backup attach detach" -- "${cur}"))
@@ -507,6 +509,51 @@ _mussel() {
       ;;
 
     network_vif)
+      case "${task}" in
+        index)
+          ;;
+        show_external_ip)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              ;;
+          esac
+          ;;
+        add_security_group | remove_security_group)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --security-group-id)
+                  COMPREPLY=($(compgen -W "$(mussel security_group index | hash_value id)" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--security-group-id" -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
+        attach_external_ip | detach_external_ip)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --ip-handle-id)
+                  COMPREPLY=($(compgen -W "ip-" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--ip-handle-id" -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
+      esac
       ;;
 
     security_group)
