@@ -68,7 +68,6 @@ _mussel() {
       alarm \
       | backup_object \
       | backup_storage \
-      | dc_network \
       | host_node \
       | instance_monitoring \
       | network \
@@ -77,6 +76,9 @@ _mussel() {
       | storage_node \
       | volume )
         COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
+        ;;
+      dc_network)
+        COMPREPLY=($(compgen -W "${tasks_rw} add_offering_modes" -- "${cur}"))
         ;;
       instance)
         COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron backup" -- "${cur}"))
@@ -143,6 +145,63 @@ _mussel() {
       ;;
 
     dc_network)
+      case "${task}" in
+        index)
+          ;;
+        create)
+          case "${prev}" in
+            --description)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "--description --name" -- "${cur}"))
+              ;;
+          esac
+          ;;
+        update)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --allow-new-networks)
+                  COMPREPLY=($(compgen -W "false true" -- "${cur}"))
+                  ;;
+                --description)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--allow-new-networks --description --name" -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
+        add_offering_modes)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --mode)
+                  COMPREPLY=($(compgen -W "securitygroup passthrough l2overlay" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--mode" -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
+      esac
       ;;
 
     host_node)
