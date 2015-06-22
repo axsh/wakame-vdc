@@ -72,8 +72,7 @@ _mussel() {
       | network \
       | network_vif_monitor \
       | network_vif \
-      | storage_node \
-      | volume )
+      | storage_node)
         COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
         ;;
       dc_network)
@@ -98,6 +97,9 @@ _mussel() {
       | security_group \
       | ssh_key_pair)
         COMPREPLY=($(compgen -W "${tasks_rw}" -- "${cur}"))
+        ;;
+      volume)
+        COMPREPLY=($(compgen -W "${tasks_rw} backup attach detach" -- "${cur}"))
         ;;
     esac
     return 0
@@ -607,6 +609,82 @@ _mussel() {
               ;;
             *)
               COMPREPLY=($(compgen -W "--state" -- "${cur}"))
+              ;;
+          esac
+          ;;
+        create)
+          case "${prev}" in
+            --backup-object-id)
+              COMPREPLY=($(compgen -W "$(mussel backup_object index | hash_value id)" -- "${cur}"))
+              ;;
+            --storage-node-id)
+              COMPREPLY=($(compgen -W "$(mussel storage_node index | hash_value id)" -- "${cur}"))
+              ;;
+            --volume-size)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "--backup-object-id --storage-node-id --volume-size" -- "${cur}"))
+              ;;
+          esac
+          ;;
+        backup)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --description)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --is-cacheable)
+                  COMPREPLY=($(compgen -W "false true" -- "${cur}"))
+                  ;;
+                --is-public)
+                  COMPREPLY=($(compgen -W "false true" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--description --display-name --is-cacheable --is-public" -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
+        attach)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --instance-id)
+                  COMPREPLY=($(compgen -W "$(mussel instance index --state alive | hash_value id)" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--instance-id" -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
+        detach)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state attached | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --instance-id)
+                  COMPREPLY=($(compgen -W "$(mussel instance index --state alive | hash_value id)" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "--instance-id" -- "${cur}"))
+                  ;;
+              esac
               ;;
           esac
           ;;
