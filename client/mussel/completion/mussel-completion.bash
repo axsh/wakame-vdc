@@ -282,7 +282,10 @@ _mussel() {
               COMPREPLY=($(compgen -W "" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--description --name" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --description
+                            --name
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -303,7 +306,11 @@ _mussel() {
                   COMPREPLY=($(compgen -W "" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--allow-new-networks --description --name" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --allow-new-networks
+                                --description
+                                --name
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -320,7 +327,9 @@ _mussel() {
                   COMPREPLY=($(compgen -W "securitygroup passthrough l2overlay" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--mode" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --mode
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -357,7 +366,11 @@ _mussel() {
               COMPREPLY=($(compgen -W "alive alive_with_deleted available deleted" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--is-public --service-type --state" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --is-public
+                            --service-type
+                            --state
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -372,7 +385,9 @@ _mussel() {
                   COMPREPLY=($(compgen -W "" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--display-name" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --display-name
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -392,7 +407,10 @@ _mussel() {
               COMPREPLY=($(compgen -W "alive alive_with_terminated without_terminated running stopped halted terminated" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--service-type --state" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --service-type
+                            --state
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -423,7 +441,16 @@ _mussel() {
               COMPREPLY=($(compgen -f "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--cpu-cores --display-name --hypervisor --image-id --memory-size --ssh-key-id --user-data --vifs" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --cpu-cores
+                            --display-name
+                            --hypervisor
+                            --image-id
+                            --memory-size
+                            --ssh-key-id
+                            --user-data
+                            --vifs
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -441,7 +468,10 @@ _mussel() {
                   COMPREPLY=($(compgen -W "$(mussel ssh_key_pair index | hash_value id)" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--display-name --ssh-key-id" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --display-name
+                                --ssh-key-id
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -469,7 +499,9 @@ _mussel() {
                   COMPREPLY=($(compgen -W "1 86400 604800 2592000 31536000" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--time-to" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --time-to
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -489,7 +521,10 @@ _mussel() {
               COMPREPLY=($(compgen -W "" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--dc-networks --display-name" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --dc-networks
+                            --display-name
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -511,7 +546,9 @@ _mussel() {
                   COMPREPLY=($(compgen -W "$(mussel network index | hash_value id)" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--network-id" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --network-id
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -528,7 +565,9 @@ _mussel() {
                   COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" ip_handles "${COMP_WORDS[3]}" | hash_value id)" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--ip-handle-id" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --ip-handle-id
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -545,7 +584,9 @@ _mussel() {
               COMPREPLY=($(compgen -W "alive alive_with_deleted running halted terminated" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--state" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --state
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -573,7 +614,17 @@ _mussel() {
               COMPREPLY=($(compgen -W "1000 5000" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--balance-algorithm --cookie --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --balance-algorithm
+                            --cookie
+                            --display-name
+                            --engine
+                            --port
+                            --instance-port
+                            --protocol
+                            --instance-protocol
+                            --max-connection
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -606,7 +657,17 @@ _mussel() {
                   COMPREPLY=($(compgen -W "1000 5000" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--balance-algorithm --cookie --display-name --engine --port --instance-port --protocol --instance-protocol --max-connection" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --balance-algorithm
+                                --cookie
+                                --display-name
+                                --engine
+                                --port
+                                --instance-port
+                                --protocol
+                                --instance-protocol
+                                --max-connection
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -618,7 +679,9 @@ _mussel() {
               COMPREPLY=($(compgen -W "$(mussel instance index --state alive | hash_value vif_id)" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--vifs" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --vifs
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -650,7 +713,9 @@ _mussel() {
                   COMPREPLY=($(compgen -W "$(mussel security_group index | hash_value id)" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--security-group-id" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --security-group-id
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -667,7 +732,9 @@ _mussel() {
                   COMPREPLY=($(compgen -W "ip-" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--ip-handle-id" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --ip-handle-id
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -688,7 +755,9 @@ _mussel() {
               COMPREPLY=($(compgen -W "std lb" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--service-type" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --service-type
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -701,7 +770,10 @@ _mussel() {
               COMPREPLY=($(compgen -f "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--display-name --rule" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --display-name
+                            --rule
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -719,7 +791,10 @@ _mussel() {
                   COMPREPLY=($(compgen -f "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--display-name --rule" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --display-name
+                                --rule
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -741,7 +816,10 @@ _mussel() {
               COMPREPLY=($(compgen -f "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--display-name --public-key" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --display-name
+                            --public-key
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -759,7 +837,10 @@ _mussel() {
                   COMPREPLY=($(compgen -f "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--display-name --public-key" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --display-name
+                                --public-key
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -779,7 +860,9 @@ _mussel() {
               COMPREPLY=($(compgen -W "alive alive_with_deleted available attached deleted" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--state" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --state
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -795,7 +878,11 @@ _mussel() {
               COMPREPLY=($(compgen -W "" -- "${cur}"))
               ;;
             *)
-              COMPREPLY=($(compgen -W "--backup-object-id --storage-node-id --volume-size" -- "${cur}"))
+              COMPREPLY=($(compgen -W "
+                            --backup-object-id
+                            --storage-node-id
+                            --volume-size
+                            " -- "${cur}"))
               ;;
           esac
           ;;
@@ -819,7 +906,12 @@ _mussel() {
                   COMPREPLY=($(compgen -W "false true" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--description --display-name --is-cacheable --is-public" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --description
+                                --display-name
+                                --is-cacheable
+                                --is-public
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -836,7 +928,9 @@ _mussel() {
                   COMPREPLY=($(compgen -W "$(mussel instance index --state alive | hash_value id)" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--instance-id" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --instance-id
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
@@ -853,7 +947,9 @@ _mussel() {
                   COMPREPLY=($(compgen -W "$(mussel instance index --state alive | hash_value id)" -- "${cur}"))
                   ;;
                 *)
-                  COMPREPLY=($(compgen -W "--instance-id" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "
+                                --instance-id
+                                " -- "${cur}"))
                   ;;
               esac
               ;;
