@@ -158,7 +158,109 @@ _mussel() {
 
   case "${namespace}" in
     alarm)
-      # TODO
+      case "${task}" in
+        index)
+          ;;
+        create)
+          case "${prev}" in
+            --resource-id)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --metric-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --evaluation-periods)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --notification-periods)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --display-name)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --description)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --params)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --ok-actions)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --alarm-actions)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            --insufficient-data-actions)
+              COMPREPLY=($(compgen -W "" -- "${cur}"))
+              ;;
+            *)
+              COMPREPLY=($(compgen -W "
+                            --resource-id
+                            --metric-name
+                            --evaluation-periods
+                            --notification-periods
+                            --display-name
+                            --description
+                            --params
+                            --ok-actions
+                            --alarm-actions
+                            --insufficient-data-actions
+                            " -- "${cur}"))
+              ;;
+          esac
+          ;;
+        update)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              ;;
+            *)
+              case "${prev}" in
+                --enabled)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --evaluation-periods)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --notification-periods)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --display-name)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --description)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --params)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --ok-actions)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --alarm-actions)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                --insufficient-data-actions)
+                  COMPREPLY=($(compgen -W "" -- "${cur}"))
+                  ;;
+                *)
+                  COMPREPLY=($(compgen -W "
+                                --enabled
+                                --evaluation-periods
+                                --notification-periods
+                                --display-name
+                                --description
+                                --params
+                                --ok-actions
+                                --alarm-actions
+                                --insufficient-data-actions
+                                " -- "${cur}"))
+                  ;;
+              esac
+              ;;
+          esac
+          ;;
+      esac
       ;;
 
     backup_object)
