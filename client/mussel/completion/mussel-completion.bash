@@ -45,14 +45,14 @@ _mussel() {
       dc_network
       host_node
       image
-      instance_monitoring
       instance
+      instance_monitoring
       ip_handle
       ip_pool
       load_balancer
       network
-      network_vif_monitor
       network_vif
+      network_vif_monitor
       security_group
       ssh_key_pair
       storage_node
@@ -65,13 +65,13 @@ _mussel() {
     local tasks_rw="${tasks_ro} create update destroy"
 
     case "${prev}" in
-      alarm \
-      | backup_object \
-      | backup_storage \
-      | instance_monitoring \
-      | network \
-      | network_vif_monitor \
-      | storage_node)
+      alarm)
+        COMPREPLY=($(compgen -W "${tasks_rw}" -- "${cur}"))
+        ;;
+      backup_object)
+        COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
+        ;;
+      backup_storage)
         COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
         ;;
       dc_network)
@@ -80,8 +80,14 @@ _mussel() {
       host_node)
         COMPREPLY=($(compgen -W "${tasks_ro} evacuate" -- "${cur}"))
         ;;
+      image)
+        COMPREPLY=($(compgen -W "${tasks_rw}" -- "${cur}"))
+        ;;
       instance)
         COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron backup" -- "${cur}"))
+        ;;
+      instance_monitoring)
+        COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
         ;;
       ip_handle)
         COMPREPLY=($(compgen -W "show expire_at" -- "${cur}"))
@@ -92,13 +98,23 @@ _mussel() {
       load_balancer)
         COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron register unregister" -- "${cur}"))
         ;;
-      image \
-      | security_group \
-      | ssh_key_pair)
-        COMPREPLY=($(compgen -W "${tasks_rw}" -- "${cur}"))
+      network)
+        COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
         ;;
       network_vif)
         COMPREPLY=($(compgen -W "${tasks_ro} show_external_ip add_security_group remove_security_group attach_external_ip detach_external_ip" -- "${cur}"))
+        ;;
+      network_vif_monitor)
+        COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
+        ;;
+      security_group)
+        COMPREPLY=($(compgen -W "${tasks_rw}" -- "${cur}"))
+        ;;
+      ssh_key_pair)
+        COMPREPLY=($(compgen -W "${tasks_rw}" -- "${cur}"))
+        ;;
+      storage_node)
+        COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
         ;;
       volume)
         COMPREPLY=($(compgen -W "${tasks_rw} backup attach detach" -- "${cur}"))
