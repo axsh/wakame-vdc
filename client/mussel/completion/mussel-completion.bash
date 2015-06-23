@@ -84,7 +84,7 @@ _mussel() {
         COMPREPLY=($(compgen -W "${tasks_rw}" -- "${cur}"))
         ;;
       instance)
-        COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron backup" -- "${cur}"))
+        COMPREPLY=($(compgen -W "${tasks_rw} power{off,on} backup" -- "${cur}"))
         ;;
       instance_monitoring)
         COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
@@ -96,13 +96,13 @@ _mussel() {
         COMPREPLY=($(compgen -W "${tasks_rw} ip_handles acquire release" -- "${cur}"))
         ;;
       load_balancer)
-        COMPREPLY=($(compgen -W "${tasks_rw} poweroff poweron register unregister" -- "${cur}"))
+        COMPREPLY=($(compgen -W "${tasks_rw} power{off,on} {,un}register" -- "${cur}"))
         ;;
       network)
         COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
         ;;
       network_vif)
-        COMPREPLY=($(compgen -W "${tasks_ro} show_external_ip add_security_group remove_security_group attach_external_ip detach_external_ip" -- "${cur}"))
+        COMPREPLY=($(compgen -W "${tasks_ro} {show,attach,detach}_external_ip {add,remove}_security_group" -- "${cur}"))
         ;;
       network_vif_monitor)
         COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
