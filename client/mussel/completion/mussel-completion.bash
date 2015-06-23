@@ -122,27 +122,28 @@ _mussel() {
     esac
     return 0
   elif [[ "${offset}" == 4 ]]; then
+    local namespace="${COMP_WORDS[1]}"
     local needmore=
     case "${prev}" in
       show)
         # "--is-public" for image.index.
         # this options will be ignored in other namespace.
-        COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --is-public true | hash_value id)" -- "${cur}"))
+        COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --is-public true | hash_value id)" -- "${cur}"))
         ;;
       destroy)
-        COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive   | hash_value id)" -- "${cur}"))
+        COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive   | hash_value id)" -- "${cur}"))
         ;;
       poweroff)
-        COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state running | hash_value id)" -- "${cur}"))
+        COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state running | hash_value id)" -- "${cur}"))
         ;;
       poweron)
-        COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state halted  | hash_value id)" -- "${cur}"))
+        COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state halted  | hash_value id)" -- "${cur}"))
         ;;
       backup)
-        COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive   | hash_value id)" -- "${cur}"))
+        COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive   | hash_value id)" -- "${cur}"))
         ;;
       register | unregister)
-        COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state running | hash_value id)" -- "${cur}"))
+        COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state running | hash_value id)" -- "${cur}"))
         ;;
       *)
         needmore=yes
@@ -212,7 +213,7 @@ _mussel() {
         update)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -292,7 +293,7 @@ _mussel() {
         update)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -319,7 +320,7 @@ _mussel() {
         add_offering_modes)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -345,7 +346,7 @@ _mussel() {
         evacuate)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index | hash_value id)" -- "${cur}"))
               ;;
           esac
           ;;
@@ -377,7 +378,7 @@ _mussel() {
         update)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -457,7 +458,7 @@ _mussel() {
         update)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -531,14 +532,14 @@ _mussel() {
         ip_handles)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index | hash_value id)" -- "${cur}"))
               ;;
           esac
           ;;
         acquire)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -557,12 +558,12 @@ _mussel() {
         release)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
                 --ip-handle-id)
-                  COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" ip_handles "${COMP_WORDS[3]}" | hash_value id)" -- "${cur}"))
+                  COMPREPLY=($(compgen -W "$(mussel "${namespace}" ip_handles "${COMP_WORDS[3]}" | hash_value id)" -- "${cur}"))
                   ;;
                 *)
                   COMPREPLY=($(compgen -W "
@@ -631,7 +632,7 @@ _mussel() {
         update)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -698,14 +699,14 @@ _mussel() {
         show_external_ip)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
           esac
           ;;
         add_security_group | remove_security_group)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -724,7 +725,7 @@ _mussel() {
         attach_external_ip | detach_external_ip)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -780,7 +781,7 @@ _mussel() {
         update)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -826,7 +827,7 @@ _mussel() {
         update)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -889,7 +890,7 @@ _mussel() {
         backup)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -920,7 +921,7 @@ _mussel() {
         attach)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state alive | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
@@ -939,7 +940,7 @@ _mussel() {
         detach)
           case "${offset}" in
             4)
-              COMPREPLY=($(compgen -W "$(mussel "${COMP_WORDS[1]}" index --state attached | hash_value id)" -- "${cur}"))
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state attached | hash_value id)" -- "${cur}"))
               ;;
             *)
               case "${prev}" in
