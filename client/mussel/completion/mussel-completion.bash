@@ -22,12 +22,12 @@ function hash_value() {
   #
   case "${key}" in
     id)
-      egrep -w "^  - :${key}:" </dev/stdin | awk '{ if (NF == 2) {print $2} else if (NF == 3) {print $3} }'
+      egrep -w "^  - :${key}:" </dev/stdin
       ;;
     *)
-      egrep -w -- "- :${key}:" </dev/stdin | awk '{ if (NF == 2) {print $2} else if (NF == 3) {print $3} }'
+      egrep -w -- "- :${key}:" </dev/stdin
       ;;
-  esac
+  esac | awk '{ if (NF == 2) {print $2} else if (NF == 3) {print $3} }'
 }
 
 _mussel() {
