@@ -347,6 +347,9 @@ _mussel() {
       esac
       ;;
 
+    instance_monitoring)
+      ;;
+
     ip_handle)
       case "${task}" in
         expire_at)
@@ -521,9 +524,6 @@ _mussel() {
     network)
       ;;
 
-    network_vif_monitor)
-      ;;
-
     network_vif)
       case "${task}" in
         index)
@@ -570,6 +570,9 @@ _mussel() {
           esac
           ;;
       esac
+      ;;
+
+    network_vif_monitor)
       ;;
 
     security_group)
