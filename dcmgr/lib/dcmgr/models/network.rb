@@ -170,7 +170,7 @@ module Dcmgr::Models
 
     def del_ipv4_dynamic_range(range_begin, range_end)
       # Acquire locks
-      dhcp_range_dataset.for_update.select(1).single_value
+      dhcp_range_dataset.for_update.select(1).all
       range_begin_u32, range_end_u32 = validate_range_args(range_begin, range_end)
       hit_range_ds = dhcp_range_dataset.hit_ranges(range_begin_u32, range_end_u32)
       ranges_count = hit_range_ds.count
