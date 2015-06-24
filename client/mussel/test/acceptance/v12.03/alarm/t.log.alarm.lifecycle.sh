@@ -26,7 +26,7 @@ function test_generate_file_for_monitoring_log() {
 
   sleep ${sleep_sec}
 
-  ssh -t ${$host_ssh_user}@${host_ipaddr} -i ${host_ssh_key_pair_path} <<-EOS
+  ssh -t ${host_ssh_user}@${host_ipaddr} -i ${host_ssh_key_pair_path} <<-EOS
 	cat /var/lib/wakame-vdc/fluent.conf | grep ${alarm_uuid}
 	EOS
   assertEquals 0 $?
