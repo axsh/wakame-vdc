@@ -20,19 +20,11 @@ module Dcmgr::Models
     # hit_ranges("192.168.0.10", "192.168.0.55")
     #   => 192.168.0.10-20, 192.168.0.50-60
     def_dataset_method(:hit_ranges) { |*ipv4_u32|
-      sql = "(range_begin <= ? AND range_end >= ?)"
-      ary = ipv4_u32.map { |u32|
-        [sql, [u32, u32]]
+      sql_ary = ipv4_u32.map { |u32|
+        "(RANGE_BEGIN <= #{u32} AND RANGE_END >= #{u32})"
       }
-      sql = "(" + ary.map { |_sql, args|
-        _sql
-      }.join(") OR (") + ")"
-
-      filter("(" + sql + ")",
-             *ary.map {|sql, args|
-               args
-             }.flatten
-             ).order(Sequel.asc(:range_begin))
+      sql = sql_ary.join(" OR ")
+      where(sql).order(Sequel.asc(:range_begin))
     }
 
     def validate
