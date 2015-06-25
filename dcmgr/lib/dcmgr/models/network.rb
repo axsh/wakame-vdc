@@ -172,19 +172,11 @@ module Dcmgr::Models
       # Acquire locks
       dhcp_range_dataset.for_update.select(1).all
       range_begin_u32, range_end_u32 = validate_range_args(range_begin, range_end)
-      hit_range_ds = dhcp_range_dataset.hit_ranges(range_begin_u32, range_end_u32)
-      ranges_count = hit_range_ds.count
-      if ranges_count == 1
-        r = hit_range_ds.first
-        if range_begin_u32 == r.range_begin.to_u32 &&
-            range_end_u32 == r.range_end.to_u32
-          r.destroy
-        else
-          raise "Given range does not match"
-        end
-      else
-        raise "Given range includes or  existing ranges (Found #{ranges_count} ranges)"
-      end
+      ranges_to_destroy = dhcp_range_dataset.where(range_begin: range_begin_u32, range_end: range_end_u32)
+
+      raise "Given range not found" if ranges_to_destroy.empty?
+
+      ranges_to_destroy.destroy
     end
     
     # To check the IP address that can not be used.
