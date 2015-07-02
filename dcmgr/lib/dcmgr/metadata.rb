@@ -4,13 +4,13 @@ module Dcmgr::Metadata
   I = Dcmgr::Constants::Image
 
   # Factory method
-  def self.md_type(instance_hash)
-    os_type  = instance_hash[:image][:os_type]
-    password = instance_hash[:encrypted_password]
+  def self.md_type(instance_hash, options = {})
 
-    # Windows instances that don't have a password generated yet
-    # need to be told to generate one.
-    if os_type == I::OS_TYPE_WINDOWS && password.nil?
+    # We tell instances this is their first boot by placing a file named
+    # first-boot on the metadata drive.
+    # This is used by for example Windows instances. They need to generate
+    # the administrator password on first boot.
+    if options[:first_boot]
       AWSWithFirstBoot.new(instance_hash)
     else
       AWS.new(instance_hash)

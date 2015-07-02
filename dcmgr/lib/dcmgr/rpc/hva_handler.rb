@@ -206,18 +206,14 @@ module Dcmgr
                                                                       @vol[:transport_information][:lun]]
       end
 
-      def setup_metadata_drive
-        items = get_metadata_items
+      def setup_metadata_drive(options = {})
+        items = Dcmgr::Metadata.md_type(@inst, options).get_items
 
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :setup_metadata_drive, [@hva_ctx, items])
 
         # export as single yaml file.
         @hva_ctx.dump_instance_parameter('metadata.yml', YAML.dump(items))
-       end
-
-      def get_metadata_items
-        Dcmgr::Metadata.md_type(@inst).get_items
       end
 
       # syntax sugar to catch any errors and continue to work the code
@@ -316,7 +312,7 @@ module Dcmgr
           next
         end
 
-        setup_metadata_drive
+        setup_metadata_drive(first_boot: true)
 
         check_interface
 
@@ -368,7 +364,7 @@ module Dcmgr
           rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:attaching, :attached_at=>nil})
         end
 
-        setup_metadata_drive
+        setup_metadata_drive(first_boot: true)
 
         check_interface
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
