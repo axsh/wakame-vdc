@@ -207,7 +207,7 @@ module Dcmgr
       end
 
       def setup_metadata_drive(options = {})
-        items = Dcmgr::Metadata.md_type(@inst, options).get_items
+        items = Dcmgr::Metadata.factory(@inst, options).get_items
 
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :setup_metadata_drive, [@hva_ctx, items])

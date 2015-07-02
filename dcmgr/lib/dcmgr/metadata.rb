@@ -3,9 +3,7 @@
 module Dcmgr::Metadata
   I = Dcmgr::Constants::Image
 
-  # Factory method
-  def self.md_type(instance_hash, options = {})
-
+  def self.factory(instance_hash, options = {})
     # We tell instances this is their first boot by placing a file named
     # first-boot on the metadata drive.
     # This is used by for example Windows instances. They need to generate
