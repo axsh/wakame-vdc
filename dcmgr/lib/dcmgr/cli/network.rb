@@ -843,7 +843,9 @@ __END
         nw = M::Network.filter(cond).all
         print ERB.new(<<__END, nil, '-').result(binding)
 <%- nw.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.dhcp_range_dataset.count %>
+<%-   row.dhcp_range.each { |r| -%>
+<%=     row.canonical_uuid %>\t<%= r.range_begin.to_s %>\t<%= r.range_end.to_s %>
+<%-   } -%>
 <%- } -%>
 __END
       end
