@@ -836,7 +836,7 @@ Network UUID:
 Dynamic IP Address Range:
 <%- nw.dhcp_range_dataset.each { |r| -%>
   <%= r.range_begin.to_s %> - <%= r.range_end.to_s %>
-<%- } %>
+<%- } -%>
 __END
       else
         cond = {}
