@@ -10,7 +10,7 @@ require 'fuguta'
 
 Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr
 
-Dcmgr.run_initializers
+Dcmgr.run_initializers('logger', 'sequel')
 
 require 'optparse'
 
