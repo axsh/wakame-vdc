@@ -15,7 +15,7 @@ module Dcmgr
       end
 
       def execute(cmd, args)
-        script = File.join(Dcmgr.conf.script_root_path, 'storage_service')
+        script = File.join(Dcmgr::Configurations.hva.script_root_path, 'storage_service')
         cmd = "/usr/bin/env #{@env.join(' ')} %s " + cmd
         args = [script] + args
         res = sh(cmd, args)
