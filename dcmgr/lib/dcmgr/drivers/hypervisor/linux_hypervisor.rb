@@ -105,7 +105,7 @@ module Dcmgr
 
           logger.info("Setting up metadata drive image:#{hc.inst_id}")
           # truncate creates sparsed file.
-          sh("/usr/bin/truncate -s 10m '#{hc.metadata_img_path}'; sync;")
+          sh("/usr/bin/truncate -s 10m '#{hc.metadata_img_path}'")
           sh("parted %s < %s", [hc.metadata_img_path, LinuxHypervisor.template_real_path('metadata.parted')])
           res = sh("kpartx -av %s", [hc.metadata_img_path])
           if res[:stdout] =~ /^add map (\w+) /
