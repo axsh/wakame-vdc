@@ -16,7 +16,7 @@ module Dcmgr::Cli
         method_option :state, :type => :string, :desc => "The state of the backup object."
         method_option :size, :type => :numeric, :desc => "The original file size of the backup object."
         method_option :allocation_size, :type => :numeric, :desc => "The allcated file size of the backup object."
-        method_option :checksum, :type => :string, :required=>true, :desc => "The checksum of the backup object."
+        method_option :checksum, :type => :string, :desc => "The checksum of the backup object."
         method_option :description, :type => :string, :desc => "Description of the backup storage"
         method_option :service_type, :type => :string, :desc => "Service type of the backup object. (#{Dcmgr::Configurations.dcmgr.service_types.keys.sort.join(', ')})"
         method_option :container_format, :type => :string, :desc => "The container format of the backup object.(#{CONTAINER_FORMAT.keys.join(', ')})"
