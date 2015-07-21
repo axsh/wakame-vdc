@@ -122,3 +122,12 @@ task_update() {
    ) \
    $(base_uri)/${namespace}s/${uuid}.$(suffix)
 }
+
+task_show_password() {
+  local namespace=$1 cmd=$2 uuid=$3
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  call_api -X GET $(base_uri)/${namespace}s/${uuid}/password.$(suffix)
+}
