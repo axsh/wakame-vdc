@@ -8,23 +8,6 @@ module Dcmgr
     end
 
     module ClassMethods
-      def conf
-        depr_msg = %{
-          Dcmgr.conf is DEPRECATED!
-          Use the new Dcmgr::Configurations methods instead. Example:
-          For hva.conf:   Dcmgr::Configurations.hva
-          For dcmgr.conf: Dcmgr::Configurations.dcmgr
-          etc.
-
-          Dcmgr.conf was used at:
-          #{caller.first}
-        }
-
-        puts(depr_msg)
-
-        Dcmgr::Configurations.last
-      end
-
       def load_conf(conf_class, files = nil)
         depr_msg = %{
           Dcmgr.load_conf is DEPRECATED!

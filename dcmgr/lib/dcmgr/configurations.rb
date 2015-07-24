@@ -7,9 +7,6 @@ module Dcmgr
     def self.store_conf(name, conf)
       @conf ||= Hash.new { |hash, key| raise "'#{key}' was not loaded." }
       @conf[name.to_sym] = conf
-
-      # Required for the deprecated Dcmgr.conf syntax
-      @conf[:last] = conf
     end
 
     def self.load(conf_class, files = nil)
@@ -39,11 +36,6 @@ module Dcmgr
       else
         @conf.has_key?(name.to_sym)
       end
-    end
-
-    # This method's only here to support the deprecated Dcmgr.conf method
-    def self.last
-      @conf && @conf[:last]
     end
 
     # This allows us to access the configurations as if they're methods of
