@@ -98,6 +98,9 @@ module Dcmgr
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
     autoload :QueuedJob, 'dcmgr/models/queued_job'
     autoload :Alarm, 'dcmgr/models/alarm'
+    autoload :VirtualDataCenter, 'dcmgr/models/virtual_data_center'
+    autoload :VirtualDataCenterSpec, 'dcmgr/models/virtual_data_center_spec'
+    autoload :VirtualDataCenterInstance, 'dcmgr/models/virtual_data_center_instance'
 
     require 'dcmgr/models/log_storage/base'
     module LogStorage
