@@ -177,5 +177,7 @@ module Dcmgr
     define_error(:UnknownParams, 400, '198')
     define_error(:UnknownEvaluationPeriods, 400, '199')
     define_error(:UnknownNotificationPeriods, 400, '200')
+
+    define_error(:UnknownVirtualDataCenter, 400, '201')
   end
 end
