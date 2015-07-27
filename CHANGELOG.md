@@ -11,6 +11,30 @@ Before this version, Wakame-vdc was constantly releasing every time we merged co
 
 From now on we will release stable versions every few months while keeping track of the changes in this file.
 
+`Added` Support for Windows instances.
+
+`Added` An RPM package to install mussel.
+
+`Added` Bash completion for the mussel commands.
+
+`Added` A .deb package to install the wakame-init script on machine images running Ubuntu.
+
+`Changed` Deleting a load balancer now only outputs its UUID instead of a full hash.
+
+`Fixed` Several small bugfixes in vdc-manage.
+
+`Fixed` A couple of missing localization lines in the GUI.
+
+`Fixed` An issue where HVA would crash if dc_network wasn't set in the database.
+
+`Fixed` An issue where it was impossible to filter WebAPI output for halted instances or load balancers.
+
+`Fixed` An issue where load balancers would some times fail because they were trying to start before the network is up.
+
+`Fixed` A crash that would occur in the GUI when logging in with a user that's not associated to any accounts.
+
+`Fixed` An issue where the backup cleaner script wouldn't be able to connect to the MySQL database.
+
 ## [15.03] - 2015-03-18
 
 ## [13.08] - 2013-08-29
