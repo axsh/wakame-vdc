@@ -206,7 +206,9 @@ function Generate_Password
 {
     try {
 	# Generate password
+	$mdl = Get_MD_Letter
 	Add-Type -AssemblyName System.Web
+	$NotSet = $true
 
 	# Although we use the Windows built-in GeneratePassword
 	# function for generating random passwords, it is still
@@ -219,7 +221,11 @@ function Generate_Password
 	# make the problem negligible.
 
 	$attemptsLeft=5 # default max number of attempts
-	$NotSet = $true
+	if (Test-Path ("$mdl\meta-data\retry-gen-password")) {
+	    $retryString = Read_Metadata("retry-gen-password")
+	    $attemptsLeft = [int] $retryString
+	}
+
 	while ( $NotSet -and $attemptsLeft -gt 0 ) {
 	    try {
 		$attemptsLeft = $attemptsLeft - 1
@@ -244,7 +250,7 @@ function Generate_Password
     }
     catch {
 	$Error[0] | Write-Host
-	Write-Host "Error adding System.web type for GeneratePassword()"
+	Write-Host "Error in setup for changing Administrator password "
     }
 
     if ( $NotSet ) { return }
@@ -255,7 +261,6 @@ function Generate_Password
 	$rsaProvider = New-Object System.Security.Cryptography.RSACryptoServiceProvider
 	$rsaProvider.FromXmlString($XmlPublicKey.InnerXml)
 	$ee = $rsaProvider.Encrypt($randpass,$true)
-	$mdl = Get_MD_Letter
 	[System.IO.File]::WriteAllBytes("$mdl\meta-data\pw.enc",$ee)
     }
     catch {
