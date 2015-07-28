@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 `Changed` Adopted Semantic Versioning.
 
-Before this version, Wakame-vdc was constantly releasing every time we merged code while some times assigning a version number based on the current date. Since version numbers based on date don't conform to semantic versioning, we have decided to drop that format.
+Before this version, Wakame-vdc was constantly releasing every time we merged code while sometimes assigning a version number based on the current date. Since version numbers based on date don't conform to semantic versioning, we have decided to drop that format.
 
 From now on we will release stable versions every few months while keeping track of the changes in this file.
 
