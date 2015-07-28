@@ -207,17 +207,48 @@ function Generate_Password
     try {
 	# Generate password
 	Add-Type -AssemblyName System.Web
-	$randpass = [System.Web.Security.Membership]::GeneratePassword(10,2).ToCharArray()
-	$Encode = New-Object "System.Text.UTF8Encoding"
-	$randpasstxt = $Encode.GetString([byte[]] $randpass)
 
-	# Change Administrator password
-	$computer=hostname
-	$username="Administrator"
-	$user = [adsi]"WinNT://$computer/$username,user"
-	$user.SetPassword($randpasstxt)
-	$user.SetInfo()
+	# Although we use the Windows built-in GeneratePassword
+	# function for generating random passwords, it is still
+	# possible for it to generate a password that does not meet
+	# Windows password complexity requirements. In such a case,
+	# SetPassword will throw an exception. The code below will
+	# catch the exception and will try again. For
+	# GeneratePassword(10,2), a bad password appeared after 250
+	# iterations, so only a few attempts should be necessary to
+	# make the problem negligible.
 
+	$attemptsLeft=5 # default max number of attempts
+	$NotSet = $true
+	while ( $NotSet -and $attemptsLeft -gt 0 ) {
+	    try {
+		$attemptsLeft = $attemptsLeft - 1
+
+		$randpass = [System.Web.Security.Membership]::GeneratePassword(10,2).ToCharArray()
+		$Encode = New-Object "System.Text.UTF8Encoding"
+		$randpasstxt = $Encode.GetString([byte[]] $randpass)
+
+		# Change Administrator password
+		$computer=hostname
+		$username="Administrator"
+		$user = [adsi]"WinNT://$computer/$username,user"
+		$user.SetPassword($randpasstxt)
+		$user.SetInfo()
+		$NotSet = $false  # exit loop
+	    }
+	    catch {
+		$Error[0] | Write-Host
+		Write-Host "Error occurred while setting Administrator password ($attemptsLeft attempts left)"
+	    }
+	}
+    }
+    catch {
+	$Error[0] | Write-Host
+	Write-Host "Error adding System.web type for GeneratePassword()"
+    }
+
+    if ( $NotSet ) { return }
+    try {
 	# Encrypt password
 	$MetaSshpub = Read_Metadata("public-keys\0\openssh-key")
 	$XmlPublicKey =  sshpubkey2xml( $MetaSshpub )
@@ -229,6 +260,6 @@ function Generate_Password
     }
     catch {
 	$Error[0] | Write-Host
-	Write-Host "Error occurred while setting Administrator password"
+	Write-Host "Error occurred while encrypting Administrator password"
     }
 }
