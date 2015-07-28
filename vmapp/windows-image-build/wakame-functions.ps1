@@ -211,6 +211,13 @@ function Generate_Password
 	$Encode = New-Object "System.Text.UTF8Encoding"
 	$randpasstxt = $Encode.GetString([byte[]] $randpass)
 
+	# Change Administrator password
+	$computer=hostname
+	$username="Administrator"
+	$user = [adsi]"WinNT://$computer/$username,user"
+	$user.SetPassword($randpasstxt)
+	$user.SetInfo()
+
 	# Encrypt password
 	$MetaSshpub = Read_Metadata("public-keys\0\openssh-key")
 	$XmlPublicKey =  sshpubkey2xml( $MetaSshpub )
@@ -219,13 +226,6 @@ function Generate_Password
 	$ee = $rsaProvider.Encrypt($randpass,$true)
 	$mdl = Get_MD_Letter
 	[System.IO.File]::WriteAllBytes("$mdl\meta-data\pw.enc",$ee)
-
-	# Change Administrator password
-	$computer=hostname
-	$username="Administrator"
-	$user = [adsi]"WinNT://$computer/$username,user"
-	$user.SetPassword($randpasstxt)
-	$user.SetInfo()
     }
     catch {
 	$Error[0] | Write-Host
