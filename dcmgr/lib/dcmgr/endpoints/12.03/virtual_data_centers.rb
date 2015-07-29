@@ -73,7 +73,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
     raise E::UnknownVirtualDataCenter, params['id'] if vdc.nil?
 
     account_id = @account.canonical_uuid
-    vdc.vdc_instances.each do |instance|
+    vdc.instances.each do |instance|
       request_forward do
         header('X-VDC-Account-UUID', account_id)
         delete("/instances/#{instance.canonical_uuid}.yml")

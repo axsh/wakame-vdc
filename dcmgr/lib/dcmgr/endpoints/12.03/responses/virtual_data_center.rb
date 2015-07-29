@@ -19,7 +19,7 @@ module Dcmgr::Endpoints::V1203::Responses
           :deleted_at => deleted_at,
         }
 
-        self.vdc_instances.each do |i|
+        self.instances.each do |i|
           instance = {
             :uuid => i.canonical_uuid,
             :state => i.state,

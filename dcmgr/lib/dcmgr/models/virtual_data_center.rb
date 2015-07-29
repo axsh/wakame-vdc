@@ -6,10 +6,15 @@ module Dcmgr::Models
 
     one_to_one :virtual_data_center_spec
     alias :vdc_spec :virtual_data_center_spec 
-    one_to_many :virtual_data_center_instance
 
-    many_to_many :vdc_instances, :class=>Instance, :join_table=>:virtual_data_center_instances, :right_key=>:instance_id, :right_primary_key=>:id do |ds|
-ds.alives_and_termed
+    one_to_many :virtual_data_center_instance
+    alias :vdc_instances :virtual_data_center_instance
+
+    many_to_many :instances, :class=>Instance, :join_table=>:virtual_data_center_instances, :right_key=>:instance_id, :right_primary_key=>:id do |ds|
+      # "SELECT `instances`.* FROM `instances` INNER JOIN `virtual_data_center_instances` ON 
+      # ((`virtual_data_center_instances`.`instance_id` = `instances`.`id`) AND (`virtual_data_center_instances`.`virtual_data_center_id` = 56))
+      # WHERE (terminated_at IS NULL OR terminated_at >= '2015-07-29 05:59:15')"
+      ds.alives_and_termed
     end
 
     def self.entry_new(account)
