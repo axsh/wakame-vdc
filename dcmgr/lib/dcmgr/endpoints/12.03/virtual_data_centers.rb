@@ -96,7 +96,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
 
     instance_params = []
     vdc_spec.each { |k,v|
-      instance_params << v.merge(instance_spec)
+      instance_params << {
+        'image_id' => v['image_id'],
+        'ssh_key_id' => v['ssh_key_id'],
+        'vifs' => v['vifs'],
+        'user_data' => YAML.dump(v['user_data']),
+      }.merge(instance_spec)
     }
 
     instance_params

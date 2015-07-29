@@ -21,10 +21,20 @@ module Dcmgr::Endpoints::V1203::Responses
 
         self.vdc_instances.each do |i|
           instance = {
-            :uuid => i.uuid,
+            :uuid => i.canonical_uuid,
             :state => i.state,
           }
           h[:instances] << instance
+
+          user_data = YAML.load(i.user_data)
+          next if user_data['port'].nil?
+
+          port = user_data['port']
+
+          i.instance_nic.each do |vif|
+            direct_lease = vif.direct_ip_lease_dataset.first
+            h[:endpoint] = "#{direct_lease.ipv4}:#{user_data['port']}"
+          end
         end
 
         h
