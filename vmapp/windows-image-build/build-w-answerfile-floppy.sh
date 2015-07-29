@@ -193,10 +193,6 @@ configure-metadata-disk()
     POWERCAT_LOCAL="$SCRIPT_DIR/powercat.ps1"
     # For reference, powercat.ps1 from commit 081bd91 has worked well.
     
-    # powercat gives netcat functionality to powershell, but command options are
-    # quite different so be sure to read the help in the file.  One particularly useful
-    # option is -ep, which makes it easy to create a remote shell that can be driven
-    # by test scripts running on a Linux machine.
 
     if [ "$POWERCAT" != "" ]; then
 	if ! [ -f "$POWERCAT_LOCAL" ]; then
@@ -206,27 +202,53 @@ configure-metadata-disk()
 	    }
 	fi
 	sudo cp "$POWERCAT_LOCAL" mntpoint/powercat.ps1
-	# include a short batch file to get around execution policies
+
 	sudo bash -c "cat >mntpoint/powercat.hint" <<EOF
+
+Powercat.ps1 gives netcat functionality to PowerShell, but command
+options are quite different from netcat in Linux so be sure to read
+the help in the file.  One particularly useful option is -ep, which
+makes it easy to create a remote shell that can be driven by test
+scripts running on a Linux machine.
+
 Before using it is necessary to source the powercat.ps1 file.
-Do so by opening up a powershell window and doing:
+Do so by opening up a PowerShell window and doing:
 . ./powercat.ps1
 
 (On Windows Server 2008, it may be necessary to do this first:
 set-executionpolicy remotesigned
 )
 
+Remote shell hint:
+==================
 On some reachable Linux host do the following in a terminal:
 nc -l 6789
 
-Then in the same powershell window do:
+Then in the some PowerShell window do:
 powercat -c ip.address.of.linux -p 6789 -ep
 
-A powershell prompt should appear in the Windows terminal and
-remote commands can be issued.
+A PowerShell prompt should appear in the Windows terminal and remote
+commands can be issued, with some limitations.  Experiment!
 
-See documentation inside powercat.ps1 to understand differences
-from netcat on Linux.
+File from Linux hint:
+=====================
+On some reachable Linux host do the following:
+cat source-file | nc -l 6789
+
+Then in the some PowerShell window do:
+powercat -c ip.address.of.linux -p 6789 -of c:/full/path/to/target/file
+(not sure why relative file paths did not work)
+
+File to Linux hint:
+===================
+On some reachable Linux host do the following:
+nc -l 6789 </dev/null >target_file
+
+Then in the some PowerShell window do:
+powercat -c ip.address.of.linux -p 6789 -i c:/full/path/to/source/file
+(here a relative path failed, but one in the same directory worked)
+
+Good Luck!
 EOF
     fi
     
