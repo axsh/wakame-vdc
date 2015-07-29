@@ -24,12 +24,14 @@ module Dcmgr::Models
       vdc
     end
 
-    def add_virtual_data_center_spec(spec)
+    def add_virtual_data_center_spec(type, spec, spec_file)
       # Mash is passed in some cases.
-      raise ArgumentError, "The spec parameter must be a Hash. Got '#{spec.class}'" if !spec.is_a?(Hash)
+      raise ArgumentError, "The spec_file parameter must be a Hash. Got '#{spec_file.class}'" if !spec_file.is_a?(Hash)
       vdcs = VirtualDataCenterSpec.new
       vdcs.virtual_data_center_id = self.id
+      vdcs.type = type
       vdcs.spec = spec
+      vdcs.spec_file = spec_file
       vdcs.save
       vdcs
     end

@@ -47,7 +47,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
     # vdc_spec.convert
 
     vdc = M::VirtualDataCenter.entry_new(@account)
-    vdc.add_virtual_data_center_spec(spec_file)
+    vdc.add_virtual_data_center_spec(params['type'], params['spec'], spec_file)
 
     instance_params = generate_instance_params(params['type'], params['spec'], spec_file)
 

@@ -16,7 +16,9 @@ Sequel.migration do
     create_table(:virtual_data_center_specs) do
       primary_key :id, :type=>"int(11)"
       column :virtual_data_center_id, "int(11)", :null=>false
-      column :spec, "text", :null=>false
+      column :type, "varchar(255)", :null=>false
+      column :spec, "varchar(255)", :null=>false
+      column :spec_file, "text", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :deleted_at, "datetime"
