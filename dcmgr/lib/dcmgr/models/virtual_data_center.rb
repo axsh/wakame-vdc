@@ -26,7 +26,7 @@ module Dcmgr::Models
 
     def add_virtual_data_center_spec(spec)
       # Mash is passed in some cases.
-      raise ArgumentError, "The params parameter must be a Hash. Got '#{spec.class}'" if !spec.is_a?(Hash)
+      raise ArgumentError, "The spec parameter must be a Hash. Got '#{spec.class}'" if !spec.is_a?(Hash)
       vdcs = VirtualDataCenterSpec.new
       vdcs.virtual_data_center_id = self.id
       vdcs.spec = spec
@@ -36,7 +36,7 @@ module Dcmgr::Models
 
     def add_virtual_data_center_instance(instance_ids)
       # Mash is passed in some cases.
-      raise ArgumentError, "The params parameter must be a Array. Got '#{instance_ids.class}'" if !instance_ids.is_a?(Array)
+      raise ArgumentError, "The instance_ids parameter must be a Array. Got '#{instance_ids.class}'" if !instance_ids.is_a?(Array)
       instance_ids.each { |instance_id|
         vdci = VirtualDataCenterInstance.new
         vdci.virtual_data_center_id = self.id
