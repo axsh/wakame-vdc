@@ -21,7 +21,7 @@ function task_create() {
   [[ -n "${namespace}"       ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
   [[ -n "${cmd}"             ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
   [[ -n "${notification_id}" ]] || { echo "[ERROR] 'notification_id' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
-  [[ -n "${email}"           ]] || { echo "[ERROR] 'notification_id' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${email}"           ]] || { echo "[ERROR] 'email' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   call_api -X POST -d '$(cat ${email})' \
    $(base_uri)/${namespace}s
