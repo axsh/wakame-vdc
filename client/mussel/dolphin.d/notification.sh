@@ -5,11 +5,6 @@
 
 . ${BASH_SOURCE[0]%/*}/base.sh
 
-function task_index() {
-  echo "[ERROR] no such cmd '${cmd}'" >&2
-  exit 1
-}
-
 function task_show() {
   local namespace=$1 cmd=$2 notification_id=$3
 
