@@ -3,11 +3,11 @@
 All notable changes to Wakame-vdc will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0] - 2015-07-31
+## [15.4] - 2015-07-31
 
 `Changed` Adopted Semantic Versioning.
 
-Before this version, Wakame-vdc was constantly releasing every time we merged code while sometimes assigning a version number based on the current date. Since version numbers based on date don't conform to semantic versioning, we have decided to drop that format.
+Before this version, Wakame-vdc was constantly releasing every time we merged code while sometimes assigning a version number based on the current date. Since version numbers based on date don't conform to semantic versioning, we have decided to drop that format. The new format will be: `Major version`.`Minor version`.`Hotfix`
 
 From now on we will release stable versions every few months while keeping track of the changes in this file.
 
