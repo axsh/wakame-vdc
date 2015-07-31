@@ -3,7 +3,7 @@
 All notable changes to Wakame-vdc will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0] - 2015-07-31
+## [16.0] - 2015-07-31
 
 `Changed` Adopted Semantic Versioning.
 
