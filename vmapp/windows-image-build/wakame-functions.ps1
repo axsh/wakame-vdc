@@ -55,15 +55,7 @@ function Get_MD_Letter()
 	"Testing 222" | Write-Host
 	$vers = $PSVersionTable.PSVersion.Major
 	"PowerShell Version: $($vers)" | Write-Host
-	if ($vers -gt 2) {
-	    # Get-Disk is not defined for version 2 PowerShell, so
-	    # this will not work for Windows Server 2008. However, it
-	    # seems to be unnecessary because the metadata disk is
-	    # online by default.  It is needed to bring disks on
-	    # Windows Server 2012 online.
-	    "Bringing all disks online" | Write-Host
-	    Get-Disk | ? IsOffline | Set-Disk -IsOffline:$false  # make sure all disks are online
-	}
+	Bring_All_Disks_Online
         $metavol = Get-WmiObject -class win32_volume -filter "Label = 'METADATA'"
 	$script:MDLetter = $metavol.DriveLetter
 	if ($script:MDLetter -eq $null)
@@ -82,7 +74,7 @@ function Get_MD_Letter()
 	    throw $msg
 	}
 	# Make sure Metadata drive is not mounted readonly
-	if ($vers -gt 2) {  ## also not needed for Windows Server 2008
+	if ($vers -gt 2) {  ## Only needed for 2012, which does support Get-Disk
 	    Get-Disk | foreach {
 		$adisk =  $_
 		$_ | Get-Partition | foreach {
@@ -99,6 +91,42 @@ function Get_MD_Letter()
 	"Testing 444" | Write-Host
     }
     $script:MDLetter
+}
+
+function Bring_All_Disks_Online()
+{
+    # This code should work for both PowerShell on both Windows Server 2008 and 2012
+    "Bringing all disks online.  Errors below for disks already online is normal." | Write-Host
+    Get-WmiObject -class win32_diskdrive | foreach {
+	$diskID=$_.index
+	# hints from: http://winblog.ch/2012/02/28/using-wmi-to-bring-disks-online/
+	"select disk $diskID", "online disk noerr" | diskpart
+    }
+}
+
+function Take_Metadata_Offline()
+{
+    $mdl = Get_MD_Letter
+    if ( $script:MDLetter -eq "" ) {
+	Write-Host "Take_Metadata_Offline called without the metadrive's letter being set"
+	return
+    }
+    try {
+	$justLetter = $script:MDLetter.trim(":")
+	# A disk must be selected before the "offline disk" command
+        # will work.  Correctly selecting the metadata drive disk is a
+        # little tricky, but selecting the volume it is on is easy
+        # because the "select volume" can take a drive letter as an
+        # argument.  Fortunately, it also selects the disk, although
+        # this effect seems to be undocumented.
+	# (And we must use diskpart, because get-disk and set-disk
+	# are not in Powershell 2 on Windows 2008)
+	"select volume=$justLetter", "offline disk" | diskpart
+    }
+    catch {
+	$Error[0] | Write-Host
+	Write-Host "Error occurred while taking meta-data drive offline"
+    }
 }
 
 function Read_Metadata( $mdpath )
