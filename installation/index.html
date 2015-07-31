@@ -249,10 +249,10 @@
 <h2 id="lets-get-started">Let's get started</h2>
 <h3 id="yum-repository-setup">Yum repository setup</h3>
 <p>Add the official Wakame-vdc yum repository to <code>/etc/yum.repos.d</code>.</p>
-<pre><code>sudo curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
+<pre><code>sudo curl -o /etc/yum.repos.d/wakame-vdc-stable.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/yum_repositories/wakame-vdc-stable.repo
 </code></pre>
 <p>Add the Axsh OpenVZ yum repository to <code>/etc/yum.repos.d</code>. We are hosting an older version of OpenVZ on which Wakame-vdc is confirmed to be working.</p>
-<pre><code>sudo curl -o /etc/yum.repos.d/openvz.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo
+<pre><code>sudo curl -o /etc/yum.repos.d/openvz.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/yum_repositories/openvz.repo
 </code></pre>
 <p>Install <a href="https://fedoraproject.org/wiki/EPEL">EPEL</a>. We need to pull some OpenVZ dependencies from here.</p>
 <pre><code>sudo yum install -y epel-release
@@ -578,7 +578,7 @@ sudo start vdc-webui
 
 <!--
 MkDocs version  : 0.12.2
-Docs Build Date : 2015-06-09 06:35:58.726283
+Docs Build Date : 2015-07-31 09:13:06.228205
 -->
 </body>
 </html>
