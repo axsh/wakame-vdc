@@ -38,11 +38,11 @@ This guide will set up a basic Wakame-vdc environment on a single host. When we 
 
 Add the official Wakame-vdc yum repository to `/etc/yum.repos.d`.
 
-    sudo curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
+    sudo curl -o /etc/yum.repos.d/wakame-vdc-stable.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/yum_repositories/wakame-vdc-stable.repo
 
 Add the Axsh OpenVZ yum repository to `/etc/yum.repos.d`. We are hosting an older version of OpenVZ on which Wakame-vdc is confirmed to be working.
 
-    sudo curl -o /etc/yum.repos.d/openvz.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo
+    sudo curl -o /etc/yum.repos.d/openvz.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/yum_repositories/openvz.repo
 
 Install [EPEL](https://fedoraproject.org/wiki/EPEL). We need to pull some OpenVZ dependencies from here.
 

@@ -39,7 +39,7 @@ function install_wakame_init() {
 
   case "${distro}" in
     centos|rhel)
-      rsync -a $(cd ${BASH_SOURCE[0]%/*} && pwd)/../../rpmbuild/wakame-vdc.repo ${chroot_dir}/etc/yum.repos.d/wakame-vdc.repo
+      rsync -a $(cd ${BASH_SOURCE[0]%/*} && pwd)/../../rpmbuild/yum_repositories/wakame-vdc-stable.repo ${chroot_dir}/etc/yum.repos.d/wakame-vdc-stable.repo
       run_in_target ${chroot_dir} yum install -y wakame-init
       ;;
     ubuntu|debian)
