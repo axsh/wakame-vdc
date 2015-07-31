@@ -20,7 +20,7 @@ __END
 fi
 
 function call_api() {
-  echo $(curl -s "${api_uri}/api/12.03/instances/${inst_uuid}")
+  curl -s "${api_uri}/api/12.03/instances/${inst_uuid}/password"
 }
 
 function decrypt() {

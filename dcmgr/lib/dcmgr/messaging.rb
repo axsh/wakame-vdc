@@ -41,7 +41,7 @@ module Dcmgr
 
     def self.amqp_channel(&blk)
       if @amqp_connection.nil?
-        uri = AMQP::Client.parse_connection_uri(Dcmgr.conf.amqp_server_uri)
+        uri = AMQP::Client.parse_connection_uri(Dcmgr::Configurations.dcmgr.amqp_server_uri)
         default = ::AMQP.settings
         opts = {:host => uri['host'] || default[:host],
                 :port => uri['port'] || default[:port],
