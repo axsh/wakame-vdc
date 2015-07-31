@@ -101,6 +101,31 @@ function Get_MD_Letter()
     $script:MDLetter
 }
 
+function Take_Metadata_Offline()
+{
+    $mdl = Get_MD_Letter
+    if ( $script:MDLetter -eq "" ) {
+	Write-Host "Take_Metadata_Offline called without the metadrive's letter being set"
+	return
+    }
+    try {
+	$justLetter = $script:MDLetter.trim(":")
+	# A disk must be selected before the "offline disk" command
+        # will work.  Correctly selecting the metadata drive disk is a
+        # little tricky, but selecting the volume it is on is easy
+        # because the "select volume" can take a drive letter as an
+        # argument.  Fortunately, it also selects the disk, although
+        # this effect seems to be undocumented.
+	# (And we must use diskpart, because get-disk and set-disk
+	# are not in Powershell 2 on Windows 2008)
+	"select volume=$justLetter", "offline disk" | diskpart
+    }
+    catch {
+	$Error[0] | Write-Host
+	Write-Host "Error occurred while taking meta-data drive offline"
+    }
+}
+
 function Read_Metadata( $mdpath )
 {
     $mdl = Get_MD_Letter
