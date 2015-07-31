@@ -22,8 +22,8 @@ echo root:root | chpasswd
 
 # pre-setup
 ## deploy .repo files
-curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
-curl -o /etc/yum.repos.d/openvz.repo     -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo
+curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/yum_repositories/wakame-vdc-stable.repo
+curl -o /etc/yum.repos.d/openvz.repo     -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/yum_repositories/openvz.repo
 ## install epel
 yum install -y http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release
 
