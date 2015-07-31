@@ -234,29 +234,68 @@ function Generate_Password
 {
     try {
 	# Generate password
+	$mdl = Get_MD_Letter
 	Add-Type -AssemblyName System.Web
-	$randpass = [System.Web.Security.Membership]::GeneratePassword(10,2).ToCharArray()
-	$Encode = New-Object "System.Text.UTF8Encoding"
-	$randpasstxt = $Encode.GetString([byte[]] $randpass)
+	$NotSet = $true
 
+	# Although we use the Windows built-in GeneratePassword
+	# function for generating random passwords, it is still
+	# possible for it to generate a password that does not meet
+	# Windows password complexity requirements. In such a case,
+	# SetPassword will throw an exception. The code below will
+	# catch the exception and will try again. A test of
+	# GeneratePassword(10,2) produced an unacceptable password on
+	# average every 105 iterations, so 10 attempts should succeed
+	# with almost certainty (1 in 1.6538867745659126e+20).  This
+	# solution is a bit hackish, but has the advantage of not
+	# having to really understand Windows password rules and
+	# worrying that the rules could possibly change.
+
+	$attemptsLeft=10 # default max number of attempts
+	if (Test-Path ("$mdl\meta-data\retry-gen-password")) {
+	    $retryString = Read_Metadata("retry-gen-password")
+	    $attemptsLeft = [int] $retryString
+	}
+
+	while ( $NotSet -and $attemptsLeft -gt 0 ) {
+	    try {
+		$attemptsLeft = $attemptsLeft - 1
+
+		$randpass = [System.Web.Security.Membership]::GeneratePassword(10,2).ToCharArray()
+		$Encode = New-Object "System.Text.UTF8Encoding"
+		$randpasstxt = $Encode.GetString([byte[]] $randpass)
+
+		# Change Administrator password
+		$computer=hostname
+		$username="Administrator"
+		$user = [adsi]"WinNT://$computer/$username,user"
+		$user.SetPassword($randpasstxt)
+		$user.SetInfo()
+		$NotSet = $false  # exit loop
+	    }
+	    catch {
+		$Error[0] | Write-Host
+		Write-Host "Error occurred while setting Administrator password ($attemptsLeft attempts left)"
+	    }
+	}
+    }
+    catch {
+	$Error[0] | Write-Host
+	Write-Host "Error in setup for changing Administrator password "
+    }
+
+    if ( $NotSet ) { return }
+    try {
 	# Encrypt password
 	$MetaSshpub = Read_Metadata("public-keys\0\openssh-key")
 	$XmlPublicKey =  sshpubkey2xml( $MetaSshpub )
 	$rsaProvider = New-Object System.Security.Cryptography.RSACryptoServiceProvider
 	$rsaProvider.FromXmlString($XmlPublicKey.InnerXml)
 	$ee = $rsaProvider.Encrypt($randpass,$true)
-	$mdl = Get_MD_Letter
 	[System.IO.File]::WriteAllBytes("$mdl\meta-data\pw.enc",$ee)
-
-	# Change Administrator password
-	$computer=hostname
-	$username="Administrator"
-	$user = [adsi]"WinNT://$computer/$username,user"
-	$user.SetPassword($randpasstxt)
-	$user.SetInfo()
     }
     catch {
 	$Error[0] | Write-Host
-	Write-Host "Error occurred while setting Administrator password"
+	Write-Host "Error occurred while encrypting Administrator password"
     }
 }
