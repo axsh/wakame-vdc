@@ -215,12 +215,15 @@ function Generate_Password
 	# possible for it to generate a password that does not meet
 	# Windows password complexity requirements. In such a case,
 	# SetPassword will throw an exception. The code below will
-	# catch the exception and will try again. For
-	# GeneratePassword(10,2), a bad password appeared after 250
-	# iterations, so only a few attempts should be necessary to
-	# make the problem negligible.
+	# catch the exception and will try again. A test of
+	# GeneratePassword(10,2) produced an unacceptable password on
+	# average every 105 iterations, so 10 attempts should succeed
+	# with almost certainty (1 in 1.6538867745659126e+20).  This
+	# solution is a bit hackish, but has the advantage of not
+	# having to really understand Windows password rules and
+	# worrying that the rules could possibly change.
 
-	$attemptsLeft=5 # default max number of attempts
+	$attemptsLeft=10 # default max number of attempts
 	if (Test-Path ("$mdl\meta-data\retry-gen-password")) {
 	    $retryString = Read_Metadata("retry-gen-password")
 	    $attemptsLeft = [int] $retryString
