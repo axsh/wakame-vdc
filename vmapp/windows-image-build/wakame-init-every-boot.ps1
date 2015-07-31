@@ -59,4 +59,6 @@ catch {
     Write-Host "Error occurred while configuring Zabbix"
 }
 
+Take_Metadata_Offline
+
 "Finishing wakame-init-every-boot.ps1" | Write-Host
