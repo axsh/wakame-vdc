@@ -100,7 +100,7 @@ function Bring_All_Disks_Online()
     Get-WmiObject -class win32_diskdrive | foreach {
 	$diskID=$_.index
 	# hints from: http://winblog.ch/2012/02/28/using-wmi-to-bring-disks-online/
-	"select disk $diskID", "online disk noerr" | diskpart
+	"select disk $diskID", "online disk noerr" | diskpart | Write-Host
     }
 }
 
