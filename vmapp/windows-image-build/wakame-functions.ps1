@@ -1,3 +1,7 @@
+# All external commands are piped through Write-Host so they do
+# not access stdout and stderr directly, which avoids a bug in
+# PowerShell in Windows Server 2008.
+# see: http://www.leeholmes.com/blog/2008/07/30/workaround-the-os-handles-position-is-not-what-filestream-expected/
 
 function sshkeyfield( $barray, $index )
 {
@@ -100,7 +104,7 @@ function Bring_All_Disks_Online()
     Get-WmiObject -class win32_diskdrive | foreach {
 	$diskID=$_.index
 	# hints from: http://winblog.ch/2012/02/28/using-wmi-to-bring-disks-online/
-	"select disk $diskID", "online disk noerr" | diskpart | Write-Host
+	"select disk $diskID", "online disk noerr" | diskpart 2>&1 | Write-Host
     }
 }
 
@@ -121,7 +125,7 @@ function Take_Metadata_Offline()
         # this effect seems to be undocumented.
 	# (And we must use diskpart, because get-disk and set-disk
 	# are not in Powershell 2 on Windows 2008)
-	"select volume=$justLetter", "offline disk" | diskpart
+	"select volume=$justLetter", "offline disk" | diskpart 2>&1 | Write-Host
     }
     catch {
 	$Error[0] | Write-Host
