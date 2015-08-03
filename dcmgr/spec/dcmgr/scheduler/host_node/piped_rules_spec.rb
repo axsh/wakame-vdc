@@ -20,17 +20,23 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
         ')
       end
 
-      ds = Dcmgr::Models::HostNode.where(id: host.id)
+      host_ids = hosts.map { |h| h.id }
+      ds = Dcmgr::Models::HostNode.where(id: host_ids)
       allow(Isono::Models::NodeState).to receive(:filter).with(state: 'online').and_return(ds)
+
+      Dcmgr::Scheduler::HostNode::PipedRules.new.schedule(instance)
     end
+    let(:instance) { Fabricate(:instance, hypervisor: 'kvm') }
 
-    let(:host) { Fabricate(:host_node, hypervisor: 'kvm', node_id: 'hva.hoge') }
+    context 'with a single host' do
+      let(:hosts) do
+        h = Fabricate(:host_node, hypervisor: 'kvm', node_id: 'hva.hoge')
+        [h]
+      end
 
-    it 'does whatever' do
-      i = Fabricate(:instance, hypervisor: 'kvm')
-      Dcmgr::Scheduler::HostNode::PipedRules.new.schedule(i)
-
-      expect(i.host_node).to eq(host)
+      it 'uses the host' do
+        expect(instance.host_node).to eq(hosts.first)
+      end
     end
   end
 end
