@@ -11,6 +11,12 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
           service_type("std", "StdServiceType") {
             host_node_scheduler(:PipedRules) do
 
+              through(:RequestParamToGroup) {
+                default "hng-shhost"
+
+                key "host_node_group"
+                pair "local", "hng-local"
+              }
               through(:LeastUsageBy) {
                 key "memory_size"
               }
@@ -20,19 +26,32 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
         ')
       end
 
-      host_ids = hosts.map { |h| h.id }
-      ds = Dcmgr::Models::HostNode.where(id: host_ids)
-      allow(Isono::Models::NodeState).to receive(:filter).with(state: 'online').and_return(ds)
+      host_ids = host_groups.map do |hng|
+        hng.mapped_uuids.map do |h|
+          h.id
+        end
+      end
+
+      host_ids.each do |h|
+        ds = Dcmgr::Models::HostNode.where(id: h)
+        allow(Isono::Models::NodeState).to receive(:filter).with(state: 'online').and_return(ds)
+      end
 
       svc_type = Dcmgr::Scheduler.service_type(instance)
       svc_type.host_node.schedule(instance)
     end
-    let(:instance) { Fabricate(:instance, hypervisor: 'kvm') }
+    let(:instance) { Fabricate(:instance, hypervisor: 'kvm', request_params: {"host_node_group" => "local"}) }
 
     context 'with a single host' do
       let(:hosts) do
-        h = Fabricate(:host_node, hypervisor: 'kvm', node_id: 'hva.hoge')
+        h = Fabricate(:host_node, uuid: 'kvm1', hypervisor: 'kvm', node_id: 'hva.kvm1')
         [h]
+      end
+
+      let(:host_groups) do
+        hng = Fabricate(:host_node_group, uuid: 'hng-local', name: 'hng-local')
+        hng.map_resource(hosts.first, 0)
+        [hng]
       end
 
       it 'uses the host' do
