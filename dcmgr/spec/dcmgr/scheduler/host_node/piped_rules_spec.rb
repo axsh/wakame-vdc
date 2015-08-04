@@ -24,7 +24,8 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
       ds = Dcmgr::Models::HostNode.where(id: host_ids)
       allow(Isono::Models::NodeState).to receive(:filter).with(state: 'online').and_return(ds)
 
-      Dcmgr::Scheduler::HostNode::PipedRules.new.schedule(instance)
+      svc_type = Dcmgr::Scheduler.service_type(instance)
+      svc_type.host_node.schedule(instance)
     end
     let(:instance) { Fabricate(:instance, hypervisor: 'kvm') }
 
