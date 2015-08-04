@@ -14,13 +14,13 @@ module Cli
       if options[:name] != nil && options[:name].length > 255
         raise "Account name can not be longer than 255 characters."
       end
-      
+
       fields = {:name => options[:name],:description => options[:description]}
       fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
       puts super(Account,fields)
     end
-    
-    desc "show [UUID] [options]", "Show all accounts currently in the database"    
+
+    desc "show [UUID] [options]", "Show all accounts currently in the database"
     method_option :with_deleted, :type => :boolean, :default => false, :aliases => "-d", :desc => "Show deleted accounts."
     def show(uuid = nil)
       if uuid
@@ -69,7 +69,7 @@ __END
           if options[:with_deleted]
             row << (!u.deleted_at.nil?).to_s
           end
-          
+
           table << row
         }
         if table.size > 1
@@ -77,8 +77,8 @@ __END
         end
       end
     end
-    
-    desc "modify UUID [options]", "Modify an existing account."    
+
+    desc "modify UUID [options]", "Modify an existing account."
     method_option :name, :type => :string, :aliases => "-n", :desc => "The new name for the account."
     method_option :description, :type => :string, :aliases => "-d", :desc => "The new description for the account."
     def modify(uuid)
@@ -86,25 +86,25 @@ __END
       raise "Description can not be longer than 100 characters." if options[:description] != nil && options[:description].length > 100
       super(Account,uuid,{:name => options[:name],:description => options[:description]})
     end
-    
+
     #TODO: show account to confirm deletion
-    desc "del UUID [options]", "Deletes an existing account."    
+    desc "del UUID [options]", "Deletes an existing account."
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def del(uuid)
       to_do = Account[uuid]
       Error.raise("Unknown frontend account UUID: #{uuid}", 100) if to_do == nil
 
       super(Account,uuid)
-      
+
       puts "Account #{uuid} has been deleted." if options[:verbose]
     end
-    
+
     desc "enable UUID [options]", "Enable an account."
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def enable(uuid)
       to_enable = Account[uuid]
       Error.raise("Unknown frontend account UUID: #{uuid}", 100) if to_enable == nil
-      
+
       if to_enable.enable?
         puts "Account #{uuid} is already enabled." if options[:verbose]
       else
@@ -114,29 +114,29 @@ __END
         puts "Account #{uuid} has been enabled." if options[:verbose]
       end
     end
-    
-    desc "disable UUID [options]", "Disable an account."    
+
+    desc "disable UUID [options]", "Disable an account."
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def disable(uuid)
       to_disable = Account[uuid]
       UnknownUUIDError.raise(uuid) if to_disable == nil
-      
+
       if to_disable.disable?
         puts "Account #{id} is already disabled." if options[:verbose]
       else
         to_disable.enabled = false
         to_disable.save_changes
-        
+
         puts "Account #{uuid} has been disabled." if options[:verbose]
       end
     end
-    
+
     desc "associate UUID", "Associate an account with a user or multiple users."
-    method_option :users, :type => :array, :required => true, :aliases => "-u", :desc => "The uuid of the users to associate with the account. Any non-existing uuid will be ignored"    
+    method_option :users, :type => :array, :required => true, :aliases => "-u", :desc => "The uuid of the users to associate with the account. Any non-existing uuid will be ignored"
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
-    def associate(uuid)      
+    def associate(uuid)
       account = Account[uuid] || UnknownUUIDError.raise(uuid)
-      
+
       options[:users].each { |u|
         user = User[u]
         if user.nil?
@@ -149,18 +149,18 @@ __END
             user.primary_account_id = account.uuid
             user.save_changes
           end
-          
+
           puts "Account #{uuid} successfully associated with user #{u}." if options[:verbose]
         end
       }
     end
-    
+
     desc "dissociate UUID", "Dissociate an account from a user or multiple users."
     method_option :users, :type => :array, :required => true, :aliases => "-u", :desc => "The uuid of the users to dissociate from the account. Any non-existing or non numeral id will be ignored"
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def dissociate(uuid)
       account = Account[uuid] || UnknownUUIDError.raise(uuid)
-      
+
       options[:users].each { |u|
         user = User[u]
         if user.nil?
@@ -169,9 +169,9 @@ __END
           puts "Account #{uuid} is not associated with user #{u}." if options[:verbose]
         else
           account.remove_user(user)
-          
+
           puts "Account #{uuid} successfully dissociated from user #{u}." if options[:verbose]
-          
+
           if account.uuid == user.primary_account_id
             user.primary_account_id = nil
             user.save_changes
@@ -180,10 +180,10 @@ __END
         end
       }
     end
-    
+
     class OAuthOperation < Base
       namespace :oauth
-      
+
       desc "add ACCOUNT_UUID", "Generate/Add OAuth key and secret"
       def add(account_uuid)
         account = Account[account_uuid] || UnknownUUIDError.raise(account_uuid)
@@ -223,12 +223,12 @@ __END
         end
       end
     end
-    
+
     register OAuthOperation, 'oauth', "oauth [#{OAuthOperation.tasks.keys.join(', ')}] UUID [options]", "Set/Unset quota values for the account"
 
     class QuotaOperation < Base
       namespace :quota
-      
+
       desc "set UUID TYPE VALUE", "Set quota to the account."
       def set(uuid, quota_type, quota_value)
         account = Account[uuid] || UnknownUUIDError.raise(uuid)
@@ -251,6 +251,6 @@ __END
     end
 
     register QuotaOperation, 'quota', "quota [#{QuotaOperation.tasks.keys.join(', ')}] UUID [options]", "Set/Unset quota values for the account"
-    
+
   end
 end

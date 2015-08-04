@@ -245,7 +245,7 @@ module Dcmgr
                 argv.unshift(h[0])
               end
 
-              cgexec = [File.expand_path('cgexec.sh', Dcmgr.conf.script_root_path), '-g', "#{cgctx.subsystems.join(',')}:#{cgctx.scope}", '-c']
+              cgexec = [File.expand_path('cgexec.sh', Dcmgr::Configurations.hva.script_root_path), '-g', "#{cgctx.subsystems.join(',')}:#{cgctx.scope}", '-c']
               argv = cgexec + argv
             end
             super(env, *argv, options)

@@ -28,7 +28,7 @@ module Dcmgr
 
         def send(value)
           raise ArgumentError unless value.is_a?(Hash)
-          DolphinClient.domain = Dcmgr.conf.dolphin_server_uri
+          DolphinClient.domain = Dcmgr::Configurations.hva.dolphin_server_uri
           DolphinClient::Event.post(value)
         end
       end

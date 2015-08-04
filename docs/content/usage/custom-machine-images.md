@@ -101,7 +101,7 @@ on-the-fly while starting an instance, and scripts can read it from a
 special file at `/metadata/user-data`.
 
 ```bash
-curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
+curl -o /etc/yum.repos.d/wakame-vdc-stable.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/yum_repositories/wakame-vdc-stable.repo
 
 yum install -y wakame-init
 ```

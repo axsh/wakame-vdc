@@ -25,7 +25,7 @@ function setUp() {
 function test_instance_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|destroy|index|move|poweroff|poweron|reboot|show|show_volumes|update|xcreate]" "${res}"
+  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|destroy|index|move|poweroff|poweron|reboot|show|show_password|show_volumes|update|xcreate]" "${res}"
 }
 
 ### index
@@ -144,6 +144,22 @@ function test_instance_update_uuid() {
   run_cmd ${MUSSEL_ARGS}
   assertEquals 0 $?
 }
+
+### show_password
+
+function test_instance_show_password_no_uuid() {
+  extract_args ${namespace} show_password
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals 0 $?
+}
+
+function test_instance_show_password_uuid() {
+  extract_args ${namespace} show_password i-xxx
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals 0 $?
+}
+
+## shunit2
 
 ## shunit2
 

@@ -154,47 +154,31 @@ module Dcmgr::Models
     end
 
     def add_ipv4_dynamic_range(range_begin, range_end)
-      range_begin = IPAddress::IPv4.new("#{range_begin}/#{self[:prefix]}")
-      range_end = IPAddress::IPv4.new("#{range_end}/#{self[:prefix]}")
-      test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
-         case op
-         when :coverbegin
-           range.range_end = range_begin
-         when :coverend
-           range.range_begin = range_end
-         when :inccur
-           range.destroy
-         end
-         range.save_changes
-      }
+      # Acquire locks
+      dhcp_range_dataset.for_update.select(1).single_value
+      range_begin_u32, range_end_u32 = validate_range_args(range_begin, range_end)
 
-      self.add_dhcp_range(:range_begin=>range_begin, :range_end=>range_end)
-
-      self
+      hit_range_ds = dhcp_range_dataset.hit_ranges(range_begin_u32, range_end_u32)
+      if hit_range_ds.empty?
+        # no overwrap ranges. add new range.
+        return self.add_dhcp_range(range_begin: range_begin_u32,
+                                   range_end: range_end_u32)
+      else
+        raise "Given range includes edge overwrap to existing range"
+      end
     end
 
     def del_ipv4_dynamic_range(range_begin, range_end)
-      range_begin = IPAddress::IPv4.new("#{range_begin}/#{self[:prefix]}")
-      range_end = IPAddress::IPv4.new("#{range_end}/#{self[:prefix]}")
-      test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
-        case op
-        when :coverbegin
-          range.range_end = range_begin
-        when :coverend
-          range.range_begin = range_end
-        when :inccur
-          range.destroy
-        when :incnew
-          t = range.range_end
-          range.range_end = range_begin
-          self.add_dhcp_range(:range_begin=>range_end, :range_end=>t)
-        end
-        range.save_changes
-      }
+      # Acquire locks
+      dhcp_range_dataset.for_update.select(1).all
+      range_begin_u32, range_end_u32 = validate_range_args(range_begin, range_end)
+      ranges_to_destroy = dhcp_range_dataset.where(range_begin: range_begin_u32, range_end: range_end_u32)
 
-      self
+      raise "Given range not found" if ranges_to_destroy.empty?
+
+      ranges_to_destroy.destroy
     end
-
+    
     # To check the IP address that can not be used.
     # TODO add a check of network services
     def reserved_ip?(ip)
@@ -306,50 +290,15 @@ module Dcmgr::Models
     end
 
     def validate_range_args(range_begin, range_end)
-      if range_begin.is_a?(IPAddress::IPv4)
-        raise "Different prefix length: range_begin" if range_begin.prefix != self.prefix
-      else
-        range_begin = IPAddress::IPv4.new("#{range_begin}/#{self.prefix}")
-      end
-      if range_end.is_a?(IPAddress::IPv4)
-        raise "Different prefix length: range_end" if range_end.prefix != self.prefix
-      else
-        range_end = IPAddress::IPv4.new("#{range_end}/#{self.prefix}")
-      end
+      range_begin = IPAddress::IPv4.new("#{range_begin}/#{self.prefix}")
+      range_end = IPAddress::IPv4.new("#{range_end}/#{self.prefix}")
       if !(self.ipv4_ipaddress.include?(range_begin) && self.ipv4_ipaddress.include?(range_end))
         raise "Given address range is out of the subnet: #{self.ipv4_ipaddress} #{range_begin}-#{range_end}"
       end
       if range_begin > range_end
-        t = range_begin
-        range_begin = range_end
-        range_end = t
+        raise "range_begin (#{range_begin}) is larger than range_end (#{range_end})"
       end
-      [range_begin, range_end]
-    end
-
-
-    def test_inclusion(range_begin, range_end, &blk)
-      dhcp_range_dataset.each { |r|
-        op = :outrange
-        if r.range_begin < range_begin && r.range_end > range_begin
-          # range_begin is in the range.
-          if r.range_end < range_end
-            op = :coverbegin
-          else
-            # new range is included in current range.
-            op = :incnew
-          end
-        elsif r.range_begin < range_end && r.range_end > range_end
-          # range_end is in the range.
-          if r.range_begin > range_begin
-            op = :coverend
-          end
-        elsif r.range_begin >= range_begin && r.range_end <= range_end
-          # current range is included in new range.
-          op = :inccur
-        end
-        blk.call(r, op)
-      }
+      [range_begin.to_u32, range_end.to_u32]
     end
   end
 end
