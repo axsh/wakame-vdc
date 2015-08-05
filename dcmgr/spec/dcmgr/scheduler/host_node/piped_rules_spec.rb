@@ -37,25 +37,52 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
         allow(Isono::Models::NodeState).to receive(:filter).with(state: 'online').and_return(ds)
       end
 
-      svc_type = Dcmgr::Scheduler.service_type(instance)
-      svc_type.host_node.schedule(instance)
+      instances.each do |i|
+        svc_type = Dcmgr::Scheduler.service_type(i)
+        svc_type.host_node.schedule(i)
+        i.save_changes
+      end
     end
-    let(:instance) { Fabricate(:instance, hypervisor: 'kvm', request_params: {"host_node_group" => "local"}) }
 
-    context 'with a single host' do
-      let(:hosts) do
-        h = Fabricate(:host_node, uuid: 'kvm1', hypervisor: 'kvm', node_id: 'hva.kvm1')
-        [h]
+    let(:instances) do
+      i = Fabricate(:instance, hypervisor: 'kvm', request_params: {"host_node_group" => "local"})
+      [i]
+    end
+
+    let(:hosts) do
+      h = Fabricate(:host_node, uuid: 'kvm1', hypervisor: 'kvm', node_id: 'hva.kvm1')
+      [h]
+    end
+
+    let(:host_groups) do
+      hng = Fabricate(:host_node_group, uuid: 'hng-local', name: 'hng-local')
+      hosts.each { |h| hng.map_resource(h, 0) }
+      [hng]
+    end
+
+    context 'with a single group' do
+      context 'with a single host' do
+        it 'uses the host' do
+          expect(instances.first.host_node).to eq(hosts.first)
+        end
       end
 
-      let(:host_groups) do
-        hng = Fabricate(:host_node_group, uuid: 'hng-local', name: 'hng-local')
-        hng.map_resource(hosts.first, 0)
-        [hng]
-      end
+      context 'with two host' do
+        let(:instances) do
+          2.times.map do
+            Fabricate(:instance, hypervisor: 'kvm', request_params: {"host_node_group" => "local"})
+          end
+        end
 
-      it 'uses the host' do
-        expect(instance.host_node).to eq(hosts.first)
+        let(:hosts) do
+          2.times.map.with_index(2) do |n, i|
+            Fabricate(:host_node, uuid: "kvm#{i}", hypervisor: 'kvm', node_id: "hva.kvm#{i}")
+          end
+        end
+
+        it 'uses the host' do
+          expect(instances.last.host_node).to eq(hosts.last)
+        end
       end
     end
   end
