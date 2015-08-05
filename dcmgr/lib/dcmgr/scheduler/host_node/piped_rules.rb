@@ -125,7 +125,7 @@ module Dcmgr
           }
 
           raise HostNodeSchedulingError, "No suitable host node found after piping through all rules." if hn_ary.empty?
-
+          logger.debug("select host_nodes: #{hn_ary.inspect}")
           instance.host_node = hn_ary.first
         end
       end
