@@ -17,7 +17,7 @@ Required packages
 
 install packages
 ```
-$ sudo apt-get install git build-essential devscripts cdbs debhelpers
+$ sudo apt-get install git build-essential devscripts cdbs debhelper
 ```
 
 Build deb package
