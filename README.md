@@ -18,7 +18,7 @@ Other versions or operating systems may or may not work.
 Quick Start
 -----------
 
-[Install Wakame-vdc on CentOS 6.6](https://github.com/axsh/wakame-vdc/wiki/install-guide)
+[Install Wakame-vdc on CentOS 6.6](http://wakame-vdc.org/installation/)
 
 [Try Wakame-vdc pre-installed in VirtualBox.](http://wakameusersgroup.org/demo_image.html)
 
