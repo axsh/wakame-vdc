@@ -3,7 +3,9 @@ Wakame-vdc
 
 [![Code Climate](https://codeclimate.com/github/axsh/wakame-vdc.png)](https://codeclimate.com/github/axsh/wakame-vdc)
 
-Wakame-vdc is a virtual datacenter or an IaaS (Infrastructure as a Service) suite. Visit [the wiki](https://github.com/axsh/wakame-vdc/wiki) for a more detailed explanation.
+Wakame-vdc is a virtual datacenter or an IaaS (Infrastructure as a Service) suite.
+
+Visit http://wakame-vdc.org for a more detailed explanation.
 
 System requirements
 -------------------
