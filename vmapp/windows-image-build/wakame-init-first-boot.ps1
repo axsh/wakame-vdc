@@ -1,3 +1,7 @@
+# All external commands are piped through Write-Host so they do
+# not access stdout and stderr directly, which avoids a bug in
+# PowerShell in Windows Server 2008.
+# see: http://www.leeholmes.com/blog/2008/07/30/workaround-the-os-handles-position-is-not-what-filestream-expected/
 
 "Starting wakame-init-first-boot.ps1" | Write-Host
 
@@ -76,7 +80,6 @@ try {
     # Set up script for configuration on each reboot
     $onbootScript = "C:\Windows\Setup\Scripts\wakame-init-every-boot.cmd"
     # /f is required on next line, otherwise schtasks will prompt to overwrite existing task
-    # See above comment about external commands.
     schtasks.exe /create /tn "Wakame Init" /tr "$onbootScript" /sc onstart /ru System /f 2>&1 | Write-Host
 }
 catch {
