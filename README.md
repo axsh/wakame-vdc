@@ -25,17 +25,35 @@ Quick Start
 Contact us
 ----------
 
-The best way to contact us is to send a mail to the [Wakame Users Group](https://groups.google.com/forum/?hl=en-GB#!forum/wakame-ug) on Google Groups. Please don't hesitate to ask us any questions. We realise Wakame-vdc is difficult to set up and that our documentation is very limited at this time. If you want to try it out, we'll do our best to help you. There's no such thing as a stupid question.
+### Wakame Users Group
 
-If you happen to be in Tokyo, you can also attend one of our Wakame Users Group events. They are open to everybody. Further details on http://wakameusersgroup.org.
+The best way to contact us is to send a mail to the [Wakame Users Group](https://groups.google.com/forum/?hl=en-GB#!forum/wakame-ug) on Google Groups. Please don't hesitate to ask us any questions. If you want to try out Wakame-vdc, we'll do our best to help you. There's no such thing as a stupid question.
 
-Wiki
-----
+If you happen to be in Tokyo, you can also attend one of our Wakame Users Group events. We do them once every 3 months and they are open to everybody. Further details on http://wakameusersgroup.org.
 
-Further details about Wakame-vdc can be found on our [wiki](https://github.com/axsh/wakame-vdc/wiki).
+### Social Media
+
+#### Twitter
+
+* [@WakameTech](https://twitter.com/WakameTech): Japanese Wakame-vdc account
+
+* [@Wakamevdc](https://twitter.com/wakamevdc): English Wakame-vdc acccount
+
+* [@axsh_co_ltd](https://twitter.com/axsh_co_ltd): The Axsh company account
+
+#### Facebook
+
+* [Wakame-vdc Facebook page](https://www.facebook.com/datacenterhypervisor)
+
+Documentation
+-------------
+
+Documentation about Wakame-vdc can be found on http://wakame-vdc.org.
 
 Users
 -----
+
+Wakame-vdc is currently used by the following companies.
 
 * Kyushu Electric Power Co., Ltd. ( http://www.kyuden.co.jp/en_index.html )
 * National Institute of Informatics ( http://www.nii.ac.jp/en/ )
