@@ -2,6 +2,7 @@
 #
 # requires:
 #   bash
+#   rm, ln, xfreerdp
 #
 
 function xfreerdp() {
