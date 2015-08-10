@@ -84,7 +84,7 @@ _mussel() {
         COMPREPLY=($(compgen -W "${tasks_rw}" -- "${cur}"))
         ;;
       instance)
-        COMPREPLY=($(compgen -W "${tasks_rw} power{off,on} backup" -- "${cur}"))
+        COMPREPLY=($(compgen -W "${tasks_rw} power{off,on} backup show_password" -- "${cur}"))
         ;;
       instance_monitoring)
         COMPREPLY=($(compgen -W "${tasks_ro}" -- "${cur}"))
@@ -475,6 +475,13 @@ _mussel() {
                                 " -- "${cur}"))
                   ;;
               esac
+              ;;
+          esac
+          ;;
+        show_password)
+          case "${offset}" in
+            4)
+              COMPREPLY=($(compgen -W "$(mussel "${namespace}" index --state alive | hash_value id)" -- "${cur}"))
               ;;
           esac
           ;;
