@@ -360,6 +360,13 @@ function test_instance_backup_volume() {
                
 }
 
+### show-password
+
+function test_instance_show_password() {
+  assertEquals "curl -X GET $(base_uri)/${namespace}s/${uuid}/password.$(suffix)" \
+               "$(cli_wrapper ${namespace} 'show_password' ${uuid})"
+}
+
 ### update
 
 function test_instance_update() {

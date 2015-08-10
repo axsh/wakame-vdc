@@ -834,16 +834,16 @@ __END
 Network UUID:
   <%= nw.canonical_uuid %>
 Dynamic IP Address Range:
-<%- nw.dhcp_range_dataset.each { |r| -%>
+<%- nw.dhcp_range_dataset.order_by(:range_begin).each { |r| -%>
   <%= r.range_begin.to_s %> - <%= r.range_end.to_s %>
-<%- }
+<%- } -%>
 __END
       else
         cond = {}
         nw = M::Network.filter(cond).all
         print ERB.new(<<__END, nil, '-').result(binding)
 <%- nw.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= r.dhcp_range_dataset.count %>
+<%= row.canonical_uuid %>\t<%= row.dhcp_range_dataset.count %>
 <%- } -%>
 __END
       end
