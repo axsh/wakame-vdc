@@ -83,7 +83,7 @@ localsource="$(echo /home/*/for-jenkins-windows-image-smoke-test)"
 
 TARGETDIR="$SCRIPT_DIR" # Currently, all these resource files go in the same directory as this script.
 
-DLSOURCES="$localsource http://alt.fedoraproject.org/pub/alt/virtio-win/archives/virtio-win-0.1-74"
+DLSOURCES="$localsource https://fedorapeople.org/groups/virt/virtio-win/deprecated-isos/archives/virtio-win-0.1-74"
 ensure-file-is-in-place virtio-win-0.1-74.iso
 
 DLSOURCES="$localsource http://repo.zabbix.jp/zabbix/zabbix-1.8/windows"
