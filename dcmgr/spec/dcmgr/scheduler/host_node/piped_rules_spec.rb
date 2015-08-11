@@ -67,7 +67,7 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
         end
       end
 
-      context 'with two host' do
+      context 'with two hosts and two instances' do
         let(:instances) do
           2.times.map do
             Fabricate(:instance, hypervisor: 'kvm', request_params: {"host_node_group" => "local"})
