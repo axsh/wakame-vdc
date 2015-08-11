@@ -65,12 +65,12 @@ function test_rdp_auth() {
   assertEquals 0 $?
 
   # 4: decrypt password
-  echo "ssh_key_pair_path: ${ssh_key_pair_path}"
+  echo "ssh_key_pair_path='${ssh_key_pair_path}'"
   cat "${ssh_key_pair_path}"
   plain_password="$(echo "${instance_password}" | base64 --decode | openssl rsautl -decrypt -inkey "${ssh_key_pair_path}" -oaep)"
   [[ -n "${plain_password}" ]]
 
-  echo "plain_password:${plain_password}"
+  echo "plain_password='${plain_password}'"
 
   # 5: rdp auth
   rdp_auth -u "${rdp_user}" -p "${plain_password}" "${instance_ipaddr}"
