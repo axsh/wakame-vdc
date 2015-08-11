@@ -80,7 +80,8 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
           end
         end
 
-        it 'uses the host' do
+        it 'assigns one instance per host node' do
+          expect(instances.first.host_node).to eq(hosts.first)
           expect(instances.last.host_node).to eq(hosts.last)
         end
       end
