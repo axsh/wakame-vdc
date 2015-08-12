@@ -192,6 +192,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     respond_with(R::InstancePassword.new(@instance).generate)
   end
 
+  delete '/:instance_id/password' do
+    @instance = find_by_uuid(:Instance, params[:instance_id])
+    @instance.delete_windows_password
+    respond_with({})
+  end
+
   quota('instance.quota_weight') do
     request_amount do
       params[:quota_weight].to_f
