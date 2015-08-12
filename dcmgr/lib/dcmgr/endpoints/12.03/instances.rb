@@ -186,6 +186,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
   get '/:instance_id/password' do
     @instance = find_by_uuid(:Instance, params[:instance_id])
+    if @instance.encrypted_password == nil
+      raise E::PasswordNotInDatabase, "This instance's password is not in the database"
+    end
     respond_with(R::InstancePassword.new(@instance).generate)
   end
 
