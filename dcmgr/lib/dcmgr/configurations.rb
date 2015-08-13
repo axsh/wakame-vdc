@@ -15,6 +15,7 @@ module Dcmgr
 
       def load(conf_class, files = nil)
         path = if files
+                 abort("ERROR: files must be a 'Array'. Got '#{files.class}'") unless files.is_a?(Array)
                  path = files.find { |i| File.exists?(i) }
                  abort("ERROR: Failed to load #{files.inspect}.") if path.nil?
 
