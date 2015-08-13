@@ -15,7 +15,8 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
                 default "hng-shhost"
 
                 key "host_node_group"
-                pair "local", "hng-local"
+                pair "local1", "hng-local1"
+                pair "local2", "hng-local2"
               }
               through(:LeastUsageBy) {
                 key "memory_size"
@@ -45,7 +46,7 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
     end
 
     let(:instances) do
-      i = Fabricate(:instance, hypervisor: 'kvm', request_params: {"host_node_group" => "local"})
+      i = Fabricate(:instance, hypervisor: 'kvm', request_params: {"host_node_group" => "local1"})
       [i]
     end
 
@@ -55,7 +56,7 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
     end
 
     let(:host_groups) do
-      hng = Fabricate(:host_node_group, uuid: 'hng-local', name: 'hng-local')
+      hng = Fabricate(:host_node_group, uuid: 'hng-local1', name: 'hng-local1')
       hosts.each { |h| hng.map_resource(h, 0) }
       [hng]
     end
@@ -70,12 +71,12 @@ describe Dcmgr::Scheduler::HostNode::PipedRules do
       context 'with two hosts and two instances' do
         let(:instances) do
           2.times.map do
-            Fabricate(:instance, hypervisor: 'kvm', request_params: {"host_node_group" => "local"})
+            Fabricate(:instance, hypervisor: 'kvm', request_params: {"host_node_group" => "local1"})
           end
         end
 
         let(:hosts) do
-          2.times.map.with_index(2) do |n, i|
+          2.times.map.with_index(1) do |n, i|
             Fabricate(:host_node, uuid: "kvm#{i}", hypervisor: 'kvm', node_id: "hva.kvm#{i}")
           end
         end
