@@ -19,6 +19,12 @@
   <link rel="stylesheet" href="../../css/highlight.css">
   <link href="../../custom.css" rel="stylesheet">
 
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Custom Machine Images";
+  </script>
+  
   <script src="../../js/jquery-2.1.1.min.js"></script>
   <script src="../../js/modernizr-2.8.3.min.js"></script>
   <script type="text/javascript" src="../../js/highlight.pack.js"></script>
@@ -45,113 +51,138 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
       <div class="wy-side-nav-search">
         <a href="../.." class="icon icon-home"> Wakame-vdc Documentation</a>
-        
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
       </div>
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-      <ul class="current">
-    
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../..">Home</a>
         
-            <li class="toctree-l1 ">
-                <a class="" href="../..">Home</a>
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../concept/">Concept</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Getting started</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../installation/">Installation</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../development/">Development</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Usage</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../">Basics</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Custom Machine Images</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#overview">Overview</a></li>
                 
-            </li>
-        
-
-    
-        
-            <li class="toctree-l1 ">
-                <a class="" href="../../concept/">Concept</a>
+                    <li><a class="toctree-l4" href="#step-1-install-an-os-into-a-bootable-disk-or-directory-structure">Step 1: Install an OS into a bootable disk or directory structure</a></li>
                 
-            </li>
+                    <li><a class="toctree-l4" href="#step-2-specialize-the-os-installation-for-the-intended-purpose">Step 2: Specialize the OS installation for the intended purpose</a></li>
+                
+                    <li><a class="toctree-l4" href="#step-3-specialize-the-os-installation-for-wakame-vdc">Step 3: Specialize the OS installation for Wakame-vdc</a></li>
+                
+                    <li><a class="toctree-l4" href="#step-4-package-it-all-into-one-machine-image-file">Step 4: Package it all into one machine image file</a></li>
+                
+                    <li><a class="toctree-l4" href="#step-5-register-this-machine-image-file-with-wakame-vdc">Step 5: Register this machine image file with Wakame-vdc</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#using-and-testing-the-new-image">Using and testing the new image</a></li>
+                
+            
+            </ul>
         
+    </li>
 
-    
         
-            <span>Getting started</span>
             
-                <li class="toctree-l2 ">
-                    <a class="" href="../../installation/">Installation</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../../development/">Development</a>
-                    
-                </li>
-            
+    <li class="toctree-l1 ">
+        <a class="" href="../../instance-backup/">Instance Backup</a>
         
+    </li>
 
-    
         
-            <span>Usage</span>
             
-                <li class="toctree-l2 ">
-                    <a class="" href="../">Basics</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 current">
-                    <a class="current" href="./">Custom Machine Images</a>
-                    
-                        <ul>
-                        
-                            <li class="toctree-l3"><a href="#overview">Overview</a></li>
-                            
-                                <li><a class="toctree-l4" href="#step-1-install-an-os-into-a-bootable-disk-or-directory-structure">Step 1: Install an OS into a bootable disk or directory structure</a></li>
-                            
-                                <li><a class="toctree-l4" href="#step-2-specialize-the-os-installation-for-the-intended-purpose">Step 2: Specialize the OS installation for the intended purpose</a></li>
-                            
-                                <li><a class="toctree-l4" href="#step-3-specialize-the-os-installation-for-wakame-vdc">Step 3: Specialize the OS installation for Wakame-vdc</a></li>
-                            
-                                <li><a class="toctree-l4" href="#step-4-package-it-all-into-one-machine-image-file">Step 4: Package it all into one machine image file</a></li>
-                            
-                                <li><a class="toctree-l4" href="#step-5-register-this-machine-image-file-with-wakame-vdc">Step 5: Register this machine image file with Wakame-vdc</a></li>
-                            
-                        
-                            <li class="toctree-l3"><a href="#using-and-testing-the-new-image">Using and testing the new image</a></li>
-                            
-                        
-                        </ul>
-                    
-                </li>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../../instance-backup/">Instance Backup</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../../security-groups/">Security Groups</a>
-                    
-                </li>
-            
+    <li class="toctree-l1 ">
+        <a class="" href="../../security-groups/">Security Groups</a>
         
+    </li>
 
-    
         
-            <span>Support</span>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../../jargon-dictionary/">Jargon Dictionary</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../../faq/">FAQ</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../../community/">Community</a>
-                    
-                </li>
-            
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Support</span></li>
+
         
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../jargon-dictionary/">Jargon Dictionary</a>
+        
+    </li>
 
-    
-</ul>
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../faq/">FAQ</a>
+        
+    </li>
 
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../community/">Community</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+        </ul>
       </div>
       &nbsp;
     </nav>
@@ -172,23 +203,26 @@
     <li><a href="../..">Docs</a> &raquo;</li>
     
       
-        <li>Usage &raquo;</li>
+        
+          <li>Usage &raquo;</li>
+        
       
     
     <li>Custom Machine Images</li>
-      <li class="wy-breadcrumbs-aside">
+    <li class="wy-breadcrumbs-aside">
+      
         
-          
-            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github"> Edit on GitHub</a>
-          
+          <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github"> Edit on GitHub</a>
         
-      </li>
+      
+    </li>
   </ul>
   <hr/>
 </div>
           <div role="main">
             <div class="section">
-              <h2 id="overview">Overview</h2>
+              
+                <h2 id="overview">Overview</h2>
 <p>Although there are a variety of pre-built machine images for Wakame-vdc, in
 most cases it will be necessary to install extra software and do other
 miscellaneous setup after starting an <a href="../../jargon-dictionary/#instance">instance</a>.  To reduce this setup
@@ -424,6 +458,7 @@ works by doing the following:</p>
 <li>Point a web browser to the instance's IP address.</li>
 </ol>
 <p>The web browser should now be displaying the text: "An Example top web page."</p>
+              
             </div>
           </div>
           <footer>
@@ -441,9 +476,10 @@ works by doing the following:</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>
     <!-- Copyright etc -->
-    </p>
+    
+      <p>Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
+    
   </div>
 
   Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
@@ -458,17 +494,17 @@ works by doing the following:</p>
 
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
-        
-            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
-        
-      <span><a href="../" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      <span style="margin-left: 15px"><a href="../../instance-backup/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+          <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../../instance-backup/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
     </span>
 </div>
 
-<!--
-MkDocs version  : 0.12.2
-Docs Build Date : 2015-07-31 09:13:06.286278
--->
 </body>
 </html>

@@ -19,6 +19,12 @@
   <link rel="stylesheet" href="../css/highlight.css">
   <link href="../custom.css" rel="stylesheet">
 
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Development";
+  </script>
+  
   <script src="../js/jquery-2.1.1.min.js"></script>
   <script src="../js/modernizr-2.8.3.min.js"></script>
   <script type="text/javascript" src="../js/highlight.pack.js"></script>
@@ -45,104 +51,129 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
       <div class="wy-side-nav-search">
         <a href=".." class="icon icon-home"> Wakame-vdc Documentation</a>
-        
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
       </div>
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-      <ul class="current">
-    
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="..">Home</a>
         
-            <li class="toctree-l1 ">
-                <a class="" href="..">Home</a>
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../concept/">Concept</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Getting started</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../installation/">Installation</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Development</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#development-guide">Development guide</a></li>
                 
-            </li>
-        
-
-    
-        
-            <li class="toctree-l1 ">
-                <a class="" href="../concept/">Concept</a>
+                    <li><a class="toctree-l4" href="#code-map">Code map</a></li>
                 
-            </li>
+                    <li><a class="toctree-l4" href="#contributing-code">Contributing code</a></li>
+                
+            
+            </ul>
         
+    </li>
 
-    
         
-            <span>Getting started</span>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../installation/">Installation</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 current">
-                    <a class="current" href="./">Development</a>
-                    
-                        <ul>
-                        
-                            <li class="toctree-l3"><a href="#development-guide">Development guide</a></li>
-                            
-                                <li><a class="toctree-l4" href="#code-map">Code map</a></li>
-                            
-                                <li><a class="toctree-l4" href="#contributing-code">Contributing code</a></li>
-                            
-                        
-                        </ul>
-                    
-                </li>
-            
-        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Usage</span></li>
 
-    
         
-            <span>Usage</span>
             
-                <li class="toctree-l2 ">
-                    <a class="" href="../usage/">Basics</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../usage/custom-machine-images/">Custom Machine Images</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../instance-backup/">Instance Backup</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../security-groups/">Security Groups</a>
-                    
-                </li>
-            
+    <li class="toctree-l1 ">
+        <a class="" href="../usage/">Basics</a>
         
+    </li>
 
-    
         
-            <span>Support</span>
             
-                <li class="toctree-l2 ">
-                    <a class="" href="../jargon-dictionary/">Jargon Dictionary</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../faq/">FAQ</a>
-                    
-                </li>
-            
-                <li class="toctree-l2 ">
-                    <a class="" href="../community/">Community</a>
-                    
-                </li>
-            
+    <li class="toctree-l1 ">
+        <a class="" href="../usage/custom-machine-images/">Custom Machine Images</a>
         
+    </li>
 
-    
-</ul>
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../instance-backup/">Instance Backup</a>
+        
+    </li>
 
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../security-groups/">Security Groups</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Support</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../jargon-dictionary/">Jargon Dictionary</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../faq/">FAQ</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../community/">Community</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+        </ul>
       </div>
       &nbsp;
     </nav>
@@ -163,23 +194,26 @@
     <li><a href="..">Docs</a> &raquo;</li>
     
       
-        <li>Getting started &raquo;</li>
+        
+          <li>Getting started &raquo;</li>
+        
       
     
     <li>Development</li>
-      <li class="wy-breadcrumbs-aside">
+    <li class="wy-breadcrumbs-aside">
+      
         
-          
-            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github"> Edit on GitHub</a>
-          
+          <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github"> Edit on GitHub</a>
         
-      </li>
+      
+    </li>
   </ul>
   <hr/>
 </div>
           <div role="main">
             <div class="section">
-              <h1 id="development-guide">Development guide</h1>
+              
+                <h1 id="development-guide">Development guide</h1>
 <p>If you want try hacking away at the Wakame-vdc source code, this guide should be able to help you out a bit. The source can be found on <a href="https://github.com/axsh/wakame-vdc">github</a>.</p>
 <p>You can just clone it as you would any <a href="http://git-scm.com">git</a> respository.</p>
 <pre><code>git clone https://github.com/axsh/wakame-vdc
@@ -229,6 +263,7 @@
 <h2 id="contributing-code">Contributing code</h2>
 <p>We encourage you to send some of your code back to us. You can do so by using github's <em>fork &amp; pull</em> method as described <a href="https://help.github.com/articles/using-pull-requests/#fork--pull">here</a>. You will need to have a github account.</p>
 <p>Once you've made a pull request to us, we will run our automated test suite on it and review the code. We might ask you to make certain modifications before (and if) we finally merge your code into the main repository.</p>
+              
             </div>
           </div>
           <footer>
@@ -246,9 +281,10 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>
     <!-- Copyright etc -->
-    </p>
+    
+      <p>Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
+    
   </div>
 
   Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
@@ -263,17 +299,17 @@
 
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
-        
-            <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
-        
-      <span><a href="../installation/" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      <span style="margin-left: 15px"><a href="../usage/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+          <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../installation/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../usage/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
     </span>
 </div>
 
-<!--
-MkDocs version  : 0.12.2
-Docs Build Date : 2015-07-31 09:13:06.247243
--->
 </body>
 </html>
