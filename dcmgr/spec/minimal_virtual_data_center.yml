@@ -1,0 +1,8 @@
+---
+instance_spec:
+  small:
+    cpu_cores: 1
+
+vdc_spec:
+  docker:
+    instance_spec: small
