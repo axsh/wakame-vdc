@@ -21,7 +21,7 @@ Release: %{release_id}%{?dist}
 Summary: The wakame virtual data center.
 Group: Development/Languages
 Vendor: Axsh Co. LTD <dev@axsh.net>
-URL: http://wakame.jp/
+URL: http://wakame-vdc.org/
 Source: %{_vdc_git_uri}
 Prefix: /%{_prefix_path}
 License: see https://github.com/axsh/wakame-vdc/blob/master/README.md
