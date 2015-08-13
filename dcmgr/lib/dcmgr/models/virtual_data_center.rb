@@ -18,6 +18,7 @@ module Dcmgr::Models
     end
 
     def self.entry_new(account)
+      raise ArgumentError, "The account parameter must be an Account. Got '#{account.class}'" unless account.is_a?(Account)
       vdc = self.new
       vdc.account_id = account.canonical_uuid
       vdc.save
