@@ -35,21 +35,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
     raise E::InvalidParameter, 'type' unless VDC_INSTANCE_TYPE.include? params['type']
     raise E::InvalidParameter, 'spec' unless VDC_SPEC.include? params['spec']
 
-    if params['spec_file']
-      begin
-        spec_file = YAML.load(params['spec_file'])
-      rescue Psych::SyntaxError
-        raise E::InvalidParameter, 'spec_file'
-      end
-    end
-    # Get instance spec parameter from spec file
-    # vdc_spec = Dcmgr::SpecConvertor::VirtualDataCenter.new
-    # vdc_spec.convert
-
     vdc = M::VirtualDataCenter.entry_new(@account)
-    vdc.add_virtual_data_center_spec(params['type'], params['spec'], spec_file)
+    vdc_spec = vdc.add_virtual_data_center_spec(params['type'], params['spec'], params['spec_file'])
 
-    instance_params = generate_instance_params(params['type'], params['spec'], spec_file)
+    instance_params = vdc_spec.generate_instance_params
 
     account_id = @account.canonical_uuid
     instances = []
@@ -82,28 +71,5 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
     vdc.destroy
 
     respond_with([vdc.canonical_uuid])
-  end
-
-  def generate_instance_params(type, spec, spec_file)
-    raise ArgumentError, "The params parameter must be a String. Got '#{type.class}'" if !type.is_a?(String)
-    raise ArgumentError, "The params parameter must be a String. Got '#{spec.class}'" if !spec.is_a?(String) 
-    raise ArgumentError, "The params parameter must be a Hash. Got '#{spec_file.class}'" if !spec_file.is_a?(Hash)
-
-    instance_spec = spec_file['instance_spec'][spec]
-    vdc_spec = spec_file['vdc_spec'].select {|k,v|
-      v['instance_type'] == type && v['instance_spec'] == spec
-    }
-
-    instance_params = []
-    vdc_spec.each { |k,v|
-      instance_params << {
-        'image_id' => v['image_id'],
-        'ssh_key_id' => v['ssh_key_id'],
-        'vifs' => v['vifs'],
-        'user_data' => YAML.dump(v['user_data']),
-      }.merge(instance_spec)
-    }
-
-    instance_params
   end
 end
