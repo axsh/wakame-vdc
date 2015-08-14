@@ -43,6 +43,10 @@ module Dcmgr
         end
       end
 
+      def find_all
+        @config
+      end
+
       def method_missing(m, *args)
         if @config.has_key?(m.to_s)
           @config[m.to_s]
