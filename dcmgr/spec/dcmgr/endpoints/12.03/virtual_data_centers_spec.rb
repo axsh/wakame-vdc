@@ -35,18 +35,18 @@ describe "virtual_data_centers" do
            Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
     end
 
-    # context 'with only the required parameters' do
-    #   let(:params) do
-    #     {
-    #       type: "docker",
-    #       spec: "small",
-    #     }
-    #   end
+    context 'with only the required parameters' do
+      let(:params) do
+        {
+          type: "docker",
+          spec: "small",
+        }
+      end
 
-    #   it 'returns json describing the created virtual data center' do
-    #     expect(body['account_id']).to eq account.canonical_uuid
-    #   end
-    # end
+      it 'returns json describing the created virtual data center' do
+        expect(body['account_id']).to eq account.canonical_uuid
+      end
+    end
 
     context 'with the required and optional parameters' do
       let(:params) do
