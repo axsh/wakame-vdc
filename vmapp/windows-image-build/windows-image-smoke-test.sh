@@ -94,9 +94,9 @@ DLSOURCES="$localsource $S3URL JenkinsENV"  # S3URL is set in Jenkins
 
 DLSOURCES="$localsource $S3URL"  # S3URL is set in Jenkins
 [ "$WIN_VERSION" = "2008" ] && \
-    ensure-file-is-in-place SW_DVD5_Windows_Svr_DC_EE_SE_Web_2008_R2_64Bit_Japanese_w_SP1_MLF_X17-22600.ISO
+    ensure-file-is-in-place "$ISO2008"
 [ "$WIN_VERSION" = "2012" ] && \
-    ensure-file-is-in-place SW_DVD9_Windows_Svr_Std_and_DataCtr_2012_R2_64Bit_Japanese_-3_MLF_X19-53644.ISO
+    ensure-file-is-in-place "$ISO2012"
 
 ensure-file-is-in-place metadata.img.tar.gz
 

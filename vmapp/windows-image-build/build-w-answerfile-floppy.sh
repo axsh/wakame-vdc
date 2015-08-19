@@ -65,6 +65,9 @@ PROXY (defaults to "", i.e. do not put in meta-data/auto-activate/auto-activate-
 IPV4 (defaults to 10.0.2.15)
 NETMASK (defaults to 255.255.255.0)
 GATEWAY (defaults to 10.0.2.2)
+IMAGESIZE (defaults to "30G", the parameter suitable for use with qemu-img)
+ISO2008 (defaults to "", it must be set before installing Windows Server 2008 R2)
+ISO2012 (defaults to "", it must be set before installing Windows Server 2012 R2)
 EOF
     exit
 }
@@ -85,6 +88,7 @@ set-environment-var-defaults()
     [ "$IPV4" == "" ] &&  IPV4="10.0.2.15"
     [ "$NETMASK" == "" ] &&  NETMASK="255.255.255.0"
     [ "$GATEWAY" == "" ] &&  GATEWAY="10.0.2.2"
+    [ "$IMAGESIZE" == "" ] &&  IMAGESIZE="30G"
 
     [ "$KVM_BINARY" == "" ] && KVM_BINARY=qemu-system-x86_64
 
@@ -327,6 +331,7 @@ confirm-sysprep-shutdown()
 
 install-windows-from-iso()
 {
+    [ -f "$SCRIPT_DIR/$WINISO" ] || reportfail "Windows install ISO file not found ($WINISO)"
     # Copy Autounattend.xml into fresh floppy image
     FLP="./answerfile-floppy.img"
     dd if=/dev/zero of="$FLP" bs=1k count=1440
@@ -358,7 +363,7 @@ install-windows-from-iso()
 
     sudo umount "./mntpoint"
     
-    # Create a blank 30GB image into which Windows will soon be installed
+    # Create a blank image into which Windows will soon be installed
     rm -f "$WINIMG"
     qemu-img create -f raw "$WINIMG" 30G
 
@@ -736,11 +741,11 @@ dispatch-init-command()
     echo "Autounattend-$LABEL2.xml" >./ANSFILE
     case "$LABEL" in
 	2008)
-	    echo SW_DVD5_Windows_Svr_DC_EE_SE_Web_2008_R2_64Bit_Japanese_w_SP1_MLF_X17-22600.ISO >./WINISO
+	    echo "$ISO2008" >./WINISO
 	    echo 8 >./active
 	    ;;
 	2012)
-	    echo SW_DVD9_Windows_Svr_Std_and_DataCtr_2012_R2_64Bit_Japanese_-3_MLF_X19-53644.ISO >./WINISO
+	    echo "$ISO2012" >./WINISO
 	    echo 9 >./active
 	    ;;
     esac
