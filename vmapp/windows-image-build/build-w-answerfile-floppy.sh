@@ -92,6 +92,8 @@ set-environment-var-defaults()
 
     [ "$KVM_BINARY" == "" ] && KVM_BINARY=qemu-system-x86_64
 
+    source "$SCRIPT_DIR/windows-image-build.ini"
+
     # Decide on ports for KVM's user-mode networking port forwarding
     RDP=1${UD}389
     SSH=1${UD}022
