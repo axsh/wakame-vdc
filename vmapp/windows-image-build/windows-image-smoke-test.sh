@@ -35,6 +35,8 @@ done
 WIN_VERSION="$1"
 [ "$1" = 2008 ] || [ "$1" = 2012 ] || reportfail "first parameter must be 2008 or 2012"
 
+source "$SCRIPT_DIR/windows-image-build.ini"
+
 # Assume Jenkins puts us in a suitable part of the disk hierarchy to create a build directory.
 BDIR="./builddirs/smoketest-$WIN_VERSION/"
 evalcheck mkdir -p ./builddirs
