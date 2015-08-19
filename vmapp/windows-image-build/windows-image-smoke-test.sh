@@ -100,8 +100,6 @@ DLSOURCES="$localsource $S3URL"  # S3URL is set in Jenkins
 [ "$WIN_VERSION" = "2012" ] && \
     ensure-file-is-in-place "$ISO2012"
 
-ensure-file-is-in-place metadata.img.tar.gz
-
 
 
 # All the needed files should now be in place. Start the build.

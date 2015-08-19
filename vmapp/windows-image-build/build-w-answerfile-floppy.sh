@@ -143,6 +143,10 @@ boot-common-params()
 
 configure-metadata-disk()
 {
+    if ! [ -f metadata.img ]; then
+	[ -f "$SCRIPT_DIR/metadata.img.tar.gz" ] || reportfail "metadata.img.tar.gz is required for testing images"
+	tar xzvf "$SCRIPT_DIR/metadata.img.tar.gz"
+    fi
     [ -f metadata.img ] || reportfail "metadata.img file not found in current directory"
     mount-image "$(pwd)" metadata.img 1 || reportfail "mounting of metadata.img failed"
     sudo bash -c 'echo "DEMO1-VM" >mntpoint/meta-data/local-hostname'
@@ -752,7 +756,6 @@ dispatch-init-command()
 	    ;;
     esac
     cp "$SCRIPT_DIR/key$LABEL" ./keyfile
-    tar xzvf "$SCRIPT_DIR/metadata.img.tar.gz"
 
     echo "1-install" >./nextstep
     echo "$(date +%y%m%d-%H%M%S)" >./timestamp
