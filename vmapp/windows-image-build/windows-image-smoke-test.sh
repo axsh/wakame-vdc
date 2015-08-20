@@ -52,19 +52,20 @@ ensure-file-is-in-place()
     for asource in $DLSOURCES; do
 	case "$asource" in
 	    /*)
-		cp -al "$asource/$1" "$TARGETDIR/$1" || \
-		    cp "$asource/$1" "$TARGETDIR/$1"
+		cp -al "$asource/$1" "$TARGETDIR/$1" 2>/dev/null || \
+		    cp "$asource/$1" "$TARGETDIR/$1" 2>/dev/null || \
+		    echo "Attempt to copy $1 from local source failed" 1>&2
 		;;
 	    JenkinsENV)
 		# try to grab an environment variable set by Jenkins, e.g.: JenkinsENV-key2008
 		attempt="$(eval echo "\$${asource}_$1")"
 		[ "$attempt" != "" ] && echo "$attempt" >"$TARGETDIR/$1"
 		;;
-	    http://*)
-		curl "$asource/$1" -o "$TARGETDIR/$1"
+	    http://* | https://*)
+		curl --fail "$asource/$1" -o "$TARGETDIR/$1" || echo "Download attempt of $1 failed" 1>&2
 		;;
 	    s3://*)
-		s3cmd get "$asource/$1" "$TARGETDIR/$1"
+		s3cmd get "$asource/$1" "$TARGETDIR/$1" || echo "s3cmd download attempt of $1 failed" 1>&2
 		;;
 	    *)
 		reportfail "unknown source: $asource"
