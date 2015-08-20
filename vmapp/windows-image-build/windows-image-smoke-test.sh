@@ -96,12 +96,9 @@ DLSOURCES="$localsource $S3URL JenkinsENV"  # S3URL is set in Jenkins
     ensure-file-is-in-place key2012
 
 DLSOURCES="$localsource $S3URL"  # S3URL is set in Jenkins
-[ "$WIN_VERSION" = "2008" ] && \
-    ensure-file-is-in-place "$ISO2008"
-[ "$WIN_VERSION" = "2012" ] && \
-    ensure-file-is-in-place "$ISO2012"
-
-
+isoname="$(eval echo \$ISO${WIN_VERSION})"
+[ "$isoname" != "" ] || reportfail "Environment variable ISO${WIN_VERSION} must be set"
+ensure-file-is-in-place "$isoname"
 
 # All the needed files should now be in place. Start the build.
 
