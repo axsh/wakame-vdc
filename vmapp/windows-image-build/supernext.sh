@@ -93,9 +93,10 @@ kvm-ui-check-after-login-screen()
 {
     fname="$(kvm-ui-take-screenshot)"
     case "$LABEL" in
-	2008) file-size-in-range "$fname" 48500 50000 # 49486
+	2008) file-size-in-range "$fname" 48500 56000 # 49486
 	      # if initially opened window is not in foreground
 	      # file size has been seen as small as 48723
+	      # Also has been seen as big as 55341.
 	      ;;
 	2012) file-size-in-range "$fname" 45000 46000 # 45364
 	      ;;
