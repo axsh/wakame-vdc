@@ -18,7 +18,7 @@ cleanup-code()
     setsid "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$BDIR/" -cleanup
 }
 
-trap 'echo "Doing post-test cleanup" ; cleanup-code' EXIT
+trap 'echo "Doing post-test cleanup" ; cleanup-code >>"$SCRIPT_DIR/post-test-cleanup.out" 2>&1' EXIT
 
 # Check for missing dependencies here so that time is not wasted
 # running a test that will inevitably fail.
