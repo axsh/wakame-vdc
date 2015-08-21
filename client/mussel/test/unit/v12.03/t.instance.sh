@@ -18,6 +18,12 @@ function setUp() {
   xquery=
   state=
   force=
+  function openssl() { : ; }  # for test_instance_decrypt_password_uuid_ssh
+  touch ssh-xxx.pem
+}
+
+function tearDown() {
+    rm -f ssh-xxx.pem
 }
 
 ### help
@@ -187,11 +193,11 @@ function test_instance_decrypt_password_uuid_no_ssh() {
   assertNotEquals 0 $?
 }
 
-#function test_instance_decrypt_password_uuid_ssh() {
-#  extract_args ${namespace} decrypt_password i-xxx ssh-xxx.pem
-#  run_cmd ${MUSSEL_ARGS}
-#  assertEquals 0 $?
-#}
+function test_instance_decrypt_password_uuid_ssh() {
+  extract_args ${namespace} decrypt_password i-xxx ssh-xxx.pem
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals 0 $?
+}
 
 ## shunit2
 
