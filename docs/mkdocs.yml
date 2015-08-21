@@ -23,7 +23,8 @@ pages:
   - 'Custom Machine Images': 'usage/custom-machine-images.md'
   - 'Instance Backup': 'instance-backup/index.md'
   - 'Security Groups': 'security-groups/index.md'
-#- Instance Backup 
+  - 'Networking': 'networking/index.md'
+#- Instance Backup
   #- 'About': 'instance-backup/index.md'
   #- 'Configuration': 'instance-backup/configuration.md'
   #- 'Usage': 'instance-backup/usage.md'
