@@ -1,6 +1,11 @@
 # Jargon Dictionary
 
 ## A
+
+### Axsh
+
+Axsh Co. LTD are the authors of Wakame-vdc and [OpenVNet](#openvnet). Pronounced: Ah-ku-shu.
+
 ## B
 
 ### Backup Storage
@@ -18,6 +23,11 @@ A backup object is basically a hard drive image. Backup objects that hold bootab
 The collector is one of Wakame-vdc's processes. It's in charge of making [scheduling decisions](#scheduling) and database access.
 
 ## D
+
+### Dcmgr
+
+Stands for Data Center Manager. In Wakame-vdc, this is just another word for the [WebAPI](#webapi)
+
 ## E
 
 ### Endpoint
@@ -47,6 +57,10 @@ Also known as host or host node.
 
 ### Instance
 
+### Instances network
+
+An L3 network in which [instances](#instance) are started. This can technically be the same network used for the [management line](#management-line-management-network) but on production environments, it is probably a good idea to separate them.
+
 A virtual machine managed by wakame-vdc.
 
 ## J
@@ -57,6 +71,10 @@ A virtual machine managed by wakame-vdc.
 ### Machine Image
 
 A [backup object](#backup-object) that holds a bootable partition. You are able to start [instances](#instance) of machine images.
+
+### Management Line / Management Network
+
+This is a network that Wakame-vdc uses for communication between its different [nodes](#node).
 
 ### Meta-data
 
@@ -73,6 +91,11 @@ The NATbox is an optional Wakame-vdc node that provides one to one [network addr
 Refers to a server that a Wakame-vdc process runs on. Can be physical or a VM but not an [instance](#instance).
 
 ## O
+
+### OpenVNet
+
+An full virtual networking implementation using OpenFlow. This project is completely separate from Wakame-vdc but Wakame-vdc can use it to implement virtual networking. This integration is still experimental at this time. [http://openvnet.org](http://openvnet.org)
+
 ## P
 ## Q
 ## R
@@ -94,6 +117,10 @@ Wakame-vdc's dynamically updating firewall. You can put [vnics](#vnic-/-vif) int
 User data is an arbitrary field that users can set when starting an [instance](#instance). The user data will be delivered along with [meta-data](#meta-data) and will thus be accessible from inside the instance. For example users can create custom images with scripts in them that react to user data.
 
 ## V
+
+### vdc-manage
+
+A command-line front-end for Wakame-vdc's database. It can be found at `/opt/axsh/wakame-vdc/dcmgr/bin/wakame-vdc`
 
 ### Vnic / Vif
 
