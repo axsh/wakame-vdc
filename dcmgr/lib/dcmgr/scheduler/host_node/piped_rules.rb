@@ -91,14 +91,14 @@ module Dcmgr
             rule_class = rule.scheduler_class
             rule_class.new(rule.option)
           }
-p          @rules.unshift(Rules::Common.new(nil))
+          @rules.unshift(Rules::Common.new(nil))
         end
 
         def schedule(instance)
           # set filter needed commonly.
           hn_ds = ::Dcmgr::Models::HostNode.dataset
 
-p          rules = @rules.map { |rule| rule.dup }
+          rules = @rules.map { |rule| rule.dup }
 
           # First pass:
           # Build the dataset filters.
@@ -125,7 +125,7 @@ p          rules = @rules.map { |rule| rule.dup }
           }
 
           raise HostNodeSchedulingError, "No suitable host node found after piping through all rules." if hn_ary.empty?
-
+          logger.debug("select host_nodes: #{hn_ary.inspect}")
           instance.host_node = hn_ary.first
         end
       end
