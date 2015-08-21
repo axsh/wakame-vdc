@@ -13,6 +13,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 `Fixed` A bug in wakame-init for Ubuntu where the instance's IP address didn't get set if the network got started before metadata drive was mounted.
 
+`Fixed` A critical bug in the *PipedRules* host node scheduler that caused it to crash when used.
+
 ## [16.0] - 2015-07-31
 
 `Changed` Adopted Semantic Versioning.
