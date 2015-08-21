@@ -25,7 +25,7 @@ function setUp() {
 function test_instance_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|destroy|index|move|poweroff|poweron|reboot|show|show_password|show_volumes|update|xcreate]" "${res}"
+  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|delete_password|destroy|index|move|poweroff|poweron|reboot|show|show_password|show_volumes|update|xcreate]" "${res}"
 }
 
 ### index
@@ -155,6 +155,20 @@ function test_instance_show_password_no_uuid() {
 
 function test_instance_show_password_uuid() {
   extract_args ${namespace} show_password i-xxx
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals 0 $?
+}
+
+### delete_password
+
+function test_instance_delete_password_no_uuid() {
+  extract_args ${namespace} delete_password
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals 0 $?
+}
+
+function test_instance_delete_password_uuid() {
+  extract_args ${namespace} delete_password i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals 0 $?
 }

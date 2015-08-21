@@ -1,4 +1,4 @@
-site_name: Wakame-vdc Documentation
+site_name: Wakame-vdc
 site_favicon: favicon.ico
 site_description: Documentation for Wakame-vdc
 
@@ -12,36 +12,37 @@ copyright: Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
 google_analytics: ['UA-63388719-1', 'auto']
 
 pages:
-- ['index.md', 'Home']
-- ['concept.md', 'Concept']
-- ['installation.md', 'Getting started', 'Installation']
-#- ['configuration.md', 'Getting started', 'Configuration']
-- ['development.md', 'Getting started', 'Development']
-
-- ['usage/index.md', 'Usage', 'Basics']
-- ['usage/custom-machine-images.md', 'Usage', 'Custom Machine Images']
-- ['instance-backup/index.md', 'Usage', 'Instance Backup']
-- ['security-groups/index.md', 'Usage', 'Security Groups']
-
-#- ['instance-backup/index.md', 'Instance Backup', 'About']
-#- ['instance-backup/configuration.md', 'Instance Backup', 'Configuration']
-#- ['instance-backup/usage.md', 'Instance Backup', 'Usage']
-#- ['instance-backup/troubleshooting.md', 'Instance Backup', 'Troubleshooting']
-
-#- ['load-balancer/index.md', 'Feature: Load Balancer', 'About']
-#- ['load-balancer/installation.md', 'Feature: Load Balancer', 'Installation']
-#- ['load-balancer/configuration.md', 'Feature: Load Balancer', 'Configuration']
-#- ['load-balancer/usage.md', 'Feature: Load Balancer', 'Usage']
-#- ['load-balancer/troubleshooting.md', 'Feature: Load Balancer', 'Troubleshooting']
-
-#- ['security-groups/index.md', 'Security Groups', 'About']
-#- ['security-groups/configuration.md', 'Security Groups', 'Configuration']
-#- ['security-groups/usage.md', 'Security Groups', 'Usage']
-#- ['security-groups/troubleshooting.md', 'Security Groups', 'Troubleshooting']
-
-- ['jargon-dictionary.md', 'Support', 'Jargon Dictionary']
-- ['faq.md', 'Support', 'FAQ']
-#- ['troubleshooting.md', 'Support', 'Troubleshooting']
-#- ['support.md', 'Support', 'Contact']
-- ['community.md', 'Support', 'Community']
+- Home: 'index.md'
+- Concept: 'concept.md'
+- Getting started:
+  - 'Installation': 'installation.md'
+  #- 'Configuration': 'configuration.md'
+  - 'Development': 'development.md'
+- Usage:
+  - 'Basics': 'usage/index.md'
+  - 'Custom Machine Images': 'usage/custom-machine-images.md'
+  - 'Instance Backup': 'instance-backup/index.md'
+  - 'Security Groups': 'security-groups/index.md'
+#- Instance Backup 
+  #- 'About': 'instance-backup/index.md'
+  #- 'Configuration': 'instance-backup/configuration.md'
+  #- 'Usage': 'instance-backup/usage.md'
+  #- 'Troubleshooting': 'instance-backup/troubleshooting.md'
+#- Load Balancer
+  #- 'About': 'load-balancer/index.md'
+  #- 'Installation': 'load-balancer/installation.md'
+  #- 'Configuration': 'load-balancer/configuration.md'
+  #- 'Usage': 'load-balancer/usage.md'
+  #- 'Troubleshooting': 'load-balancer/troubleshooting.md'
+#- Security Groups
+  #- 'About': 'security-groups/index.md'
+  #- 'Configuration': 'security-groups/configuration.md'
+  #- 'Usage': 'security-groups/usage.md'
+  #- 'Troubleshooting': 'security-groups/troubleshooting.md'
+- Support:
+  - 'Jargon Dictionary': 'jargon-dictionary.md'
+  - 'FAQ': 'faq.md'
+  #- 'Troubleshooting': 'troubleshooting.md'
+  #- 'Support': 'support.md'
+  - 'Community': 'community.md'
 

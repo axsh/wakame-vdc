@@ -78,6 +78,11 @@ function wait_for_httpd_to_be_ready() {
   wait_for_port_to_be_ready ${ipaddr} tcp 80
 }
 
+function wait_for_rdpd_to_be_ready() {
+  local ipaddr=$1
+  wait_for_port_to_be_ready ${ipaddr} tcp 3389
+}
+
 ## wait for *not to be*
 
 function wait_for_network_not_to_be_ready() {
@@ -98,4 +103,9 @@ function wait_for_sshd_not_to_be_ready() {
 function wait_for_httpd_not_to_be_ready() {
   local ipaddr=$1
   wait_for_port_not_to_be_ready ${ipaddr} tcp 80
+}
+
+function wait_for_rdpd_not_to_be_ready() {
+  local ipaddr=$1
+  wait_for_port_not_to_be_ready ${ipaddr} tcp 3389
 }

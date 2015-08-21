@@ -19,6 +19,7 @@ readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 . ${BASH_SOURCE[0]%/*}/../../helpers/ssl.sh
 . ${BASH_SOURCE[0]%/*}/../../helpers/interactive.sh
 . ${BASH_SOURCE[0]%/*}/../../helpers/alarm.sh
+. ${BASH_SOURCE[0]%/*}/../../helpers/rdp.sh
 
 ## environment-specific configuration
 

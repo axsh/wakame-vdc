@@ -1,3 +1,7 @@
+# All external commands are piped through Write-Host so they do
+# not access stdout and stderr directly, which avoids a bug in
+# PowerShell in Windows Server 2008.
+# see: http://www.leeholmes.com/blog/2008/07/30/workaround-the-os-handles-position-is-not-what-filestream-expected/
 
 "Starting wakame-init-first-boot.ps1" | Write-Host
 
@@ -39,15 +43,33 @@ catch {
 }
 
 try {
+    # Configure Firewall
+    $mdl = Get_MD_Letter
+    if (Test-Path ("$mdl\meta-data\enable-firewall")) {  # Therefore, the firewall is off by default
+	netsh.exe advfirewall firewall add rule name="Open Zabbix agentd port 10050 inbound" dir=in action=allow protocol=TCP localport=10050 2>&1 | Write-Host
+	netsh.exe advfirewall firewall add rule name="Open Zabbix trapper port 10051 inbound" dir=in action=allow protocol=TCP localport=10051 2>&1 | Write-Host
+
+	netsh.exe advfirewall firewall add rule name="Open Zabbix agentd port 10050 outbound" dir=out action=allow protocol=TCP localport=10050 2>&1 | Write-Host
+	netsh.exe advfirewall firewall add rule name="Open Zabbix trapper port 10051 outbound" dir=out action=allow protocol=TCP localport=10051 2>&1 | Write-Host
+
+	# Tried this: netsh.exe advfirewall firewall set rule group="remote desktop" new enable=Yes
+	# as suggested on this page: https://support.microsoft.com/en-us/kb/947709
+	# but it did not work, so changed to open the RDP ports directly:
+	netsh.exe advfirewall firewall add rule name="Open RDP TCP port 3389 inbound" dir=in action=allow protocol=TCP localport=3389 2>&1 | Write-Host
+	netsh.exe advfirewall firewall add rule name="Open RDP UDP port 3389 inbound" dir=in action=allow protocol=UDP localport=3389 2>&1 | Write-Host
+    } else {
+	netsh.exe advfirewall set currentprofile state off 2>&1 | Write-Host  # completely turn off firewall
+    }
+}
+catch {
+    $Error[0] | Write-Host
+    Write-Host "Error occurred while configuring firewall"
+}
+
+try {
     # Turn on RDP
     Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server' -Name fDenyTSConnections -Value 0
     Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name UserAuthentication -Value 0
-
-    # All external commands are piped through Write-Host so they do
-    # not access stdout and stderr directly, which avoids a bug in
-    # PowerShell in Windows Server 2008.
-    # see: http://www.leeholmes.com/blog/2008/07/30/workaround-the-os-handles-position-is-not-what-filestream-expected/
-    netsh.exe advfirewall set currentprofile state off 2>&1 | Write-Host  # completely turn off firewall
 }
 catch {
     $Error[0] | Write-Host
@@ -58,7 +80,6 @@ try {
     # Set up script for configuration on each reboot
     $onbootScript = "C:\Windows\Setup\Scripts\wakame-init-every-boot.cmd"
     # /f is required on next line, otherwise schtasks will prompt to overwrite existing task
-    # See above comment about external commands.
     schtasks.exe /create /tn "Wakame Init" /tr "$onbootScript" /sc onstart /ru System /f 2>&1 | Write-Host
 }
 catch {
