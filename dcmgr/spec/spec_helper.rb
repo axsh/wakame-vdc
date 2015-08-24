@@ -48,11 +48,14 @@ RSpec.configure do |c|
   end
 end
 
+DEFAULT_DCMGR_CONF = File.expand_path('../minimal_dcmgr.conf', __FILE__)
+DEFAULT_HVA_CONF   = File.expand_path('../minimal_hva.conf', __FILE__)
+
 Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr,
-  [File.expand_path('../minimal_dcmgr.conf', __FILE__)]
+  [DEFAULT_DCMGR_CONF]
 
 Dcmgr::Configurations.load Dcmgr::Configurations::Hva,
-  [File.expand_path('../minimal_hva.conf', __FILE__)]
+  [DEFAULT_HVA_CONF]
 
 Dcmgr::Catalogs.load Dcmgr::Catalogs::LoadBalancer,
   [File.expand_path('../minimal_load_balancer.yml', __FILE__)]

@@ -7,7 +7,7 @@
 # --define "build_id $(../helpers/gen-release-id.sh [ commit-hash ])"
 # --define "repo_uri git://github.com/axsh/wakame-vdc.git"
 
-%define version_id 15.03
+%define version_id 16.0
 %define release_id 1.daily
 %{?version_tag:%define version_id %{version_tag}}
 %{?build_id:%define release_id %{build_id}}
@@ -19,7 +19,7 @@ Release: %{release_id}%{?dist}
 Summary: sysvinit script set for wakame custom image.
 Group: Development/Languages
 Vendor: Axsh Co. LTD <dev@axsh.net>
-URL: http://wakame.jp/
+URL: http://wakame-vdc.org/
 Source: %{_vdc_git_uri}
 License: see https://github.com/axsh/wakame-vdc/blob/master/README.md
 BuildArch: noarch

@@ -1,3 +1,7 @@
+# All external commands are piped through Write-Host so they do
+# not access stdout and stderr directly, which avoids a bug in
+# PowerShell in Windows Server 2008.
+# see: http://www.leeholmes.com/blog/2008/07/30/workaround-the-os-handles-position-is-not-what-filestream-expected/
 
 "Starting wakame-init-every-boot.ps1" | Write-Host
 
@@ -58,5 +62,7 @@ catch {
     $Error[0] | Write-Host
     Write-Host "Error occurred while configuring Zabbix"
 }
+
+Take_Metadata_Offline
 
 "Finishing wakame-init-every-boot.ps1" | Write-Host

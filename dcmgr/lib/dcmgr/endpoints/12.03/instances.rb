@@ -186,15 +186,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
   get '/:instance_id/password' do
     @instance = find_by_uuid(:Instance, params[:instance_id])
-    theresponse = R::InstancePassword.new(@instance).generate
-
-    if Dcmgr::Configurations.dcmgr.windows.delete_password_on_request
-      logger.info "Deleting encrypted_password for #{:instance_id}"
-      @instance.delete_windows_password
+    if @instance.encrypted_password == nil
+      raise E::PasswordNotInDatabase, "This instance's password is not in the database"
     end
+    respond_with(R::InstancePassword.new(@instance).generate)
+  end
 
-    respond_with(theresponse)
-end
+  delete '/:instance_id/password' do
+    @instance = find_by_uuid(:Instance, params[:instance_id])
+    @instance.delete_windows_password
+    respond_with({})
+  end
 
   quota('instance.quota_weight') do
     request_amount do
