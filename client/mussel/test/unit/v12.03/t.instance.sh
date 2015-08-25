@@ -19,11 +19,12 @@ function setUp() {
   state=
   force=
   function openssl() { : ; }  # for test_instance_decrypt_password_uuid_ssh
+  function base64() { : ; }  # for test_instance_decrypt_password_uuid_ssh
   touch ssh-xxx.pem
 }
 
 function tearDown() {
-    rm -f ssh-xxx.pem
+  rm -f ssh-xxx.pem
 }
 
 ### help
