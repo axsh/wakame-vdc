@@ -253,8 +253,7 @@ Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
 Requires: keepalived
 Requires: bridge-utils
-Requires: openvswitch      >= 1.6.1
-Requires: openvswitch      <  1.6.2
+Requires: openvswitch >= 2.4.0
 %description  natbox-vmapp-config
 <insert long description, indented with spaces>
 
