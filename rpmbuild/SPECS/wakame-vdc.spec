@@ -3,6 +3,7 @@
 %define oname wakame-vdc
 
 # * rpmbuild -bb ./wakame-vdc.spec \
+# --define "release_tag [ tag ]"
 # --define "version_tag [ tag ]"
 # --define "build_id $(../helpers/gen-release-id.sh)"
 # --define "build_id $(../helpers/gen-release-id.sh [ commit-hash ])"
@@ -12,6 +13,7 @@
 %define release_id 1.daily
 %{?version_tag:%define version_id %{version_tag}}
 %{?build_id:%define release_id %{build_id}}
+%{?release_tag:%define release_id %{release_tag}}
 %{?repo_uri:%define _vdc_git_uri %{repo_uri}}
 
 Name: %{oname}
