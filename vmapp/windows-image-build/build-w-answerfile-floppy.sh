@@ -148,7 +148,7 @@ configure-metadata-disk()
 	tar xzvf "$SCRIPT_DIR/metadata.img.tar.gz"
     fi
     [ -f metadata.img ] || reportfail "metadata.img file not found in current directory"
-    mount-image "$(pwd)" metadata.img 1 || reportfail "mounting of metadata.img failed"
+    mount-image metadata.img 1 || reportfail "mounting of metadata.img failed"
     sudo bash -c 'echo "DEMO1-VM" >mntpoint/meta-data/local-hostname'
 
     # public key
@@ -208,84 +208,21 @@ boot-and-log-kvm-boot()
     echo "$(( VNC + 5900 ))" >./kvm.vnc
 }
 
+source "$SCRIPT_DIR/mount-partition.sh" load
+
 mount-image()
 {
-    local installdir="$1"
-    local imagename="$2"
-    partion="$3"
-    options="$4"
-    # (1) mkdir mntpoint, (2) kpartx, (3) mount
-    cd "$installdir"
+    imagename="$1"
+    partion="$2"
+    options="$3"
     
-    
-    if [ -d mntpoint ]
-    then
-	rmdir mntpoint || reportfail "something is already mounted at mntpoint"
-    fi
-    evalcheck mkdir mntpoint
-    
-    loopstatus="$(sudo losetup -a)"
-    if [[ "$loopstatus"  == *$(pwd -P)/* ]]
-    then
-	reportfail "Image file is already mounted."
-    else
-	rm -f kpartx.out
-	evalcheck 'sudo kpartx -av "$installdir/$imagename" 1>kpartx.out'
-	udevadm settle
-    fi
-    
-    loopstatus2="$(sudo losetup -a)"
-    # lines look like this:
-    # /dev/loop0: [0801]:3018908 (/home/potter/winraw/windows-expanded2/windows2012-GEN-sparsed.raw)
-    parse1="${loopstatus2%*$(pwd -P)/$imagename*}" # /dev/loop0: [0801]:3018908 (
-    parse2="${parse1##*/dev/}"  # loop0: [0801]:3018908 (
-    loopdev="${parse2%%:*}" # loop0
-    
-    [ "${loopdev/[0-9]/}" = "loop" ] || reportfail "could not parse $loopstatus2"
-    echo "$loopdev" >loopdev
-    
-    sudo mount /dev/mapper/${loopdev}p${partion} mntpoint $options
-}
-
-umount-image-raw1()
-{
-    # relying on info in ./loopdev to be correct is
-    # probably two big of an assumption.  Therefore the
-    # umount-image-raw2 is testing a complete scan
-    # of $(sudo losetup -a) to find images that are
-    # associated to loop devices.
-    if loopdev="$(cat ./loopdev 2>/dev/null)"; then
-	sudo umount mntpoint
-	sudo kpartx -dv /dev/$loopdev
-	sudo losetup -d /dev/$loopdev
-	rm  ./loopdev
-    fi
-}
-
-umount-image-raw2()
-{
-    loopstatus="$(sudo losetup -a)"
-    [ "$loopstatus" = "" ] && return 0
-    # example line: /dev/loop1: [0801]:15729479 (/tmp/st/dir08/win-2008.raw)
-    loopstatus="${loopstatus//:/ }" # make parsing easier
-    while read loopdev something inode imgpath thatsall ; do
-	[[ "$imgpath" == \(*\) ]] || echo "WARNING: losetup parsing may be wrong: $imgpath"
-	if [[ "${imgpath#(}" == $(pwd)/* ]]; then
-	    sudo umount mntpoint
-	    sudo kpartx -dv "$loopdev"
-	    sudo losetup -d "$loopdev"
-	fi
-    done <<<"$loopstatus"
+    [ -d mntpoint ] || evalcheck mkdir mntpoint
+    mount-partition "$imagename" "$partion" mntpoint $options --sudo
 }
 
 umount-image()
 {
-    umount-image-raw1 # for now do both techniques, maybe remove raw1 later
-    umount-image-raw2
-    loopstatus="$(sudo losetup -a)"
-    # the next line hopefully will ignore loop devices mapping files outside the build directory
-    [[ "$loopstatus"  != *$(pwd -P)/* ]] || \
-	reportfail "Still loopback devices in use: $loopcheck"
+    umount-partition mntpoint --sudo
 }
 
 kill-kvm()
@@ -324,7 +261,7 @@ tar-up-windows-logs()
 mount-tar-umount()
 {
     partitionNumber=2
-    mount-image "$(pwd)" "$WINIMG" $partitionNumber "-o ro"
+    mount-image "$WINIMG" $partitionNumber "-o ro"
     tar-up-windows-logs "$1"
     umount-image
 }
@@ -426,7 +363,7 @@ boot-with-networking()
 
 get-decode-password()
 {
-    mount-image "$(pwd)" metadata.img 1 "-o ro"
+    mount-image metadata.img 1 "-o ro"
     if [ -f "mntpoint/meta-data/pw.enc" ]
     then
 	pwtxt="$(openssl rsautl -decrypt -inkey testsshkey -in mntpoint/meta-data/pw.enc -oaep)"
@@ -603,7 +540,7 @@ dispatch-command()
 	    echo "screendump ./screendump-$dumptime.ppm" | nc localhost $MONITOR
 	    ;;
 	-mm*) # mount metadata
-	    mount-image "$(pwd)" metadata.img 1
+	    mount-image metadata.img 1
 	    ;;
 	-mtu) # *m*ount windows image, *t*ar log files, *u*mount
 	    [[ "$2" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
@@ -611,17 +548,17 @@ dispatch-command()
 	    ;;
 	-updatescripts) # push latest scripts into existing untared seed image
 	    partitionNumber=2
-	    mount-image "$(pwd)" "$WINIMG" $partitionNumber
+	    mount-image "$WINIMG" $partitionNumber
 	    updatescripts-raw
 	    umount-image
 	    ;;
 	-mountrw)
 	    partitionNumber=2
-	    mount-image "$(pwd)" "$WINIMG" $partitionNumber
+	    mount-image "$WINIMG" $partitionNumber
 	    ;;
 	-mount)
 	    partitionNumber=2
-	    mount-image "$(pwd)" "$WINIMG" $partitionNumber "-o ro"
+	    mount-image "$WINIMG" $partitionNumber "-o ro"
 	    ;;
 	-umount)
 	    umount-image
