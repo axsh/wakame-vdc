@@ -141,14 +141,43 @@ boot-common-params()
 	 -k ja $(boot-date-param)
 }
 
+create-metadata-disk()
+{
+    (
+	set -e
+	cd "$SCRIPT_DIR"
+	rm -f metadata.img
+	/usr/bin/truncate -s 10m metadata.img
+	parted metadata.img <<EOF
+mklabel msdos
+mkpart primary fat32 1 10m
+quit
+EOF
+	loopdev="$(mount-partition metadata.img 1 --sudo)"
+	sudo mkfs -t vfat -n METADATA "$loopdev"
+	umount-partition metadata.img --sudo
+	tar czvf empty-metadata.img.tar.gz metadata.img
+	rm -f metadata.img
+    ) || reportfail "problem while creating metadata.img.tar.gz"
+}
+
 configure-metadata-disk()
 {
     if ! [ -f metadata.img ]; then
-	[ -f "$SCRIPT_DIR/metadata.img.tar.gz" ] || reportfail "metadata.img.tar.gz is required for testing images"
-	tar xzvf "$SCRIPT_DIR/metadata.img.tar.gz"
+	[ -f "$SCRIPT_DIR/empty-metadata.img.tar.gz" ] || create-metadata-disk
+	tar xzvf "$SCRIPT_DIR/empty-metadata.img.tar.gz"
     fi
+
     [ -f metadata.img ] || reportfail "metadata.img file not found in current directory"
     mount-image metadata.img 1 || reportfail "mounting of metadata.img failed"
+
+    # just enough directories for Windows testing
+    sudo bash -c "mkdir -p mntpoint/meta-data/extra-hosts"
+    sudo bash -c "mkdir -p mntpoint/meta-data/network/interfaces/macs"
+    sudo bash -c "mkdir -p mntpoint/meta-data/public-keys/0"
+    sudo bash -c "mkdir -p mntpoint/meta-data/x-monitoring"
+
+    # hostname
     sudo bash -c 'echo "DEMO1-VM" >mntpoint/meta-data/local-hostname'
 
     # public key
