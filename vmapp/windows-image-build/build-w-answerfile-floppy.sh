@@ -469,6 +469,23 @@ final-seed-image-packaging()
     time evalcheck 'md5sum "$seedtar" >"$seedtar".md5'
 }
 
+final-seed-image-qcow()
+{
+    seedtar="windows${LABEL}r2.x86_64.kvm.md.raw.tar.gz"
+    seedraw="windows${LABEL}r2.x86_64.kvm.md.raw"
+    seedqcow="windows${LABEL}r2.x86_64.15071.qcow2"
+    [ -f "./final-seed-image/$seedqcow" ] && reportfail "Image already converted into qcow2 format"
+    [ -f "./final-seed-image/$seedtar" ] || reportfail "Must first run -package to make $seedtar"
+    evalcheck cd ./final-seed-image
+    pwd
+    set -x # show the user what this step is spending so much time doing
+    [ -f "$seedraw" ] || tar xzvf "$seedtar"
+    evalcheck qemu-img convert -f raw -O qcow2 "$seedraw" "$seedqcow"
+    evalcheck md5sum "$seedqcow" >"$seedqcow.md5"
+    evalcheck gzip "$seedqcow"
+    evalcheck md5sum "$seedqcow.gz" >"$seedqcow.gz.md5"
+}
+
 updatescripts-raw()
 {
     # Update scripts inside existing Windows image.  The motivation here
@@ -628,6 +645,9 @@ dispatch-command()
 	-package | -pack*)
 	    set -x # show the user what this step is spending so much time doing
 	    final-seed-image-packaging
+	    ;;
+	-qcow)
+	    final-seed-image-qcow
 	    ;;
 	### The commands above are mainly utility commands.  The
 	### commands below are the type that go into ./nextstep, that
