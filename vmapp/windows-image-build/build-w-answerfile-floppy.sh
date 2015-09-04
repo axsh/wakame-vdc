@@ -382,26 +382,29 @@ get-decode-password()
 
 final-seed-image-packaging()
 {
-    loopstatus="$(sudo losetup -a)"
-    [ "$loopstatus" = "" ] || reportfail "This code requires that no other loop devices be in use: $loopstatus"
+    # checks, setup
     initialtar="$(echo ./windows-*tar.gz)"
     seedtar="windows${LABEL}r2.x86_64.kvm.md.raw.tar.gz"
     [ -f "$initialtar" ] || reportfail "Initial tar file not found in $(pwd)"
     [ -d final-seed-image ] && reportfail "Seed image already packaged"
     mkdir ./final-seed-image
     evalcheck cd ./final-seed-image
+
+    # move clean image into place
     time evalcheck 'tar xzvf ../windows-*tar.gz'
     [ -f "$WINIMG" ] || reportfail "No Windows image found in the tar file"
     evalcheck 'mv "$WINIMG" "${seedtar%.tar.gz}"'
 
-    evalcheck 'sudo kpartx -av "${seedtar%.tar.gz}"'
-    udevadm settle
-    evalcheck sudo ntfslabel /dev/mapper/loop0p1 root
-    while ! sudo kpartx -dv /dev/loop0 ; do
-	echo "kpartx -dv /dev/loop0  failed....retrying in 10 seconds"
-	sleep 10
-    done
-    evalcheck sudo losetup -d /dev/loop0
+    # modify ntfs label
+    partitionNumber=1
+    loopdev="$(
+         # just attaches /loop device, no mounting
+         evalcheck mount-partition "${seedtar%.tar.gz}" $partitionNumber --sudo)" 
+    udevadm settle # probably not needed
+    evalcheck sudo ntfslabel "$loopdev" root
+    evalcheck umount-partition "${seedtar%.tar.gz}" --sudo
+
+    # package
     time evalcheck 'tar czvSf "$seedtar" "${seedtar%.tar.gz}"'
     time evalcheck 'md5sum "$seedtar" >"$seedtar".md5'
 }
