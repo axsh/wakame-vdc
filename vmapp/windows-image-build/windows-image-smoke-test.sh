@@ -113,7 +113,7 @@ for i in $(seq 1 30); do
 	echo "Build failed at step: $cmd"
 	break
     fi
-    if [ "$cmd" = "3-tar-the-image" ]; then
+    if [ "$cmd" = "1001-gen0-first-boot" ]; then
 	echo "Finished."
 	break
     fi
