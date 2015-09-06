@@ -417,25 +417,27 @@ final-seed-image-packaging()
     [ -f "$initialtar" ] || reportfail "Initial tar file not found in $(pwd)"
     [ -d final-seed-image ] && reportfail "Seed image already packaged"
     mkdir ./final-seed-image
-    evalcheck cd ./final-seed-image
-
-    # move clean image into place
-    time evalcheck 'tar xzvf ../windows-*tar.gz'
-    [ -f "$WINIMG" ] || reportfail "No Windows image found in the tar file"
-    evalcheck 'mv "$WINIMG" "${seedtar%.tar.gz}"'
-
-    # modify ntfs label
-    partitionNumber=1
-    loopdev="$(
+    (
+	evalcheck cd ./final-seed-image
+	
+	# move clean image into place
+	time evalcheck 'tar xzvf ../windows-*tar.gz'
+	[ -f "$WINIMG" ] || reportfail "No Windows image found in the tar file"
+	evalcheck 'mv "$WINIMG" "${seedtar%.tar.gz}"'
+	
+	# modify ntfs label
+	partitionNumber=1
+	loopdev="$(
          # just attaches /loop device, no mounting
          evalcheck mount-partition "${seedtar%.tar.gz}" $partitionNumber --sudo)" 
-    udevadm settle # probably not needed
-    evalcheck sudo ntfslabel "$loopdev" root
-    evalcheck umount-partition "${seedtar%.tar.gz}" --sudo
-
-    # package
-    time evalcheck 'tar czvSf "$seedtar" "${seedtar%.tar.gz}"'
-    time evalcheck 'md5sum "$seedtar" >"$seedtar".md5'
+	udevadm settle # probably not needed
+	evalcheck sudo ntfslabel "$loopdev" root
+	evalcheck umount-partition "${seedtar%.tar.gz}" --sudo
+	
+	# package
+	time evalcheck 'tar czvSf "$seedtar" "${seedtar%.tar.gz}"'
+	time evalcheck 'md5sum "$seedtar" >"$seedtar".md5'
+    )
 }
 
 final-seed-image-qcow()
@@ -445,14 +447,16 @@ final-seed-image-qcow()
     seedqcow="windows${LABEL}r2.x86_64.15071.qcow2"
     [ -f "./final-seed-image/$seedqcow" ] && reportfail "Image already converted into qcow2 format"
     [ -f "./final-seed-image/$seedtar" ] || reportfail "Must first run -package to make $seedtar"
-    evalcheck cd ./final-seed-image
-    pwd
-    set -x # show the user what this step is spending so much time doing
-    [ -f "$seedraw" ] || tar xzvf "$seedtar"
-    evalcheck qemu-img convert -f raw -O qcow2 "$seedraw" "$seedqcow"
-    evalcheck md5sum "$seedqcow" >"$seedqcow.md5"
-    evalcheck gzip "$seedqcow"
-    evalcheck md5sum "$seedqcow.gz" >"$seedqcow.gz.md5"
+    (
+	evalcheck cd ./final-seed-image
+	pwd
+	set -x # show the user what this step is spending so much time doing
+	[ -f "$seedraw" ] || tar xzvf "$seedtar"
+	evalcheck qemu-img convert -f raw -O qcow2 "$seedraw" "$seedqcow"
+	evalcheck md5sum "$seedqcow" >"$seedqcow.md5"
+	evalcheck gzip "$seedqcow"
+	evalcheck md5sum "$seedqcow.gz" >"$seedqcow.gz.md5"
+    )
 }
 
 updatescripts-raw()
