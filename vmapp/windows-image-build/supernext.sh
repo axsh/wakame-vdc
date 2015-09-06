@@ -208,6 +208,9 @@ supernext-step-completed()
 	2-confirm-sysprep-gen0)
 	    true # still at ctr-alt-del screen from last step
 	    ;;
+	3-tar-the-image | 4-package-tgz-image | 5-package-qcow-image)
+	    true # Nothing to wait for before doing these steps.
+	    ;;
 	*)
 	    reportfail "Supernext does not know how to check the status when nextstep=$cmd"
 	    ;;
@@ -225,6 +228,9 @@ supernext-simulate-user-actions-before()
 	    : # no user actions need to be done
 	    ;;
 	2-confirm-sysprep-gen0)
+	    : # no user actions need to be done
+	    ;;
+	3-tar-the-image | 4-package-tgz-image | 5-package-qcow-image)
 	    : # no user actions need to be done
 	    ;;
 	*)
