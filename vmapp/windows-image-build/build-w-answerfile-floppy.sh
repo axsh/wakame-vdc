@@ -611,13 +611,6 @@ dispatch-command()
 	    umount-image
 	    kill-kvm
 	    ;;
-	-package | -pack*)
-	    set -x # show the user what this step is spending so much time doing
-	    final-seed-image-packaging
-	    ;;
-	-qcow)
-	    final-seed-image-qcow
-	    ;;
 	### The commands above are mainly utility commands.  The
 	### commands below are the type that go into ./nextstep, that
 	### is, those that are used to walk through the build process
@@ -656,10 +649,18 @@ dispatch-command()
 	    time md5sum "$WINIMG" >"$WINIMG".md5
 	    time tar czSvf "windows-$LABEL-$(cat ./timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
 	    mount-tar-umount ./after-gen0-sysprep.tar.gz
-	    echo "1001-gen0-first-boot" >./nextstep
+	    echo "4-package-tgz-image" >./nextstep
 	    echo "Finished making the tar archive."
-	    echo "(From this point on, if no KVM is running, it is possible to do a -package command"
-	    echo "to package a Wakame-vdc compatible image tar file.)"
+	    echo "Do -next to package tar.gz image"
+	    ;;
+	4-package-tgz-image)
+	    final-seed-image-packaging
+	    echo "5-package-qcow-image" >./nextstep
+	    echo "Do -next to package qcow image"
+	    ;;
+	5-package-qcow-image)
+	    final-seed-image-qcow
+	    echo "1001-gen0-first-boot" >./nextstep
 	    echo "Do -next to start testing with first boot"
 	    ;;
 	1001-gen*-first-boot)
