@@ -572,6 +572,7 @@ dispatch-command()
     fi
     genCount="${cmd#*gen}"
     genCount="${genCount%%-*}"
+    instructions="" # instructions to output when step has finished
 
     case "$cmd" in
 	-screendump | -screenshot | -sd | -ss)
@@ -633,23 +634,26 @@ dispatch-command()
 	    install-windows-from-iso
 	    echo "1b-record-logs-at-ctr-alt-delete-prompt-gen0" >./nextstep
 	    echo "View KVM's display using 'vncviewer :$(cat ./kvm.vnc)'"
-	    echo "Be sure to wait for Windows to finish installing and the 'Ctrl + Alt + Del' screen to appear."
-	    echo "Do not log in yet.  First, do -next to record the logs."
+	    instructions="$(
+ 	      echo "Be sure to wait for Windows to finish installing and the 'Ctrl + Alt + Del' screen to appear."
+	      echo "Do not log in yet.  First, do -next to record the logs." )"
 	    ;;
 	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
 	    mount-tar-umount ./at-$cmd.tar.gz
 	    echo "2-confirm-sysprep-gen0" >./nextstep
-	    echo "Login with using the password 'a:run-sysprep'"
-	    echo "Then open a PowerShell window by clicking on the blue >_ icon"
-	    echo "at the bottom of the screen."
-	    echo "Type 'a:run-sysprep' in the PowerShell window to run sysprep"
-	    echo "Wait for KVM to shutdown.  Then do -next."
+	    instructions="$(
+	      echo "Login with using the password 'a:run-sysprep'"
+	      echo "Then open a PowerShell window by clicking on the blue >_ icon"
+	      echo "at the bottom of the screen."
+	      echo "Type 'a:run-sysprep' in the PowerShell window to run sysprep"
+	      echo "Wait for KVM to shutdown.  Then do -next." )"
 	    ;;
 	2-confirm-sysprep-gen0)
 	    confirm-sysprep-shutdown
 	    mount-tar-umount ./after-gen0-sysprep.tar.gz
 	    echo "3-tar-the-image" >./nextstep
-	    echo "Nothing to wait for on this command.  Do -next to tar the new seed image."
+	    instructions="$(
+	      echo "Nothing to wait for on this command.  Do -next to tar the new seed image." )"
 	    ;;
 	3-tar-the-image)
 	    (
@@ -659,74 +663,84 @@ dispatch-command()
 	    )
 	    mount-tar-umount ./after-gen0-sysprep.tar.gz
 	    echo "4-package-tgz-image" >./nextstep
-	    echo "Finished making the tar archive."
-	    echo "Do -next to package tar.gz image"
+	    instructions="$(
+	      echo "Finished making the tar archive."
+	      echo "Do -next to package tar.gz image" )"
 	    ;;
 	4-package-tgz-image)
 	    final-seed-image-packaging
 	    echo "5-package-qcow-image" >./nextstep
-	    echo "Do -next to package qcow image"
+	    instructions="$(
+	      echo "Do -next to package qcow image" )"
 	    ;;
 	5-package-qcow-image)
 	    final-seed-image-qcow
 	    echo "1001-gen0-first-boot" >./nextstep
-	    echo "Do -next to start testing with first boot"
+	    instructions="$(
+	      echo "Do -next to start testing with first boot" )"
 	    ;;
 	1001-gen*-first-boot)
 	    mount-tar-umount ./before-$cmd.tar.gz
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	    echo "1002-confirm-gen$genCount-shutdown-get-pw" >./nextstep
-	    echo "Be sure to wait for Windows to boot"
-	    echo "and then wait for it to automatically shutdown and KVM to exit."
-	    echo "Then, do -next to record the logs and decode the random password"
+	    instructions="$(
+	      echo "Be sure to wait for Windows to boot"
+	      echo "and then wait for it to automatically shutdown and KVM to exit."
+	      echo "Then, do -next to record the logs and decode the random password" )"
 	    ;;
 	1002-confirm-gen*-shutdown-get-pw)
 	    [ -d /proc/$(< ./kvm.pid) ] && reportfail "KVM still running"
 	    mount-tar-umount ./after-$cmd.tar.gz
 	    get-decode-password | tee ./pw
 	    echo "1003-gen$genCount-second-boot" >./nextstep
-	    echo "Nothing to wait for on this command.  Do -next to start the second boot."
+	    instructions="$(
+	      echo "Nothing to wait for on this command.  Do -next to start the second boot." )"
 	    ;;
 	1003-gen*-second-boot)
 	    evalcheck 'thepid="$(cat ./kvm.pid)"'
 	    kill -0 $thepid && reportfail "expecting KVM not to be already running"
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	    echo "1003b-record-logs-at-ctr-alt-delete-prompt1-gen$genCount" >./nextstep
-	    echo "Be sure to wait for Windows to finish booting and the 'Ctrl + Alt + Del' screen to appear."
-	    echo "Do not log in yet.  First, do -next to record the logs."
+	    instructions="$(
+	      echo "Be sure to wait for Windows to finish booting and the 'Ctrl + Alt + Del' screen to appear."
+	      echo "Do not log in yet.  First, do -next to record the logs." )"
 	    ;;
 	1003b-record-logs-at-ctr-alt-delete-prompt1-gen*)
 	    mount-tar-umount ./at-$cmd.tar.gz
 	    echo "1004-confirm-gen$genCount-shutdown" >./nextstep
-	    echo "Now log in with the password '$(< ./pw)'"
-	    echo "After logging in, manually do a shutdown command and wait for KVM to exit."
-	    echo "Then do -next to record the logs and start the third boot."
+	    instructions="$(
+	      echo "Now log in with the password '$(< ./pw)'"
+	      echo "After logging in, manually do a shutdown command and wait for KVM to exit."
+	      echo "Then do -next to record the logs and start the third boot." )"
 	    ;;
 	1004-confirm-gen*-shutdown)
 	    [ -d /proc/$(< ./kvm.pid) ] && reportfail "KVM still running"
 	    mount-tar-umount ./after-$cmd.tar.gz
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	    echo "1004b-record-logs-at-ctr-alt-delete-prompt2-gen$genCount" >./nextstep
-	    echo "Be sure to wait for Windows to finish booting and the 'Ctrl + Alt + Del' screen to appear."
-	    echo "Do not log in yet.  First, do -next to record the logs."
+	    instructions="$(
+	      echo "Be sure to wait for Windows to finish booting and the 'Ctrl + Alt + Del' screen to appear."
+	      echo "Do not log in yet.  First, do -next to record the logs." )"
 	    ;;
 	1004b-record-logs-at-ctr-alt-delete-prompt2-gen*)
 	    mount-tar-umount ./at-$cmd.tar.gz
 	    echo "1005-confirm-gen$genCount-sysprep-shutdown" >./nextstep
-	    echo "Now log in with the (same) password: '$(< ./pw)'"
-	    echo "After logging in, open a PowerShell window.  Change the directory"
-	    echo "to C:\Windows\Setup\Scripts."
-	    echo "Then run the script './sysprep-for-backup.cmd' to run sysprep."
-	    echo "Be sure to wait for Windows to automatically shutdown"
-	    echo "and then wait for it to automatically shutdown and KVM to exit."
-	    echo "Then do -next to record the logs"
+	    instructions="$(
+	      echo "Now log in with the (same) password: '$(< ./pw)'"
+	      echo "After logging in, open a PowerShell window.  Change the directory"
+	      echo "to C:\Windows\Setup\Scripts."
+	      echo "Then run the script './sysprep-for-backup.cmd' to run sysprep."
+	      echo "Be sure to wait for Windows to automatically shutdown"
+	      echo "and then wait for it to automatically shutdown and KVM to exit."
+	      echo "Then do -next to record the logs" )"
 	    ;;
 	1005-confirm-gen*-sysprep-shutdown)
 	    confirm-sysprep-shutdown
 	    mount-tar-umount ./after-$cmd.tar.gz
 	    echo "1001-gen$((genCount + 1))-first-boot" >./nextstep
-	    echo "This completes the first cycle of the test scenario."
-	    echo "Do -next to start a new test cycle using the newly syspreped image."
+	    instructions="$(
+	      echo "This completes the first cycle of the test scenario."
+	      echo "Do -next to start a new test cycle using the newly syspreped image." )"
 	    ;;
 	*)
 	    reportfail "Invalid command for 2nd parameter"
@@ -813,6 +827,7 @@ window-image-utils-main()
 	dispatch-command "$thecommand" "${params[@]}"
     fi
     echo "Finished build-w-answerfile-floppy.sh ($thecommand), ./nextstep is now $(cat "$bdir_fullpath/nextstep" 2>/dev/null)"
+    echo "$instructions"
     echo
 }
 window-image-utils-main "$@"
