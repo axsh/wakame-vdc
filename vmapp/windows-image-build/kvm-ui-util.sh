@@ -116,6 +116,7 @@ kvm-ui-simulate()
     simulateName="$1"
     eval declare -f "kvm-ui-simulate-$1" >/dev/null || reportfail "$simulateName not declared"
     check-required-env
+    echo "Doing kvm-ui-simulate: $simulateName"
     eval "kvm-ui-simulate-$1"
 }
 
@@ -124,6 +125,7 @@ kvm-ui-check()
     checkName="$1"
     eval declare -f "kvm-ui-check-$1" >/dev/null || reportfail "$checkName not declared"
     check-required-env
+    echo "Doing kvm-ui-check: $checkName"
     eval "kvm-ui-check-$1"
 }
 

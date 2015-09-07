@@ -799,11 +799,10 @@ window-image-utils-main()
     rm -f lastdir
     ln -s "$bdir_fullpath" lastdir
 
-    if true; then  # for debugging
-	echo "thecommand=$thecommand"
-	echo "bdir_fullpath=$bdir_fullpath"
-	echo "\${params[@]}=${params[@]}"
-    fi
+    echo "Starting build-w-answerfile-floppy.sh ($thecommand)"
+    echo "    bdir_fullpath=$bdir_fullpath"
+    echo "    \${params[@]}=${params[@]}"
+    echo "    ./nextstep=$(cat "$bdir_fullpath/nextstep" 2>/dev/null)"
 
     evalcheck 'cd "$bdir_fullpath"'
     if [ "$thecommand" = "0-init" ]; then
@@ -813,7 +812,7 @@ window-image-utils-main()
 	set-environment-var-defaults
 	dispatch-command "$thecommand" "${params[@]}"
     fi
-    echo "cat ./nextstep =$(cat ./nextstep)"
+    echo "Finished build-w-answerfile-floppy.sh ($thecommand), ./nextstep is now $(cat "$bdir_fullpath/nextstep" 2>/dev/null)"
+    echo
 }
 window-image-utils-main "$@"
-

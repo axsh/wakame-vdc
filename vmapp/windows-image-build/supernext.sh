@@ -74,6 +74,7 @@ file-size-in-range()
 {
     fname="$1"
     fsize="$(stat -c %s "$fname" 2>/dev/null)" && \
+	echo "Doing file-size-in-range, is $fsize between $2 and $3 inclusive?" &&
 	[ "$fsize" -ge "$2" -a "$fsize" -le "$3" ]
 }
 
@@ -197,6 +198,7 @@ wait-for-login-completion()
 supernext-step-completed()
 {
     cmd="$(< $build_dir/nextstep)"
+    echo "Doing supernext-step-completed for nextstep=$cmd"
     case "$cmd" in
 	1-install)
 	    true # nothing to check; always OK to proceed
@@ -219,6 +221,7 @@ supernext-step-completed()
 supernext-simulate-user-actions-before()
 {
     cmd="$(< $build_dir/nextstep)"
+    echo "Doing supernext-simulate-user-actions-before for nextstep=$cmd"
     case "$cmd" in
 	1-install)
 	    : # no user actions need to be done
@@ -245,6 +248,7 @@ supernext-simulate-user-actions-after()
     # seconds.  This should be enough for zabbix installer to move to
     # the next state)
     SLEEPFOR=15
+    echo "Doing supernext-simulate-user-actions-after for nextstep=$cmd"
     case "$cmd" in  # uses $cmd from previous functions, because $build_dir/nextstep may have changed
 	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
 	    touch $build_dir/press-ctrl-alt-del

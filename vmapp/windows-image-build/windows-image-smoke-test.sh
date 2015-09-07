@@ -42,7 +42,11 @@ BDIR="./builddirs/smoketest-$WIN_VERSION/"
 evalcheck mkdir -p ./builddirs
 
 # Make sure KVMs, processes, and build dir from previous jobs are deleted
-[ -d "$BDIR" ] && { cleanup-code ; rm "$BDIR" -fr ; }
+if [ -d "$BDIR" ]; then
+    echo "windows-image-smoke-test.show-image.sh:   Removing existing build directory:"
+    cleanup-code
+    rm "$BDIR" -fr
+fi
 
 ensure-file-is-in-place()
 {
@@ -104,9 +108,13 @@ ensure-file-is-in-place "$isoname"
 
 KILLPGOK=yes "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$BDIR" 0-init "$WIN_VERSION"
 
-for i in $(seq 1 30); do
-    echo "Iteration $i: "
-    sudo whoami # keep sudo alive
+SLEEPTIME=60
+MAXITERATIONS=30
+
+for i in $(seq 1 $MAXITERATIONS); do
+    echo
+    echo "windows-image-smoke-test.show-image.sh:   Iteration $i: "
+    sudo whoami 1>/dev/null # keep sudo alive
     setsid "$SCRIPT_DIR/supernext.sh" -next "$BDIR"
     cmd="$(< "$BDIR/nextstep")"
     if [ "$cmd" = "3-tar-the-image" ]; then
@@ -121,6 +129,7 @@ for i in $(seq 1 30); do
 	echo "Finished."
 	break
     fi
-    ps -o pid,pgid,cmd
-    sleep 60
+    echo
+    echo "(Sleeping for $SLEEPTIME seconds)"
+    sleep $SLEEPTIME
 done
