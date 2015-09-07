@@ -248,7 +248,7 @@ supernext-simulate-user-actions-after()
     # seconds.  This should be enough for zabbix installer to move to
     # the next state)
     SLEEPFOR=15
-    echo "Doing supernext-simulate-user-actions-after for nextstep=$cmd"
+    echo "Doing supernext-simulate-user-actions-after for $cmd"
     case "$cmd" in  # uses $cmd from previous functions, because $build_dir/nextstep may have changed
 	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
 	    touch $build_dir/press-ctrl-alt-del

@@ -285,7 +285,7 @@ tar-up-windows-logs()
     # eval is needed to deal with the quotes needed for spaces in a file name
     echo "Making tar file of log files from Windows image --> $target"
     eval tar czf "$target" -C mntpoint "${windowsLogs[@]}"
-    cp $(pwd)/qemu-vlan0.pcap "${target%.tar.gz}.pcap"
+    cp $(pwd)/qemu-vlan0.pcap "${target%.tar.gz}.pcap" 2>/dev/null
 }
 
 mount-tar-umount()
@@ -827,6 +827,7 @@ window-image-utils-main()
 	dispatch-command "$thecommand" "${params[@]}"
     fi
     echo "Finished build-w-answerfile-floppy.sh ($thecommand), ./nextstep is now $(cat "$bdir_fullpath/nextstep" 2>/dev/null)"
+    echo
     echo "$instructions"
     echo
 }

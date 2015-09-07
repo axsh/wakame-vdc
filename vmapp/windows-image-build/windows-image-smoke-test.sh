@@ -43,7 +43,7 @@ evalcheck mkdir -p ./builddirs
 
 # Make sure KVMs, processes, and build dir from previous jobs are deleted
 if [ -d "$BDIR" ]; then
-    echo "windows-image-smoke-test.show-image.sh:   Removing existing build directory:"
+    echo "Removing existing build directory:"
     cleanup-code
     rm "$BDIR" -fr
 fi
@@ -113,7 +113,7 @@ MAXITERATIONS=30
 
 for i in $(seq 1 $MAXITERATIONS); do
     echo
-    echo "windows-image-smoke-test.show-image.sh:   Iteration $i: "
+    echo "Iteration $i for windows-image-smoke-test.show-image.sh:"
     sudo whoami 1>/dev/null # keep sudo alive
     setsid "$SCRIPT_DIR/supernext.sh" -next "$BDIR"
     cmd="$(< "$BDIR/nextstep")"
