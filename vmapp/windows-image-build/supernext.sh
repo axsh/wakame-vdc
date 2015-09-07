@@ -30,7 +30,6 @@ evalcheck() { eval "$@" || reportfail "$@,rc=$?" ; }
 trap 'echo "pid=$BASHPID exiting" 1>&2 ; exit 255' TERM  # feel free to specialize this
 
 export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || reportfail
-set -x
 
 usage() {
     cat <<'EOF'

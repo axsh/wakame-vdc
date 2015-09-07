@@ -283,7 +283,8 @@ tar-up-windows-logs()
     target="$1"
     [ -d mntpoint/Windows ] || reportfail "Windows disk image not mounted"
     # eval is needed to deal with the quotes needed for spaces in a file name
-    eval tar czvf "$target" -C mntpoint "${windowsLogs[@]}"
+    echo "Making tar file of log files from Windows image --> $target"
+    eval tar czf "$target" -C mntpoint "${windowsLogs[@]}"
     cp $(pwd)/qemu-vlan0.pcap "${target%.tar.gz}.pcap"
 }
 
@@ -431,10 +432,12 @@ final-seed-image-packaging()
          # just attaches /loop device, no mounting
          evalcheck mount-partition "${seedtar%.tar.gz}" $partitionNumber --sudo)" 
 	udevadm settle # probably not needed
+
 	evalcheck sudo ntfslabel "$loopdev" root
 	evalcheck umount-partition "${seedtar%.tar.gz}" --sudo
 	
 	# package
+	set -x # show the user what this step is spending so much time doing
 	time evalcheck 'tar czvSf "$seedtar" "${seedtar%.tar.gz}"'
 	time evalcheck 'md5sum "$seedtar" >"$seedtar".md5'
     )
@@ -649,9 +652,11 @@ dispatch-command()
 	    echo "Nothing to wait for on this command.  Do -next to tar the new seed image."
 	    ;;
 	3-tar-the-image)
-	    set -x # show the user what this step is spending so much time doing
-	    time md5sum "$WINIMG" >"$WINIMG".md5
-	    time tar czSvf "windows-$LABEL-$(cat ./timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
+	    (
+		set -x # show the user what this step is spending so much time doing
+		time md5sum "$WINIMG" >"$WINIMG".md5
+		time tar czSvf "windows-$LABEL-$(cat ./timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
+	    )
 	    mount-tar-umount ./after-gen0-sysprep.tar.gz
 	    echo "4-package-tgz-image" >./nextstep
 	    echo "Finished making the tar archive."
