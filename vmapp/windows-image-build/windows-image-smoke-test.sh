@@ -109,9 +109,13 @@ for i in $(seq 1 30); do
     sudo whoami # keep sudo alive
     setsid "$SCRIPT_DIR/supernext.sh" -next "$BDIR"
     cmd="$(< "$BDIR/nextstep")"
-    if [[ "$cmd" == *cannot-continue ]]; then
-	echo "Build failed at step: $cmd"
-	break
+    if [ "$cmd" = "3-tar-the-image" ]; then
+	# after-gen0-sysprep.tar.gz is the set of Windows log files after sysprep is run as
+	# the final step of installing Windows.  Extract just one file from this tar archive.
+	tar xzvOf "./$BDIR/after-gen0-sysprep.tar.gz"   Windows/Setup/State/State.ini >State.ini
+
+	[[ "$(< State.ini)" == *IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE* ]] || reportfail "sysprep did not update State.ini file"
+	echo "Continuing on to package image..."
     fi
     if [ "$cmd" = "1001-gen0-first-boot" ]; then
 	echo "Finished."
@@ -120,9 +124,3 @@ for i in $(seq 1 30); do
     ps -o pid,pgid,cmd
     sleep 60
 done
-
-# after-gen0-sysprep.tar.gz is the set of Windows log files after sysprep is run as
-# the final step of installing Windows.  Extract just one file from this tar archive.
-tar xzvOf "./$BDIR/after-gen0-sysprep.tar.gz"   Windows/Setup/State/State.ini >State.ini
-
-[[ "$(< State.ini)" == *IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE* ]] || reportfail "sysprep did not update State.ini file"
