@@ -94,7 +94,7 @@ Refers to a server that a Wakame-vdc process runs on. Can be physical or a VM bu
 
 ### OpenVNet
 
-An full virtual networking implementation using OpenFlow. This project is completely separate from Wakame-vdc but Wakame-vdc can use it to implement virtual networking. This integration is still experimental at this time. [http://openvnet.org](http://openvnet.org)
+An full virtual networking implementation using OpenFlow. This project is completely separate from Wakame-vdc but Wakame-vdc can use it to implement virtual networking. [http://openvnet.org](http://openvnet.org)
 
 ## P
 ## Q
