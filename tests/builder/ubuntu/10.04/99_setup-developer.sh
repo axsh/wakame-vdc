@@ -91,7 +91,6 @@ config.vm_data_dir = "${vmdir_path}"
 # netfilter
 config.enable_ebtables = true
 config.enable_iptables = true
-config.enable_openflow = false
 
 # physical nic index
 config.hv_ifindex      = 2 # ex. /sys/class/net/eth0/ifindex => 2
@@ -104,7 +103,6 @@ config.bridge_novlan   = 'br0'
 
 # display netfitler commands
 config.verbose_netfilter = false
-config.verbose_openflow  = false
 
 # netfilter log output flag
 config.packet_drop_log = false
