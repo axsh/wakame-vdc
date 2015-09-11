@@ -143,10 +143,8 @@ module Dcmgr
     autoload :StaTgtInitializer, 'dcmgr/node_modules/sta_tgt_initializer'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :NatboxCollector, 'dcmgr/node_modules/natbox_collector'
-    autoload :DebugOpenFlow, 'dcmgr/node_modules/debug_openflow'
     autoload :ServiceNatbox, 'dcmgr/node_modules/service_natbox'
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
-    autoload :ServiceOpenFlow, 'dcmgr/node_modules/service_openflow'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
     autoload :Scheduler, 'dcmgr/node_modules/scheduler'
     autoload :Maintenance, 'dcmgr/node_modules/maintenance'
@@ -353,30 +351,6 @@ module Dcmgr
       autoload :NetfilterTaskManager, 'dcmgr/edge_networking/netfilter/task_manager'
       autoload :VNicProtocolTaskManager, 'dcmgr/edge_networking/netfilter/task_manager'
       autoload :CacheDumper, 'dcmgr/edge_networking/netfilter/cache_dumper'
-    end
-
-    module OpenFlow
-      autoload :ArpHandler, 'dcmgr/edge_networking/openflow/arp_handler'
-      autoload :IcmpHandler, 'dcmgr/edge_networking/openflow/icmp_handler'
-      autoload :Flow, 'dcmgr/edge_networking/openflow/flow'
-      autoload :FlowGroup, 'dcmgr/edge_networking/openflow/flow_group'
-      autoload :NetworkPhysical, 'dcmgr/edge_networking/openflow/network_physical'
-      autoload :NetworkVirtual, 'dcmgr/edge_networking/openflow/network_virtual'
-      autoload :OpenFlowConstants, 'dcmgr/edge_networking/openflow/constants'
-      autoload :OpenFlowController, 'dcmgr/edge_networking/openflow/controller'
-      autoload :OpenFlowDatapath, 'dcmgr/edge_networking/openflow/datapath'
-      autoload :OpenFlowNetwork, 'dcmgr/edge_networking/openflow/network'
-      autoload :OpenFlowPort, 'dcmgr/edge_networking/openflow/port'
-      autoload :OpenFlowSwitch, 'dcmgr/edge_networking/openflow/switch'
-      autoload :OvsOfctl, 'dcmgr/edge_networking/openflow/ovs_ofctl'
-      autoload :PacketHandler, 'dcmgr/edge_networking/openflow/packet_handler'
-      autoload :PortPhysical, 'dcmgr/edge_networking/openflow/port_physical'
-      autoload :PortVirtual, 'dcmgr/edge_networking/openflow/port_virtual'
-      autoload :ServiceBase, 'dcmgr/edge_networking/openflow/service_base'
-      autoload :ServiceDhcp, 'dcmgr/edge_networking/openflow/service_dhcp'
-      autoload :ServiceDns, 'dcmgr/edge_networking/openflow/service_dns'
-      autoload :ServiceGateway, 'dcmgr/edge_networking/openflow/service_gateway'
-      autoload :ServiceMetadata, 'dcmgr/edge_networking/openflow/service_metadata'
     end
 
     module Tasks
