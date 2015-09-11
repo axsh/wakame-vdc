@@ -58,9 +58,6 @@ webui_dbpass=passwd
 # Hypervisor 
 hypervisor=${hypervisor:-kvm}
 
-# openflow
-with_openflow=no
-
 # screen mode: screen, tmux, bg
 screen_mode=${screen_mode:-'screen'}
 # 

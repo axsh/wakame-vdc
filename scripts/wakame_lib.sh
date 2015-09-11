@@ -333,9 +333,6 @@ function run_standalone() {
     done
   }
 
-  [ "${with_openflow}" != "yes" ] || \
-    run_service "ofc" "cd ${wakame_root}/dcmgr/" "./bin/ofc -i demo1"
-
   [ -n "${without_screen}" ] && {
     #wait_jobs
     echo "Kill pids in ${tmp_path}/vdc-pid.log..."
@@ -352,11 +349,7 @@ EOF
 echo > "/dev/tcp/localhost/8080"
 EOF
 
-  if [ "${with_openflow}" == "yes" ]; then
-      nodes=5
-  else
-      nodes=4
-  fi
+  nodes=4
 
   # Wait for until all agent nodes become online.
   retry 10 <<'EOF' || abort "Offline nodes still exist."
