@@ -40,10 +40,6 @@ config.ovs_run_dir = '${VDC_ROOT}/ovs/var/run/openvswitch'
 # Path for ovs-ofctl
 config.ovs_ofctl_path = '${VDC_ROOT}/ovs/bin/ovs-ofctl'
 
-# Trema base directory
-config.trema_dir = '${VDC_ROOT}/trema'
-config.trema_tmp = '${VDC_ROOT}/tmp/trema'
-
 dc_network('public') {
   bridge_type 'linux'
   interface 'eth0'
