@@ -6,7 +6,10 @@ require 'vnet_api_client'
 module Sinatra
   module VnetWebapi
     def enable_vnet_webapi
-      VNetAPIClient.uri = 'http://localhost:9090'
+      endpoint = Dcmgr::Configurations.dcmgr.features.vnet_endpoint
+      port = Dcmgr::Configurations.dcmgr.features.vnet_endpoint_port
+
+      VNetAPIClient.uri = "http://#{endpoint}:#{port}"
 
       after do
         return if not request.request_method == "POST"
