@@ -238,11 +238,6 @@ module Dcmgr
       param :brctl_path, :default => '/usr/sbin/brctl'
       param :vsctl_path, :default => '/usr/bin/ovs-vsctl'
       param :ovs_run_dir, :default=>'/usr/var/run/openvswitch'
-      # Trema base directory
-      param :trema_dir, :default=>'/home/demo/trema'
-      param :trema_tmp, :default=> proc {
-        @config[:trema_tmp] || (@config[:trema_dir] + '/tmp')
-      }
 
       param :esxi_ipaddress
       param :esxi_datacenter, :default => "ha-datacenter"

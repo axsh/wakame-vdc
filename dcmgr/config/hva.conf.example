@@ -57,10 +57,6 @@ config.ovs_run_dir = '/var/lib/wakame-vdc/ovs/var/run/openvswitch'
 # Path for ovs-ofctl
 config.ovs_ofctl_path = '/var/lib/wakame-vdc/ovs/bin/ovs-ofctl'
 
-# Trema base directory
-config.trema_dir = '/var/lib/wakame-vdc/trema'
-config.trema_tmp = '/var/lib/wakame-vdc/tmp/trema'
-
 dc_network('public') {
   bridge_type 'linux'
   interface 'eth0'
