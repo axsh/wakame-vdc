@@ -204,7 +204,6 @@ module Dcmgr
         @config[:metadata] = Metadata.new(self)
         @config[:windows] = Windows.new(self)
         @config[:hypervisor_driver] = {}
-        @config[:ovs_ofctl] = EdgeNetworking::OpenFlow::OvsOfctl::Configuration.new(self)
       end
 
       param :vm_data_dir
