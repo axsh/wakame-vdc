@@ -5,7 +5,6 @@
 
 set -e
 
-# Trema install.
 work_dir=${work_dir:?"work_dir needs to be set"}
 
 # Open vSwitch install.
