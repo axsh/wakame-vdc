@@ -39,13 +39,10 @@ BuildRequires: gcc-c++ gcc
 BuildRequires: git
 BuildRequires: mysql-devel
 BuildRequires: chrpath
-BuildRequires: pkgconfig
 # vmapp dependency
 BuildRequires: parted
 # build local cache
 BuildRequires: yum-utils
-# Trema/racket gem build dependency
-BuildRequires: sqlite-devel libpcap-devel
 BuildRequires: v8 v8-devel
 
 # * wakame-vdc(common)
@@ -193,8 +190,6 @@ Requires: kpartx
 Requires: libcgroup
 Requires: tunctl
 Requires: sysstat
-# Trema/racket gem binary dependency
-Requires: sqlite libpcap
 Requires: pv
 %description  hva-common-vmapp-config
 <insert long description, indented with spaces>
