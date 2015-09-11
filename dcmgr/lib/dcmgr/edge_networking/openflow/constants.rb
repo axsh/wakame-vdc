@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'trema'
-
 module Dcmgr
   module EdgeNetworking
     module OpenFlow
