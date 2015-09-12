@@ -2,6 +2,7 @@
 
 require "dcmgr/configurations/features"
 require 'fuguta'
+require "dcmgr/edge_networking/openflow/ovs_ofctl"
 
 module Dcmgr
 
@@ -48,6 +49,11 @@ module Dcmgr
           @config[:ovs_ofctl].config[:ovs_ofctl_path] = v
         end
         alias_method :ovs_ofctl_path=, :ovs_ofctl_path
+
+        def verbose_openflow(v)
+          @config[:ovs_ofctl].config[:verbose_openflow] = v
+        end
+        alias_method :verbose_openflow=, :verbose_openflow
       end
 
       param :ovs_flow_table, :default => 0
