@@ -12,5 +12,5 @@ Fabricator(:instance_with_network_vif, class_name: Dcmgr::Models::Instance) do
   image { Fabricate(:image) }
   cpu_cores 1
   memory_size 256
-  network_vif { [Fabricate(:network_vif)] }
+  network_vif { [Fabricate(:network_vif_with_ip)] }
 end
