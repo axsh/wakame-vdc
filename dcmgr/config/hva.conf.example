@@ -8,10 +8,11 @@ config.vm_data_dir = '/var/lib/wakame-vdc/instances'
 # Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
 # * 'netfilter'
 # * 'legacy_netfilter' #no longer supported, has issues with multiple vnic vm isolation
+# * 'openflow' #experimental, requires additional setup
 # * 'off'
 config.edge_networking = 'netfilter'
 
-# netfilter
+# netfilter and openflow
 config.enable_ebtables = true
 config.enable_iptables = true
 config.enable_subnet = false
@@ -19,6 +20,7 @@ config.enable_gre = true
 
 # display netfitler commands
 config.verbose_netfilter = false
+config.verbose_openflow  = false
 
 # netfilter log output flag
 config.packet_drop_log = false
