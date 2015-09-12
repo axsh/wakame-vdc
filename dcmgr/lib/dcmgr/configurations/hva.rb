@@ -2,7 +2,6 @@
 
 require "dcmgr/configurations/features"
 require "fuguta"
-require "dcmgr/edge_networking/openflow/ovs_ofctl"
 
 module Dcmgr
   module Configurations
@@ -195,11 +194,6 @@ module Dcmgr
           @config[:ovs_ofctl].config[:ovs_ofctl_path] = v
         end
         alias_method :ovs_ofctl_path=, :ovs_ofctl_path
-
-        def verbose_openflow(v)
-          @config[:ovs_ofctl].config[:verbose_openflow] = v
-        end
-        alias_method :verbose_openflow=, :verbose_openflow
       end
 
       on_initialize_hook do
@@ -249,7 +243,6 @@ module Dcmgr
       # Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
       # * 'netfilter'
       # * 'legacy_netfilter' #no longer supported, has issues with multiple vnic vm isolation
-      # * 'openflow' #experimental, requires additional setup
       # * 'off'
       param :edge_networking, :default => 'netfilter'
 
@@ -279,7 +272,7 @@ module Dcmgr
           errors << "vm_data_dir does not exist: #{@config[:vm_data_dir]}"
         end
 
-        unless ['netfilter', 'legacy_netfilter', 'openflow', 'openvnet', 'off'].member?(@config[:edge_networking])
+        unless ['netfilter', 'legacy_netfilter', 'openvnet', 'off'].member?(@config[:edge_networking])
           errors << "Unknown value for edge_networking: #{@config[:edge_networking]}"
         end
       end
