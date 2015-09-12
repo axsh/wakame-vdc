@@ -353,6 +353,10 @@ module Dcmgr
       autoload :CacheDumper, 'dcmgr/edge_networking/netfilter/cache_dumper'
     end
 
+    module OpenFlow
+      autoload :OvsOfctl, 'dcmgr/edge_networking/openflow/ovs_ofctl'
+    end
+
     module Tasks
       autoload :AcceptAllDNS, 'dcmgr/edge_networking/tasks/accept_all_dns'
       autoload :AcceptArpBroadcast, 'dcmgr/edge_networking/tasks/accept_arp_broadcast'
