@@ -15,9 +15,11 @@ module Sinatra
         return if not request.request_method == "POST"
 
         if request.path_info == "/networks"
-          VNetAPIClient::Network.create(display_name: "test",
-                            ipv4_network: "192.168.100.0",
-                            ipv4_prefix: 24)
+          VNetAPIClient::Network.create(
+            ipv4_network: params[:network],
+            ipv4_prefix: params[:prefix],
+            network_mode: 'virtual'
+          )
         end
       end
     end

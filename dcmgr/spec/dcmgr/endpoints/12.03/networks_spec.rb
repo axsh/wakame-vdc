@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 require_relative 'helper'
 
+require 'helper_vnet_webmock'
+
 describe "networks" do
   M = Dcmgr::Models
   C = Dcmgr::Constants
@@ -22,6 +24,13 @@ describe "networks" do
       stub_dcmgr_messaging
 
       allow(Dcmgr.messaging).to receive(:submit)
+
+      vnet_network_required_params = {
+        :ipv4_network => params[:network],
+        :ipv4_prefix => params[:prefix],
+        :network_mode => 'virtual'
+      }
+      stub_vnet_request("networks", vnet_network_required_params)
 
       post("networks",
            params,
