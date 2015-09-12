@@ -158,6 +158,7 @@ module Dcmgr
     autoload :HaManager, 'dcmgr/node_modules/ha_manager'
     autoload :AlarmCollector, 'dcmgr/node_modules/alarm_collector'
     autoload :AlarmConfigUpdater, 'dcmgr/node_modules/alarm_config_updater'
+    autoload :VnetCollector, 'dcmgr/node_modules/vnet_collector'
   end
 
   module Helpers
