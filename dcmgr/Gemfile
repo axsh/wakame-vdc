@@ -70,4 +70,5 @@ group :test do
   gem 'fabrication'
   gem 'database_cleaner'
   gem 'webmock'
+  gem 'pry'
 end
