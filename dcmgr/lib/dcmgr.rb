@@ -354,6 +354,7 @@ module Dcmgr
     end
 
     module OpenFlow
+      autoload :Flow, 'dcmgr/edge_networking/openflow/flow'
       autoload :OvsOfctl, 'dcmgr/edge_networking/openflow/ovs_ofctl'
     end
 
