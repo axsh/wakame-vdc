@@ -18,6 +18,7 @@ module Sinatra
         if request.path_info == "/networks"
           VNetAPIClient::Network.create(
             uuid: uuid,
+            display_name: uuid,
             ipv4_network: params[:network],
             ipv4_prefix: params[:prefix],
             network_mode: 'virtual'

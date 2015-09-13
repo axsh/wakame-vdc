@@ -27,6 +27,7 @@ describe "networks" do
 
       vnet_network_required_params = {
         :uuid => "nw-test",
+        :display_name => "nw-test",
         :ipv4_network => params[:network],
         :ipv4_prefix => params[:prefix],
         :network_mode => 'virtual'

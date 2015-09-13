@@ -8,6 +8,7 @@ def request_params(params)
   ret = ""
   params.each do |k,v|
     next if k == :uuid
+    next if k == :display_name
     ret = "#{ret}#{k.to_sym}=#{v}&"
   end
   ret.chop!
