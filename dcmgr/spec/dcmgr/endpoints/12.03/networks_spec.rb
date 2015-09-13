@@ -26,6 +26,7 @@ describe "networks" do
       allow(Dcmgr.messaging).to receive(:submit)
 
       vnet_network_required_params = {
+        :uuid => "nw-test",
         :ipv4_network => params[:network],
         :ipv4_prefix => params[:prefix],
         :network_mode => 'virtual'
@@ -42,10 +43,10 @@ describe "networks" do
 
       let(:params) do
         {
-           network: "172.16.0.0",
-           prefix: 24,
-           dc_network: dc_network.canonical_uuid,
-           network_mode: "securitygroup"
+          network: "172.16.0.0",
+          prefix: 24,
+          dc_network: dc_network.canonical_uuid,
+          network_mode: "securitygroup"
         }
       end
 

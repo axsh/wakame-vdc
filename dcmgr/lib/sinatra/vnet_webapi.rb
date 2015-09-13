@@ -14,8 +14,10 @@ module Sinatra
       after do
         return if not request.request_method == "POST"
 
+        uuid = self.response.body.first.scan(/nw-.*?"/).uniq.first.gsub(/"/,"")
         if request.path_info == "/networks"
           VNetAPIClient::Network.create(
+            uuid: uuid,
             ipv4_network: params[:network],
             ipv4_prefix: params[:prefix],
             network_mode: 'virtual'
