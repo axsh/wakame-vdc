@@ -6,6 +6,7 @@
 set -e
 
 declare chroot_dir=$1
+declare passwd_login=$2
 
 . ./functions.sh
 
@@ -40,7 +41,7 @@ PermitRootLogin no
 Port 22
 
 # 11: Use Public Key Based Authentication
-PasswordAuthentication no
+PasswordAuthentication yes
 
 # 15: Disable Empty Passwords
 PermitEmptyPasswords no
@@ -51,4 +52,7 @@ X11Forwarding no
 EOS
 )
 
+if [[ ${passwd_login} = "no" ]]; then
+    config_sshd_config ${chroot_dir}/etc/ssh/sshd_config PasswordAuthentication no
+fi
 

@@ -7,6 +7,7 @@ set -e
 set -o pipefail
 set -x
 
+passwd_login=${PASSWDLOGIN:-yes}
 
 [[ -f ./metadata/vmspec.conf ]]
 .     ./metadata/vmspec.conf
@@ -17,5 +18,5 @@ sudo /bin/bash -e <<EOS
   fi
 
   ./unpack-box.sh ${box_path}
-  raw=${raw} ./kemumaki-init.sh
+  passwd_login=${passwd_login} raw=${raw} ./kemumaki-init.sh
 EOS

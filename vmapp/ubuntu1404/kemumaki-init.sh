@@ -9,6 +9,7 @@ set -x
 
 mnt_path=${mnt_path:-mnt}
 raw=${raw:-$(pwd)/box-disk1.raw}
+passwd_login=${passwd_login:-yes}
 
 [[ -f ${raw} ]]
 [[ $UID == 0 ]]
@@ -80,7 +81,7 @@ config_tty
 
 if [[ -d execscript ]]; then
   while read line; do
-    eval ${line} ${mnt_path}
+    eval ${line} ${mnt_path} ${passwd_login}
   done < <(find -L execscript ! -type d -perm -a=x | sort)
 fi
 
