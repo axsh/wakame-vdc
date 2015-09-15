@@ -7,7 +7,7 @@ set -e
 set -o pipefail
 
 boxes="
-     ubuntu-14.04-30g.kvm.box
+     ubuntu-14.04.3-30g.kvm.box
 "
 
 function download_file() {
@@ -33,7 +33,6 @@ function download_file() {
   local majorver=${versions[0]}
   # -> 7
 
-  filename=ubuntu-14.04-30g.kvm.box
   curl -fSkLR --retry 3 --retry-delay 3 http://dlc.wakame.axsh.jp/uservm/ubuntu-minimal-image/current/${filename} -o ${filename}
 }
 
