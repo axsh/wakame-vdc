@@ -57,11 +57,11 @@ Also known as host or host node.
 
 ### Instance
 
+A virtual machine managed by wakame-vdc.
+
 ### Instances network
 
 An L3 network in which [instances](#instance) are started. This can technically be the same network used for the [management line](#management-line-management-network) but on production environments, it is probably a good idea to separate them.
-
-A virtual machine managed by wakame-vdc.
 
 ## J
 ## K
