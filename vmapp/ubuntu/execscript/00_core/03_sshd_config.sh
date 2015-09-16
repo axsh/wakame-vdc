@@ -52,7 +52,7 @@ X11Forwarding no
 EOS
 )
 
-if [[ ${passwd_login} = "no" ]]; then
+if [[ ${passwd_login} = "disabled" ]]; then
     config_sshd_config ${chroot_dir}/etc/ssh/sshd_config PasswordAuthentication no
 fi
 

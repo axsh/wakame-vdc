@@ -7,8 +7,6 @@ set -e
 set -o pipefail
 set -x
 
-passwd_login=${PASSWDLOGIN:-yes}
-
 [[ -f ./metadata/vmspec.conf ]]
 .     ./metadata/vmspec.conf
 
