@@ -167,7 +167,7 @@
         },
         {
             "location": "/jargon-dictionary/",
-            "text": "Jargon Dictionary\n\n\nA\n\n\nB\n\n\nBackup Storage\n\n\nBackup storage is a means of storing \nbackup objects\n. Backup objects can be stored on a local file system, served through http or using \nIndelible FS\n (experimental).\n\n\nBackup Object\n\n\nA backup object is basically a hard drive image. Backup objects that hold bootable partitions are called \nmachine images\n.\n\n\nC\n\n\nCollector\n\n\nThe collector is one of Wakame-vdc's processes. It's in charge of making \nscheduling decisions\n and database access.\n\n\nD\n\n\nE\n\n\nEndpoint\n\n\nAn endpoint is a single part of the \nWebAPI\n that the user can call to control Wakame-vdc. For example \nGET http://\nwebapi ip\n:\nwebapi port\n/api/instances\n is an endpoint. \nPOST http://\nwebapi ip\n:\nwebapi port\n/api/images\n is another endpoint and so on.\n\n\nF\n\n\nG\n\n\nGUI\n\n\nSee \nWebUI\n.\n\n\nH\n\n\nHost/Host Node\n\n\nSee \nHVA\n.\n\n\nHVA\n\n\nThe HVA (HyperVisor Agent) is the part of Wakame-vdc that actually starts \ninstances\n. On a production environment, you would likely have several dedicated bare metal hosts for this.\n\n\nAlso known as host or host node.\n\n\nI\n\n\nInstance\n\n\nA virtual machine managed by wakame-vdc.\n\n\nJ\n\n\nK\n\n\nL\n\n\nM\n\n\nMachine Image\n\n\nA \nbackup object\n that holds a bootable partition. You are able to start \ninstances\n of machine images.\n\n\nMeta-data\n\n\nIn Wakame-vdc's context, meta-data usually refers to information that is passed to \ninstances\n when they start. It includes for example the instance's IP addresses, network host name and thrusted public keys. Meta-data is usually delivered as files on an extra (tiny) hard drive.\n\n\nN\n\n\nNATbox\n\n\nThe NATbox is an optional Wakame-vdc node that provides one to one \nnetwork address translation\n for \ninstances\n.\n\n\nNode\n\n\nRefers to a server that a Wakame-vdc process runs on. Can be physical or a VM but not an \ninstance\n.\n\n\nO\n\n\nP\n\n\nQ\n\n\nR\n\n\nS\n\n\nScheduling\n\n\nThe decision making process when starting a new instance. Deciding things like the network to join, the MAC and IP address to be assigned, which \nHVA\n to use, etc. are referred to as scheduling. Scheduling takes place in Wakame-vdc's \ncollector\n.\n\n\nSecurity Group\n\n\nWakame-vdc's dynamically updating firewall. You can put \nvnics\n into groups that determine which network traffic is blocked and which is accepted. These firewalls are updated dynamically as the layout of the virtual data center changes. Read the \nsecurity groups guide\n for more details.\n\n\nT\n\n\nU\n\n\nUser data\n\n\nUser data is an arbitrary field that users can set when starting an \ninstance\n. The user data will be delivered along with \nmeta-data\n and will thus be accessible from inside the instance. For example users can create custom images with scripts in them that react to user data.\n\n\nV\n\n\nVnic / Vif\n\n\nStands for Virtual Network Interface Card or Virtual Interface. In either case, the term refers to an \ninstance's\n simulated network card.\n\n\nW\n\n\nWebAPI\n\n\nThis is Wakame-vdc's user interface. You tell Wakame-vdc to do stuff by making http requests to this API.\n\n\nWebUI\n\n\nWakame-vdc's GUI. It's actually a Rails application that sits in front of the \nWebAPI\n.\n\n\nX\n\n\nY\n\n\nZ",
+            "text": "Jargon Dictionary\n\n\nA\n\n\nAxsh\n\n\nAxsh Co. LTD are the authors of Wakame-vdc and \nOpenVNet\n. Pronounced: Ah-ku-shu.\n\n\nB\n\n\nBackup Storage\n\n\nBackup storage is a means of storing \nbackup objects\n. Backup objects can be stored on a local file system, served through http or using \nIndelible FS\n (experimental).\n\n\nBackup Object\n\n\nA backup object is basically a hard drive image. Backup objects that hold bootable partitions are called \nmachine images\n.\n\n\nC\n\n\nCollector\n\n\nThe collector is one of Wakame-vdc's processes. It's in charge of making \nscheduling decisions\n and database access.\n\n\nD\n\n\nDcmgr\n\n\nStands for Data Center Manager. In Wakame-vdc, this is just another word for the \nWebAPI\n\n\nE\n\n\nEndpoint\n\n\nAn endpoint is a single part of the \nWebAPI\n that the user can call to control Wakame-vdc. For example \nGET http://\nwebapi ip\n:\nwebapi port\n/api/instances\n is an endpoint. \nPOST http://\nwebapi ip\n:\nwebapi port\n/api/images\n is another endpoint and so on.\n\n\nF\n\n\nG\n\n\nGUI\n\n\nSee \nWebUI\n.\n\n\nH\n\n\nHost/Host Node\n\n\nSee \nHVA\n.\n\n\nHVA\n\n\nThe HVA (HyperVisor Agent) is the part of Wakame-vdc that actually starts \ninstances\n. On a production environment, you would likely have several dedicated bare metal hosts for this.\n\n\nAlso known as host or host node.\n\n\nI\n\n\nInstance\n\n\nA virtual machine managed by wakame-vdc.\n\n\nInstances network\n\n\nAn L3 network in which \ninstances\n are started. This can technically be the same network used for the \nmanagement line\n but on production environments, it is probably a good idea to separate them.\n\n\nJ\n\n\nK\n\n\nL\n\n\nM\n\n\nMachine Image\n\n\nA \nbackup object\n that holds a bootable partition. You are able to start \ninstances\n of machine images.\n\n\nManagement Line / Management Network\n\n\nThis is a network that Wakame-vdc uses for communication between its different \nnodes\n.\n\n\nMeta-data\n\n\nIn Wakame-vdc's context, meta-data usually refers to information that is passed to \ninstances\n when they start. It includes for example the instance's IP addresses, network host name and thrusted public keys. Meta-data is usually delivered as files on an extra (tiny) hard drive.\n\n\nN\n\n\nNATbox\n\n\nThe NATbox is an optional Wakame-vdc node that provides one to one \nnetwork address translation\n for \ninstances\n.\n\n\nNode\n\n\nRefers to a server that a Wakame-vdc process runs on. Can be physical or a VM but not an \ninstance\n.\n\n\nO\n\n\nOpenVNet\n\n\nAn full virtual networking implementation using OpenFlow. This project is completely separate from Wakame-vdc but Wakame-vdc can use it to implement virtual networking. \nhttp://openvnet.org\n\n\nP\n\n\nQ\n\n\nR\n\n\nS\n\n\nScheduling\n\n\nThe decision making process when starting a new instance. Deciding things like the network to join, the MAC and IP address to be assigned, which \nHVA\n to use, etc. are referred to as scheduling. Scheduling takes place in Wakame-vdc's \ncollector\n.\n\n\nSecurity Group\n\n\nWakame-vdc's dynamically updating firewall. You can put \nvnics\n into groups that determine which network traffic is blocked and which is accepted. These firewalls are updated dynamically as the layout of the virtual data center changes. Read the \nsecurity groups guide\n for more details.\n\n\nT\n\n\nU\n\n\nUser data\n\n\nUser data is an arbitrary field that users can set when starting an \ninstance\n. The user data will be delivered along with \nmeta-data\n and will thus be accessible from inside the instance. For example users can create custom images with scripts in them that react to user data.\n\n\nV\n\n\nvdc-manage\n\n\nA command-line front-end for Wakame-vdc's database. It can be found at \n/opt/axsh/wakame-vdc/dcmgr/bin/wakame-vdc\n\n\nVnic / Vif\n\n\nStands for Virtual Network Interface Card or Virtual Interface. In either case, the term refers to an \ninstance's\n simulated network card.\n\n\nW\n\n\nWebAPI\n\n\nThis is Wakame-vdc's user interface. You tell Wakame-vdc to do stuff by making http requests to this API.\n\n\nWebUI\n\n\nWakame-vdc's GUI. It's actually a Rails application that sits in front of the \nWebAPI\n.\n\n\nX\n\n\nY\n\n\nZ",
             "title": "Jargon Dictionary"
         },
         {
@@ -177,7 +177,7 @@
         },
         {
             "location": "/jargon-dictionary/#a",
-            "text": "",
+            "text": "Axsh  Axsh Co. LTD are the authors of Wakame-vdc and  OpenVNet . Pronounced: Ah-ku-shu.",
             "title": "A"
         },
         {
@@ -192,7 +192,7 @@
         },
         {
             "location": "/jargon-dictionary/#d",
-            "text": "",
+            "text": "Dcmgr  Stands for Data Center Manager. In Wakame-vdc, this is just another word for the  WebAPI",
             "title": "D"
         },
         {
@@ -217,7 +217,7 @@
         },
         {
             "location": "/jargon-dictionary/#i",
-            "text": "Instance  A virtual machine managed by wakame-vdc.",
+            "text": "Instance  A virtual machine managed by wakame-vdc.  Instances network  An L3 network in which  instances  are started. This can technically be the same network used for the  management line  but on production environments, it is probably a good idea to separate them.",
             "title": "I"
         },
         {
@@ -237,7 +237,7 @@
         },
         {
             "location": "/jargon-dictionary/#m",
-            "text": "Machine Image  A  backup object  that holds a bootable partition. You are able to start  instances  of machine images.  Meta-data  In Wakame-vdc's context, meta-data usually refers to information that is passed to  instances  when they start. It includes for example the instance's IP addresses, network host name and thrusted public keys. Meta-data is usually delivered as files on an extra (tiny) hard drive.",
+            "text": "Machine Image  A  backup object  that holds a bootable partition. You are able to start  instances  of machine images.  Management Line / Management Network  This is a network that Wakame-vdc uses for communication between its different  nodes .  Meta-data  In Wakame-vdc's context, meta-data usually refers to information that is passed to  instances  when they start. It includes for example the instance's IP addresses, network host name and thrusted public keys. Meta-data is usually delivered as files on an extra (tiny) hard drive.",
             "title": "M"
         },
         {
@@ -247,7 +247,7 @@
         },
         {
             "location": "/jargon-dictionary/#o",
-            "text": "",
+            "text": "OpenVNet  An full virtual networking implementation using OpenFlow. This project is completely separate from Wakame-vdc but Wakame-vdc can use it to implement virtual networking.  http://openvnet.org",
             "title": "O"
         },
         {
@@ -282,7 +282,7 @@
         },
         {
             "location": "/jargon-dictionary/#v",
-            "text": "Vnic / Vif  Stands for Virtual Network Interface Card or Virtual Interface. In either case, the term refers to an  instance's  simulated network card.",
+            "text": "vdc-manage  A command-line front-end for Wakame-vdc's database. It can be found at  /opt/axsh/wakame-vdc/dcmgr/bin/wakame-vdc  Vnic / Vif  Stands for Virtual Network Interface Card or Virtual Interface. In either case, the term refers to an  instance's  simulated network card.",
             "title": "V"
         },
         {

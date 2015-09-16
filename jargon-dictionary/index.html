@@ -263,6 +263,8 @@
               
                 <h1 id="jargon-dictionary">Jargon Dictionary</h1>
 <h2 id="a">A</h2>
+<h3 id="axsh">Axsh</h3>
+<p>Axsh Co. LTD are the authors of Wakame-vdc and <a href="#openvnet">OpenVNet</a>. Pronounced: Ah-ku-shu.</p>
 <h2 id="b">B</h2>
 <h3 id="backup-storage">Backup Storage</h3>
 <p>Backup storage is a means of storing <a href="#backup-object">backup objects</a>. Backup objects can be stored on a local file system, served through http or using <a href="http://www.igeekinc.com/indeliblefs/en/indeliblefs.html">Indelible FS</a> (experimental).</p>
@@ -272,6 +274,8 @@
 <h3 id="collector">Collector</h3>
 <p>The collector is one of Wakame-vdc's processes. It's in charge of making <a href="#scheduling">scheduling decisions</a> and database access.</p>
 <h2 id="d">D</h2>
+<h3 id="dcmgr">Dcmgr</h3>
+<p>Stands for Data Center Manager. In Wakame-vdc, this is just another word for the <a href="#webapi">WebAPI</a></p>
 <h2 id="e">E</h2>
 <h3 id="endpoint">Endpoint</h3>
 <p>An endpoint is a single part of the <a href="#webapi">WebAPI</a> that the user can call to control Wakame-vdc. For example <code>GET http://&lt;webapi ip&gt;:&lt;webapi port&gt;/api/instances</code> is an endpoint. <code>POST http://&lt;webapi ip&gt;:&lt;webapi port&gt;/api/images</code> is another endpoint and so on.</p>
@@ -288,12 +292,16 @@
 <h2 id="i">I</h2>
 <h3 id="instance">Instance</h3>
 <p>A virtual machine managed by wakame-vdc.</p>
+<h3 id="instances-network">Instances network</h3>
+<p>An L3 network in which <a href="#instance">instances</a> are started. This can technically be the same network used for the <a href="#management-line-management-network">management line</a> but on production environments, it is probably a good idea to separate them.</p>
 <h2 id="j">J</h2>
 <h2 id="k">K</h2>
 <h2 id="l">L</h2>
 <h2 id="m">M</h2>
 <h3 id="machine-image">Machine Image</h3>
 <p>A <a href="#backup-object">backup object</a> that holds a bootable partition. You are able to start <a href="#instance">instances</a> of machine images.</p>
+<h3 id="management-line-management-network">Management Line / Management Network</h3>
+<p>This is a network that Wakame-vdc uses for communication between its different <a href="#node">nodes</a>.</p>
 <h3 id="meta-data">Meta-data</h3>
 <p>In Wakame-vdc's context, meta-data usually refers to information that is passed to <a href="#instance">instances</a> when they start. It includes for example the instance's IP addresses, network host name and thrusted public keys. Meta-data is usually delivered as files on an extra (tiny) hard drive.</p>
 <h2 id="n">N</h2>
@@ -302,6 +310,8 @@
 <h3 id="node">Node</h3>
 <p>Refers to a server that a Wakame-vdc process runs on. Can be physical or a VM but not an <a href="#instance">instance</a>.</p>
 <h2 id="o">O</h2>
+<h3 id="openvnet">OpenVNet</h3>
+<p>An full virtual networking implementation using OpenFlow. This project is completely separate from Wakame-vdc but Wakame-vdc can use it to implement virtual networking. <a href="http://openvnet.org">http://openvnet.org</a></p>
 <h2 id="p">P</h2>
 <h2 id="q">Q</h2>
 <h2 id="r">R</h2>
@@ -315,6 +325,8 @@
 <h3 id="user-data">User data</h3>
 <p>User data is an arbitrary field that users can set when starting an <a href="#instance">instance</a>. The user data will be delivered along with <a href="#meta-data">meta-data</a> and will thus be accessible from inside the instance. For example users can create custom images with scripts in them that react to user data.</p>
 <h2 id="v">V</h2>
+<h3 id="vdc-manage">vdc-manage</h3>
+<p>A command-line front-end for Wakame-vdc's database. It can be found at <code>/opt/axsh/wakame-vdc/dcmgr/bin/wakame-vdc</code></p>
 <h3 id="vnic-vif">Vnic / Vif</h3>
 <p>Stands for Virtual Network Interface Card or Virtual Interface. In either case, the term refers to an <a href="#instance">instance's</a> simulated network card.</p>
 <h2 id="w">W</h2>
