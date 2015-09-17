@@ -9,9 +9,19 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 `Added` A new WebAPI endpoint to delete an instance's Windows password. 'DELETE instances/i-xxxxx/password'.
 
+`Added` An optional extension to the WebAPI that will automatically interface with OpenVNet when network related resources are created in Wakame-vdc. This will eventually replace the current OpenVNet integration.
+
+`Added` A Mussel command to decrypt the password of Windows instances.
+
+`Changed` Improved the Windows machine image build scripts to make it easier to go straight from "git clone" to a building a fresh Windows machine image.
+
 `Removed` A configuration option to automatically delete an instance's Windows password the first time it's queried from the API. Passwords can now be manually deleted instead.
 
 `Fixed` A bug in wakame-init for Ubuntu where the instance's IP address didn't get set if the network got started before metadata drive was mounted.
+
+`Fixed` A critical bug in the *PipedRules* host node scheduler that caused it to crash when used.
+
+`Fixed` A minor race condition that could some times cause an unexpected (but still valid) IP address to be assigned when scheduling new instances.
 
 ## [16.0] - 2015-07-31
 

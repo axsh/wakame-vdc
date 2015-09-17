@@ -78,7 +78,7 @@ service_type("std", "StdServiceType") {
   #     }
   #
   #     through(:LeastUsageBy) {
-  #       key 'account_id'
+  #       key 'memory_size'
   #     }
   #
   #   end

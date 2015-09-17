@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-shared_examples 'reassign released addresses' do
+shared_examples 'dont reassign released addresses' do
   context "when previously assigned addresses have been released" do
     let(:network) do
       Fabricate(:network, ipv4_network: "192.168.0.0").tap do |n|
@@ -14,8 +14,8 @@ shared_examples 'reassign released addresses' do
       network_vif_from_ip_lease("192.168.0.3").destroy
     end
 
-    it "reassigns the lowest available address" do
-      expect(subject).to eq "192.168.0.3"
+    it "assigns the next IP, ignoring the previously released one" do
+      expect(subject).to eq "192.168.0.6"
     end
   end
 end

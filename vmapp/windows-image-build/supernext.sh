@@ -30,7 +30,6 @@ evalcheck() { eval "$@" || reportfail "$@,rc=$?" ; }
 trap 'echo "pid=$BASHPID exiting" 1>&2 ; exit 255' TERM  # feel free to specialize this
 
 export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || reportfail
-set -x
 
 usage() {
     cat <<'EOF'
@@ -75,6 +74,7 @@ file-size-in-range()
 {
     fname="$1"
     fsize="$(stat -c %s "$fname" 2>/dev/null)" && \
+	echo "Doing file-size-in-range, is $fsize between $2 and $3 inclusive?" &&
 	[ "$fsize" -ge "$2" -a "$fsize" -le "$3" ]
 }
 
@@ -93,9 +93,10 @@ kvm-ui-check-after-login-screen()
 {
     fname="$(kvm-ui-take-screenshot)"
     case "$LABEL" in
-	2008) file-size-in-range "$fname" 48500 50000 # 49486
+	2008) file-size-in-range "$fname" 48500 56000 # 49486
 	      # if initially opened window is not in foreground
 	      # file size has been seen as small as 48723
+	      # Also has been seen as big as 55341.
 	      ;;
 	2012) file-size-in-range "$fname" 45000 46000 # 45364
 	      ;;
@@ -215,6 +216,7 @@ wait-for-login-completion()
 supernext-step-completed()
 {
     cmd="$(< $build_dir/nextstep)"
+    echo "Doing supernext-step-completed for nextstep=$cmd"
     case "$cmd" in
 	1-install)
 	    true # nothing to check; always OK to proceed
@@ -225,6 +227,9 @@ supernext-step-completed()
 	2-confirm-sysprep-gen0)
 	    true # still at ctr-alt-del screen from last step
 	    ;;
+	3-tar-the-image | 4-package-tgz-image | 5-package-qcow-image)
+	    true # Nothing to wait for before doing these steps.
+	    ;;
 	*)
 	    reportfail "Supernext does not know how to check the status when nextstep=$cmd"
 	    ;;
@@ -234,6 +239,7 @@ supernext-step-completed()
 supernext-simulate-user-actions-before()
 {
     cmd="$(< $build_dir/nextstep)"
+    echo "Doing supernext-simulate-user-actions-before for nextstep=$cmd"
     case "$cmd" in
 	1-install)
 	    : # no user actions need to be done
@@ -242,6 +248,9 @@ supernext-simulate-user-actions-before()
 	    : # no user actions need to be done
 	    ;;
 	2-confirm-sysprep-gen0)
+	    : # no user actions need to be done
+	    ;;
+	3-tar-the-image | 4-package-tgz-image | 5-package-qcow-image)
 	    : # no user actions need to be done
 	    ;;
 	*)
@@ -257,6 +266,7 @@ supernext-simulate-user-actions-after()
     # seconds.  This should be enough for zabbix installer to move to
     # the next state)
     SLEEPFOR=15
+    echo "Doing supernext-simulate-user-actions-after for $cmd"
     case "$cmd" in  # uses $cmd from previous functions, because $build_dir/nextstep may have changed
 	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
 	    touch $build_dir/press-ctrl-alt-del
