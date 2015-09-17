@@ -122,6 +122,7 @@ set-environment-var-defaults()
 	wakame-init-every-boot.ps1
 	wakame-functions.ps1
     )
+    WIN_SCRIPT_DIR="$SCRIPT_DIR/win-scripts"
 
     VIRTIOISO="virtio-win-0.1-74.iso"  # version of virtio disk and network drivers known to work
     ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
@@ -379,9 +380,11 @@ install-windows-from-iso()
     mkdir -p "./mntpoint"
     sudo mount -t vfat -o loop $FLP "./mntpoint"
     sudo cp "$SCRIPT_DIR/$ANSFILE" "./mntpoint/Autounattend.xml"
-    for fn in "${scriptArray[@]}" FinalStepsForInstall.cmd Unattend-for-first-boot.xml $ZABBIXEXE ; do
-	sudo cp "$SCRIPT_DIR/$fn" "./mntpoint/"
+    for fn in "${scriptArray[@]}" FinalStepsForInstall.cmd ; do
+	sudo cp "$WIN_SCRIPT_DIR/$fn" "./mntpoint/"
     done
+    sudo cp "$SCRIPT_DIR/Unattend-for-first-boot.xml" "./mntpoint/"
+    sudo cp "$SCRIPT_DIR/$ZABBIXEXE" "./mntpoint/"
 
     # Here we are inserting code that sets the product key
     # at the start of the batch file that runs sysprep.
@@ -398,7 +401,7 @@ install-windows-from-iso()
 	echo "A:$ZABBIXEXE"
 	echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $prodkey"
 	echo
-	cat "$SCRIPT_DIR/run-sysprep.cmd" # copy in the rest of the batch file script that runs sysprep
+	cat "$WIN_SCRIPT_DIR/run-sysprep.cmd" # copy in the rest of the batch file script that runs sysprep
     } | sudo tee ./mntpoint/run-sysprep.cmd
 
     sudo umount "./mntpoint"
@@ -534,7 +537,7 @@ updatescripts-raw()
     # Update scripts inside existing Windows image.  The motivation here
     # is to avoid installing the image from scratch to speed up debugging.
     for fn in "${scriptArray[@]}" ; do
-	sudo cp "$SCRIPT_DIR/$fn" ./mntpoint/Windows/Setup/Scripts
+	sudo cp "$WIN_SCRIPT_DIR/$fn" ./mntpoint/Windows/Setup/Scripts
     done
     cp ./mntpoint/Windows/Setup/Scripts/SetupComplete-firstboot.cmd \
        ./mntpoint/Windows/Setup/Scripts/SetupComplete.cmd
