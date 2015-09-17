@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 `Added` A new WebAPI endpoint to delete an instance's Windows password. 'DELETE instances/i-xxxxx/password'.
 
+`Added` An optional extension to the WebAPI that will automatically interface with OpenVNet when network related resources are created in Wakame-vdc. This will eventually replace the current OpenVNet integration.
+
 `Removed` A configuration option to automatically delete an instance's Windows password the first time it's queried from the API. Passwords can now be manually deleted instead.
 
 `Fixed` A bug in wakame-init for Ubuntu where the instance's IP address didn't get set if the network got started before metadata drive was mounted.
