@@ -34,6 +34,7 @@ export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || report
 WIN_SCRIPT_DIR="$SCRIPT_DIR/win-scripts"
 WIN_CONFIG_DIR="$SCRIPT_DIR/win-config"
 RESOURCES_DIR="$SCRIPT_DIR/resources"
+UTILS_DIR="$SCRIPT_DIR/utils"
 
 usage() {
     cat <<'EOF'
@@ -308,7 +309,7 @@ boot-and-log-kvm-boot()
     echo "$(( VNC + 5900 ))" >./kvm.vnc
 }
 
-source "$SCRIPT_DIR/mount-partition.sh" load
+source "$UTILS_DIR/mount-partition.sh" load
 
 mount-image()
 {
