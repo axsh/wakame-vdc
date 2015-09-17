@@ -123,6 +123,7 @@ set-environment-var-defaults()
 	wakame-functions.ps1
     )
     WIN_SCRIPT_DIR="$SCRIPT_DIR/win-scripts"
+    WIN_CONFIG_DIR="$SCRIPT_DIR/win-config"
 
     VIRTIOISO="virtio-win-0.1-74.iso"  # version of virtio disk and network drivers known to work
     ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
@@ -379,11 +380,11 @@ install-windows-from-iso()
     mkfs.vfat "$FLP"
     mkdir -p "./mntpoint"
     sudo mount -t vfat -o loop $FLP "./mntpoint"
-    sudo cp "$SCRIPT_DIR/$ANSFILE" "./mntpoint/Autounattend.xml"
+    sudo cp "$WIN_CONFIG_DIR/$ANSFILE" "./mntpoint/Autounattend.xml"
     for fn in "${scriptArray[@]}" FinalStepsForInstall.cmd ; do
 	sudo cp "$WIN_SCRIPT_DIR/$fn" "./mntpoint/"
     done
-    sudo cp "$SCRIPT_DIR/Unattend-for-first-boot.xml" "./mntpoint/"
+    sudo cp "$WIN_CONFIG_DIR/Unattend-for-first-boot.xml" "./mntpoint/"
     sudo cp "$SCRIPT_DIR/$ZABBIXEXE" "./mntpoint/"
 
     # Here we are inserting code that sets the product key
