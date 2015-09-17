@@ -31,6 +31,10 @@ trap 'echo "pid=$BASHPID exiting" 1>&2 ; exit 255' TERM  # feel free to speciali
 
 export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || reportfail
 
+WIN_SCRIPT_DIR="$SCRIPT_DIR/win-scripts"
+WIN_CONFIG_DIR="$SCRIPT_DIR/win-config"
+RESOURCES_DIR="$SCRIPT_DIR/resources"
+
 usage() {
     cat <<'EOF'
 (NOTE: this documentation is out-of-date.)
@@ -122,8 +126,6 @@ set-environment-var-defaults()
 	wakame-init-every-boot.ps1
 	wakame-functions.ps1
     )
-    WIN_SCRIPT_DIR="$SCRIPT_DIR/win-scripts"
-    WIN_CONFIG_DIR="$SCRIPT_DIR/win-config"
 
     VIRTIOISO="virtio-win-0.1-74.iso"  # version of virtio disk and network drivers known to work
     ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
@@ -150,7 +152,7 @@ create-metadata-disk()
 {
     (
 	set -e
-	cd "$SCRIPT_DIR"
+	cd "$RESOURCES_DIR"
 	rm -f metadata.img
 	/usr/bin/truncate -s 10m metadata.img
 	parted metadata.img <<EOF
@@ -169,8 +171,8 @@ EOF
 configure-metadata-disk()
 {
     if ! [ -f metadata.img ]; then
-	[ -f "$SCRIPT_DIR/empty-metadata.img.tar.gz" ] || create-metadata-disk
-	tar xzvf "$SCRIPT_DIR/empty-metadata.img.tar.gz"
+	[ -f "$RESOURCES_DIR/empty-metadata.img.tar.gz" ] || create-metadata-disk
+	tar xzvf "$RESOURCES_DIR/empty-metadata.img.tar.gz"
     fi
 
     [ -f metadata.img ] || reportfail "metadata.img file not found in current directory"
@@ -373,7 +375,7 @@ confirm-sysprep-shutdown()
 
 install-windows-from-iso()
 {
-    [ -f "$SCRIPT_DIR/$WINISO" ] || reportfail "Windows install ISO file not found ($WINISO)"
+    [ -f "$RESOURCES_DIR/$WINISO" ] || reportfail "Windows install ISO file not found ($WINISO)"
     # Copy Autounattend.xml into fresh floppy image
     FLP="./answerfile-floppy.img"
     dd if=/dev/zero of="$FLP" bs=1k count=1440
@@ -385,7 +387,7 @@ install-windows-from-iso()
 	sudo cp "$WIN_SCRIPT_DIR/$fn" "./mntpoint/"
     done
     sudo cp "$WIN_CONFIG_DIR/Unattend-for-first-boot.xml" "./mntpoint/"
-    sudo cp "$SCRIPT_DIR/$ZABBIXEXE" "./mntpoint/"
+    sudo cp "$RESOURCES_DIR/$ZABBIXEXE" "./mntpoint/"
 
     # Here we are inserting code that sets the product key
     # at the start of the batch file that runs sysprep.
@@ -415,8 +417,8 @@ install-windows-from-iso()
 	# have netdevice connect to mcast, which effectively creates a device not connected to anything
 	boot-and-log-kvm-boot $(boot-common-params) \
 			      -fda "$FLP" \
-			      -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
-			      -drive file="$SCRIPT_DIR/$VIRTIOISO",index=3,media=cdrom \
+			      -drive file="$RESOURCES_DIR/$WINISO",index=2,media=cdrom \
+			      -drive file="$RESOURCES_DIR/$VIRTIOISO",index=3,media=cdrom \
 			      -boot d \
 			      -net nic,vlan=0,macaddr=$MACADDR \
 			      -net socket,vlan=0,mcast=230.0.$UD.1:12341
@@ -425,8 +427,8 @@ install-windows-from-iso()
 	mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
 	boot-and-log-kvm-boot $(boot-common-params) \
 			      -fda "$FLP" \
-			      -drive file="$SCRIPT_DIR/$WINISO",index=2,media=cdrom \
-			      -drive file="$SCRIPT_DIR/$VIRTIOISO",index=3,media=cdrom \
+			      -drive file="$RESOURCES_DIR/$WINISO",index=2,media=cdrom \
+			      -drive file="$RESOURCES_DIR/$VIRTIOISO",index=3,media=cdrom \
 			      -boot d \
 			      -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
 			      -net dump,vlan=0 \
@@ -839,7 +841,7 @@ dispatch-init-command()
 	    echo 9 >./active
 	    ;;
     esac
-    cp "$SCRIPT_DIR/key$LABEL" ./keyfile
+    cp "$RESOURCES_DIR/key$LABEL" ./keyfile
 
     echo "1-install" >./nextstep
     echo "$(date +%y%m%d-%H%M%S)" >./timestamp

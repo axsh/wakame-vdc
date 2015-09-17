@@ -85,7 +85,7 @@ ensure-file-is-in-place()
 localsource="$(echo /home/*/for-jenkins-windows-image-smoke-test)"
 [ -d "$localsource" ] || localsource=""
 
-TARGETDIR="$SCRIPT_DIR" # Currently, all these resource files go in the same directory as this script.
+TARGETDIR="$SCRIPT_DIR/resources"
 
 DLSOURCES="$localsource https://fedorapeople.org/groups/virt/virtio-win/deprecated-isos/archives/virtio-win-0.1-74"
 ensure-file-is-in-place virtio-win-0.1-74.iso
