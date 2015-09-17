@@ -11,6 +11,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 `Added` A Mussel command to decrypt the password of Windows instances.
 
+`Changed` Improved the Windows machine image build scripts to make it easier to go straight from "git clone" to a building a fresh Windows machine image.
+
 `Removed` A configuration option to automatically delete an instance's Windows password the first time it's queried from the API. Passwords can now be manually deleted instead.
 
 `Fixed` A bug in wakame-init for Ubuntu where the instance's IP address didn't get set if the network got started before metadata drive was mounted.
