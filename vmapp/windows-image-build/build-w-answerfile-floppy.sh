@@ -65,6 +65,10 @@ PROXY (defaults to "", i.e. do not put in meta-data/auto-activate/auto-activate-
 IPV4 (defaults to 10.0.2.15)
 NETMASK (defaults to 255.255.255.0)
 GATEWAY (defaults to 10.0.2.2)
+IMAGESIZE (defaults to "30G", the parameter suitable for use with qemu-img)
+ISO2008 (defaults to "", it must be set before installing Windows Server 2008 R2)
+ISO2012 (defaults to "", it must be set before installing Windows Server 2012 R2)
+
 POWERCAT (defaults to "", i.e. do not put a copy of powercat.ps1 in metadata drive for debugging)
 EOF
     exit
@@ -86,10 +90,12 @@ set-environment-var-defaults()
     [ "$IPV4" == "" ] &&  IPV4="10.0.2.15"
     [ "$NETMASK" == "" ] &&  NETMASK="255.255.255.0"
     [ "$GATEWAY" == "" ] &&  GATEWAY="10.0.2.2"
+    [ "$IMAGESIZE" == "" ] &&  IMAGESIZE="30G"
 
     [ "$KVM_BINARY" == "" ] && KVM_BINARY=qemu-system-x86_64
-
     [ "$POWERCAT" == "" ] && POWERCAT=true
+
+    source "$SCRIPT_DIR/windows-image-build.ini"
 
     # Decide on ports for KVM's user-mode networking port forwarding
     RDP=1${UD}389
@@ -138,10 +144,43 @@ boot-common-params()
 	 -k ja $(boot-date-param)
 }
 
+create-metadata-disk()
+{
+    (
+	set -e
+	cd "$SCRIPT_DIR"
+	rm -f metadata.img
+	/usr/bin/truncate -s 10m metadata.img
+	parted metadata.img <<EOF
+mklabel msdos
+mkpart primary fat32 1 10m
+quit
+EOF
+	loopdev="$(mount-partition metadata.img 1 --sudo)"
+	sudo mkfs -t vfat -n METADATA "$loopdev"
+	umount-partition metadata.img --sudo
+	tar czvf empty-metadata.img.tar.gz metadata.img
+	rm -f metadata.img
+    ) || reportfail "problem while creating metadata.img.tar.gz"
+}
+
 configure-metadata-disk()
 {
+    if ! [ -f metadata.img ]; then
+	[ -f "$SCRIPT_DIR/empty-metadata.img.tar.gz" ] || create-metadata-disk
+	tar xzvf "$SCRIPT_DIR/empty-metadata.img.tar.gz"
+    fi
+
     [ -f metadata.img ] || reportfail "metadata.img file not found in current directory"
-    mount-image "$(pwd)" metadata.img 1 || reportfail "mounting of metadata.img failed"
+    mount-image metadata.img 1 || reportfail "mounting of metadata.img failed"
+
+    # just enough directories for Windows testing
+    sudo bash -c "mkdir -p mntpoint/meta-data/extra-hosts"
+    sudo bash -c "mkdir -p mntpoint/meta-data/network/interfaces/macs"
+    sudo bash -c "mkdir -p mntpoint/meta-data/public-keys/0"
+    sudo bash -c "mkdir -p mntpoint/meta-data/x-monitoring"
+
+    # hostname
     sudo bash -c 'echo "DEMO1-VM" >mntpoint/meta-data/local-hostname'
 
     # public key
@@ -265,84 +304,21 @@ boot-and-log-kvm-boot()
     echo "$(( VNC + 5900 ))" >./kvm.vnc
 }
 
+source "$SCRIPT_DIR/mount-partition.sh" load
+
 mount-image()
 {
-    local installdir="$1"
-    local imagename="$2"
-    partion="$3"
-    options="$4"
-    # (1) mkdir mntpoint, (2) kpartx, (3) mount
-    cd "$installdir"
+    imagename="$1"
+    partion="$2"
+    options="$3"
     
-    
-    if [ -d mntpoint ]
-    then
-	rmdir mntpoint || reportfail "something is already mounted at mntpoint"
-    fi
-    evalcheck mkdir mntpoint
-    
-    loopstatus="$(sudo losetup -a)"
-    if [[ "$loopstatus"  == *$(pwd -P)/* ]]
-    then
-	reportfail "Image file is already mounted."
-    else
-	rm -f kpartx.out
-	evalcheck 'sudo kpartx -av "$installdir/$imagename" 1>kpartx.out'
-	udevadm settle
-    fi
-    
-    loopstatus2="$(sudo losetup -a)"
-    # lines look like this:
-    # /dev/loop0: [0801]:3018908 (/home/potter/winraw/windows-expanded2/windows2012-GEN-sparsed.raw)
-    parse1="${loopstatus2%*$(pwd -P)/$imagename*}" # /dev/loop0: [0801]:3018908 (
-    parse2="${parse1##*/dev/}"  # loop0: [0801]:3018908 (
-    loopdev="${parse2%%:*}" # loop0
-    
-    [ "${loopdev/[0-9]/}" = "loop" ] || reportfail "could not parse $loopstatus2"
-    echo "$loopdev" >loopdev
-    
-    sudo mount /dev/mapper/${loopdev}p${partion} mntpoint $options
-}
-
-umount-image-raw1()
-{
-    # relying on info in ./loopdev to be correct is
-    # probably two big of an assumption.  Therefore the
-    # umount-image-raw2 is testing a complete scan
-    # of $(sudo losetup -a) to find images that are
-    # associated to loop devices.
-    if loopdev="$(cat ./loopdev 2>/dev/null)"; then
-	sudo umount mntpoint
-	sudo kpartx -dv /dev/$loopdev
-	sudo losetup -d /dev/$loopdev
-	rm  ./loopdev
-    fi
-}
-
-umount-image-raw2()
-{
-    loopstatus="$(sudo losetup -a)"
-    [ "$loopstatus" = "" ] && return 0
-    # example line: /dev/loop1: [0801]:15729479 (/tmp/st/dir08/win-2008.raw)
-    loopstatus="${loopstatus//:/ }" # make parsing easier
-    while read loopdev something inode imgpath thatsall ; do
-	[[ "$imgpath" == \(*\) ]] || echo "WARNING: losetup parsing may be wrong: $imgpath"
-	if [[ "${imgpath#(}" == $(pwd)/* ]]; then
-	    sudo umount mntpoint
-	    sudo kpartx -dv "$loopdev"
-	    sudo losetup -d "$loopdev"
-	fi
-    done <<<"$loopstatus"
+    [ -d mntpoint ] || evalcheck mkdir mntpoint
+    mount-partition "$imagename" "$partion" mntpoint $options --sudo
 }
 
 umount-image()
 {
-    umount-image-raw1 # for now do both techniques, maybe remove raw1 later
-    umount-image-raw2
-    loopstatus="$(sudo losetup -a)"
-    # the next line hopefully will ignore loop devices mapping files outside the build directory
-    [[ "$loopstatus"  != *$(pwd -P)/* ]] || \
-	reportfail "Still loopback devices in use: $loopcheck"
+    umount-partition mntpoint --sudo
 }
 
 kill-kvm()
@@ -374,14 +350,15 @@ tar-up-windows-logs()
     target="$1"
     [ -d mntpoint/Windows ] || reportfail "Windows disk image not mounted"
     # eval is needed to deal with the quotes needed for spaces in a file name
-    eval tar czvf "$target" -C mntpoint "${windowsLogs[@]}"
-    cp $(pwd)/qemu-vlan0.pcap "${target%.tar.gz}.pcap"
+    echo "Making tar file of log files from Windows image --> $target"
+    eval tar czf "$target" -C mntpoint "${windowsLogs[@]}"
+    cp $(pwd)/qemu-vlan0.pcap "${target%.tar.gz}.pcap" 2>/dev/null
 }
 
 mount-tar-umount()
 {
     partitionNumber=2
-    mount-image "$(pwd)" "$WINIMG" $partitionNumber "-o ro"
+    mount-image "$WINIMG" $partitionNumber "-o ro"
     tar-up-windows-logs "$1"
     umount-image
 }
@@ -394,6 +371,7 @@ confirm-sysprep-shutdown()
 
 install-windows-from-iso()
 {
+    [ -f "$SCRIPT_DIR/$WINISO" ] || reportfail "Windows install ISO file not found ($WINISO)"
     # Copy Autounattend.xml into fresh floppy image
     FLP="./answerfile-floppy.img"
     dd if=/dev/zero of="$FLP" bs=1k count=1440
@@ -425,7 +403,7 @@ install-windows-from-iso()
 
     sudo umount "./mntpoint"
     
-    # Create a blank 30GB image into which Windows will soon be installed
+    # Create a blank image into which Windows will soon be installed
     rm -f "$WINIMG"
     qemu-img create -f raw "$WINIMG" 30G
 
@@ -482,7 +460,7 @@ boot-with-networking()
 
 get-decode-password()
 {
-    mount-image "$(pwd)" metadata.img 1 "-o ro"
+    mount-image metadata.img 1 "-o ro"
     if [ -f "mntpoint/meta-data/pw.enc" ]
     then
 	pwtxt="$(openssl rsautl -decrypt -inkey testsshkey -in mntpoint/meta-data/pw.enc -oaep)"
@@ -501,28 +479,54 @@ get-decode-password()
 
 final-seed-image-packaging()
 {
-    loopstatus="$(sudo losetup -a)"
-    [ "$loopstatus" = "" ] || reportfail "This code requires that no other loop devices be in use: $loopstatus"
+    # checks, setup
     initialtar="$(echo ./windows-*tar.gz)"
     seedtar="windows${LABEL}r2.x86_64.kvm.md.raw.tar.gz"
     [ -f "$initialtar" ] || reportfail "Initial tar file not found in $(pwd)"
     [ -d final-seed-image ] && reportfail "Seed image already packaged"
     mkdir ./final-seed-image
-    evalcheck cd ./final-seed-image
-    time evalcheck 'tar xzvf ../windows-*tar.gz'
-    [ -f "$WINIMG" ] || reportfail "No Windows image found in the tar file"
-    evalcheck 'mv "$WINIMG" "${seedtar%.tar.gz}"'
+    (
+	evalcheck cd ./final-seed-image
+	
+	# move clean image into place
+	time evalcheck 'tar xzvf ../windows-*tar.gz'
+	[ -f "$WINIMG" ] || reportfail "No Windows image found in the tar file"
+	evalcheck 'mv "$WINIMG" "${seedtar%.tar.gz}"'
+	
+	# modify ntfs label
+	partitionNumber=1
+	loopdev="$(
+         # just attaches /loop device, no mounting
+         evalcheck mount-partition "${seedtar%.tar.gz}" $partitionNumber --sudo)" 
+	udevadm settle # probably not needed
 
-    evalcheck 'sudo kpartx -av "${seedtar%.tar.gz}"'
-    udevadm settle
-    evalcheck sudo ntfslabel /dev/mapper/loop0p1 root
-    while ! sudo kpartx -dv /dev/loop0 ; do
-	echo "kpartx -dv /dev/loop0  failed....retrying in 10 seconds"
-	sleep 10
-    done
-    evalcheck sudo losetup -d /dev/loop0
-    time evalcheck 'tar czvSf "$seedtar" "${seedtar%.tar.gz}"'
-    time evalcheck 'md5sum "$seedtar" >"$seedtar".md5'
+	evalcheck sudo ntfslabel "$loopdev" root
+	evalcheck umount-partition "${seedtar%.tar.gz}" --sudo
+	
+	# package
+	set -x # show the user what this step is spending so much time doing
+	time evalcheck 'tar czvSf "$seedtar" "${seedtar%.tar.gz}"'
+	time evalcheck 'md5sum "$seedtar" >"$seedtar".md5'
+    )
+}
+
+final-seed-image-qcow()
+{
+    seedtar="windows${LABEL}r2.x86_64.kvm.md.raw.tar.gz"
+    seedraw="windows${LABEL}r2.x86_64.kvm.md.raw"
+    seedqcow="windows${LABEL}r2.x86_64.15071.qcow2"
+    [ -f "./final-seed-image/$seedqcow" ] && reportfail "Image already converted into qcow2 format"
+    [ -f "./final-seed-image/$seedtar" ] || reportfail "Must first run -package to make $seedtar"
+    (
+	evalcheck cd ./final-seed-image
+	pwd
+	set -x # show the user what this step is spending so much time doing
+	[ -f "$seedraw" ] || tar xzvf "$seedtar"
+	evalcheck qemu-img convert -f raw -O qcow2 "$seedraw" "$seedqcow"
+	evalcheck md5sum "$seedqcow" >"$seedqcow.md5"
+	evalcheck gzip "$seedqcow"
+	evalcheck md5sum "$seedqcow.gz" >"$seedqcow.gz.md5"
+    )
 }
 
 updatescripts-raw()
@@ -635,6 +639,7 @@ dispatch-command()
     fi
     genCount="${cmd#*gen}"
     genCount="${genCount%%-*}"
+    instructions="" # instructions to output when step has finished
 
     case "$cmd" in
 	-screendump | -screenshot | -sd | -ss)
@@ -642,7 +647,7 @@ dispatch-command()
 	    echo "screendump ./screendump-$dumptime.ppm" | nc localhost $MONITOR
 	    ;;
 	-mm*) # mount metadata
-	    mount-image "$(pwd)" metadata.img 1
+	    mount-image metadata.img 1
 	    ;;
 	-mtu) # *m*ount windows image, *t*ar log files, *u*mount
 	    [[ "$2" == *tar.gz ]] || reportfail "*.tar.gz file required for 3rd parameter"
@@ -650,17 +655,17 @@ dispatch-command()
 	    ;;
 	-updatescripts) # push latest scripts into existing untared seed image
 	    partitionNumber=2
-	    mount-image "$(pwd)" "$WINIMG" $partitionNumber
+	    mount-image "$WINIMG" $partitionNumber
 	    updatescripts-raw
 	    umount-image
 	    ;;
 	-mountrw)
 	    partitionNumber=2
-	    mount-image "$(pwd)" "$WINIMG" $partitionNumber
+	    mount-image "$WINIMG" $partitionNumber
 	    ;;
 	-mount)
 	    partitionNumber=2
-	    mount-image "$(pwd)" "$WINIMG" $partitionNumber "-o ro"
+	    mount-image "$WINIMG" $partitionNumber "-o ro"
 	    ;;
 	-umount)
 	    umount-image
@@ -681,10 +686,6 @@ dispatch-command()
 	    umount-image
 	    kill-kvm
 	    ;;
-	-package | -pack*)
-	    set -x # show the user what this step is spending so much time doing
-	    final-seed-image-packaging
-	    ;;
 	### The commands above are mainly utility commands.  The
 	### commands below are the type that go into ./nextstep, that
 	### is, those that are used to walk through the build process
@@ -700,90 +701,113 @@ dispatch-command()
 	    install-windows-from-iso
 	    echo "1b-record-logs-at-ctr-alt-delete-prompt-gen0" >./nextstep
 	    echo "View KVM's display using 'vncviewer :$(cat ./kvm.vnc)'"
-	    echo "Be sure to wait for Windows to finish installing and the 'Ctrl + Alt + Del' screen to appear."
-	    echo "Do not log in yet.  First, do -next to record the logs."
+	    instructions="$(
+ 	      echo "Be sure to wait for Windows to finish installing and the 'Ctrl + Alt + Del' screen to appear."
+	      echo "Do not log in yet.  First, do -next to record the logs." )"
 	    ;;
 	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
 	    mount-tar-umount ./at-$cmd.tar.gz
 	    echo "2-confirm-sysprep-gen0" >./nextstep
-	    echo "Login with using the password 'a:run-sysprep'"
-	    echo "Then open a PowerShell window by clicking on the blue >_ icon"
-	    echo "at the bottom of the screen."
-	    echo "Type 'a:run-sysprep' in the PowerShell window to run sysprep"
-	    echo "Wait for KVM to shutdown.  Then do -next."
+	    instructions="$(
+	      echo "Login with using the password 'a:run-sysprep'"
+	      echo "Then open a PowerShell window by clicking on the blue >_ icon"
+	      echo "at the bottom of the screen."
+	      echo "Type 'a:run-sysprep' in the PowerShell window to run sysprep"
+	      echo "Wait for KVM to shutdown.  Then do -next." )"
 	    ;;
 	2-confirm-sysprep-gen0)
 	    confirm-sysprep-shutdown
 	    mount-tar-umount ./after-gen0-sysprep.tar.gz
 	    echo "3-tar-the-image" >./nextstep
-	    echo "Nothing to wait for on this command.  Do -next to tar the new seed image."
+	    instructions="$(
+	      echo "Nothing to wait for on this command.  Do -next to tar the new seed image." )"
 	    ;;
 	3-tar-the-image)
-	    set -x # show the user what this step is spending so much time doing
-	    time md5sum "$WINIMG" >"$WINIMG".md5
-	    time tar czSvf "windows-$LABEL-$(cat ./timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
+	    (
+		set -x # show the user what this step is spending so much time doing
+		time md5sum "$WINIMG" >"$WINIMG".md5
+		time tar czSvf "windows-$LABEL-$(cat ./timestamp)".tar.gz "$WINIMG" "$WINIMG".md5
+	    )
 	    mount-tar-umount ./after-gen0-sysprep.tar.gz
+	    echo "4-package-tgz-image" >./nextstep
+	    instructions="$(
+	      echo "Finished making the tar archive."
+	      echo "Do -next to package tar.gz image" )"
+	    ;;
+	4-package-tgz-image)
+	    final-seed-image-packaging
+	    echo "5-package-qcow-image" >./nextstep
+	    instructions="$(
+	      echo "Do -next to package qcow image" )"
+	    ;;
+	5-package-qcow-image)
+	    final-seed-image-qcow
 	    echo "1001-gen0-first-boot" >./nextstep
-	    echo "Finished making the tar archive."
-	    echo "(From this point on, if no KVM is running, it is possible to do a -package command"
-	    echo "to package a Wakame-vdc compatible image tar file.)"
-	    echo "Do -next to start testing with first boot"
+	    instructions="$(
+	      echo "Do -next to start testing with first boot" )"
 	    ;;
 	1001-gen*-first-boot)
 	    mount-tar-umount ./before-$cmd.tar.gz
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	    echo "1002-confirm-gen$genCount-shutdown-get-pw" >./nextstep
-	    echo "Be sure to wait for Windows to boot"
-	    echo "and then wait for it to automatically shutdown and KVM to exit."
-	    echo "Then, do -next to record the logs and decode the random password"
+	    instructions="$(
+	      echo "Be sure to wait for Windows to boot"
+	      echo "and then wait for it to automatically shutdown and KVM to exit."
+	      echo "Then, do -next to record the logs and decode the random password" )"
 	    ;;
 	1002-confirm-gen*-shutdown-get-pw)
 	    [ -d /proc/$(< ./kvm.pid) ] && reportfail "KVM still running"
 	    mount-tar-umount ./after-$cmd.tar.gz
 	    get-decode-password | tee ./pw
 	    echo "1003-gen$genCount-second-boot" >./nextstep
-	    echo "Nothing to wait for on this command.  Do -next to start the second boot."
+	    instructions="$(
+	      echo "Nothing to wait for on this command.  Do -next to start the second boot." )"
 	    ;;
 	1003-gen*-second-boot)
 	    evalcheck 'thepid="$(cat ./kvm.pid)"'
 	    kill -0 $thepid && reportfail "expecting KVM not to be already running"
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	    echo "1003b-record-logs-at-ctr-alt-delete-prompt1-gen$genCount" >./nextstep
-	    echo "Be sure to wait for Windows to finish booting and the 'Ctrl + Alt + Del' screen to appear."
-	    echo "Do not log in yet.  First, do -next to record the logs."
+	    instructions="$(
+	      echo "Be sure to wait for Windows to finish booting and the 'Ctrl + Alt + Del' screen to appear."
+	      echo "Do not log in yet.  First, do -next to record the logs." )"
 	    ;;
 	1003b-record-logs-at-ctr-alt-delete-prompt1-gen*)
 	    mount-tar-umount ./at-$cmd.tar.gz
 	    echo "1004-confirm-gen$genCount-shutdown" >./nextstep
-	    echo "Now log in with the password '$(< ./pw)'"
-	    echo "After logging in, manually do a shutdown command and wait for KVM to exit."
-	    echo "Then do -next to record the logs and start the third boot."
+	    instructions="$(
+	      echo "Now log in with the password '$(< ./pw)'"
+	      echo "After logging in, manually do a shutdown command and wait for KVM to exit."
+	      echo "Then do -next to record the logs and start the third boot." )"
 	    ;;
 	1004-confirm-gen*-shutdown)
 	    [ -d /proc/$(< ./kvm.pid) ] && reportfail "KVM still running"
 	    mount-tar-umount ./after-$cmd.tar.gz
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	    echo "1004b-record-logs-at-ctr-alt-delete-prompt2-gen$genCount" >./nextstep
-	    echo "Be sure to wait for Windows to finish booting and the 'Ctrl + Alt + Del' screen to appear."
-	    echo "Do not log in yet.  First, do -next to record the logs."
+	    instructions="$(
+	      echo "Be sure to wait for Windows to finish booting and the 'Ctrl + Alt + Del' screen to appear."
+	      echo "Do not log in yet.  First, do -next to record the logs." )"
 	    ;;
 	1004b-record-logs-at-ctr-alt-delete-prompt2-gen*)
 	    mount-tar-umount ./at-$cmd.tar.gz
 	    echo "1005-confirm-gen$genCount-sysprep-shutdown" >./nextstep
-	    echo "Now log in with the (same) password: '$(< ./pw)'"
-	    echo "After logging in, open a PowerShell window.  Change the directory"
-	    echo "to C:\Windows\Setup\Scripts."
-	    echo "Then run the script './sysprep-for-backup.cmd' to run sysprep."
-	    echo "Be sure to wait for Windows to automatically shutdown"
-	    echo "and then wait for it to automatically shutdown and KVM to exit."
-	    echo "Then do -next to record the logs"
+	    instructions="$(
+	      echo "Now log in with the (same) password: '$(< ./pw)'"
+	      echo "After logging in, open a PowerShell window.  Change the directory"
+	      echo "to C:\Windows\Setup\Scripts."
+	      echo "Then run the script './sysprep-for-backup.cmd' to run sysprep."
+	      echo "Be sure to wait for Windows to automatically shutdown"
+	      echo "and then wait for it to automatically shutdown and KVM to exit."
+	      echo "Then do -next to record the logs" )"
 	    ;;
 	1005-confirm-gen*-sysprep-shutdown)
 	    confirm-sysprep-shutdown
 	    mount-tar-umount ./after-$cmd.tar.gz
 	    echo "1001-gen$((genCount + 1))-first-boot" >./nextstep
-	    echo "This completes the first cycle of the test scenario."
-	    echo "Do -next to start a new test cycle using the newly syspreped image."
+	    instructions="$(
+	      echo "This completes the first cycle of the test scenario."
+	      echo "Do -next to start a new test cycle using the newly syspreped image." )"
 	    ;;
 	*)
 	    reportfail "Invalid command for 2nd parameter"
@@ -803,16 +827,15 @@ dispatch-init-command()
     echo "Autounattend-$LABEL2.xml" >./ANSFILE
     case "$LABEL" in
 	2008)
-	    echo SW_DVD5_Windows_Svr_DC_EE_SE_Web_2008_R2_64Bit_Japanese_w_SP1_MLF_X17-22600.ISO >./WINISO
+	    echo "$ISO2008" >./WINISO
 	    echo 8 >./active
 	    ;;
 	2012)
-	    echo SW_DVD9_Windows_Svr_Std_and_DataCtr_2012_R2_64Bit_Japanese_-3_MLF_X19-53644.ISO >./WINISO
+	    echo "$ISO2012" >./WINISO
 	    echo 9 >./active
 	    ;;
     esac
     cp "$SCRIPT_DIR/key$LABEL" ./keyfile
-    tar xzvf "$SCRIPT_DIR/metadata.img.tar.gz"
 
     echo "1-install" >./nextstep
     echo "$(date +%y%m%d-%H%M%S)" >./timestamp
@@ -857,11 +880,10 @@ window-image-utils-main()
     rm -f lastdir
     ln -s "$bdir_fullpath" lastdir
 
-    if true; then  # for debugging
-	echo "thecommand=$thecommand"
-	echo "bdir_fullpath=$bdir_fullpath"
-	echo "\${params[@]}=${params[@]}"
-    fi
+    echo "Starting build-w-answerfile-floppy.sh ($thecommand)"
+    echo "    bdir_fullpath=$bdir_fullpath"
+    echo "    \${params[@]}=${params[@]}"
+    echo "    ./nextstep=$(cat "$bdir_fullpath/nextstep" 2>/dev/null)"
 
     evalcheck 'cd "$bdir_fullpath"'
     if [ "$thecommand" = "0-init" ]; then
@@ -871,7 +893,9 @@ window-image-utils-main()
 	set-environment-var-defaults
 	dispatch-command "$thecommand" "${params[@]}"
     fi
-    echo "cat ./nextstep =$(cat ./nextstep)"
+    echo "Finished build-w-answerfile-floppy.sh ($thecommand), ./nextstep is now $(cat "$bdir_fullpath/nextstep" 2>/dev/null)"
+    echo
+    echo "$instructions"
+    echo
 }
 window-image-utils-main "$@"
-

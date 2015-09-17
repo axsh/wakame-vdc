@@ -105,10 +105,10 @@ kvm-ui-take-screenshot()
     dumptime="$(date +%y%m%d-%H%M%S)"  # assume not more than one dump per second
     [ -z "$build_dir" ] && build_dir=/tmp
     fname="$build_dir/screendump-$dumptime.ppm"
-    echo "screendump $fname" | nc 127.0.0.1 $KVMMON 1>/dev/null
+    echo "screendump $fname" | nc 127.0.0.1 $KVMMON 1>/dev/null 2>/dev/null
     sleep 1
-    gzip "$build_dir/screendump-$dumptime.ppm"
-    echo "$build_dir/screendump-$dumptime.ppm".gz
+    gzip "$build_dir/screendump-$dumptime.ppm" 2>/dev/null &&
+	echo "$build_dir/screendump-$dumptime.ppm".gz
 }
 
 kvm-ui-simulate()
@@ -116,6 +116,7 @@ kvm-ui-simulate()
     simulateName="$1"
     eval declare -f "kvm-ui-simulate-$1" >/dev/null || reportfail "$simulateName not declared"
     check-required-env
+    echo "Doing kvm-ui-simulate: $simulateName"
     eval "kvm-ui-simulate-$1"
 }
 
@@ -124,6 +125,7 @@ kvm-ui-check()
     checkName="$1"
     eval declare -f "kvm-ui-check-$1" >/dev/null || reportfail "$checkName not declared"
     check-required-env
+    echo "Doing kvm-ui-check: $checkName"
     eval "kvm-ui-check-$1"
 }
 
@@ -150,12 +152,12 @@ kvm-ui-main()
 # simple built in functions:
 kvm-ui-simulate-press-ctrl-alt-del()
 {
-    echo sendkey ctrl-alt-delete | nc 127.0.0.1 "$KVMMON"
+    echo sendkey ctrl-alt-delete | nc 127.0.0.1 "$KVMMON" >/dev/null
 }
 
 kvm-ui-simulate-press-return()
 {
-    echo sendkey ret | nc 127.0.0.1 "$KVMMON"
+    echo sendkey ret | nc 127.0.0.1 "$KVMMON" >/dev/null
 }
 
 kvm-ui-simulate-type-date-return()
