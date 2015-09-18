@@ -120,9 +120,9 @@ for i in $(seq 1 $MAXITERATIONS); do
     if [ "$cmd" = "3-tar-the-image" ]; then
 	# after-gen0-sysprep.tar.gz is the set of Windows log files after sysprep is run as
 	# the final step of installing Windows.  Extract just one file from this tar archive.
-	tar xzvOf "./$BDIR/after-gen0-sysprep.tar.gz"   Windows/Setup/State/State.ini >State.ini
+	tar xzvOf "$BDIR/after-gen0-sysprep.tar.gz"   Windows/Setup/State/State.ini >"$BDIR/State.ini"
 
-	[[ "$(< State.ini)" == *IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE* ]] || reportfail "sysprep did not update State.ini file"
+	[[ "$(< "$BDIR/State.ini")" == *IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE* ]] || reportfail "sysprep did not update State.ini file"
 	echo "Continuing on to package image..."
     fi
     if [ "$cmd" = "1001-gen0-first-boot" ]; then
