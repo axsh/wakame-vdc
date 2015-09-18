@@ -304,7 +304,7 @@ supernext-main()
 	# Do user actions necessary before next step...
 	supernext-simulate-user-actions-before || exit 255
 
-	"$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$build_dir" -next
+	"$SCRIPT_DIR/../build-w-answerfile-floppy.sh" "$build_dir" -next
 
 	supernext-simulate-user-actions-after || exit 255
 	return 0

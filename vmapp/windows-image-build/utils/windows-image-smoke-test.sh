@@ -15,7 +15,7 @@ export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || report
 
 cleanup-code()
 {
-    setsid "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$BDIR/" -cleanup
+    setsid "$SCRIPT_DIR/../build-w-answerfile-floppy.sh" "$BDIR/" -cleanup
 }
 
 trap 'echo "Doing post-test cleanup" ; cleanup-code >>"$SCRIPT_DIR/post-test-cleanup.out" 2>&1' EXIT
@@ -35,10 +35,10 @@ done
 WIN_VERSION="$1"
 [ "$1" = 2008 ] || [ "$1" = 2012 ] || reportfail "first parameter must be 2008 or 2012"
 
-source "$SCRIPT_DIR/windows-image-build.ini"
+source "$SCRIPT_DIR/../windows-image-build.ini"
 
 # Assume Jenkins puts us in a suitable part of the disk hierarchy to create a build directory.
-BDIR="./builddirs/smoketest-$WIN_VERSION/"
+BDIR="$SCRIPT_DIR/../builddirs/smoketest-$WIN_VERSION/"
 evalcheck mkdir -p ./builddirs
 
 # Make sure KVMs, processes, and build dir from previous jobs are deleted
@@ -85,7 +85,7 @@ ensure-file-is-in-place()
 localsource="$(echo /home/*/for-jenkins-windows-image-smoke-test)"
 [ -d "$localsource" ] || localsource=""
 
-TARGETDIR="$SCRIPT_DIR/resources"
+TARGETDIR="$SCRIPT_DIR/../resources"
 
 DLSOURCES="$localsource https://fedorapeople.org/groups/virt/virtio-win/deprecated-isos/archives/virtio-win-0.1-74"
 ensure-file-is-in-place virtio-win-0.1-74.iso
@@ -106,7 +106,7 @@ ensure-file-is-in-place "$isoname"
 
 # All the needed files should now be in place. Start the build.
 
-KILLPGOK=yes "$SCRIPT_DIR/build-w-answerfile-floppy.sh" "$BDIR" 0-init "$WIN_VERSION"
+KILLPGOK=yes "$SCRIPT_DIR/../build-w-answerfile-floppy.sh" "$BDIR" 0-init "$WIN_VERSION"
 
 SLEEPTIME=60
 MAXITERATIONS=30
