@@ -153,7 +153,6 @@ module Dcmgr
     autoload :EventHook, 'dcmgr/node_modules/event_hook'
     autoload :JobQueueProxy, 'dcmgr/node_modules/job_queue_proxy'
     autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
-    autoload :Monitor, 'dcmgr/node_modules/monitor'
     autoload :HaManager, 'dcmgr/node_modules/ha_manager'
     autoload :AlarmCollector, 'dcmgr/node_modules/alarm_collector'
     autoload :AlarmConfigUpdater, 'dcmgr/node_modules/alarm_config_updater'
