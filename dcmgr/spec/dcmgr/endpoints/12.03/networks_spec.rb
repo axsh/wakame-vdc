@@ -18,6 +18,8 @@ describe "networks" do
 
 
     before(:each)  do
+      extend_dcmgr_conf_for_openvnet
+
       # Stub out all Isono related methods
       stub_dcmgr_syncronized_message_ready
       stub_online_host_nodes M::HostNode.where(id: online_kvm_host_node.id)
