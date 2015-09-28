@@ -228,7 +228,7 @@ module Dcmgr
       param :logging_service_ip, :default =>'169.254.169.253'
       param :logging_service_port, :default => 8888
       param :logging_service_conf, :default => '/var/lib/wakame-vdc/fluent.conf'
-      param :logging_service_reload, :default => '/etc/init.d/td-agent reload'
+      param :logging_service_reload, :default => 'sudo /etc/init.d/td-agent restart'
       param :logging_service_max_read_message_bytes, :default => -1
       param :logging_service_max_match_count, :default => -1
       param :enable_gre, :default=>false
