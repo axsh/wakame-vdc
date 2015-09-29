@@ -403,7 +403,7 @@ install-windows-from-iso()
     prodkey="$(cat keyfile)" || reportfail "File named \"keyfile\" with MAK product key must be in the current directory"
     {
 	echo "A:$ZABBIXEXE"
-	echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $prodkey"
+	[[ "$prodkey" != *none* ]] && echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $prodkey"
 	echo
 	cat "$WIN_SCRIPT_DIR/run-sysprep.cmd" # copy in the rest of the batch file script that runs sysprep
     } | sudo tee ./mntpoint/run-sysprep.cmd
@@ -842,7 +842,7 @@ dispatch-init-command()
 	    echo 9 >./active
 	    ;;
     esac
-    cp "$RESOURCES_DIR/key$LABEL" ./keyfile
+#    cp "$RESOURCES_DIR/key$LABEL" ./keyfile  TODO: will replace this with equivalent functionality soon
 
     echo "1-install" >./nextstep
     echo "$(date +%y%m%d-%H%M%S)" >./timestamp

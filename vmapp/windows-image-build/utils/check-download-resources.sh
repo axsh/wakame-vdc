@@ -46,11 +46,6 @@ ensure-file-is-in-place()
 		    cp "$asource/$1" "$TARGETDIR/$1" 2>/dev/null || \
 		    echo "Attempt to copy $1 from local source failed" 1>&2
 		;;
-	    JenkinsENV)
-		# try to grab an environment variable set by Jenkins, e.g.: JenkinsENV-key2008
-		attempt="$(eval echo "\$${asource}_$1")"
-		[ "$attempt" != "" ] && echo "$attempt" >"$TARGETDIR/$1"
-		;;
 	    http://* | https://*)
 		curl --fail "$asource/$1" -o "$TARGETDIR/$1" || echo "Download attempt of $1 failed" 1>&2
 		;;
@@ -78,12 +73,6 @@ ensure-file-is-in-place virtio-win-0.1-74.iso
 
 DLSOURCES="$localsource http://repo.zabbix.jp/zabbix/zabbix-1.8/windows"
 ensure-file-is-in-place zabbix_agent-1.8.15-1.JP_installer.exe
-
-DLSOURCES="$localsource $S3URL JenkinsENV"  # S3URL is set in Jenkins
-[ "$WIN_VERSION" = "2008" ] && \
-    ensure-file-is-in-place key2008
-[ "$WIN_VERSION" = "2012" ] && \
-    ensure-file-is-in-place key2012
 
 DLSOURCES="$localsource $S3URL"  # S3URL is set in Jenkins
 isoname="$(eval echo \$ISO${WIN_VERSION})"
