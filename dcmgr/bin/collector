@@ -33,8 +33,10 @@ manifest.instance_eval do
   load_module Dcmgr::NodeModules::EventHook
   load_module Dcmgr::NodeModules::JobQueueProxy
   load_module Dcmgr::NodeModules::ResourceCollector
-  load_module Dcmgr::NodeModules::VnetCollector
 
+  if conf.features.openvnet
+    load_module Dcmgr::NodeModules::VnetCollector
+  end
 end
 
 Isono.at_disconnected do
