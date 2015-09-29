@@ -69,4 +69,6 @@ group :test do
   gem 'rspec'
   gem 'fabrication'
   gem 'database_cleaner'
+  gem 'webmock'
+  gem 'pry'
 end

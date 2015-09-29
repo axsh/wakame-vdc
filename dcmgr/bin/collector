@@ -16,20 +16,6 @@ Dcmgr.run_initializers('logger',
 
 conf = Dcmgr::Configurations.dcmgr
 
-if conf.features.openvnet
-  require 'dcell'
-  DCell.start(:id => conf.collector_dcell_node_id,
-    :addr => "tcp://#{conf.collector_dcell_node_uri}",
-    :registry => {
-      :adapter => conf.dcell_adapter,
-      :host => conf.dcell_host,
-      :port => conf.dcell_port
-    }
-  )
-  Dcmgr.run_initializers('vnet_hook')
-end
-
-
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'collector'
@@ -48,6 +34,9 @@ manifest.instance_eval do
   load_module Dcmgr::NodeModules::JobQueueProxy
   load_module Dcmgr::NodeModules::ResourceCollector
 
+  if conf.features.openvnet
+    load_module Dcmgr::NodeModules::VnetCollector
+  end
 end
 
 Isono.at_disconnected do
