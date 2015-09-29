@@ -243,5 +243,6 @@ module Dcmgr::Endpoints::V1203
     load_namespace('jobs')
     load_namespace('alarms')
     load_namespace('virtual_data_centers')
+    load_namespace('virtual_data_center_specs')
   end
 end
