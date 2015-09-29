@@ -30,7 +30,7 @@ gem 'isono', '>= 0.2.20'
 ENV['PATH']="#{Bundler.bundle_path}/bin:#{ENV['PATH']}"
 
 gem 'rant', '0.5.9'
-# gem 'trema', :github=>'axsh/trema', :branch=>'wakame'
+gem 'trema', :github=>'axsh/trema', :branch=>'wakame'
 gem 'rack-cors', :require => 'rack/cors'
 
 gem 'multi_json'
