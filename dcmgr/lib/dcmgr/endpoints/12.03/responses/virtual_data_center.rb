@@ -28,13 +28,15 @@ module Dcmgr::Endpoints::V1203::Responses
           h[:instances] << instance
 
           user_data = YAML.load(i.user_data)
-          next if user_data['port'].nil?
+          next if user_data.nil?
 
           port = user_data['port']
 
           i.instance_nic.each do |vif|
             direct_lease = vif.direct_ip_lease_dataset.first
-            h[:endpoint] = "#{direct_lease.ipv4}:#{user_data['port']}"
+            unless direct_lease.nil?
+              h[:endpoint] = "#{direct_lease.ipv4}:#{user_data['port']}"
+            end
           end
         end
 
