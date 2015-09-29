@@ -15,6 +15,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 `Changed` Improved the Windows machine image build scripts to make it easier to go straight from "git clone" to a building a fresh Windows machine image.
 
+`Changed` Improved the way integration with OpenVNet is handled. Wakame-vdc will no longer take part in OpenVNet's 0mq traffic and instead make requests to OpenVNet's Web API like any other client would.
+
 `Removed` A configuration option to automatically delete an instance's Windows password the first time it's queried from the API. Passwords can now be manually deleted instead.
 
 `Fixed` A bug in wakame-init for Ubuntu where the instance's IP address didn't get set if the network got started before metadata drive was mounted.
