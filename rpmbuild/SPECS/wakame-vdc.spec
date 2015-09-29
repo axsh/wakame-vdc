@@ -226,7 +226,7 @@ BuildArch: noarch
 Summary: Configuration set for hva OpenVZ VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
-Requires: vzkernel = 2.6.32-042stab055.16
+Requires: vzkernel >= 2.6.32-042stab111.11
 Requires: vzctl = 3.3-1
 Requires: vzctl-lib = 3.3-1
 Requires: vzquota = 3.1-1
