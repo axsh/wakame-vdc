@@ -82,16 +82,25 @@ EOF
 set-environment-var-defaults()
 {
     if [ "$BOOTDATE" == "" ] ; then
+	# Note that if BOOTDATE is set to a specific time and that
+	# time is the same or before the last shutdown, Windows
+	# Task Scheduler may not run "onstart" tasks when it boots.
+	BOOTDATE="localtime"
+    fi
+    if [ "$INSTALLDATE" == "" ] ; then
 	# By default, set the date to something later than the files in
 	# the Windows Server 2012 ISO.  All the files in the ISO seem to
 	# be dated after 2014-03-18.  Setting after this but earlier than
 	# today's date makes it possible to do experiments with KVM faking
 	# dates but still be using dates that would be plausible to
 	# Windows and Microsoft's activation server.
-	BOOTDATE="2014-04-01"
+	INSTALLDATE="2014-04-01"
     fi
 
-    [ "$MACADDR" == "" ] &&  MACADDR="52-54-00-11-a0-5b"
+    [ "$BOOTMAC" == "" ] &&  BOOTMAC="52-54-00-11-a0-5b"
+    [ "$INSTALLMAC" == "" ] &&  INSTALLMAC="52-54-00-11-a0-5b"
+    [ "$MACADDR" == "" ] &&  MACADDR="$BOOTMAC"
+
     [ "$IPV4" == "" ] &&  IPV4="10.0.2.15"
     [ "$NETMASK" == "" ] &&  NETMASK="255.255.255.0"
     [ "$GATEWAY" == "" ] &&  GATEWAY="10.0.2.2"
@@ -704,6 +713,10 @@ dispatch-command()
 	    echo "Removing the file: $bdir_fullpath/active"
 	    rm "$bdir_fullpath/active"
 	    ;;
+	1-setup-install)
+	    copy-install-params-to-builddir
+	    exit
+	    ;;
 	1-install)
 	    install-windows-from-iso
 	    echo "1b-record-logs-at-ctr-alt-delete-prompt-gen0" >./nextstep
@@ -825,29 +838,20 @@ dispatch-command()
 dispatch-init-command()
 {
     LABEL="$1"
-    LABEL2="${LABEL:2}"  # 08 or 12
     shopt -s nullglob
     [ "$(echo *)" = "" ] || reportfail "Directory to initialize is not empty"
 
     echo "$LABEL" >./LABEL
     echo "win-$LABEL.raw" >./WINIMG
-    echo "Autounattend-$LABEL2.xml" >./ANSFILE
-    case "$LABEL" in
-	2008)
-	    echo "$ISO2008" >./WINISO
-	    echo 8 >./active
-	    ;;
-	2012)
-	    echo "$ISO2012" >./WINISO
-	    echo 9 >./active
-	    ;;
-    esac
-#    cp "$RESOURCES_DIR/key$LABEL" ./keyfile  TODO: will replace this with equivalent functionality soon
 
-    echo "1-install" >./nextstep
+    echo "1-setup-install" >./nextstep
     echo "$(date +%y%m%d-%H%M%S)" >./timestamp
     echo "This directory will make more sense if you sort by the files by date: ls -lt" >./README
 
+    case "$LABEL" in
+	2008) echo 8 >./active ;;
+	2012) echo 9 >./active ;;
+    esac
     # The value in active is a single digit used to make port
     # assignment unique.  Currently the script automatically keeps one
     # 2008 experiment/build separate from one 2012
@@ -875,6 +879,27 @@ read-persistent-values()
     evalcheck 'ANSFILE="$(cat ./ANSFILE)"'
     evalcheck 'WINISO="$(cat ./WINISO)"'
     evalcheck 'UD="$(cat ./active)"'
+}
+
+copy-install-params-to-builddir()
+{
+    # e.g. ISO2008 and KEY2008 must be set
+    eval '[[ "$ISO'$LABEL'" != *not-set* ]] || reportfail "$ISO'$LABEL' must be set"'
+    eval '[[ "$KEY'$LABEL'" != *not-set* ]] || reportfail "$KEY'$LABEL' must be set (possibly to \"none\")"'
+    mkdir -p install-params
+    (
+	set -e
+	cd install-params
+	echo "$INSTALLMAC" >./INSTALLMAC
+	echo "$INSTALLDATE" >./INSTALLDATE
+	echo "$IMAGESIZE" >./IMAGESIZE
+
+	LABEL2="${LABEL:2}"  # 08 or 12
+	echo "Autounattend-$LABEL2.xml" >./ANSFILE
+
+	eval 'echo "$ISO'$LABEL'" >./WINISO'
+	eval 'echo "$KEY'$LABEL'" >./WINKEY'
+    ) || reportfail "Error while writing to $(pwd)/install-params"
 }
 
 window-image-utils-main()

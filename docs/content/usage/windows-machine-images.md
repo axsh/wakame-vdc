@@ -37,7 +37,7 @@ We do this with the general purpose `build-dir-utils.sh` script.
 ./build-dir-utils.sh builddirs/manual-build-2008/ 0-init 2008
 ```
 
-The `builddirs` should already exist as part of the Wakame-vdc
+The directory `builddirs` should already exist as part of the Wakame-vdc
 repository.  The above command should have created a new directory
 named `manual-build-2008`.  The third parameter (2008, in the example)
 is required and specifies which version of Windows will be installed.
