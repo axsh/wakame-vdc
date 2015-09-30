@@ -714,8 +714,9 @@ dispatch-command()
 	    rm "$bdir_fullpath/active"
 	    ;;
 	1-setup-install)
+	    echo
 	    copy-install-params-to-builddir
-	    exit
+	    "$UTILS_DIR/check-download-resources.sh" "$LABEL"
 	    ;;
 	1-install)
 	    install-windows-from-iso
@@ -876,8 +877,6 @@ read-persistent-values()
 {
     evalcheck 'LABEL="$(cat ./LABEL)"'
     evalcheck 'WINIMG="$(cat ./WINIMG)"'
-    evalcheck 'ANSFILE="$(cat ./ANSFILE)"'
-    evalcheck 'WINISO="$(cat ./WINISO)"'
     evalcheck 'UD="$(cat ./active)"'
 }
 
@@ -900,6 +899,8 @@ copy-install-params-to-builddir()
 	eval 'echo "$ISO'$LABEL'" >./WINISO'
 	eval 'echo "$KEY'$LABEL'" >./WINKEY'
     ) || reportfail "Error while writing to $(pwd)/install-params"
+    echo "Install parameters were written to:"
+    echo "  $(pwd)/install-params"
 }
 
 window-image-utils-main()
