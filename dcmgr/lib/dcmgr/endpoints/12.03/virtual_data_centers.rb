@@ -4,8 +4,6 @@ require 'dcmgr/endpoints/12.03/responses/virtual_data_center'
 require 'yaml'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
-  VDC_INSTANCE_TYPE = ['docker', 'openstack'].freeze
-  VDC_SPEC  = ['small', 'medium', 'large'].freeze
 
   # Show list of virtual_data_centers
   get do
@@ -28,20 +26,24 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
   end
 
   # Create virtual_data_center
-  # param :type, string, required
-  # param :spec: string, required
-  # param :spec_file: string, optional
+  # param :vdc_spec, string, required
   post do
-    raise E::InvalidParameter, 'type' unless VDC_INSTANCE_TYPE.include? params['type']
-    raise E::InvalidParameter, 'spec' unless VDC_SPEC.include? params['spec']
+    vdc = M::VirtualDataCenter.entry_new(@account) do |vdc|
+      case M::VirtualDataCenterSpec.load(params['vdc_spec'])
+      when String
+        vdcs = M::VirtualDataCenterSpec[params['vdc_spec']]
+      when Hash
+        vdcs = M::VirtualDataCenterSpec.entry_new(@account, params['vdc_spec'])
+      else
+        raise E::InvalidParameter, params['vdc_spec']
+      end
+      vdc.virtual_data_center_spec_id = vdcs.id
+    end
 
-    vdc = M::VirtualDataCenter.entry_new(@account)
-    vdc_spec = vdc.add_virtual_data_center_spec(params['type'], params['spec'], params['spec_file'])
-
-    instance_params = vdc_spec.generate_instance_params
-
+    instance_params = vdc.spec.generate_instance_params
     account_id = @account.canonical_uuid
     instances = []
+
     instance_params.each { |instance_param|
       res = request_forward do
         header('X-VDC-Account-UUID', account_id)
