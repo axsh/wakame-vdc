@@ -13,7 +13,7 @@ module Dcmgr::Models
 
     def self.entry_new(account, spec_file)
       raise ArgumentError, "The account parameter must be an Account. Got '#{account.class}'" unless account.is_a?(Account)
-      file = load(spec_file)
+      file = check_spec_file_format(load(spec_file))
       vdcs = self.new
       vdcs.account_id = account.canonical_uuid
       vdcs.name = file['vdc_name']
@@ -30,7 +30,6 @@ module Dcmgr::Models
                    raise YamlLoadError, 'The spec_file parameter must be a yaml format.'
                  end
 
-      check_spec_file_format(vdc_spec)
       vdc_spec
     end
 
