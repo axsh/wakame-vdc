@@ -561,5 +561,14 @@ module Dcmgr::Models
     def ha_enabled?
       self.ha_enabled.to_i == 1
     end
+
+    def delete_log_monitorings
+      conditions = {:metric_name =>Dcmgr::Constants::Alarm::LOG_METRICS, :resource_id =>[self.canonical_uuid]}
+      monitorings = Alarm.filter(conditions).alives.all
+      monitorings.each { |monitor|
+        monitor.destroy
+      }
+      monitorings
+    end
   end
 end
