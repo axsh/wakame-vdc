@@ -2,18 +2,49 @@
 
 module Dcmgr::Models
   class VirtualDataCenterSpec < BaseNew
+    class YamlLoadError < StandardError; end
+    class YamlFormatError < StandardError; end
+
     taggable 'vdcs'
 
     plugin :serialization
 
     serialize_attributes :yaml, :file
 
-    def self.entry_new(account, &blk)
+    def self.entry_new(account, spec_file)
       raise ArgumentError, "The account parameter must be an Account. Got '#{account.class}'" unless account.is_a?(Account)
-      vdcs = self.new &blk
+      file = load(spec_file)
+      vdcs = self.new
       vdcs.account_id = account.canonical_uuid
+      vdcs.name = file['vdc_name']
+      vdcs.file = file
       vdcs.save
       vdcs
+    end
+
+    def self.load(spec_file)
+      raise ArgumentError, "The spec_file parameter must be a String. Got '#{spec_file.class}'" if !spec_file.is_a?(String)
+      vdc_spec = begin
+                   YAML.load(spec_file)
+                 rescue Psych::SyntaxError
+                   raise YamlLoadError, 'The spec_file parameter must be a yaml format.'
+                 end
+
+      check_spec_file_format(vdc_spec)
+      vdc_spec
+    end
+
+    def self.check_spec_file_format(spec_file)
+
+      f = spec_file
+      errors = {}
+
+      errors.store('vdc_name', 'required parameter.') if f['vdc_name'].nil?
+      errors.store('instance_spec', 'required parameter.') if f['instance_spec'].nil?
+      errors.store('vdc_spec', 'required parameter.') if f['vdc_spec'].nil?
+      raise YamlFormatError, "#{errors.inspect}" if errors.length > 0
+
+      spec_file
     end
 
     def instance_capacity
@@ -28,29 +59,6 @@ module Dcmgr::Models
     def _destroy_delete
       self.deleted_at ||= Time.now
       self.save_changes
-    end
-
-    def load(spec_file)
-      raise ArgumentError, "The spec_file parameter must be a String. Got '#{spec_file.class}'" if !spec_file.is_a?(String)
-      vdc_spec = begin
-                   YAML.load(spec_file)
-                 rescue Psych::SyntaxError
-                   raise E::InvalidParameter, 'spec_file'
-                 end
-      vdc_spec
-    end
-
-    def check_spec_file_format(spec_file)
-
-      f = spec_file
-      errors = {}
-
-      errors.store('vdc_name', 'required parameter.') if f['vdc_name'].nil?
-      errors.store('instance_spec', 'required parameter.') if f['instance_spec'].nil?
-      errors.store('vdc_spec', 'required parameter.') if f['vdc_spec'].nil?
-      raise ArgumentError, "#{errors.inspect}" if errors.length > 0
-
-      spec_file
     end
 
     def generate_instance_params

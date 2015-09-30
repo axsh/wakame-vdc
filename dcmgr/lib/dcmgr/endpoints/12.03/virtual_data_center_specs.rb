@@ -28,19 +28,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_center_specs' do
   # Create virtual_data_center_spec
   # param :file, string, required
   post do
-
-    vdcs = M::VirtualDataCenterSpec.entry_new(@account) do |vdcs|
-      begin
-        file = vdcs.load(params['file'])
-        vdcs.check_spec_file_format(file)
-
-        vdcs.name = file['vdc_name']
-        vdcs.file = file
-      rescue => e
-        raise E::InvalidParameter, e
-      end
+    begin
+      vdcs = M::VirtualDataCenterSpec.entry_new(@account, params['file'])
+    rescue => e
+      raise E::InvalidParameter, e
     end
-
     respond_with(R::VirtualDataCenterSpec.new(vdcs).generate)
   end
 
@@ -53,8 +45,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_center_specs' do
 
     if params['file']
       begin
-        file = vdcs.load(params['file'])
-        vdcs.check_spec_file_format(file)
+        file = M::VirtualDataCenterSpec.load(params['file'])
         vdcs.name = file['vdc_name']
         vdcs.file = file
         vdcs.save_changes
