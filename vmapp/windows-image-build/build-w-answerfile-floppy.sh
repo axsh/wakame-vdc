@@ -385,6 +385,9 @@ confirm-sysprep-shutdown()
 
 install-windows-from-iso()
 {
+    evalcheck 'ANSFILE="$(cat ./install-params/ANSFILE)"'
+    evalcheck 'WINISO="$(cat ./install-params/WINISO)"'
+    evalcheck 'WINKEY="$(cat ./install-params/WINKEY)"'
     [ -f "$RESOURCES_DIR/$WINISO" ] || reportfail "Windows install ISO file not found ($WINISO)"
     # Copy Autounattend.xml into fresh floppy image
     FLP="./answerfile-floppy.img"
@@ -409,10 +412,9 @@ install-windows-from-iso()
     # Also adding the call to the zabbix installer here so that the base
     # version of the run-sysprep.cmd file does not hard code the exact name
     # of the zabbix installer.
-    prodkey="$(cat keyfile)" || reportfail "File named \"keyfile\" with MAK product key must be in the current directory"
     {
 	echo "A:$ZABBIXEXE"
-	[[ "$prodkey" != *none* ]] && echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $prodkey"
+	[[ "$WINKEY" != *none* ]] && echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $WINKEY"
 	echo
 	cat "$WIN_SCRIPT_DIR/run-sysprep.cmd" # copy in the rest of the batch file script that runs sysprep
     } | sudo tee ./mntpoint/run-sysprep.cmd
@@ -717,6 +719,9 @@ dispatch-command()
 	    echo
 	    copy-install-params-to-builddir
 	    "$UTILS_DIR/check-download-resources.sh" "$LABEL"
+	    echo "1-install" >./nextstep
+	    instructions="$(
+	      echo "Everything should be ready.  Do -next to boot the Windows installation ISO." )"
 	    ;;
 	1-install)
 	    install-windows-from-iso
