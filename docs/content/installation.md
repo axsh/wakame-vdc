@@ -12,7 +12,7 @@ This guide will set up a basic Wakame-vdc environment on a single host. When we 
 
 ## Installation requirements
 
-  * A machine running [Centos](http://www.centos.org) 6.6 with x86 64 bit processor architecture. This can be either bare metal or a virtual machine. Instances are going to run as
+  * A machine running [Centos](http://www.centos.org) 6 with x86 64 bit processor architecture. This can be either bare metal or a virtual machine. Instances are going to run as
 [OpenVZ](http://openvz.org/Main_Page) containers so you don't need to worry about nested virtualization.
 
   * About 350 MB of disk space available in the `/opt` directory. Wakame-vdc itself is going to be placed there.
