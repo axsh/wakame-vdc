@@ -12,8 +12,8 @@ module Dcmgr::Endpoints::V1203::Responses
         h = {
           :uuid => canonical_uuid,
           :account_id => account_id,
-          :capacity => self.vdc_spec.instance_capacity,
-          :vdc_spec => self.vdc_spec.spec_file,
+          :capacity => self.spec.instance_capacity,
+          :vdc_spec => self.spec.file,
           :instances => [],
           :created_at => created_at,
           :updated_at => updated_at,
