@@ -4,8 +4,8 @@ module Dcmgr::Models
   class VirtualDataCenter < AccountResource
     taggable 'vdc'
 
-    one_to_one :virtual_data_center_spec
-    alias :vdc_spec :virtual_data_center_spec 
+    many_to_one :virtual_data_center_spec
+    alias :spec :virtual_data_center_spec
 
     one_to_many :virtual_data_center_instance
     alias :vdc_instances :virtual_data_center_instance
@@ -17,25 +17,13 @@ module Dcmgr::Models
       ds.alives_and_termed
     end
 
-    def self.entry_new(account)
+    def self.entry_new(account, &blk)
       raise ArgumentError, "The account parameter must be an Account. Got '#{account.class}'" unless account.is_a?(Account)
-      vdc = self.new
+
+      vdc = self.new &blk
       vdc.account_id = account.canonical_uuid
       vdc.save
       vdc
-    end
-
-    def add_virtual_data_center_spec(type, spec, spec_file = nil)
-      # Mash is passed in some cases.
-      raise ArgumentError, "The type parameter must be a String. Got '#{type.class}'" if !type.is_a?(String)
-      raise ArgumentError, "The spec parameter must be a String. Got '#{spec.class}'" if !spec.is_a?(String)
-      vdcs = VirtualDataCenterSpec.new
-      vdcs.virtual_data_center_id = self.id
-      vdcs.type = type
-      vdcs.spec = spec
-      vdcs.spec_file = vdcs.load(spec_file)
-      vdcs.save
-      vdcs
     end
 
     def add_virtual_data_center_instance(instance_ids)
