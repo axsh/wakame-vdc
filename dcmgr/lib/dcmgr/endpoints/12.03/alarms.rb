@@ -53,10 +53,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
       raise E::UnknownParams, "#{params['params']}"
     end
 
-    if CA::RESOURCE_METRICS.include?(params['metric_name']) && params['evaluation_periods'].blank?
-      raise E::UnknownEvaluationPeriods, "#{params['evaluation_periods']}"
-    end
-
     if CA::LOG_METRICS.include?(params['metric_name']) && params['notification_periods'].blank?
       raise E::UnknownNotificationPeriods, "#{params['notification_periods']}"
     end
@@ -84,10 +80,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.enabled = 1
       end
 
-      if CA::RESOURCE_METRICS.include?(params['metric_name']) && params['evaluation_periods']
-        al.evaluation_periods = params['evaluation_periods'].to_i
-      end
-
       if CA::LOG_METRICS.include?(params['metric_name']) && params['notification_periods']
         al.notification_periods = params['notification_periods']
       end
@@ -97,9 +89,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         if CA::LOG_METRICS.include?(params['metric_name'])
           save_params['tag'] = params['params']['tag']
           save_params['match_pattern'] = params['params']['match_pattern']
-        elsif CA::RESOURCE_METRICS.include?(params['metric_name'])
-          save_params['threshold'] = params['params']['threshold'].to_f
-          save_params['comparison_operator'] = params['params']['comparison_operator']
         else
           raise E::UnknownMetricName, "#{params['metric_name']}"
         end
@@ -107,13 +96,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         al.params = save_params
       end
 
-      if params[:ok_actions] || params[:alarm_actions] || params[:insufficient_data_actions]
+      if params[:alarm_actions]
         if CA::LOG_METRICS.include?(params[:metric_name])
           al.alarm_actions = params[:alarm_actions]
-        elsif CA::RESOURCE_METRICS.include?(params[:metric_name])
-          al.ok_actions = params[:ok_actions]
-          al.alarm_actions = params[:alarm_actions]
-          al.insufficient_data_actions = params[:insufficient_data_actions]
         end
       end
 
@@ -122,7 +107,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
     on_after_commit do
       i = find_by_uuid(:Instance, params['resource_id'])
-      Dcmgr.messaging.submit(alarm_endpoint(alarm.metric_name, i.host_node.node_id), 'update_alarm', alarm.canonical_uuid)
+      Dcmgr.messaging.submit(alarm_endpoint(alarm.metric_name, i.host_node.node_id), 'update_alarm')
     end
 
     respond_with(R::Alarm.new(alarm).generate)
@@ -134,7 +119,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
     on_after_commit do
       i = find_by_uuid(:Instance, al.resource_id)
-      Dcmgr.messaging.submit(alarm_endpoint(al.metric_name, i.host_node.node_id), 'delete_alarm', al.canonical_uuid)
+      Dcmgr.messaging.submit(alarm_endpoint(al.metric_name, i.host_node.node_id), 'delete_alarm')
     end
 
     respond_with([al.canonical_uuid])
@@ -167,10 +152,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
         end
       end
 
-      if params[:evaluation_periods] && CA::RESOURCE_METRICS.include?(al.metric_name)
-        al.evaluation_periods = params[:evaluation_periods].to_i
-      end
-
       if params[:notification_periods] && CA::LOG_METRICS.include?(al.metric_name)
         al.notification_periods = params[:notification_periods].to_i
       end
@@ -184,31 +165,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
           else
             update_params['match_pattern'] = al.params['match_pattern']
           end
-        elsif al.is_metric_alarm?
-          if params['params']['threshold']
-            params['params']['threshold'] = params['params']['threshold'].to_f
-          end
-
-          ['threshold', 'comparison_operator'].each {|key|
-            if params['params'][key]
-              update_params[key] = params['params'][key]
-            else
-              update_params[key] = al.params[key]
-            end
-          }
         else
           raise E::UnknownMetricName, al.metric_name
         end
         al.params = update_params
       end
 
-      if params[:ok_actions] || params[:alarm_actions] || params[:insufficient_data_actions]
+      if params[:alarm_actions]
         if CA::LOG_METRICS.include?(al.metric_name)
           al.alarm_actions = params[:alarm_actions]
-        elsif CA::RESOURCE_METRICS.include?(al.metric_name)
-          al.ok_actions = params[:ok_actions]
-          al.alarm_actions = params[:alarm_actions]
-          al.insufficient_data_actions = params[:insufficient_data_actions]
         end
       end
 
@@ -217,7 +182,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/alarms' do
 
     on_after_commit do
       i = find_by_uuid(:Instance, al.resource_id)
-      Dcmgr.messaging.submit(alarm_endpoint(al.metric_name, i.host_node.node_id), 'update_alarm', al.canonical_uuid)
+      Dcmgr.messaging.submit(alarm_endpoint(al.metric_name, i.host_node.node_id), 'update_alarm')
     end
 
     respond_with([al.canonical_uuid])

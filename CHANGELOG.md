@@ -23,6 +23,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 `Fixed` A critical bug in the *PipedRules* host node scheduler that caused it to crash when used.
 
+`Fixed` A race condition that could make collector crash and restart when restarting td-agent.
+
 `Fixed` A minor race condition that could some times cause an unexpected (but still valid) IP address to be assigned when scheduling new instances.
 
 ## [16.0] - 2015-07-31
