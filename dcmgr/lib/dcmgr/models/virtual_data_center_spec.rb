@@ -61,19 +61,14 @@ module Dcmgr::Models
     end
 
     def generate_instance_params
-      instance_spec = self.spec_file['instance_spec'][self.spec]
-      vdc_spec = self.spec_file['vdc_spec'].select { |k, v|
-        v['instance_type'] == self.type && v['instance_spec'] == self.spec
-      }
-
       instance_params = []
-      vdc_spec.each { |k, v|
+      self.file['vdc_spec'].each { |k, v|
         instance_params << {
-          'image_id' =>  v['image_id'],
+          'image_id' => v['image_id'],
           'ssh_key_id' => v['ssh_key_id'],
           'vifs' => v['vifs'],
           'user_data' => YAML.dump(v['user_data']),
-        }.merge(instance_spec)
+        }.merge(self.file['instance_spec'][v['instance_spec']])
       }
 
       instance_params
