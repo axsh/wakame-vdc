@@ -47,12 +47,12 @@ module Dcmgr::Models
     end
 
     def instance_capacity
-      instance_spec = self.spec_file['instance_spec'][self.spec]
-      instance_count = self.spec_file['vdc_spec'].select { |k,v|
-        v['instance_type'] == self.type && v['instance_spec'] == self.spec
-      }.count
-
-      (instance_spec['quota_weight'].to_i * instance_count)
+      specs = file['vdc_spec'].map { |k, v| v['instance_spec'] }.group_by { |t| t }
+      specs.inject(0) { |sum, (k, v)|
+        unless file['instance_spec'][k]['quota_weight'].nil?
+          sum += (file['instance_spec'][k]['quota_weight'] * v.length )
+        end
+      }
     end
 
     def _destroy_delete
