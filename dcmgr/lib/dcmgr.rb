@@ -429,12 +429,6 @@ module Dcmgr
     autoload :Notification, 'dcmgr/monitor/notification'
   end
 
-  require 'dcmgr/catalogs'
-  module Catalogs
-    autoload :LoadBalancer, 'dcmgr/catalogs'
-    autoload :VirtualDataCenter, 'dcmgr/catalogs'
-  end
-
 end
 
 module Ext

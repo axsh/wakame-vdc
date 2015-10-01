@@ -57,10 +57,4 @@ Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr,
 Dcmgr::Configurations.load Dcmgr::Configurations::Hva,
   [DEFAULT_HVA_CONF]
 
-Dcmgr::Catalogs.load Dcmgr::Catalogs::LoadBalancer,
-  [File.expand_path('../minimal_load_balancer.yml', __FILE__)]
-
-Dcmgr::Catalogs.load Dcmgr::Catalogs::VirtualDataCenter,
-  [File.expand_path('../minimal_virtual_data_center.yml', __FILE__)]
-
 Dcmgr.run_initializers('sequel', 'logger')
