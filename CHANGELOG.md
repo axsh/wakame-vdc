@@ -9,8 +9,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 `Added` A new WebAPI endpoint to delete an instance's Windows password. 'DELETE instances/i-xxxxx/password'.
 
-`Added` An optional extension to the WebAPI that will automatically interface with OpenVNet when network related resources are created in Wakame-vdc. This will eventually replace the current OpenVNet integration.
-
 `Added` A Mussel command to decrypt the password of Windows instances.
 
 `Changed` Improved the Windows machine image build scripts to make it easier to go straight from "git clone" to a building a fresh Windows machine image.
