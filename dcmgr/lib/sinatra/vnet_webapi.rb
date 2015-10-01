@@ -32,7 +32,8 @@ module Sinatra
             display_name: r[:uuid],
             ipv4_network: params[:network],
             ipv4_prefix: params[:prefix],
-            network_mode: 'virtual'
+            network_mode: 'virtual',
+            auto_dpnet: true
           )
         end
       end
