@@ -60,21 +60,8 @@ that each cycle from first-boot to sysprep gets uniquely named files.
 It is easer to make sense of all the log files if the directory is
 sorted by date.
 
-Note the following environment are used:
-BOOTDATE (defaults to 2014-04-01)  (do BOOTDATE=now for current time and date)
-MACADDR (defaults to 52-54-00-11-a0-5b)
-FIRSTBOOT (defaults to "", i.e. do not put in meta-data/first-boot)
-AUTOACTIVATE (defaults to "", i.e. do not put in directory meta-data/auto-activate)
-NATNET (defaults to "", i.e. disconnect from Internet)
-PROXY (defaults to "", i.e. do not put in meta-data/auto-activate/auto-activate-proxy)
-IPV4 (defaults to 10.0.2.15)
-NETMASK (defaults to 255.255.255.0)
-GATEWAY (defaults to 10.0.2.2)
-IMAGESIZE (defaults to "30G", the parameter suitable for use with qemu-img)
-ISO2008 (defaults to "", it must be set before installing Windows Server 2008 R2)
-ISO2012 (defaults to "", it must be set before installing Windows Server 2012 R2)
-
-POWERCAT (defaults to "", i.e. do not put a copy of powercat.ps1 in metadata drive for debugging)
+Some of the steps refer to various environment variables, which are
+documented in the file windows-image-build.ini.
 EOF
     exit
 }
@@ -124,8 +111,9 @@ set-environment-var-defaults()
     portforward="$portforward,hostfwd=tcp:0.0.0.0:$RDP-:3389"  # RDP
     portforward="$portforward,hostfwd=tcp:0.0.0.0:$SSH-:22"  # ssh (for testing)
     portforward="$portforward,hostfwd=tcp:0.0.0.0:$MISC-:7890"  # test (for testing)
-    portforward="$portforward,hostfwd=tcp:0.0.0.0:10050-:10050"  # zabbix
-    portforward="$portforward,hostfwd=tcp:0.0.0.0:10051-:10051"  # zabbix
+    # zabbix uses 10050 by default, so for testing with zabbix may want to do "echo 0 >builddirs/xx/active"
+    portforward="$portforward,hostfwd=tcp:0.0.0.0:10${UD}50-:10050"  # zabbix
+    portforward="$portforward,hostfwd=tcp:0.0.0.0:10${UD}51-:10051"  # zabbix
 
     scriptArray=(
 	wakame-init-first-boot.ps1
@@ -141,13 +129,9 @@ set-environment-var-defaults()
     ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
 }
 
-boot-date-param()
-{
-    [ "$BOOTDATE" != "now" ] && echo "-rtc base=$BOOTDATE"
-}
-
 boot-common-params()
 {
+    rtcparam="$1"
     echo -m 2000 -smp 2 -enable-kvm \
 	 -no-kvm-pit-reinjection \
 	 -monitor telnet::$MONITOR,server,nowait \
@@ -155,7 +139,7 @@ boot-common-params()
 	 -drive file="$WINIMG",id=windows-drive,cache=none,aio=native,if=none \
 	 -device virtio-blk-pci,drive=windows-drive,bootindex=0,bus=pci.0,addr=0x4 \
 	 -usbdevice tablet  \
-	 -k ja $(boot-date-param)
+	 -k ja -rtc base="$rtcparam"
 }
 
 create-metadata-disk()
@@ -388,6 +372,8 @@ install-windows-from-iso()
     evalcheck 'ANSFILE="$(cat ./install-params/ANSFILE)"'
     evalcheck 'WINISO="$(cat ./install-params/WINISO)"'
     evalcheck 'WINKEY="$(cat ./install-params/WINKEY)"'
+    evalcheck 'INSTALLMAC="$(cat ./install-params/INSTALLMAC)"'
+    evalcheck 'INSTALLDATE="$(cat ./install-params/INSTALLDATE)"'
     [ -f "$RESOURCES_DIR/$WINISO" ] || reportfail "Windows install ISO file not found ($WINISO)"
     # Copy Autounattend.xml into fresh floppy image
     FLP="./answerfile-floppy.img"
@@ -425,34 +411,22 @@ install-windows-from-iso()
     rm -f "$WINIMG"
     qemu-img create -f raw "$WINIMG" 30G
 
-    if [ "$NATNET" = "" ] ; then
-	# have netdevice connect to mcast, which effectively creates a device not connected to anything
-	boot-and-log-kvm-boot $(boot-common-params) \
-			      -fda "$FLP" \
-			      -drive file="$RESOURCES_DIR/$WINISO",index=2,media=cdrom \
-			      -drive file="$RESOURCES_DIR/$VIRTIOISO",index=3,media=cdrom \
-			      -boot d \
-			      -net nic,vlan=0,macaddr=$MACADDR \
-			      -net socket,vlan=0,mcast=230.0.$UD.1:12341
-    else
-	# use user mode network w/ NAT
-	mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
-	boot-and-log-kvm-boot $(boot-common-params) \
-			      -fda "$FLP" \
-			      -drive file="$RESOURCES_DIR/$WINISO",index=2,media=cdrom \
-			      -drive file="$RESOURCES_DIR/$VIRTIOISO",index=3,media=cdrom \
-			      -boot d \
-			      -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
-			      -net dump,vlan=0 \
-			      -net user,vlan=0${portforward}
-    fi
+    # for installation, have netdevice connect to mcast, which
+    # effectively keeps the VM disconnected from any network
+    boot-and-log-kvm-boot $(boot-common-params "$INSTALLDATE") \
+			  -fda "$FLP" \
+			  -drive file="$RESOURCES_DIR/$WINISO",index=2,media=cdrom \
+			  -drive file="$RESOURCES_DIR/$VIRTIOISO",index=3,media=cdrom \
+			  -boot d \
+			  -net nic,vlan=0,macaddr=$INSTALLMAC \
+			  -net socket,vlan=0,mcast=230.0.$UD.1:12341
 }
 
 boot-without-networking()
 {
     configure-metadata-disk
     mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
-    boot-and-log-kvm-boot $(boot-common-params) \
+    boot-and-log-kvm-boot $(boot-common-params "$BOOTDATE") \
 			  -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
 			  -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
 			  -net nic,vlan=0,macaddr=$MACADDR \
@@ -464,7 +438,7 @@ boot-with-networking()
 {
     configure-metadata-disk
     mv qemu-vlan0.pcap "$(date +%y%m%d-%H%M%S)"-qemu-vlan0.pcap
-    boot-and-log-kvm-boot $(boot-common-params) \
+    boot-and-log-kvm-boot $(boot-common-params "$BOOTDATE") \
 			  -drive file="metadata.img",id=metadata-drive,cache=none,aio=native,if=none \
 			  -device virtio-blk-pci,id=metadata,drive=metadata-drive,bus=pci.0,addr=0x5 \
 			  -net nic,vlan=0,model=virtio,macaddr=$MACADDR \
