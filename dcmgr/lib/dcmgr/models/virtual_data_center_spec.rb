@@ -11,6 +11,8 @@ module Dcmgr::Models
 
     serialize_attributes :yaml, :file
 
+    subset(:alives, {:deleted_at => nil})
+
     def self.entry_new(account, spec_file)
       raise ArgumentError, "The account parameter must be an Account. Got '#{account.class}'" unless account.is_a?(Account)
       file = check_spec_file_format(load(spec_file))

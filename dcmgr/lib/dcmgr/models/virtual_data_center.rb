@@ -17,6 +17,8 @@ module Dcmgr::Models
       ds.alives_and_termed
     end
 
+    subset(:alives, {:deleted_at => nil})
+
     def self.entry_new(account, &blk)
       raise ArgumentError, "The account parameter must be an Account. Got '#{account.class}'" unless account.is_a?(Account)
 

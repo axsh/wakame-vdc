@@ -60,7 +60,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
   # Delete virtual_data_center
   # param :id, string, requried
   delete '/:id' do
-    vdc = find_by_uuid(:VirtualDataCenter, params[:id])
+    vdc = find_by_uuid_alives(:VirtualDataCenter, params[:id])
     raise E::UnknownVirtualDataCenter, params['id'] if vdc.nil?
 
     account_id = @account.canonical_uuid
