@@ -3,13 +3,11 @@
 All notable changes to Wakame-vdc will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [16.1] - 2015-10-2
 
 `Added` More bash completion for mussel commands. Specifically alarm, *ip_pool*, *ip_handle*, *dc_network*, *host_node*, *volume*, *network_vif* and *instance_show_password*.
 
 `Added` A new WebAPI endpoint to delete an instance's Windows password. 'DELETE instances/i-xxxxx/password'.
-
-`Added` An optional extension to the WebAPI that will automatically interface with OpenVNet when network related resources are created in Wakame-vdc. This will eventually replace the current OpenVNet integration.
 
 `Added` A Mussel command to decrypt the password of Windows instances.
 
@@ -22,6 +20,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 `Fixed` A bug in wakame-init for Ubuntu where the instance's IP address didn't get set if the network got started before metadata drive was mounted.
 
 `Fixed` A critical bug in the *PipedRules* host node scheduler that caused it to crash when used.
+
+`Fixed` A race condition that could make collector crash and restart when restarting td-agent.
 
 `Fixed` A minor race condition that could some times cause an unexpected (but still valid) IP address to be assigned when scheduling new instances.
 

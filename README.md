@@ -11,14 +11,14 @@ System requirements
 -------------------
 
 * Ruby version: 2.0.0-p598
-* OS: CentOS 6.6
+* OS: CentOS 6
 
 Other versions or operating systems may or may not work.
 
 Quick Start
 -----------
 
-[Install Wakame-vdc on CentOS 6.6](http://wakame-vdc.org/installation/)
+[Install Wakame-vdc on CentOS 6](http://wakame-vdc.org/installation/)
 
 [Try Wakame-vdc pre-installed in VirtualBox.](http://wakameusersgroup.org/demo_image.html)
 

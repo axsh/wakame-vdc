@@ -32,7 +32,6 @@ manifest.instance_eval do
   load_module Dcmgr::NodeModules::Maintenance
   load_module Dcmgr::NodeModules::EventHook
   load_module Dcmgr::NodeModules::JobQueueProxy
-  load_module Dcmgr::NodeModules::ResourceCollector
 
   if conf.features.openvnet
     load_module Dcmgr::NodeModules::VnetCollector

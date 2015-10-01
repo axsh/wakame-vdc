@@ -12,7 +12,7 @@ This guide will set up a basic Wakame-vdc environment on a single host. When we 
 
 ## Installation requirements
 
-  * A machine running [Centos](http://www.centos.org) 6.6 with x86 64 bit processor architecture. This can be either bare metal or a virtual machine. Instances are going to run as
+  * A machine running [Centos](http://www.centos.org) 6 with x86 64 bit processor architecture. This can be either bare metal or a virtual machine. Instances are going to run as
 [OpenVZ](http://openvz.org/Main_Page) containers so you don't need to worry about nested virtualization.
 
   * About 350 MB of disk space available in the `/opt` directory. Wakame-vdc itself is going to be placed there.
@@ -40,9 +40,13 @@ Add the official Wakame-vdc yum repository to `/etc/yum.repos.d`.
 
     sudo curl -o /etc/yum.repos.d/wakame-vdc-stable.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/master/rpmbuild/yum_repositories/wakame-vdc-stable.repo
 
-Add the OpenVZ yum repository to `/etc/yum.repos.d`. Wakame-vdc is confirmed to be working with OpenVZ 2.6.32-042stab055.16. OpenVZ hosts repositories for older versions so we provide a .repo file that points to those repositories.
+Add the OpenVZ yum repository to `/etc/yum.repos.d`. Wakame-vdc is confirmed to be working with OpenVZ 2.6.32-042stab055.16 and Axsh provides a repository that hosts this version.
 
     sudo curl -o /etc/yum.repos.d/openvz.repo -R https://raw.githubusercontent.com/axsh/wakame-vdc/develop/rpmbuild/yum_repositories/openvz.repo
+
+Axsh may be hosting this version but they're still the official packages signed with the OpenVZ GPG key. We need to tell RPM to trust that key.
+
+    sudo rpm --import http://download.openvz.org/RPM-GPG-Key-OpenVZ
 
 Install [EPEL](https://fedoraproject.org/wiki/EPEL). We need to pull some OpenVZ dependencies from here.
 
