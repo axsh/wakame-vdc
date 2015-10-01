@@ -38,7 +38,6 @@ module Dcmgr::Models
     end
 
     def before_destroy
-      self.vdc_spec.destroy
       self.virtual_data_center_instance.each do |vdc_instance|
         vdc_instance.destroy
       end
