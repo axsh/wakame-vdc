@@ -20,7 +20,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
   # param :id, string, requried
   get '/:id' do
     vdc = find_by_uuid(:VirtualDataCenter, params['id'])
-    raise E::UnknownVirtualDataCenter, params['id'] if vdc.nil?
 
     respond_with(R::VirtualDataCenter.new(vdc).generate)
   end
@@ -61,7 +60,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
   # param :id, string, requried
   delete '/:id' do
     vdc = find_by_uuid_alives(:VirtualDataCenter, params[:id])
-    raise E::UnknownVirtualDataCenter, params['id'] if vdc.nil?
 
     account_id = @account.canonical_uuid
     vdc.instances.each do |instance|

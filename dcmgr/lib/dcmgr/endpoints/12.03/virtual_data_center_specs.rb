@@ -20,7 +20,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_center_specs' do
   # param :id, string, required
   get '/:id' do
     vdcs = find_by_uuid(:VirtualDataCenterSpec, params['id'])
-    raise E::UnknownVirtualDataCenterSpec, params['id'] if vdcs.nil?
 
     respond_with(R::VirtualDataCenterSpec.new(vdcs).generate)
   end
@@ -41,7 +40,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_center_specs' do
   # param :file, string, options
   put '/:id' do
     vdcs = find_by_uuid_alives(:VirtualDataCenterSpec, params['id'])
-    raise E::UnknownVirtualDataCenterSpec, params['id'] if vdcs.nil?
 
     if params['file']
       begin
@@ -61,7 +59,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_center_specs' do
   # param :id, string, required
   delete '/:id' do
     vdcs = find_by_uuid_alives(:VirtualDataCenterSpec, params['id'])
-    raise E::UnknownVirtualDataCenterSpec, params['id'] if vdcs.nil?
 
     vdcs.destroy
 
