@@ -52,7 +52,7 @@ module Dcmgr
         stat = File.stat(path)
         `losetup -a`.split(/\n/).each {|i|
           # /dev/loop0: [0f11]:1179651 (/home/katsuo/dev/wakame-vdc/tmp/instances/i-5....)
-          if i =~ %r{^(/dev/loop\d+): \[([0-9a-f]+)\]:(\d+) } && $2.hex == stat.dev && $3.to_i == stat.ino
+          if i =~ %r{^(/dev/loop\d+): \[([0-9a-f]+)\]:(\d+) } && ($2.hex == stat.dev || $2.to_i == stat.dev.to_i) && $3.to_i == stat.ino
             return $1
           end
         }
