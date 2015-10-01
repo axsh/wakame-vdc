@@ -62,6 +62,38 @@ will be used through the rest of the image installation process.
 
 ### Partially Automatic Image Creation
 
+From this point, the image creation proceeds with multiple calls to
+the same `build-dir-utils.sh` script.  Always, the first argument is
+the build directory and the second argument is the name of the build
+step.  Because the build steps must be performed in order, the name of
+each step is prefixed with a number to indicate the ordering.
+
+Some of the build steps must be performed in the Windows user
+interface, and sometimes the best way to do these steps is manually.
+Therefore, some of the steps are just placeholders for actions that a
+user would do manually, and the script itself actually does not
+perform any action that affects the VM or Windows OS.  In this way,
+the steps themselves can serve as a concise documentation of *all* the
+steps necessary to build a Windows image.  The `build-dir-utils.sh`
+script both automates steps that are easy to automates, and helps the
+user not to forget those steps that are easier to perform manually.
+
+To make this easier, after the 0-init step, it is possible to go
+through the rest of the build issuing either one of the following
+commands:
+
+```bash
+./build-dir-utils.sh builddirs/manual-build-2008/ -next
+  ## OR ##
+./build-dir-utils.sh builddirs/manual-build-2008/ -done
+```
+The `-next` parameter tells the build scripts to do the next
+easy-to-automate step.  The `-done` option tells the build scripts
+that the required manual step has been done.  Internally, the scripts
+keep track of what to do next or what to confirm has been done by
+looking in the file `nextstep` in the build directory.  Step names that end
+with `-done` must be confirmed.  The contents of `nextstep` is
+automatically updated to keep track of progress.
 
 ### Automatic Image Creation
 
