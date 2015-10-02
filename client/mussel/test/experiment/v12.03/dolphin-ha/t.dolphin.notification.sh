@@ -29,7 +29,7 @@ function oneTimeTearDown() {
 
 # API test for create new notification.
 function test_create_new_notification() {
-  notification_id=11 email=${email} run_cmd notification create
+  email=${email} run_cmd notification create 11
   assertEquals 0 $?
 } 
 

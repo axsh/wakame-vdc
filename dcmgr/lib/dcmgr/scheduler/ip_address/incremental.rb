@@ -26,7 +26,7 @@ module Dcmgr::Scheduler::IPAddress
       network = options[:network]
       ip_lease_alives = network.network_vif_ip_lease_dataset.alives
 
-      latest_ip = ip_lease_alives.filter(:alloc_type =>NetworkVifIpLease::TYPE_AUTO).order(:updated_at.desc).first
+      latest_ip = ip_lease_alives.filter(:alloc_type =>NetworkVifIpLease::TYPE_AUTO).order(:id.desc).first
       ipaddr = latest_ip.nil? ? nil : latest_ip.ipv4_i
       leaseaddr = case network[:ip_assignment]
                   when "asc"

@@ -21,6 +21,8 @@ gem "rack-test", "0.6.2"
 gem 'posix-spawn'
 gem 'fuguta', ">= 1.0.4"
 
+gem 'vnet_api_client'
+
 gem 'eventmachine', :github=>'axsh/eventmachine', :ref=>'dc84f883b00f'
 gem 'isono', '>= 0.2.20'
 
@@ -67,4 +69,6 @@ group :test do
   gem 'rspec'
   gem 'fabrication'
   gem 'database_cleaner'
+  gem 'webmock'
+  gem 'pry'
 end

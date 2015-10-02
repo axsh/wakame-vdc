@@ -7,6 +7,11 @@ Dir["#{File.dirname(__FILE__)}/vifs_request_param_examples/*.rb"].each {|f| requ
 describe Dcmgr::Scheduler::Network::VifsRequestParam do
   include NetworkHelper
 
+  before(:all) do
+    Dcmgr::Configurations.load Dcmgr::Configurations::Dcmgr,
+    [DEFAULT_DCMGR_CONF]
+  end
+
   describe "#schedule" do
     let(:inst) do
       i = Fabricate(:instance, request_params: {"vifs" => vifs_parameter})

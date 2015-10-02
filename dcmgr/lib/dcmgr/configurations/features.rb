@@ -24,6 +24,8 @@ module Dcmgr
 
       class FeatureKeys < Fuguta::Configuration
         param :openvnet, default: false
+        param :vnet_endpoint, default: "localhost"
+        param :vnet_endpoint_port, default: 9090
       end
     end
   end
