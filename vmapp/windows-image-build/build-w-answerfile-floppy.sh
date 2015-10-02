@@ -621,13 +621,21 @@ parse-initial-params()
     # using $thecommand, $bdir_fullpath, and "${params[@]}"
 }
 
+update-nextstep()
+{
+    # wrap this echo to make the code more readable and perhaps introduce a useful target for grepping
+    echo "$1" >./nextstep  || reportfail "could not update ./nextstep"
+}
+
 dispatch-command()
 {
-    if [ "$1" == "-next" ]
-    then
-	cmd="$(< ./nextstep)"
-    else
-	cmd="$1"
+    cmd="$1"
+    if [ "$1" == "-done" ]; then
+       cmd="$(< ./nextstep)"
+       [[ "$cmd" == *-M-* ]] || reportfail "-done should only be applied to \"manual\" steps"
+    elif [ "$1" == "-next" ] || [ "$1" == "-do-next" ]; then
+  	cmd="$(< ./nextstep)"
+	[[ "$cmd" != *-M-* ]] || reportfail "$1 should not be applied to \"manual\" steps"
     fi
     genCount="${cmd#*gen}"
     genCount="${genCount%%-*}"
@@ -693,10 +701,92 @@ dispatch-command()
 	    echo
 	    copy-install-params-to-builddir
 	    "$UTILS_DIR/check-download-resources.sh" "$LABEL"
-	    echo "1-install" >./nextstep
 	    instructions="$(
-	      echo "Everything should be ready.  Do -next to boot the Windows installation ISO." )"
+	      echo "Everything should be ready.  Invoke with -do-next to create the floppy image used for Windows installation." )"
+	    update-nextstep 2-create-floppy-image-with-answer-file
 	    ;;
+	2-create-floppy-image-with-answer-file)
+	    update-nextstep 3-boot-with-install-iso-and-floppy
+	    ;;
+	3-boot-with-install-iso-and-floppy)
+	    update-nextstep 4-M-wait-for-ctrl-alt-delete-screen
+	    ;;
+	4-M-wait-for-ctrl-alt-delete-screen)
+	    update-nextstep 5-record-logs-at-ctrl-alt-delete-screen
+	    ;;
+	5-record-logs-at-ctrl-alt-delete-screen)
+	    update-nextstep 6-M-press-ctrl-alt-delete-screen
+	    ;;
+	6-M-press-ctrl-alt-delete-screen)
+	    update-nextstep 7-M-wait-for-password-screen
+	    ;;
+	7-M-wait-for-password-screen)
+	    update-nextstep 8-M-enter-password
+	    ;;
+	8-M-enter-password)
+	    update-nextstep 9-M-wait-for-login-completion
+	    ;;
+	9-M-wait-for-login-completion)
+	    update-nextstep 10-M-open-powershell-window
+	    ;;
+	10-M-open-powershell-window)
+	    update-nextstep 11-M-run-sysprep-script
+	    ;;
+	11-M-run-sysprep-script)
+	    update-nextstep 12-M-wait-zabbix-installer-screen1
+	    ;;
+	12-M-wait-zabbix-installer-screen1)
+	    update-nextstep 13-M-press-return-1
+	    ;;
+	13-M-press-return-1)
+	    update-nextstep 14-M-wait-zabbix-installer-screen2
+	    ;;
+	14-M-wait-zabbix-installer-screen2)
+	    update-nextstep 15-M-press-return-2
+	    ;;
+	15-M-press-return-2)
+	    update-nextstep 16-M-wait-zabbix-installer-screen3
+	    ;;
+	16-M-wait-zabbix-installer-screen3)
+	    update-nextstep 17-M-press-return-3
+	    ;;
+	17-M-press-return-3)
+	    update-nextstep 18-M-wait-zabbix-installer-screen4
+	    ;;
+	18-M-wait-zabbix-installer-screen4)
+	    update-nextstep 19-M-press-return-4
+	    ;;
+	19-M-press-return-4)
+	    update-nextstep 20-M-wait-zabbix-installer-screen5
+	    ;;
+	20-M-wait-zabbix-installer-screen5)
+	    update-nextstep 21-M-press-return-5
+	    ;;
+	21-M-press-return-5)
+	    update-nextstep 22-M-wait-zabbix-installer-screen6
+	    ;;
+	22-M-wait-zabbix-installer-screen6)
+	    update-nextstep 23-M-press-return-6
+	    ;;
+	23-M-press-return-6)
+	    update-nextstep 24-wait-for-shutdown
+	    ;;
+	24-wait-for-shutdown)
+	    update-nextstep 25-record-logs-after-sysprep
+	    ;;
+	25-record-logs-after-sysprep)
+	    update-nextstep 26-make-simple-tar-of-image
+	    ;;
+	26-make-simple-tar-of-image)
+	    update-nextstep 27-package-to-wakame-tgz-image
+	    ;;
+	27-package-to-wakame-tgz-image)
+	    update-nextstep 28-package-to-wakame-qcow2-image
+	    ;;
+	28-package-to-wakame-qcow2-image)
+	    update-nextstep 1001-gen0-first-boot
+	    ;;
+	
 	1-install)
 	    install-windows-from-iso
 	    echo "1b-record-logs-at-ctr-alt-delete-prompt-gen0" >./nextstep
@@ -824,7 +914,6 @@ dispatch-init-command()
     echo "$LABEL" >./LABEL
     echo "win-$LABEL.raw" >./WINIMG
 
-    echo "1-setup-install" >./nextstep
     echo "$(date +%y%m%d-%H%M%S)" >./timestamp
     echo "This directory will make more sense if you sort by the files by date: ls -lt" >./README
 
@@ -850,6 +939,7 @@ dispatch-init-command()
 	echo "$bdir_fullpath/active"
 	sleep 2
     fi
+    update-nextstep 1-setup-install
 }
 
 read-persistent-values()

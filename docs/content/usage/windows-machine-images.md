@@ -83,17 +83,18 @@ through the rest of the build issuing either one of the following
 commands:
 
 ```bash
-./build-dir-utils.sh builddirs/manual-build-2008/ -next
+./build-dir-utils.sh builddirs/manual-build-2008/ -do-next
   ## OR ##
 ./build-dir-utils.sh builddirs/manual-build-2008/ -done
 ```
-The `-next` parameter tells the build scripts to do the next
+
+The `-do-next` parameter tells the build scripts to do the next
 easy-to-automate step.  The `-done` option tells the build scripts
 that the required manual step has been done.  Internally, the scripts
 keep track of what to do next or what to confirm has been done by
-looking in the file `nextstep` in the build directory.  Step names that end
-with `-done` must be confirmed.  The contents of `nextstep` is
-automatically updated to keep track of progress.
+looking in the file `nextstep` in the build directory.  Step names
+that contain the 3 characters "-M-" must be confirmed.  The contents
+of `nextstep` is automatically updated to keep track of progress.
 
 ### Automatic Image Creation
 
