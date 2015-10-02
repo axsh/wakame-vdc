@@ -49,7 +49,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
         post("/instances.yml", instance_param)
       end.last_response
       instance = YAML.load(res.body)
-      instances << find_by_uuid(:Instance, instance[:id]).id
+      instances << find_by_uuid(:Instance, instance[:id])
     }
     vdc.add_virtual_data_center_instance(instances)
     

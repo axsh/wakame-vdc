@@ -7,15 +7,7 @@ module Dcmgr::Models
     many_to_one :virtual_data_center_spec
     alias :spec :virtual_data_center_spec
 
-    one_to_many :virtual_data_center_instance
-    alias :vdc_instances :virtual_data_center_instance
-
-    many_to_many :instances, :class=>Instance, :join_table=>:virtual_data_center_instances, :right_key=>:instance_id, :right_primary_key=>:id do |ds|
-      # "SELECT `instances`.* FROM `instances` INNER JOIN `virtual_data_center_instances` ON 
-      # ((`virtual_data_center_instances`.`instance_id` = `instances`.`id`) AND (`virtual_data_center_instances`.`virtual_data_center_id` = 56))
-      # WHERE (terminated_at IS NULL OR terminated_at >= '2015-07-29 05:59:15')"
-      ds.alives_and_termed
-    end
+    one_to_many :instances
 
     subset(:alives, {:deleted_at => nil})
 
@@ -28,20 +20,18 @@ module Dcmgr::Models
       vdc
     end
 
-    def add_virtual_data_center_instance(instance_ids)
+    def add_virtual_data_center_instance(instances)
       # Mash is passed in some cases.
-      raise ArgumentError, "The instance_ids parameter must be a Array. Got '#{instance_ids.class}'" if !instance_ids.is_a?(Array)
-      instance_ids.each { |instance_id|
-        vdci = VirtualDataCenterInstance.new
-        vdci.virtual_data_center_id = self.id
-        vdci.instance_id = instance_id
-        vdci.save
+      raise ArgumentError, "The instance_ids parameter must be a Array. Got '#{instances.class}'" if !instances.is_a?(Array)
+      instances.each { |instance|
+        instance.virtual_data_center_id = self.id
+        instance.save_changes
       }
     end
 
     def before_destroy
-      self.virtual_data_center_instance.each do |vdc_instance|
-        vdc_instance.destroy
+      self.instances.each do |instance|
+        instance.destroy
       end
     end
 
