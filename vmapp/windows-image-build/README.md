@@ -1,6 +1,6 @@
 # Overview
 
-The main two scripts are `build-w-answerfile-floppy.sh` and
+The main two scripts are `build-dir-utils.sh` and
 `windows-image-smoke-test.sh`.  The first script evolved over time to
 automate various things that were useful when building Windows images
 and debugging PowerShell scripts.  It focuses on things that were easy
@@ -9,14 +9,14 @@ itself, but it does not automate everything.
 
 In contrast, `windows-image-smoke-test.sh` is a script that was
 written quickly.  Its purpose is to wrap
-`build-w-answerfile-floppy.sh` with a simple interface that is easy to
+`build-dir-utils.sh` with a simple interface that is easy to
 integrate into Jenkins.  One consequence of this is that it must automate everything
 including user interface actions inside of Windows, which it does by
 using `supernext.sh` and `kvm-ui-util.sh`.
 
 ## The `bash` script files:
 
-### build-w-answerfile-floppy.sh
+### build-dir-utils.sh
 
 This script's main functions are starting and stopping Windows VMs and
 dealing with the images files.  One typical use is to boot a VM, do
@@ -37,7 +37,7 @@ The *build directory* also serves other purposes:
   3. It provides a place for tracking multi-step testing scenarios.
 
 This last purpose is important for understanding how the other scripts
-work.  `build-w-answerfile-floppy.sh` contains a set of numbered
+work.  `build-dir-utils.sh` contains a set of numbered
 commands, which if done in order, walk through the steps of a particular
 debugging scenario that has been useful.  A file in the build
 directory named `nextstep` always contains the name of the command for
@@ -45,7 +45,7 @@ the next step, which can be invoked automatically by calling the
 script like this:
 
 ```
-$ ./build-w-answerfile-floppy.sh /path/to/builddir -next
+$ ./build-dir-utils.sh /path/to/builddir -next
 ```
 
 Between the steps, manual actions are usually needed.  By doing these
@@ -57,23 +57,23 @@ tedious, and otherwise easy to mess up.
 
 To make things easy for Jenkins, this script does three things.
 First, it makes sure all the extra files that are required by
-`build-w-answerfile-floppy.sh` (such as the Windows install DVD ISO
+`build-dir-utils.sh` (such as the Windows install DVD ISO
 image) are available.  Then it creates a new build directory.  Then it
-calls `build-w-answerfile-floppy.sh` until it has completed the first
+calls `build-dir-utils.sh` until it has completed the first
 three steps of the scenario, which are the steps that install Windows.
 
 ### supernext.sh
 
 This script is used by `windows-image-smoke-test.sh` to simulate user
 interface actions that are not automated by
-`build-w-answerfile-floppy.sh`.  It relies on the `nextstep` file to
+`build-dir-utils.sh`.  It relies on the `nextstep` file to
 know what actions need to be done.
 
 ### kvm-ui-util.sh
 
 This is a low-level script that is used to simulate user actions in
 KVM.  It is only called by `supernext.sh`, although a little setup
-code for its use is in `build-w-answerfile-floppy.sh`.  This script
+code for its use is in `build-dir-utils.sh`.  This script
 has potential for reuse in other project.
 
 ## The other files
@@ -100,7 +100,7 @@ the Administrator password) and run this script to finish making the
 seed image.  This script is copied to the floppy image, so it is
 can be invoked by typing a:run-sysprep into a console window.  It does a
 little setup and then runs the sysprep command with the correct
-parameters.  Note that the build-w-answerfile-floppy.sh sometimes
+parameters.  Note that the build-dir-utils.sh sometimes
 modifies this batch file on-the-fly so that it installs zabbix before
 running sysprep.
 
@@ -162,8 +162,8 @@ To create a seed image that is ready to be used with Wakame-vdc, do
 the following command steps manually:
 
  ```
-$ $SDIR/build-w-answerfile-floppy.sh  /path/to/builddirs/smoketest-2008  3-tar-the-image
-$ $SDIR/build-w-answerfile-floppy.sh  /path/to/builddirs/smoketest-2008  -package
+$ $SDIR/build-dir-utils.sh  /path/to/builddirs/smoketest-2008  3-tar-the-image
+$ $SDIR/build-dir-utils.sh  /path/to/builddirs/smoketest-2008  -package
 ```
 
 The ready-to-use images will be created at

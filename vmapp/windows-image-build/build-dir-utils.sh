@@ -47,7 +47,7 @@ through it to understand the script and its limitations.  However, for
 quick hints, the intended use is as follows:
 
 1) Follow instruction in README.md
-2) keep calling $SDIR/build-w-answerfile-floppy.sh 2008 -next
+2) keep calling $SDIR/build-dir-utils.sh 2008 -next
 
 This will cycle the window image through first boot, second boot,
 shutdown, reboot, sysprep, shutdown, and then start again with first
@@ -982,7 +982,7 @@ window-image-utils-main()
     rm -f lastdir
     ln -s "$bdir_fullpath" lastdir
 
-    echo "Starting build-w-answerfile-floppy.sh ($thecommand)"
+    echo "Starting build-dir-utils.sh ($thecommand)"
     echo "    bdir_fullpath=$bdir_fullpath"
     echo "    \${params[@]}=${params[@]}"
     echo "    ./nextstep=$(cat "$bdir_fullpath/nextstep" 2>/dev/null)"
@@ -995,7 +995,7 @@ window-image-utils-main()
 	set-environment-var-defaults
 	dispatch-command "$thecommand" "${params[@]}"
     fi
-    echo "Finished build-w-answerfile-floppy.sh ($thecommand), ./nextstep is now $(cat "$bdir_fullpath/nextstep" 2>/dev/null)"
+    echo "Finished build-dir-utils.sh ($thecommand), ./nextstep is now $(cat "$bdir_fullpath/nextstep" 2>/dev/null)"
     echo
     echo "$instructions"
     echo

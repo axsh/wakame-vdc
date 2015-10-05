@@ -15,7 +15,7 @@ export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || report
 
 cleanup-code()
 {
-    setsid "$SCRIPT_DIR/../build-w-answerfile-floppy.sh" "$BDIR/" -cleanup
+    setsid "$SCRIPT_DIR/../build-dir-utils.sh" "$BDIR/" -cleanup
 }
 
 trap 'echo "Doing post-test cleanup" ; cleanup-code >>"$SCRIPT_DIR/post-test-cleanup.out" 2>&1' EXIT
@@ -39,7 +39,7 @@ fi
 "$SCRIPT_DIR/check-download-resources.sh" "$WIN_VERSION" || exit
 # All the needed files should now be in place. Start the build.
 
-KILLPGOK=yes "$SCRIPT_DIR/../build-w-answerfile-floppy.sh" "$BDIR" 0-init "$WIN_VERSION"
+KILLPGOK=yes "$SCRIPT_DIR/../build-dir-utils.sh" "$BDIR" 0-init "$WIN_VERSION"
 
 SLEEPTIME=60
 MAXITERATIONS=30
