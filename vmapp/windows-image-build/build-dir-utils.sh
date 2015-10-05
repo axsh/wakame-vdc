@@ -127,6 +127,7 @@ set-environment-var-defaults()
 
     VIRTIOISO="virtio-win-0.1-74.iso"  # version of virtio disk and network drivers known to work
     ZABBIXEXE="zabbix_agent-1.8.15-1.JP_installer.exe"
+    FLP="./answerfile-floppy.img"
 }
 
 boot-common-params()
@@ -296,10 +297,19 @@ boot-and-log-kvm-boot()
 {
     echo "$KVM_BINARY" "$@" >"./kvm-boot-cmdline-$(date +%y%m%d-%H%M%S)"
     "$KVM_BINARY" "$@"  >>./kvm.stdout 2>>./kvm.stderr &
-    echo "$!" >./kvm.pid
+    thepid="$!"
+    echo "$thepid" >./kvm.pid
     # the following are used by kvm-ui-util.sh
     echo "$MONITOR" >./kvm.mon
     echo "$(( VNC + 5900 ))" >./kvm.vnc
+    sleep 5
+    kill -0 "$thepid" || {
+	echo
+	echo "tail ./kvm.stderr:"
+	tail ./kvm.stderr
+	echo
+	reportfail "KVM (pid=$thepid) exited unexpectedly"
+    }
 }
 
 source "$UTILS_DIR/mount-partition.sh" load
@@ -367,46 +377,52 @@ confirm-sysprep-shutdown()
     return 0
 }
 
-install-windows-from-iso()
+create-floppy-image-with-answer-file()
 {
+    # Copy Autounattend.xml into fresh floppy image
     evalcheck 'ANSFILE="$(cat ./install-params/ANSFILE)"'
-    evalcheck 'WINISO="$(cat ./install-params/WINISO)"'
     evalcheck 'WINKEY="$(cat ./install-params/WINKEY)"'
+    (
+	set -e
+	mkdir -p "./mntpoint"
+	dd if=/dev/zero of="$FLP" bs=1k count=1440
+	mkfs.vfat "$FLP"
+	sudo mount -t vfat -o loop $FLP "./mntpoint"
+	sudo cp "$WIN_CONFIG_DIR/$ANSFILE" "./mntpoint/Autounattend.xml"
+	for fn in "${scriptArray[@]}" FinalStepsForInstall.cmd ; do
+	    sudo cp "$WIN_SCRIPT_DIR/$fn" "./mntpoint/"
+	done
+	sudo cp "$WIN_CONFIG_DIR/Unattend-for-first-boot.xml" "./mntpoint/"
+	sudo cp "$RESOURCES_DIR/$ZABBIXEXE" "./mntpoint/"
+
+	# Here we are inserting code that sets the product key
+	# at the start of the batch file that runs sysprep.
+	# An alternative
+	# would have been to set it in the answer file, but we are trying
+	# to keep the answer file as simple as possible.  Another
+	# alternative seemed to be to use FinalStepsForInstall.cmd, but
+	# for some reason that did not work.
+	# Also adding the call to the zabbix installer here so that the base
+	# version of the run-sysprep.cmd file does not hard code the exact name
+	# of the zabbix installer.
+	{
+	    echo "A:$ZABBIXEXE"
+	    [[ "$WINKEY" != *none* ]] && echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $WINKEY"
+	    echo
+	    cat "$WIN_SCRIPT_DIR/run-sysprep.cmd" # copy in the rest of the batch file script that runs sysprep
+	} | sudo tee ./mntpoint/run-sysprep.cmd  >./run-sysprep.cmd-copy
+    )
+    rc=$?
+    sudo umount "./mntpoint"
+    [ "$rc" = "0" ] || reportfail "Error while trying to create floppy image used when installing Windows"
+}
+
+boot-windows-from-iso()
+{
+    evalcheck 'WINISO="$(cat ./install-params/WINISO)"'
     evalcheck 'INSTALLMAC="$(cat ./install-params/INSTALLMAC)"'
     evalcheck 'INSTALLDATE="$(cat ./install-params/INSTALLDATE)"'
     [ -f "$RESOURCES_DIR/$WINISO" ] || reportfail "Windows install ISO file not found ($WINISO)"
-    # Copy Autounattend.xml into fresh floppy image
-    FLP="./answerfile-floppy.img"
-    dd if=/dev/zero of="$FLP" bs=1k count=1440
-    mkfs.vfat "$FLP"
-    mkdir -p "./mntpoint"
-    sudo mount -t vfat -o loop $FLP "./mntpoint"
-    sudo cp "$WIN_CONFIG_DIR/$ANSFILE" "./mntpoint/Autounattend.xml"
-    for fn in "${scriptArray[@]}" FinalStepsForInstall.cmd ; do
-	sudo cp "$WIN_SCRIPT_DIR/$fn" "./mntpoint/"
-    done
-    sudo cp "$WIN_CONFIG_DIR/Unattend-for-first-boot.xml" "./mntpoint/"
-    sudo cp "$RESOURCES_DIR/$ZABBIXEXE" "./mntpoint/"
-
-    # Here we are inserting code that sets the product key
-    # at the start of the batch file that runs sysprep.
-    # An alternative
-    # would have been to set it in the answer file, but we are trying
-    # to keep the answer file as simple as possible.  Another
-    # alternative seemed to be to use FinalStepsForInstall.cmd, but
-    # for some reason that did not work.
-    # Also adding the call to the zabbix installer here so that the base
-    # version of the run-sysprep.cmd file does not hard code the exact name
-    # of the zabbix installer.
-    {
-	echo "A:$ZABBIXEXE"
-	[[ "$WINKEY" != *none* ]] && echo "cscript //b c:\windows\system32\slmgr.vbs /ipk $WINKEY"
-	echo
-	cat "$WIN_SCRIPT_DIR/run-sysprep.cmd" # copy in the rest of the batch file script that runs sysprep
-    } | sudo tee ./mntpoint/run-sysprep.cmd
-
-    sudo umount "./mntpoint"
-    
     # Create a blank image into which Windows will soon be installed
     rm -f "$WINIMG"
     qemu-img create -f raw "$WINIMG" 30G
@@ -706,9 +722,25 @@ dispatch-command()
 	    update-nextstep 2-create-floppy-image-with-answer-file
 	    ;;
 	2-create-floppy-image-with-answer-file)
+	    create-floppy-image-with-answer-file
+	    instructions="$(
+	      echo "Floppy image created.  Invoke again with -do-next to boot KVM with the Windows installation ISO." )"
 	    update-nextstep 3-boot-with-install-iso-and-floppy
 	    ;;
 	3-boot-with-install-iso-and-floppy)
+	    boot-windows-from-iso
+	    instructions="$(
+              echo "The Windows install ISO should be booting and installing Windows.  The"
+              echo "next step is to confirm that installation was successful, KVM rebooted,"
+              echo "and the 'Ctrl + Alt + Del' screen appeared.  If the 'Answerfile' on"
+              echo "the floppy worked correctly, this should all happen automatically, in"
+              echo "which case all that is necessary is to wait 5 or 10 minutes and verify"
+              echo "that the 'Ctrl + Alt + Del' screen appeared.  If not, it may be"
+              echo "possible to respond to installation dialog boxes to get the"
+              echo "installation to complete.  In either case, view KVM console by doing"
+              echo "'vncviewer :$(cat ./kvm.vnc)'.  When 'Ctrl + Alt + Del' appears,"
+              echo "Invoke this script again using the -done parameter to confirm that"
+              echo "this step is done." )"
 	    update-nextstep 4-M-wait-for-ctrl-alt-delete-screen
 	    ;;
 	4-M-wait-for-ctrl-alt-delete-screen)
