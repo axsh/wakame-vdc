@@ -861,7 +861,7 @@ dispatch-command()
 	24-wait-for-shutdown)
 	    seconds=0
 	    while kill -0 "$(< ./kvm.pid)" 2>/dev/null; do
-		echo "Waited $second seconds for KVM process to exit, will check again in 10 seconds."
+		echo "Waited $seconds seconds for KVM process to exit, will check again in 10 seconds."
 		sleep 10
 		(( seconds += 10 ))
 	    done
@@ -1013,8 +1013,8 @@ read-persistent-values()
 copy-install-params-to-builddir()
 {
     # e.g. ISO2008 and KEY2008 must be set
-    eval '[[ "$ISO'$LABEL'" != *not-set* ]] || reportfail "$ISO'$LABEL' must be set"'
-    eval '[[ "$KEY'$LABEL'" != *not-set* ]] || reportfail "$KEY'$LABEL' must be set (possibly to \"none\")"'
+    eval '[[ "$ISO'$LABEL'" != *not-set* ]] || reportfail "\$ISO'$LABEL' must be set"'
+    eval '[[ "$KEY'$LABEL'" != *not-set* ]] || reportfail "\$KEY'$LABEL' must be set (possibly to \"none\")"'
     mkdir -p install-params
     (
 	set -e
