@@ -91,12 +91,37 @@ commands:
 The `-do-next` parameter tells the build scripts to do the next
 easy-to-automate step.  The `-done` option tells the build scripts
 that the required manual step has been done.  Internally, the scripts
-keep track of what to do next or what to confirm has been done by
+keep track of what to do next (or what to confirm has been done) by
 looking in the file `nextstep` in the build directory.  Step names
 that contain the 3 characters "-M-" must be confirmed.  The contents
 of `nextstep` is automatically updated to keep track of progress.
+The output from each invocation gives feedback about what needs to be
+done to continue to the next installation step.
+
+A formatted log of all the steps and corresponding outputs can be seen
+by following this link[[TODO]].
 
 ### Automatic Image Creation
+
+Sometimes even the manual steps required by ./build-dir-utils.sh can
+be automated.  When this is the case, the whole process of building
+Windows images can be automated.  The Wakame-vdc repository includes a
+script that can do all the manual steps by doing simple pattern
+matching on KVM screen shots and simulating mouse and keyboard actions
+by way of KVM's VNC interface.  An example invocation would be as
+follows:
+
+```bash
+./build-dir-utils.sh builddirs/automatic-build-2008/ 0-init 2008
+export ISO2008=7601.17514.101119-1850_x64fre_server_eval_ja-jp-GRMSXEVAL_JA_DVD.iso
+export KEY2008=none
+./utils/auto-windows-image-build.sh builddirs/automatic-build-2008/ --package
+```
+
+The screen pattern technique depends on the particular ISO file being
+used, so different patterns are used depending on whether a 2008 or
+2012 image is being created.  The script has been tested successfully
+on Japanese trial images from `http://www.microsoft.com/`.
 
 ## Installing Windows Images
 
