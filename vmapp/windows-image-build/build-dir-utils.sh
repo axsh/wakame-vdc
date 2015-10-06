@@ -1040,8 +1040,8 @@ window-image-utils-main()
     parse-initial-params
 
     # update convenience shortcut
-    rm -f lastdir
-    ln -s "$bdir_fullpath" lastdir
+    rm -f "$SCRIPT_DIR/lastdir"
+    ln -s "$bdir_fullpath" "$SCRIPT_DIR/lastdir"
 
     echo "Starting build-dir-utils.sh ($thecommand)"
     echo "    bdir_fullpath=$bdir_fullpath"

@@ -187,133 +187,6 @@ EOF
 ####### TOP-LEVEL CODE
 #######
 
-wait-for-login-completion()
-{
-    while ! kvm-ui-check  after-login-screen; do
-	echo "Waiting for login to finish"
-	sleep 5
-    done
-}
-
-supernext-step-completed()
-{
-    cmd="$(< $build_dir/nextstep)"
-    echo "Doing supernext-step-completed for nextstep=$cmd"
-    case "$cmd" in
-	1-install)
-	    true # nothing to check; always OK to proceed
-	    ;;
-	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
-	    kvm-ui-check  ctrl-alt-del-screen
-	    ;;
-	2-confirm-sysprep-gen0)
-	    true # still at ctr-alt-del screen from last step
-	    ;;
-	3-tar-the-image | 4-package-tgz-image | 5-package-qcow-image)
-	    true # Nothing to wait for before doing these steps.
-	    ;;
-	*)
-	    reportfail "Supernext does not know how to check the status when nextstep=$cmd"
-	    ;;
-    esac
-}
-
-supernext-simulate-user-actions-before()
-{
-    cmd="$(< $build_dir/nextstep)"
-    echo "Doing supernext-simulate-user-actions-before for nextstep=$cmd"
-    case "$cmd" in
-	1-install)
-	    : # no user actions need to be done
-	    ;;
-	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
-	    : # no user actions need to be done
-	    ;;
-	2-confirm-sysprep-gen0)
-	    : # no user actions need to be done
-	    ;;
-	3-tar-the-image | 4-package-tgz-image | 5-package-qcow-image)
-	    : # no user actions need to be done
-	    ;;
-	*)
-	    reportfail "Supernext does not know what to do when nextstep=$cmd"
-	    ;;
-    esac
-}
-
-supernext-simulate-user-actions-after()
-{
-    # (The code here was SLEEPFOR=30 seconds for a while, which seemed
-    # way too conservative and slow.  So it has been changed to 15
-    # seconds.  This should be enough for zabbix installer to move to
-    # the next state)
-    SLEEPFOR=15
-    echo "Doing supernext-simulate-user-actions-after for $cmd"
-    case "$cmd" in  # uses $cmd from previous functions, because $build_dir/nextstep may have changed
-	1b-record-logs-at-ctr-alt-delete-prompt-gen0)
-	    touch $build_dir/press-ctrl-alt-del
-	    kvm-ui-simulate  press-ctrl-alt-del
-
-	    sleep 15
-	    kvm-ui-take-screenshot # for debugging
-	    touch $build_dir/type-a-run-sysprep-return-1
-	    kvm-ui-simulate  type-a-run-sysprep-return # "a:run-sysprep" here it is the password
-	    wait-for-login-completion
-
-	    sleep 2
-	    kvm-ui-take-screenshot # for debugging
-	    touch $build_dir/open-powershell-click
-	    kvm-ui-simulate  open-powershell-click
-
-	    sleep "$SLEEPFOR"
-	    kvm-ui-take-screenshot # for debugging
-	    touch $build_dir/type-a-run-sysprep-return-2
-	    kvm-ui-simulate  type-a-run-sysprep-return # "a:run-sysprep" here it runs the script
-
-	    sleep "$SLEEPFOR"
-	    # The zabbix installer should be showing.  Just press return 5 times with a
-	    # long-enough sleep in between:
-	    kvm-ui-take-screenshot # for debugging
-	    for i in $(seq 1 6); do
-		sleep "$SLEEPFOR"
-		kvm-ui-take-screenshot # for debugging
-		touch $build_dir/press-return-$i
-		kvm-ui-simulate press-return
-	    done
-	    # sysprep should start automatically, and then shutdown
-	    # should happen automatically. The next step will wait for
-	    # the KVM process to disappear and take a few more
-	    # screenshots for debugging.
-	    for i in $(seq 1 6); do
-		sleep 10
-		kvm-ui-take-screenshot # for debugging
-	    done
-	    ;;
-	*)
-	    : # most steps do not require UI actions at the start
-	    ;;
-    esac
-}
-
-supernext-main()
-{
-    evalcheck 'LABEL="$(cat $build_dir/LABEL)"'
-
-    if supernext-step-completed; then
-	# The current step finished!
-	# Do user actions necessary before next step...
-	supernext-simulate-user-actions-before || exit 255
-
-	"$SCRIPT_DIR/../build-dir-utils.sh" "$build_dir" -next
-
-	supernext-simulate-user-actions-after || exit 255
-	return 0
-    else
-	# The current step is still executing
-	return 100
-    fi
-}
-
 # define a wait value for things that seem to complete relatively
 # quickly and with little variation that makes testing the screen
 # contents needlessly complex
@@ -321,20 +194,44 @@ supernext-main()
 
 simulate-manual-action()
 {
+    ## TODO: add more screenshots and debugging output
     build_dir="$1"
     nextstep="$2"
+    set -x
     case "$nextstep" in
-	4-M-wait-for-ctrl-alt-delete-screen) : ;;
-	6-M-press-ctrl-alt-delete-screen) : ;;
-	7-M-wait-for-password-screen) : ;;
-	8-M-enter-password) : ;;
-	9-M-wait-for-login-completion) : ;;
-	10-M-open-powershell-window) : ;;
-	11-M-run-sysprep-script) : ;;
+	4-M-wait-for-ctrl-alt-delete-screen)
+	    while ! kvm-ui-check  ctrl-alt-del-screen; do
+		echo "Waiting for installation to finish"
+		sleep 30
+	    done
+	    ;;
+	6-M-press-ctrl-alt-delete-screen)
+	    kvm-ui-simulate  press-ctrl-alt-del
+	    ;;
+	7-M-wait-for-password-screen)
+	    sleep "$(( defaultwait * 2 ))"
+	    ;;
+	8-M-enter-password)
+	    kvm-ui-simulate  type-a-run-sysprep-return # "a:run-sysprep" here it is the password
+	    ;;
+	9-M-wait-for-login-completion)
+	    while ! kvm-ui-check  after-login-screen; do
+		echo "Waiting for login to finish"
+		sleep 5
+	    done
+	    ;;
+	10-M-open-powershell-window)
+	    kvm-ui-simulate  open-powershell-click
+	    sleep "$(( defaultwait * 2 ))"
+	    ## TODO: copy in code from unmerged pull request to bring window to foreground
+	    ;;
+	11-M-run-sysprep-script)
+	    kvm-ui-simulate  type-a-run-sysprep-return # "a:run-sysprep" here it runs the script
+	    ;;
 	12-M-wait-zabbix-installer-screen1)
 	    sleep "$(( defaultwait * 2 ))" # this one takes a little longer
 	    ;;
-	#### make the rest the same
+	#### make the rest of the zabbix steps the same
 	#13-M-press-return-1) : ;;
 	#14-M-wait-zabbix-installer-screen2) : ;;
 	#15-M-press-return-2) : ;;
@@ -371,8 +268,9 @@ case "$2" in
 esac
 
 [ -f "$build_dir"/active ] || reportfail "second parameter must be an active test/build directory"
-
 cd "$build_dir" || reportfail cd "$build_dir"
+build_dir="$(pwd)" 
+LABEL="$(cat ./LABEL)" || reportfail "Could not read ./LABEL"
 
 while true; do
     nextstep=$(cat "$build_dir/nextstep" 2>/dev/null) || reportfail "Could not read ./nextstep"
@@ -380,10 +278,10 @@ while true; do
     case "$nextstep" in
 	*-M-*)
 	    simulate-manual-action "$build_dir" "$nextstep"
-	    "$SCRIPT_DIR/build-dir-utils.sh" "$build_dir" -done
+	    "$SCRIPT_DIR/../build-dir-utils.sh" "$build_dir" -done
 	    ;;
 	*)
-	    "$SCRIPT_DIR/build-dir-utils.sh" "$build_dir" -do-next
+	    "$SCRIPT_DIR/../build-dir-utils.sh" "$build_dir" -do-next
 	    ;;
     esac
     [ "$target_step" = "--one-step" ] && break
