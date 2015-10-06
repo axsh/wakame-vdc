@@ -314,15 +314,69 @@ supernext-main()
     fi
 }
 
+# define a wait value for things that seem to complete relatively
+# quickly and with little variation that makes testing the screen
+# contents needlessly complex
+[ "$defaultwait" = "" ] && defaultwait=10
+
+simulate-manual-action()
+{
+    build_dir="$1"
+    nextstep="$2"
+    case "$nextstep" in
+	4-M-wait-for-ctrl-alt-delete-screen) : ;;
+	6-M-press-ctrl-alt-delete-screen) : ;;
+	7-M-wait-for-password-screen) : ;;
+	8-M-enter-password) : ;;
+	9-M-wait-for-login-completion) : ;;
+	10-M-open-powershell-window) : ;;
+	11-M-run-sysprep-script) : ;;
+	12-M-wait-zabbix-installer-screen1) : ;;
+	13-M-press-return-1) : ;;
+	14-M-wait-zabbix-installer-screen2) : ;;
+	15-M-press-return-2) : ;;
+	16-M-wait-zabbix-installer-screen3) : ;;
+	17-M-press-return-3) : ;;
+	18-M-wait-zabbix-installer-screen4) : ;;
+	19-M-press-return-4) : ;;
+	20-M-wait-zabbix-installer-screen5) : ;;
+	21-M-press-return-5) : ;;
+	22-M-wait-zabbix-installer-screen6) : ;;
+	23-M-press-return-6) : ;;
+	*)
+	    reportfail "simulate-manual-action not defined for $nextstep"
+	    ;;
+    esac
+}
+
 source "$SCRIPT_DIR/kvm-ui-util.sh" source
 
-case "$1" in
-    -next) # normal case
-	build_dir="${2%/}"
-	[ -f "$build_dir"/active ] || reportfail "second parameter must be an active test/build directory"
-	build_dir="$(cd "$build_dir" ; pwd)"
-	supernext-main
-	;;
-    *) usage
-       ;;
+build_dir="${1%/}"
+
+case "$2" in
+    --stop-at) target_step="$3" ;;
+    --sysprep) target_step="26-make-simple-tar-of-image" ;;
+    --package) target_step="1001-gen*-first-boot" ;;
+    -1 | --one*) target_step="--one-step" ;;
+    *) usage ;;
 esac
+
+[ -f "$build_dir"/active ] || reportfail "second parameter must be an active test/build directory"
+
+cd "$build_dir" || reportfail cd "$build_dir"
+
+while true; do
+    nextstep=$(cat "$build_dir/nextstep" 2>/dev/null) || reportfail "Could not read ./nextstep"
+    [ "$target_step" = "$nextstep" ] && break
+    case "$nextstep" in
+	*-M-*)
+	    simulate-manual-action "$build_dir" "$nextstep"
+	    "$SCRIPT_DIR/build-dir-utils.sh" "$build_dir" -done
+	    ;;
+	*)
+	    "$SCRIPT_DIR/build-dir-utils.sh" "$build_dir" -do-next
+	    ;;
+    esac
+    [ "$target_step" = "--one-step" ] && break
+    sleep 1 # to avoid hogging CPU if something goes wrong
+done
