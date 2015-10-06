@@ -715,14 +715,14 @@ dispatch-command()
 	### commands below are the type that go into ./nextstep, that
 	### is, those that are used to walk through the build process
 	### and the test scenario cycle.
-	0-init)
+	0-init)  ##step-name##
 	    : # now handled as a build case
 	    ;;
-	9999-finalize)
+	9999-finalize)  ##step-name##
 	    echo "Removing the file: $bdir_fullpath/active"
 	    rm "$bdir_fullpath/active"
 	    ;;
-	1-setup-install)
+	1-setup-install)  ##step-name##
 	    echo
 	    copy-install-params-to-builddir
 	    "$UTILS_DIR/check-download-resources.sh" "$LABEL"
@@ -730,13 +730,13 @@ dispatch-command()
 	      echo "Everything should be ready.  Invoke with -do-next to create the floppy image used for Windows installation." )"
 	    update-nextstep 2-create-floppy-image-with-answer-file
 	    ;;
-	2-create-floppy-image-with-answer-file)
+	2-create-floppy-image-with-answer-file)  ##step-name##
 	    create-floppy-image-with-answer-file
 	    instructions="$(
 	      echo "Floppy image created.  Invoke again with -do-next to boot KVM with the Windows installation ISO." )"
 	    update-nextstep 3-boot-with-install-iso-and-floppy
 	    ;;
-	3-boot-with-install-iso-and-floppy)
+	3-boot-with-install-iso-and-floppy)  ##step-name##
 	    boot-windows-from-iso
 	    instructions="$(
               echo "The Windows install ISO should be booting and installing Windows.  The"
@@ -752,113 +752,113 @@ dispatch-command()
               echo "this step is done. (Do not log in yet)" )"
 	    update-nextstep 4-M-wait-for-ctrl-alt-delete-screen
 	    ;;
-	4-M-wait-for-ctrl-alt-delete-screen)
+	4-M-wait-for-ctrl-alt-delete-screen)  ##step-name##
 	    instructions="$(
 	      echo "Invoke again with -do-next to record logs from the new Windows image."
 	      echo "(Do not log in yet)" )"
 	    update-nextstep 5-record-logs-at-ctrl-alt-delete-screen
 	    ;;
-	5-record-logs-at-ctrl-alt-delete-screen)
+	5-record-logs-at-ctrl-alt-delete-screen)  ##step-name##
 	    mount-tar-umount ./logs-001-at-ctrl-alt-delete-screen.tar.gz
 	    instructions="$(
 	      echo "Next, press ctrl-alt-delete, then invoke again with -done." )"
 	    update-nextstep 6-M-press-ctrl-alt-delete-screen
 	    ;;
-	6-M-press-ctrl-alt-delete-screen)
+	6-M-press-ctrl-alt-delete-screen)  ##step-name##
 	    instructions="$(
 	      echo "Wait for password screen to appear, then invoke this script again with -done." )"
 	    update-nextstep 7-M-wait-for-password-screen
 	    ;;
-	7-M-wait-for-password-screen)
+	7-M-wait-for-password-screen)  ##step-name##
 	    instructions="$(
 	      echo "Enter 'a:run-sysprep' as the password. then invoke this script again with -done." )"
 	    update-nextstep 8-M-enter-password
 	    ;;
-	8-M-enter-password)
+	8-M-enter-password)  ##step-name##
 	    instructions="$(
 	      echo "Wait for login to complete, then invoke this script again with -done." )"
 	    update-nextstep 9-M-wait-for-login-completion
 	    ;;
-	9-M-wait-for-login-completion)
+	9-M-wait-for-login-completion)  ##step-name##
 	    instructions="$(
 	      echo "Click on the PowerShell icon.  Make sure the PowerShell windows is in the"
 	      echo "foreground, then invoke this script again with -done." )"
 	    update-nextstep 10-M-open-powershell-window
 	    ;;
-	10-M-open-powershell-window)
+	10-M-open-powershell-window)  ##step-name##
 	    instructions="$(
 	      echo "Type 'a:run-sysprep' in the PowerShell window and press return."
 	      echo "Then invoke this script again with -done." )"
 	    update-nextstep 11-M-run-sysprep-script
 	    ;;
-	11-M-run-sysprep-script)
+	11-M-run-sysprep-script)  ##step-name##
 	    instructions="$(
 	      echo "Wait for Zabbix installer to appear, then invoke this script again with -done." )"
 	    update-nextstep 12-M-wait-zabbix-installer-screen1
 	    ;;
-	12-M-wait-zabbix-installer-screen1)
+	12-M-wait-zabbix-installer-screen1)  ##step-name##
 	    instructions="$(
 	      echo "Press return to select the 'next' button, then invoke this script again with -done." )"
 	    update-nextstep 13-M-press-return-1
 	    ;;
-	13-M-press-return-1)
+	13-M-press-return-1)  ##step-name##
 	    instructions="$(
 	      echo "Wait for the Zabbix license screen to appear, then invoke this script again with -done." )"
 	    update-nextstep 14-M-wait-zabbix-installer-screen2
 	    ;;
-	14-M-wait-zabbix-installer-screen2)
+	14-M-wait-zabbix-installer-screen2)  ##step-name##
 	    instructions="$(
 	      echo "Press return to select the 'accept' button, then invoke this script again with -done." )"
 	    update-nextstep 15-M-press-return-2
 	    ;;
-	15-M-press-return-2)
+	15-M-press-return-2)  ##step-name##
 	    instructions="$(
 	      echo "Wait for the component Zabbix screen to appear, then invoke this script again with -done." )"
 	    update-nextstep 16-M-wait-zabbix-installer-screen3
 	    ;;
-	16-M-wait-zabbix-installer-screen3)
+	16-M-wait-zabbix-installer-screen3)  ##step-name##
 	    instructions="$(
 	      echo "Press return to select the 'next' button, then invoke this script again with -done." )"
 	    update-nextstep 17-M-press-return-3
 	    ;;
-	17-M-press-return-3)
+	17-M-press-return-3)  ##step-name##
 	    instructions="$(
 	      echo "Wait for the configuration Zabbix screen to appear, then invoke this script again with -done." )"
 	    update-nextstep 18-M-wait-zabbix-installer-screen4
 	    ;;
-	18-M-wait-zabbix-installer-screen4)
+	18-M-wait-zabbix-installer-screen4)  ##step-name##
 	    instructions="$(
 	      echo "Press return to select the 'next' button, then invoke this script again with -done." )"
 	    update-nextstep 19-M-press-return-4
 	    ;;
-	19-M-press-return-4)
+	19-M-press-return-4)  ##step-name##
 	    instructions="$(
 	      echo "Wait for the install folder Zabbix screen to appear, then invoke this script again with -done." )"
 	    update-nextstep 20-M-wait-zabbix-installer-screen5
 	    ;;
-	20-M-wait-zabbix-installer-screen5)
+	20-M-wait-zabbix-installer-screen5)  ##step-name##
 	    instructions="$(
 	      echo "Press return to select the 'install' button, then invoke this script again with -done." )"
 	    update-nextstep 21-M-press-return-5
 	    ;;
-	21-M-press-return-5)
+	21-M-press-return-5)  ##step-name##
 	    instructions="$(
 	      echo "Wait for the install finished screen to appear, then invoke this script again with -done." )"
 	    update-nextstep 22-M-wait-zabbix-installer-screen6
 	    ;;
-	22-M-wait-zabbix-installer-screen6)
+	22-M-wait-zabbix-installer-screen6)  ##step-name##
 	    instructions="$(
 	      echo "Press return to select the 'close' button, then invoke this script again with -done." )"
 	    update-nextstep 23-M-press-return-6
 	    ;;
-	23-M-press-return-6)
+	23-M-press-return-6)  ##step-name##
 	    instructions="$(
 	      echo "The Zabbix install should soon finish and the sysprep process should start"
               echo "automatically.  Invoke this script again to have the script wait for sysprep"
 	      echo "to finish and Windows to automatically shutdown." )"
 	    update-nextstep 24-wait-for-shutdown
 	    ;;
-	24-wait-for-shutdown)
+	24-wait-for-shutdown)  ##step-name##
 	    seconds=0
 	    while kill -0 "$(< ./kvm.pid)" 2>/dev/null; do
 		echo "Waited $seconds seconds for KVM process to exit, will check again in 10 seconds."
@@ -870,25 +870,25 @@ dispatch-command()
 	      echo "Invoke again with -do-next to record logs from the new sysprepped Windows image." )"
 	    update-nextstep 25-record-logs-after-sysprep
 	    ;;
-	25-record-logs-after-sysprep)
+	25-record-logs-after-sysprep)  ##step-name##
 	    mount-tar-umount ./logs-002-after-sysprep.tar.gz
 	    instructions="$(
 	      echo "Invoke again with -do-next to make a simple tar.gz archive of the new sysprepped Windows image." )"
 	    update-nextstep 26-make-simple-tar-of-image
 	    ;;
-	26-make-simple-tar-of-image)
+	26-make-simple-tar-of-image)  ##step-name##
 	    simple-tar-of-new-image
 	    instructions="$(
 	      echo "Invoke again with -do-next to make package into a Wakame-vdc tar.gz image." )"
 	    update-nextstep 27-package-to-wakame-tgz-image
 	    ;;
-	27-package-to-wakame-tgz-image)
+	27-package-to-wakame-tgz-image)  ##step-name##
 	    final-seed-image-packaging
 	    instructions="$(
 	      echo "Invoke again with -do-next to make package into a Wakame-vdc qcow2 image." )"
 	    update-nextstep 28-package-to-wakame-qcow2-image
 	    ;;
-	28-package-to-wakame-qcow2-image)
+	28-package-to-wakame-qcow2-image)  ##step-name##
 	    final-seed-image-qcow
 	    instructions="$(
 	      echo "Image building and packaging is now complete."
@@ -897,7 +897,7 @@ dispatch-command()
 	    update-nextstep 1001-gen0-first-boot
 	    ;;
 	
-	1001-gen*-first-boot)
+	1001-gen*-first-boot)  ##step-name##
 	    mount-tar-umount ./before-$cmd.tar.gz
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
 	    echo "1002-confirm-gen$genCount-shutdown-get-pw" >./nextstep
@@ -906,7 +906,7 @@ dispatch-command()
 	      echo "and then wait for it to automatically shutdown and KVM to exit."
 	      echo "Then, do -next to record the logs and decode the random password" )"
 	    ;;
-	1002-confirm-gen*-shutdown-get-pw)
+	1002-confirm-gen*-shutdown-get-pw)  ##step-name##
 	    [ -d /proc/$(< ./kvm.pid) ] && reportfail "KVM still running"
 	    mount-tar-umount ./after-$cmd.tar.gz
 	    get-decode-password | tee ./pw
@@ -914,7 +914,7 @@ dispatch-command()
 	    instructions="$(
 	      echo "Nothing to wait for on this command.  Do -next to start the second boot." )"
 	    ;;
-	1003-gen*-second-boot)
+	1003-gen*-second-boot)  ##step-name##
 	    evalcheck 'thepid="$(cat ./kvm.pid)"'
 	    kill -0 $thepid && reportfail "expecting KVM not to be already running"
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
@@ -923,7 +923,7 @@ dispatch-command()
 	      echo "Be sure to wait for Windows to finish booting and the 'Ctrl + Alt + Del' screen to appear."
 	      echo "Do not log in yet.  First, do -next to record the logs." )"
 	    ;;
-	1003b-record-logs-at-ctr-alt-delete-prompt1-gen*)
+	1003b-record-logs-at-ctr-alt-delete-prompt1-gen*)  ##step-name##
 	    mount-tar-umount ./at-$cmd.tar.gz
 	    echo "1004-confirm-gen$genCount-shutdown" >./nextstep
 	    instructions="$(
@@ -931,7 +931,7 @@ dispatch-command()
 	      echo "After logging in, manually do a shutdown command and wait for KVM to exit."
 	      echo "Then do -next to record the logs and start the third boot." )"
 	    ;;
-	1004-confirm-gen*-shutdown)
+	1004-confirm-gen*-shutdown)  ##step-name##
 	    [ -d /proc/$(< ./kvm.pid) ] && reportfail "KVM still running"
 	    mount-tar-umount ./after-$cmd.tar.gz
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking
@@ -940,7 +940,7 @@ dispatch-command()
 	      echo "Be sure to wait for Windows to finish booting and the 'Ctrl + Alt + Del' screen to appear."
 	      echo "Do not log in yet.  First, do -next to record the logs." )"
 	    ;;
-	1004b-record-logs-at-ctr-alt-delete-prompt2-gen*)
+	1004b-record-logs-at-ctr-alt-delete-prompt2-gen*)  ##step-name##
 	    mount-tar-umount ./at-$cmd.tar.gz
 	    echo "1005-confirm-gen$genCount-sysprep-shutdown" >./nextstep
 	    instructions="$(
@@ -952,7 +952,7 @@ dispatch-command()
 	      echo "and then wait for it to automatically shutdown and KVM to exit."
 	      echo "Then do -next to record the logs" )"
 	    ;;
-	1005-confirm-gen*-sysprep-shutdown)
+	1005-confirm-gen*-sysprep-shutdown)  ##step-name##
 	    confirm-sysprep-shutdown
 	    mount-tar-umount ./after-$cmd.tar.gz
 	    echo "1001-gen$((genCount + 1))-first-boot" >./nextstep

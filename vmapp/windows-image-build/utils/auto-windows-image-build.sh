@@ -31,36 +31,25 @@ trap 'echo "pid=$BASHPID exiting" 1>&2 ; exit 255' TERM  # feel free to speciali
 
 export SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || reportfail
 
-usage() {
+auto-windows-usage() {
     cat <<'EOF'
-    # NOTE: the following is out-of-date:
+#############
+Usage:
+  ./utils/auto-windows-image-build.sh  build/directory/path --sysprep
+      # Runs ./build-dir-utils.sh multiple times and attempts to
+      # automatically do any manual steps necessary.  It stops
+      # calling ./build-dir-utils.sh when sysprep finishes running.
 
-    # This is a big proof-of-concept hack for automating seed image
-    # building.  Currently, this script requires the user to (1)
-    # *carefully* make sure that the previous step finishes before
-    # issuing the "-next" command.  Also, sometimes the user must
-    # manually (2) do some actions in Windows user interface before
-    # issuing "-next".  This new "supernext.sh" scripts attempts to do
-    # these two things.  If it works, then some automatic script can
-    # simpily do a supernext.sh command (instead of
-    # "-next")periodically (maybe every 30 seconds) and a seed image
-    # can be created automatically.
+The path of the build directory must be created first with:
+  ./build-dir-utils.sh build/directory/path 0-init
 
-    # A high-level summary is:
-    # IF whatever is being waited for has not happend, then exit immediately.
-    # ELSE:
-    #    1-Simulate user interaction if necessary alone with
-    #      enough waiting between steps.
-    #    2-Take a screenshot for debugging, confirmation
-    #    3-Continue below with a normal "-next" command.
+Certain environment variables are required to be set, perhaps
+in windows-image-build.ini.
 
-    # The step that checks the wait condition will usually take a
-    # new screenshot.  What is being waiting for is determined from
-    # the file $build_dir/nextstep.
-
-To run, just do:
-
-./supernext.sh -next
+It is also possible to use --package as the second parameter to
+automatically do all steps until machine images packages are built for
+Wakame-vdc. Using --stop-at as the second parameter and some step name
+as the third parameter is also possible. 
 
 EOF
     exit
@@ -197,7 +186,6 @@ simulate-manual-action()
     ## TODO: add more screenshots and debugging output
     build_dir="$1"
     nextstep="$2"
-    set -x
     case "$nextstep" in
 	4-M-wait-for-ctrl-alt-delete-screen)
 	    while ! kvm-ui-check  ctrl-alt-del-screen; do
@@ -260,11 +248,15 @@ source "$SCRIPT_DIR/kvm-ui-util.sh" source
 build_dir="${1%/}"
 
 case "$2" in
-    --stop-at) target_step="$3" ;;
+    --stop-at)
+	target_step="$3"
+	grep '##step-name##' "$SCRIPT_DIR/../build-dir-utils.sh" |
+	    grep -F -e "$target_step" || reportfail "step name not found"
+	;;
     --sysprep) target_step="26-make-simple-tar-of-image" ;;
     --package) target_step="1001-gen*-first-boot" ;;
     -1 | --one*) target_step="--one-step" ;;
-    *) usage ;;
+    *) auto-windows-usage ; exit 255 ;;
 esac
 
 [ -f "$build_dir"/active ] || reportfail "second parameter must be an active test/build directory"
