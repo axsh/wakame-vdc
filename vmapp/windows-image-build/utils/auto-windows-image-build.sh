@@ -331,18 +331,27 @@ simulate-manual-action()
 	9-M-wait-for-login-completion) : ;;
 	10-M-open-powershell-window) : ;;
 	11-M-run-sysprep-script) : ;;
-	12-M-wait-zabbix-installer-screen1) : ;;
-	13-M-press-return-1) : ;;
-	14-M-wait-zabbix-installer-screen2) : ;;
-	15-M-press-return-2) : ;;
-	16-M-wait-zabbix-installer-screen3) : ;;
-	17-M-press-return-3) : ;;
-	18-M-wait-zabbix-installer-screen4) : ;;
-	19-M-press-return-4) : ;;
-	20-M-wait-zabbix-installer-screen5) : ;;
-	21-M-press-return-5) : ;;
-	22-M-wait-zabbix-installer-screen6) : ;;
-	23-M-press-return-6) : ;;
+	12-M-wait-zabbix-installer-screen1)
+	    sleep "$(( defaultwait * 2 ))" # this one takes a little longer
+	    ;;
+	#### make the rest the same
+	#13-M-press-return-1) : ;;
+	#14-M-wait-zabbix-installer-screen2) : ;;
+	#15-M-press-return-2) : ;;
+	#16-M-wait-zabbix-installer-screen3) : ;;
+	#17-M-press-return-3) : ;;
+	#18-M-wait-zabbix-installer-screen4) : ;;
+	#19-M-press-return-4) : ;;
+	#20-M-wait-zabbix-installer-screen5) : ;;
+	#21-M-press-return-5) : ;;
+	#22-M-wait-zabbix-installer-screen6) : ;;
+	#23-M-press-return-6) : ;;
+	*M-wait-zabbix*)
+	    sleep "$defaultwait"
+	    ;;
+	*M-press-return*)
+	    kvm-ui-simulate press-return
+	    ;;
 	*)
 	    reportfail "simulate-manual-action not defined for $nextstep"
 	    ;;
