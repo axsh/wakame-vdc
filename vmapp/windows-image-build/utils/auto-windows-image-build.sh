@@ -201,7 +201,6 @@ EOF
 
 simulate-manual-action()
 {
-    ## TODO: add more screenshots and debugging output
     build_dir="$1"
     nextstep="$2"
     case "$nextstep" in
@@ -288,10 +287,12 @@ LABEL="$(cat ./LABEL)" || reportfail "Could not read ./LABEL"
 while true; do
     nextstep=$(cat "$build_dir/nextstep" 2>/dev/null) || reportfail "Could not read ./nextstep"
     [ "$target_step" = "$nextstep" ] && break
+    touch "$build_dir/doing-$nextstep"
     case "$nextstep" in
 	*-M-*)
 	    simulate-manual-action "$build_dir" "$nextstep"
 	    "$SCRIPT_DIR/../build-dir-utils.sh" "$build_dir" -done
+	    kvm-ui-take-screenshot
 	    ;;
 	*)
 	    "$SCRIPT_DIR/../build-dir-utils.sh" "$build_dir" -do-next
