@@ -14,7 +14,7 @@ module Dcmgr::Models
     subset(:alives, {:deleted_at => nil})
 
     def self.entry_new(account, spec_file)
-      raise ArgumentError, "The account parameter must be an Account. Got '#{account.class}'" unless account.is_a?(Account)
+      argument_type_check(account, Account)
       file = check_spec_file_format(load(spec_file))
       vdcs = self.new
       vdcs.account_id = account.canonical_uuid
@@ -25,7 +25,7 @@ module Dcmgr::Models
     end
 
     def self.load(spec_file)
-      raise ArgumentError, "The spec_file parameter must be a String. Got '#{spec_file.class}'" if !spec_file.is_a?(String)
+      argument_type_check(spec_file, String)
       vdc_spec = begin
                    YAML.load(spec_file)
                  rescue Psych::SyntaxError
