@@ -2,6 +2,7 @@
 
 require 'dcmgr/version'
 require 'ext/time'
+require 'ext/kernel'
 require 'dcmgr/initializer'
 
 module Dcmgr
