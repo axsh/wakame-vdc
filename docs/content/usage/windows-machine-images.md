@@ -103,7 +103,7 @@ by following this link[[TODO]].
 
 ### Automatic Image Creation
 
-Sometimes even the manual steps required by ./build-dir-utils.sh can
+Sometimes even the manual steps required by `./build-dir-utils.sh` can
 be automated.  When this is the case, the whole process of building
 Windows images can be automated.  The Wakame-vdc repository includes a
 script that can do all the manual steps by doing simple pattern
@@ -175,7 +175,7 @@ total 13190744
 -rw-r--r-- 1 triggers triggers          67 Oct  7 20:00 windows2008r2.x86_64.15071.qcow2.md5
 -rw-r--r-- 1 triggers triggers 32212254720 Oct  7 19:52 windows2008r2.x86_64.kvm.md.raw
 -rw-r--r-- 1 triggers triggers  3050428633 Oct  7 20:00 windows2008r2.x86_64.kvm.md.raw.tar.gz
--rw-r--r-- 1 triggers triggers        1025 Oct  7 20:00 windows2008r2.x86_64.kvm.md.raw.tar.gz.install
+-rw-r--r-- 1 triggers triggers        1025 Oct  7 20:00 windows2008r2.x86_64.kvm.md.raw.tar.gz.install.sh
 -rw-r--r-- 1 triggers triggers          73 Oct  7 20:00 windows2008r2.x86_64.kvm.md.raw.tar.gz.md5
 ```
 
@@ -231,5 +231,38 @@ options that are only used for Windows instances:
 /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image modify wmi-windows2008r2 --os-type=windows
 ```
 
+To help with doing the above commands, the `build-dir-utils.sh` script
+also generates a `*.install.sh` script that contains the above
+commands with the correct parameters for the newly generated image.
+Therefore instead of the four commands above, the following can used
+to register the backup object and machine image:
+
+```bash
+bash ./builddirs/automatic-build-2008/final-seed-image/windows2008r2.x86_64.kvm.md.raw.tar.gz.install.sh \
+   backupobject image
+```
+
 ## Launching Windows Instances
+
+The procedure for launching a Windows instance is the same as the
+procedure for OpenVZ instances that was shown in [basic usage
+guide](usage/index.md).  Only three differences need to be mentioned.
+
+The first difference is that the "Instance Spec:" setting on the
+"Launch Instance" dialog window.  It should be set to `kvm.xlarge`,
+because the KVM hypervisor is required, and Windows instances require
+more memory than Linux instances.
+
+The second difference is that the security group should include the
+setting `tcp:3389,3389,ip4:0.0.0.0`.  Port 3389 is used by remote
+desktop, which is the preferred technique for logging into and
+interacting with Windows graphical user interface.  Opening port 3389
+allows remote desktop clients to connect to Windows.
+
+The third difference is that the ssh key is a hard requirement.
+Launching will fail if no key is selected. Although ssh keys are set
+up and selected in the same way as when launching Linux instances, it
+is used differently, as will be explained in the next section.
+
+## Logging into Window Instances
 
