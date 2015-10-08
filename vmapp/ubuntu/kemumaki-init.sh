@@ -31,6 +31,9 @@ trap "
  umount -f ${mnt_path}/proc
  umount -f ${mnt_path}
 " ERR
+
+e2label ${devpath} root
+
 mount ${devpath} ${mnt_path}
 mount --bind /proc ${mnt_path}/proc
 mount --bind /dev  ${mnt_path}/dev
