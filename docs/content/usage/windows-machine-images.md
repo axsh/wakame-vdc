@@ -131,9 +131,10 @@ to use OpenVZ as the hypervisor.  For using KVM, the installation
 procedure is different in only a few ways.
 
 One difference is that it is strongly recommended that installation of
-KVM-based Wakame-vdc be on bare metal and not be nested inside another
-virtual machine.  In some situations, nested virtualization is not
-possible, and even when possible, performance is often very bad.
+KVM-based Wakame-vdc be on bare-metal hardware.  In other words, the
+it should not be nested inside another virtual machine, because nested
+virtualization is sometimes not possible, and even when possible,
+performance is often very bad.
 
 A second difference is that `wakame-vdc-hva-openvz-vmapp-config`
 should not be installed.  Instead, install the following:
@@ -178,6 +179,57 @@ total 13190744
 -rw-r--r-- 1 triggers triggers          73 Oct  7 20:00 windows2008r2.x86_64.kvm.md.raw.tar.gz.md5
 ```
 
+The first step for installing an image is to move its `*raw.tar.gz` file
+to Wakame-vdc's directory for keeping images.
+
+```bash
+sudo mkdir -p /var/lib/wakame-vdc/images # if it does not exist already
+sudo cp builddirs/automatic-build-2008/final-seed-image/windows2008r2.x86_64.kvm.md.raw.tar.gz \
+     /var/lib/wakame-vdc/images
+```
+
+Next, the image needs to be registered as a backup object in
+Wakame-vdc's database.  Asumming an KVM-based installation as
+described above, the following command shows the necessary
+parameters:
+
+```bash
+/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupobject add \
+  --uuid=bo-windows2008r2 \
+  --account-id=a-shpoolxx \
+  --storage-id=bkst-local \
+  --display-name="windows2008r2 30G" \
+  --object-key=windows2008r2.x86_64.kvm.md.raw.tar.gz \
+  --container-format=tgz \
+  --size=32212254720 \
+  --allocation-size=3050428633 \
+  --checksum=17c696598a69760ac1110f1418b1bbea
+```
+
+Next, the backup object is registered as a machine image.
+
+```bash
+/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image add local bo-windows2008r2 \
+  --uuid=wmi-windows2008r2 \
+  --account-id=a-shpoolxx \
+  --arch=x86_64 \
+  --description="windows2008r2.x86_64.kvm.md.raw.tar.gz local" \
+  --file-format=raw \
+  --root-device=label:root \
+  --service-type=std \
+  --display-name="windows2008r2 30G" \
+  --is-public \
+  --is-cacheable
+```
+
+The above two commands are basically the same as commands for
+registering an OpenVZ image.  The next two commands specify
+options that are only used for Windows instances:
+
+```bash
+/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image features wmi-windows2008r2 --virtio
+/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage image modify wmi-windows2008r2 --os-type=windows
+```
 
 ## Launching Windows Instances
 
