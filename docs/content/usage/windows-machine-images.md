@@ -158,6 +158,14 @@ The third difference is that registration of HVA should be changed to do
    --force
 ```
 
+One additional installation is needed for retrieving the initial
+password for logging into a Windows instance.  This is the `mussel`
+utility program, which can be installed with the following:
+
+```bash
+sudo yum install -y --disablerepo=updates wakame-vdc-client-mussel
+```
+
 ## Installing Windows Images
 
 For either partially automatic or fully automatic images builds, the
@@ -266,3 +274,37 @@ is used differently, as will be explained in the next section.
 
 ## Logging into Window Instances
 
+After launching a Windows instance, the Wakame-vdc web GUI will show
+that the instance's state is *initializing*.  This is the same
+behavior as with Linux instances, however, Windows instances stay in
+the *initializing* state for a longer time, because the machine image
+starts out in a sysprepped state and therefore must go through a time
+consuming *first-boot* initialization procedure.
+
+After about 10 minutes (or longer depending on the speed of the host
+machine and its load), the state should change to running.  Now
+Windows starts a second boot, and soon (after about 30 seconds) it
+starts the remote desktop server.  At this point it should be possible
+to log in.  Connecting to the instance's IP address with any remote
+desktop client should show the Windows *cltr-alt-delete* screen.  To
+log in to a new instance for the first time, use the user name
+*Administrator* and the initial password.  How to find out what the
+initial password is is explained next.
+
+During first-boot, a special Wakame-vdc initialization script
+generates a random initial password and sets it to the *Administrator*
+account.  Then the password is encrypted using the ssh key and put in
+the Wakame-vdc database.  Therefore, only a user with the private part
+of the ssh key pair can learn the password.
+
+The `mussel` program can be invoked on the machine hosting Wakame as
+shown here:
+
+```bash
+$ mussel instance decrypt_password i-mrdw5pcf ssh-cbixzm91.pem
+wvh?^A&}&}
+```
+
+The instance uuid is the third parameters and the fourth parameter is
+the private part of the ssh key selected when launching the instance.
+For this example, the password is `wvh?^A&}&}`.
