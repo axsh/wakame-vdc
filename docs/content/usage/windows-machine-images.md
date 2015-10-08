@@ -123,7 +123,61 @@ used, so different patterns are used depending on whether a 2008 or
 2012 image is being created.  The script has been tested successfully
 on Japanese trial images from `http://www.microsoft.com/`.
 
+## Wakame-vdc with KVM
+
+Windows on Wakame-vdc requires that KVM be used as the hypervisor.
+The current [installation guide](../installation.md) only explains how
+to use OpenVZ as the hypervisor.  For using KVM, the installation
+procedure is different in only a few ways.
+
+One difference is that it is strongly recommended that installation of
+KVM-based Wakame-vdc be on bare metal and not be nested inside another
+virtual machine.  In some situations, nested virtualization is not
+possible, and even when possible, performance is often very bad.
+
+A second difference is that `wakame-vdc-hva-openvz-vmapp-config`
+should not be installed.  Instead, install the following:
+
+```bash
+sudo yum install -y wakame-vdc-hva-kvm-vmapp-config
+```
+
+The third difference is that registration of HVA should be changed to do
+`--hypervisor kvm`:
+
+```bash
+/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage host add hva.demo1 \
+   --uuid hn-demo1 \
+   --display-name "demo HVA 1" \
+   --cpu-cores 100 \
+   --memory-size 10240 \
+   --hypervisor kvm \
+   --arch x86_64 \
+   --disk-space 102400 \
+   --force
+```
+
 ## Installing Windows Images
+
+For either partially automatic or fully automatic images builds, the
+resulting Wakame-vdc machine images are place in the build directory
+in a sub-directory named `final-seed-image`.  The listing below shows
+that both qcow2.gz and raw.tar.gz versions of the images were made.
+In this section we will explain how to install the raw.tar.gz version.
+
+```bash
+$ ls -l builddirs/automatic-build-2008/final-seed-image/
+total 13190744
+-rw-r--r-- 1 triggers triggers          47 Oct  7 19:43 win-2008.raw.md5
+-rw-r--r-- 1 triggers triggers  3055007405 Oct  7 20:00 windows2008r2.x86_64.15071.qcow2.gz
+-rw-r--r-- 1 triggers triggers          70 Oct  7 20:07 windows2008r2.x86_64.15071.qcow2.gz.md5
+-rw-r--r-- 1 triggers triggers          67 Oct  7 20:00 windows2008r2.x86_64.15071.qcow2.md5
+-rw-r--r-- 1 triggers triggers 32212254720 Oct  7 19:52 windows2008r2.x86_64.kvm.md.raw
+-rw-r--r-- 1 triggers triggers  3050428633 Oct  7 20:00 windows2008r2.x86_64.kvm.md.raw.tar.gz
+-rw-r--r-- 1 triggers triggers        1025 Oct  7 20:00 windows2008r2.x86_64.kvm.md.raw.tar.gz.install
+-rw-r--r-- 1 triggers triggers          73 Oct  7 20:00 windows2008r2.x86_64.kvm.md.raw.tar.gz.md5
+```
+
 
 ## Launching Windows Instances
 
