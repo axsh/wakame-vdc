@@ -13,113 +13,130 @@ module Dcmgr::Models
 
     subset(:alives, {:deleted_at => nil})
 
+    include Dcmgr::Constants::VirtualDataCenterSpec
+
     def validate
       super
 
       f = self.file
 
-      %w(vdc_name vdc_spec instance_spec).each do |param|
-        errors.add(:file, "Undefined requried parameter: #{param}") if f[param].nil?
+      validates_required_params_include(VDCS_PARAMS, file)
+      validates_params_type(String, file[VDCS_PARAMS_STRING])
+      VDCS_PARAMS_HASH.each do |param|
+        validates_params_type(Hash, file[param])
+      end
 
-        next if param == 'vdc_name'
+      if file['ssh_key_id']
+        validates_ssh_key(file['ssh_key_id'])
+      end
 
-        if f[param] && !f[param].is_a?(Hash)
-          errors.add(:file, "Invalid required parameter: #{param}") if !f[param].is_a?(Hash)
+      if file['vifs']
+        validates_vifs(file['vifs'])
+      end
+
+      return if errors.length > 0
+
+      file['instance_spec'].each do |k, v|
+        validates_required_params_include(VDCS_INSTANCE_PARAMS, v)
+        VDCS_INSTANCE_PARAMS_STRING.each do |param|
+          validates_params_type(String, v[param])
         end
-      end
+        VDCS_INSTANCE_PARAMS_INT.each do |param|
+          validates_params_type(Integer, v[param])
+          if v[param]
+            validates_params_min_length(v[param])
+          end
+        end
 
-      if f['ssh_key_id']
-        errors.add(:file, "Unknown ssh key: #{f['ssh_key_id']}") if !ssh_key_pair?(f['ssh_key_id'])
-      end
+        if v['host_node_group']
+          validates_host_node_group(v['host_node_group'])
+        end
 
-      if f['vifs']
-        begin
-          Dcmgr::Scheduler::Network.check_vifs_parameter_format(f['vifs'])
-        rescue
-          errors.add(:file, "Invalid parameter: #{f['vifs']}")
+        if v['hypervisor']
+          validates_hypervisor(v['hypervisor'])
+        end
+
+        if v['quota_weight']
+          validates_params_type(Numeric, v['quota_weight'])
+          validates_params_min_length(v['quota_weight'])
         end
       end
 
       return if errors.length > 0
 
-      f['instance_spec'].each do |k, v|
-        %w(cpu_cores memory_size host_node_group hypervisor).each do |param|
-          errros.add(:file, "Undefined requried parameter: instance_spec[#{k}][#{param}]") if v[param].nil?
-        end
-
-        if v['cpu_cores']
-          if v['cpu_cores'] <= 0
-            errors.add(:file, "It can not be less than zero: instance_spec[#{k}]['cpu_cores']")
-          end
-        end
-
-        if v['memory_size']
-          if v['memory_size'] <= 0
-            errors.add(:file, "It can not be less than zero: instance_spec[#{k}]['memory_size']")
-          end
-        end
-
-        if v['host_node_group']
-          if !host_node_group?(v['host_node_group'])
-            errors.add(:file, "Unknown host node group: instance_spec[#{k}]['host_node_group']")
-          end
-        end
-
-        if v['hypervisor']
-          if M::HostNode.online_nodes.filter(:hypervisor=>v['hypervisor']).empty?
-            errors.add(:file, "Unknown/Inactive hypervisor: instance_spec[#{k}]['hypervisor']")
-          end
-        end
-
-        if v['quota_weight']
-          if v['quota_weight'] <= 0
-            errors.add(:file, "It can not be less than zero: instance_spec[#{k}]['quota_weight']")
-          end
-        end
-      end
-
       f['vdc_spec'].each do |k, v|
-        %w(instance_spec image_id).each do |param|
-          if v[param].nil?
-            errors.add(:file, "Undefined requried parameter: vdc_spec[#{k}][#{param}]")
-          end
+        validates_required_params_include(VDCS_SPEC_PARAMS, v)
+        VDCS_SPEC_PARAMS.each do |param|
+          validates_params_type(String, v[param])
         end
 
         if v['instance_spec']
-          if !f['instance_spec'].keys.member?(v['instance_spec'])
-            errors.add(:file, "Unknown instance spec: vdc_spec[#{k}]['instance_spec']")
-          end
+          validates_instance_spec(v['instance_spec'])
         end
 
         if v['image_id']
-          if !images?(v['image_id'])
-            errors.add(:file, "Unknown image id: vdc_spec[#{k}]['image_id']")
-          end
+          validates_image(v['image_id'])
         end
 
         if v['ssh_key_id']
-          if !ssh_key_pair?(v['ssh_key_id'])
-            errors.add(:file, "Unknown ssh key: #{v['ssh_key_id']}")
-          end
+          validates_ssh_key(v['ssh_key_id'])
         end
 
         if v['vifs']
-          begin
-            Dcmgr::Scheduler::Network.check_vifs_parameter_format(v['vifs'])
-          rescue
-            errors.add(:file, "Invalid parameter: #{v['vifs']}")
-          end
-        end
-
-        if f['ssh_key_id'].nil? && v['ssh_key_id'].nil?
-          errors.add(:file, "Undefinded parameter ssh_key_id")
-        end
-
-        if f['vifs'].nil? && v['vifs'].nil?
-          errors.add(:file, "Undefinded parameter vifs")
+          validates_vifs(v['vifs'])
         end
       end
 
+    end
+
+    def validates_required_params_include(params, file)
+      params.each do |param|
+        errors.add(:file, "Undefined requried parameter: #{param}") if file[param].blank?
+      end
+    end
+
+    def validates_params_type(type, param)
+      errors.add(:file, "Invalid required parameter: #{param}") if !param.is_a?(type)
+    end
+
+    def validates_params_min_length(param)
+      errors.add(:file, "It can not be less than zero: #{param}") if param.to_i <= 0
+    end
+
+    def validates_ssh_key(ssh_key_id)
+      errors.add(:file, "Unknown ssh key: #{ssh_key_id}") if !check_ssh_key(ssh_key_id)
+    end
+
+    def validates_vifs(vifs)
+      begin
+        Dcmgr::Scheduler::Network.check_vifs_parameter_format(vifs)
+      rescue
+        errors.add(:file, "Invalid parameter: #{vifs}")
+      end
+    end
+
+    def validates_host_node_group(host_node_group)
+      if !check_host_node_group(host_node_group)
+        errors.add(:file, "Unknown host node group: #{host_node_group}")
+      end
+    end
+
+    def validates_hypervisor(hypervisor)
+      if M::HostNode.online_nodes.filter(:hypervisor=>hypervisor).empty?
+        errors.add(:file, "Unknown/Inactive hypervisor: #{hypervisor}")
+      end
+    end
+
+    def validates_instance_spec(instance_spec)
+      if !file['instance_spec'].keys.member?(instance_spec)
+        errors.add(:file, "Unknown instance spec: #{instance_spec}")
+      end
+    end
+
+    def validates_image(image_id)
+      if !check_image(image_id)
+        errors.add(:file, "Unknown image id: #{image_id}")
+      end
     end
 
     def self.entry_new(account, &blk)
@@ -171,17 +188,17 @@ module Dcmgr::Models
       self.save_changes
     end
 
-    def ssh_key_pair?(ssh_key_id)
+    def check_ssh_key(ssh_key_id)
       ssh_key_id = SshKeyPair.dataset.alives.filter(:uuid=>SshKeyPair.trim_uuid(ssh_key_id)).first
       ssh_key_id.nil? ? false : true
     end
 
-    def host_node_group?(tag_id)
+    def check_host_node_group(tag_id)
       host_node_group = Dcmgr::Tags::HostNodeGroup[tag_id]
       host_node_group.nil? ? false : true
     end
 
-    def images?(image_id)
+    def check_image(image_id)
       image = Image.dataset.alives.filter(:uuid=>Image.trim_uuid(image_id)).first
       image.nil? ? false : true
     end

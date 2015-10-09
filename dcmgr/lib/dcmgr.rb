@@ -34,6 +34,7 @@ module Dcmgr
     autoload :HostNode, 'dcmgr/constants/host_node'
     autoload :StorageNode, 'dcmgr/constants/storage_node'
     autoload :Alarm, 'dcmgr/constants/alarm'
+    autoload :VirtualDataCenterSpec, 'dcmgr/constants/virtual_data_center_spec'
   end
   Const = Constants
 
