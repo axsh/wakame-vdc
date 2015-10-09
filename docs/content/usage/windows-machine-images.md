@@ -101,7 +101,7 @@ track of progress.  The output from each invocation gives feedback
 about what needs to be done to continue to the next installation step.
 
 A formatted log of all the steps and corresponding outputs can be seen
-by following this link[[TODO]].
+by following this link: [Example Log](./example-build-log.md).
 
 ### Automatic Image Creation
 

@@ -22,6 +22,7 @@ pages:
   - 'Basics': 'usage/index.md'
   - 'Custom Machine Images': 'usage/custom-machine-images.md'
   - 'Windows Machine Images': 'usage/windows-machine-images.md'
+  - 'Example Build Log': 'usage/example-build-log.md'
   - 'Instance Backup': 'instance-backup/index.md'
   - 'Security Groups': 'security-groups/index.md'
 #- Instance Backup 
