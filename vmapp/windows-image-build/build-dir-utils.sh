@@ -359,6 +359,7 @@ tar-up-windows-logs()
     [ -d mntpoint/Windows ] || reportfail "Windows disk image not mounted"
     # eval is needed to deal with the quotes needed for spaces in a file name
     echo "Making tar file of log files from Windows image --> $target"
+    echo '(Error messages for "No such file..." are normal)'
     eval tar czf "$target" -C mntpoint "${windowsLogs[@]}"
     cp $(pwd)/qemu-vlan0.pcap "${target%.tar.gz}.pcap" 2>/dev/null
 }
