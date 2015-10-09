@@ -54,12 +54,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_center_specs' do
 
     if params['file']
       begin
-        file = M::VirtualDataCenterSpec.load(params['file'])
-        vdcs.name = file['vdc_name']
-        vdcs.file = file
-        vdcs.save_changes
-      rescue => e
-        raise E::InvalidParameter, e
+        case file = M::VirtualDataCenterSpec.load(params['file'])
+        when Hash
+          vdcs.name = file['vdc_name']
+          vdcs.file = file
+          vdcs.save_changes
+        else
+          raise E::InvalidParameter, params['file']
+        end
+      rescue M::VirtualDataCenterSpec::YamlLoadError, Sequel::ValidationFailed => e
+        raise E::InvalidVirtualDataCenterSpec, e.message
       end
     end
 
