@@ -5,9 +5,9 @@ specifically for supporting Windows, both for creating Windows seed image and fo
 
 For creating seed images, certain steps are necessary to make installations of Windows compatible with Wakame-vdc.  The main requirement is that virtio drivers must be installed, because Windows instances are always run in KVM virtual machines.  To make working with multiple instances possible, a special initialization script must also be installed, so that Wakame-vdc can coordinate with the Windows OS.
 
-When launching new instances, Microsoft requires that its Windows sysprep utility be used.  This requirement affects both seed image creation and how instances are launched and backed up.  In addition, there are various configuration options that can be set when starting Windows instances, such as initial passwords, firewall options, product keys, and automatic activations.
+When launching new instances, Microsoft requires that its Windows sysprep utility be used.  This requirement affects both seed image creation and how instances are launched and backed up.  In addition, there are various configuration options that can be set when starting Windows instances, such as initial passwords, firewall options, product keys, and automatic activation.
 
-In order to make getting started with Windows as easy as possible, Wakame-vdc includes scripts that can create working Windows seed images automatically.  The only preparation necessary is to download a Windows installation ISO image from microsoft.com, or copy one from a Windows Installation DVD.  The seed images are created using a default configuration that should work well for many Windows-on-Wakame-vdc applications.  The details of the scripts provide a known-to-work example that should greatly accelerate the efforts of users to need to work out customized configurations.
+In order to make getting started with Windows as easy as possible, Wakame-vdc includes scripts that can create working Windows seed images automatically.  The only preparation necessary is to download a Windows installation ISO image from microsoft.com, or copy one from a Windows Installation DVD.  The seed images are created using a default configuration that should work well for many Windows-on-Wakame-vdc applications.  The details of the scripts provide a known-to-work example that should greatly accelerate the efforts of users who need to work out customized configurations.
 
 ## Default Configuration
 
@@ -38,7 +38,7 @@ We do this with the general purpose `build-dir-utils.sh` script.
 ```
 
 The directory `builddirs` should already exist as part of the Wakame-vdc
-repository.  The above command should have created a new directory
+repository.  The above command should create a new directory
 named `manual-build-2008`.  The third parameter (2008, in the example)
 is required and specifies which version of Windows will be installed.
 
@@ -57,8 +57,10 @@ export KEY2008=none
 
 In addition, the `1-setup-install` step checks to make sure all needed
 resources are in the `./resources/` directory.  If any are missing, an
-attempt will be made to download them.  The settings from this step
-will be used through the rest of the image installation process.
+attempt will be made to download them.  The settings from
+`windows-image-build.ini` and environment variables that are gathered
+during this step will be used through the rest of the image
+installation process.
 
 ### Partially Automatic Image Creation
 
@@ -92,11 +94,11 @@ The `-do-next` parameter tells the build scripts to do the next
 easy-to-automate step.  The `-done` option tells the build scripts
 that the required manual step has been done.  Internally, the scripts
 keep track of what to do next (or what to confirm has been done) by
-looking in the file `nextstep` in the build directory.  Step names
-that contain the 3 characters "-M-" must be confirmed.  The contents
-of `nextstep` is automatically updated to keep track of progress.
-The output from each invocation gives feedback about what needs to be
-done to continue to the next installation step.
+looking in the file `nextstep` in the build directory.  Step that must
+be confirmed always contain the 3 characters "-M-" in their step
+names.  The contents of `nextstep` is automatically updated to keep
+track of progress.  The output from each invocation gives feedback
+about what needs to be done to continue to the next installation step.
 
 A formatted log of all the steps and corresponding outputs can be seen
 by following this link[[TODO]].
@@ -132,9 +134,9 @@ procedure is different in only a few ways.
 
 One difference is that it is strongly recommended that installation of
 KVM-based Wakame-vdc be on bare-metal hardware.  In other words, the
-it should not be nested inside another virtual machine, because nested
-virtualization is sometimes not possible, and even when possible,
-performance is often very bad.
+Wakame-vdc installation should not be nested inside another virtual
+machine, because nested virtualization is sometimes not possible, and
+even when possible, performance is often very bad.
 
 A second difference is that `wakame-vdc-hva-openvz-vmapp-config`
 should not be installed.  Instead, install the following:
@@ -197,9 +199,10 @@ sudo cp builddirs/automatic-build-2008/final-seed-image/windows2008r2.x86_64.kvm
 ```
 
 Next, the image needs to be registered as a backup object in
-Wakame-vdc's database.  Asumming an KVM-based installation as
-described above, the following command shows the necessary
-parameters:
+Wakame-vdc's database.  Assuming an KVM-based installation as
+described above, the following command shows the necessary parameters.
+Note that the parameter values will be different for each specific
+image.
 
 ```bash
 /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupobject add \
@@ -240,10 +243,10 @@ options that are only used for Windows instances:
 ```
 
 To help with doing the above commands, the `build-dir-utils.sh` script
-also generates a `*.install.sh` script that contains the above
-commands with the correct parameters for the newly generated image.
-Therefore instead of the four commands above, the following can used
-to register the backup object and machine image:
+also generates an `*.install.sh` script that contains the above
+commands with the correct parameter values for the newly generated
+image.  Therefore instead of the four commands above, the following
+can used to register the backup object and machine image:
 
 ```bash
 bash ./builddirs/automatic-build-2008/final-seed-image/windows2008r2.x86_64.kvm.md.raw.tar.gz.install.sh \
@@ -252,19 +255,19 @@ bash ./builddirs/automatic-build-2008/final-seed-image/windows2008r2.x86_64.kvm.
 
 ## Launching Windows Instances
 
-The procedure for launching a Windows instance is the same as the
-procedure for OpenVZ instances that was shown in [basic usage
-guide](usage/index.md).  Only three differences need to be mentioned.
+The procedure for launching a Windows instance is almost the same as
+the procedure for OpenVZ instances that is shown in [basic usage
+guide](./index.md).  Only three differences need to be mentioned.
 
 The first difference is that the "Instance Spec:" setting on the
 "Launch Instance" dialog window.  It should be set to `kvm.xlarge`,
-because the KVM hypervisor is required, and Windows instances require
+because the KVM hypervisor is required and Windows instances require
 more memory than Linux instances.
 
 The second difference is that the security group should include the
 setting `tcp:3389,3389,ip4:0.0.0.0`.  Port 3389 is used by remote
 desktop, which is the preferred technique for logging into and
-interacting with Windows graphical user interface.  Opening port 3389
+interacting with the Windows graphical user interface.  Opening port 3389
 allows remote desktop clients to connect to Windows.
 
 The third difference is that the ssh key is a hard requirement.
@@ -297,8 +300,11 @@ account.  Then the password is encrypted using the ssh key and put in
 the Wakame-vdc database.  Therefore, only a user with the private part
 of the ssh key pair can learn the password.
 
-The `mussel` program can be invoked on the machine hosting Wakame as
-shown here:
+Currently, the easiest way to retrieve the initial password is by
+using the `mussel` utility.  It has a feature that fetches the
+encrypted password from the database and decrypts it with the given
+key.  It can be invoked on the machine hosting Wakame-vdc as shown
+here:
 
 ```bash
 $ mussel instance decrypt_password i-mrdw5pcf ssh-cbixzm91.pem
@@ -306,5 +312,8 @@ wvh?^A&}&}
 ```
 
 The instance uuid is the third parameters and the fourth parameter is
-the private part of the ssh key selected when launching the instance.
-For this example, the password is `wvh?^A&}&}`.
+the private part of the ssh key that was selected when launching the
+instance.  For this example, the password is `wvh?^A&}&}`.
+
+In the future, functionality to retrieve the initial random password will
+be added to the Wakame-vdc web GUI.
