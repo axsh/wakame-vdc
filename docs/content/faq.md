@@ -2,7 +2,7 @@
 
 ## What operating system will Wakame-vdc run on?
 
-We are officially supporting Centos 6.6 x86 64 bit. It is possible that it'll run on other operating systems as well but this is the only one we're testing on. All current production environments also run on it.
+We are officially supporting Centos 6 x86 64 bit. It is possible that it'll run on other operating systems as well but this is the only one we're testing on. All current production environments also run on it.
 
 ## Is Wakame-vdc currently being used in production anywhere?
 
