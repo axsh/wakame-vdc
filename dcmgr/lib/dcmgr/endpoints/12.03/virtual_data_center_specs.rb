@@ -27,11 +27,22 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_center_specs' do
   # Create virtual_data_center_spec
   # param :file, string, required
   post do
+    raise E::UndefinedRequiredParameter, 'file' if params['file'].nil?
+
     begin
-      vdcs = M::VirtualDataCenterSpec.entry_new(@account, params['file'])
-    rescue => e
-      raise E::InvalidParameter, e
+      vdcs = M::VirtualDataCenterSpec.entry_new(@account) do |spec|
+        case file = M::VirtualDataCenterSpec.load(params['file'])
+        when Hash
+          spec.name = file['vdc_name']
+          spec.file = file
+        else
+          raise E::InvalidParameter, params['file']
+        end
+      end
+    rescue M::VirtualDataCenterSpec::YamlLoadError, Sequel::ValidationFailed => e
+      raise E::InvalidVirtualDataCenterSpec, e.message
     end
+
     respond_with(R::VirtualDataCenterSpec.new(vdcs).generate)
   end
 
