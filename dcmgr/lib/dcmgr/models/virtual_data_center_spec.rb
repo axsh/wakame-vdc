@@ -156,8 +156,8 @@ module Dcmgr::Models
       self.file['vdc_spec'].each { |k, v|
         instance_params << {
           'image_id' => v['image_id'],
-          'ssh_key_id' => v['ssh_key_id'],
-          'vifs' => v['vifs'],
+          'ssh_key_id' => v['ssh_key_id'] || self.file['ssh_key_id'],
+          'vifs' => v['vifs'] || self.file['vifs'],
           'user_data' => YAML.dump(v['user_data']),
         }.merge(self.file['instance_spec'][v['instance_spec']])
       }

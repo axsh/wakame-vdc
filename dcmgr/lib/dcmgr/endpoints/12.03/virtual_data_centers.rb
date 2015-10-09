@@ -27,12 +27,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
   # Create virtual_data_center
   # param :vdc_spec, string, required
   post do
+    raise E::UndefinedRequiredParameter, 'vdc_spec' if params['vdc_spec'].nil?
+
     vdc = M::VirtualDataCenter.entry_new(@account) do |vdc|
-      case M::VirtualDataCenterSpec.load(params['vdc_spec'])
+      case file = M::VirtualDataCenterSpec.load(params['vdc_spec'])
       when String
         vdcs = M::VirtualDataCenterSpec[params['vdc_spec']]
       when Hash
-        vdcs = M::VirtualDataCenterSpec.entry_new(@account, params['vdc_spec'])
+        vdcs = M::VirtualDataCenterSpec.entry_new(@account) do |spec|
+          spec.name = file['vdc_name']
+          spec.file = file
+        end
       else
         raise E::InvalidParameter, params['vdc_spec']
       end
