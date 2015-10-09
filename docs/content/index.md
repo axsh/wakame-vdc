@@ -28,7 +28,7 @@ Don't hesitate to let us know if you also use Wakame-vdc.
 
 This is the fastest most painless way to get yourself a working Wakame-vdc environment to play with. Just download the image, follow the VirtualBox setup steps and you're good to go.
 
-[Wakame-vdc install guide on a single Centos 6.6 host](installation.md)
+[Wakame-vdc install guide on a single Centos 6 host](installation.md)
 
 This guide will teach you how to install Wakame-vdc on your own server. The end result will be similar to the VirtualBox image but since you're installing everything yourself, you will learn much more about the different components that make up Wakame-vdc.
 

@@ -33,8 +33,8 @@ Developing Wakame-VDC RPMs
 
     $ [ -d ~/rpmbuild/BUILD/ ] || mkdir -p ~/rpmbuild/BUILD/
     $ cd ~/rpmbuild/BUILD/
-    $ git clone git://github.com/axsh/wakame-vdc.git wakame-vdc-16.0
-    $ cd wakame-vdc-16.0
+    $ git clone git://github.com/axsh/wakame-vdc.git wakame-vdc-16.1
+    $ cd wakame-vdc-16.1
 
 ### Modifying files.
 

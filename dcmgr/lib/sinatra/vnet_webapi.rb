@@ -2,6 +2,8 @@
 
 require 'sinatra/base'
 require 'vnet_api_client'
+require 'json'
+require 'yaml'
 
 module Sinatra
   module VnetWebapi
@@ -14,10 +16,24 @@ module Sinatra
       after do
         return if not request.request_method == "POST"
 
+        r = if self.response.header["Content-Type"].include?("application/json")
+              ::JSON.parse(self.response.body.first).symbolize_keys
+            elsif self.response.header["Content-Type"].include?("text/yaml")
+              ::YAML.load(self.response.body.first).first.symbolize_keys
+            else
+              nil
+            end
+
+        return if r.nil?
+
         if request.path_info == "/networks"
-          VNetAPIClient::Network.create(display_name: "test",
-                            ipv4_network: "192.168.100.0",
-                            ipv4_prefix: 24)
+          VNetAPIClient::Network.create(
+            uuid: r[:uuid],
+            display_name: r[:uuid],
+            ipv4_network: params[:network],
+            ipv4_prefix: params[:prefix],
+            network_mode: 'virtual'
+          )
         end
       end
     end

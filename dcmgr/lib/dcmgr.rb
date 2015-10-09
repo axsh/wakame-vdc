@@ -156,11 +156,10 @@ module Dcmgr
     autoload :EventHook, 'dcmgr/node_modules/event_hook'
     autoload :JobQueueProxy, 'dcmgr/node_modules/job_queue_proxy'
     autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
-    autoload :ResourceCollector, 'dcmgr/node_modules/resource_collector'
-    autoload :Monitor, 'dcmgr/node_modules/monitor'
     autoload :HaManager, 'dcmgr/node_modules/ha_manager'
     autoload :AlarmCollector, 'dcmgr/node_modules/alarm_collector'
     autoload :AlarmConfigUpdater, 'dcmgr/node_modules/alarm_config_updater'
+    autoload :VnetCollector, 'dcmgr/node_modules/vnet_collector'
   end
 
   module Helpers
@@ -423,12 +422,6 @@ module Dcmgr
   end
 
   autoload :TextLog, 'dcmgr/text_log'
-
-  module Monitor
-    autoload :ResourceCapture, 'dcmgr/monitor/resource_capture'
-    autoload :Notification, 'dcmgr/monitor/notification'
-  end
-
 end
 
 module Ext
