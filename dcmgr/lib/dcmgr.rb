@@ -2,6 +2,7 @@
 
 require 'dcmgr/version'
 require 'ext/time'
+require 'ext/kernel'
 require 'dcmgr/initializer'
 
 module Dcmgr
@@ -33,6 +34,7 @@ module Dcmgr
     autoload :HostNode, 'dcmgr/constants/host_node'
     autoload :StorageNode, 'dcmgr/constants/storage_node'
     autoload :Alarm, 'dcmgr/constants/alarm'
+    autoload :VirtualDataCenterSpec, 'dcmgr/constants/virtual_data_center_spec'
   end
   Const = Constants
 
@@ -100,7 +102,6 @@ module Dcmgr
     autoload :Alarm, 'dcmgr/models/alarm'
     autoload :VirtualDataCenter, 'dcmgr/models/virtual_data_center'
     autoload :VirtualDataCenterSpec, 'dcmgr/models/virtual_data_center_spec'
-    autoload :VirtualDataCenterInstance, 'dcmgr/models/virtual_data_center_instance'
 
     require 'dcmgr/models/log_storage/base'
     module LogStorage
@@ -422,13 +423,6 @@ module Dcmgr
   end
 
   autoload :TextLog, 'dcmgr/text_log'
-
-  require 'dcmgr/catalogs'
-  module Catalogs
-    autoload :LoadBalancer, 'dcmgr/catalogs'
-    autoload :VirtualDataCenter, 'dcmgr/catalogs'
-  end
-
 end
 
 module Ext

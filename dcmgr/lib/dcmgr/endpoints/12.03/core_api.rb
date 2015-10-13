@@ -79,6 +79,21 @@ module Dcmgr::Endpoints::V1203
       item
     end
 
+    def find_by_uuid_alives(model_class, uuid)
+      if model_class.is_a?(Symbol)
+        model_class = Dcmgr::Models.const_get(model_class, false)
+      end
+      raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
+      item = model_class.dataset.alives.filter(:uuid=>model_class.trim_uuid(uuid)).first || raise(E::UnknownUUIDResource, uuid.to_s)
+
+      if item.class < M::AccountResource
+        if @account && item.account_id != @account.canonical_uuid
+          raise E::UnknownUUIDResource, uuid.to_s
+        end
+      end
+      item
+    end
+
     def find_by_public_uuid(model_class, uuid)
       if model_class.is_a?(Symbol)
         model_class = Dcmgr::Models.const_get(model_class, false)
@@ -243,5 +258,6 @@ module Dcmgr::Endpoints::V1203
     load_namespace('jobs')
     load_namespace('alarms')
     load_namespace('virtual_data_centers')
+    load_namespace('virtual_data_center_specs')
   end
 end
