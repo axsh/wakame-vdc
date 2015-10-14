@@ -267,7 +267,7 @@ This image is compressed with gzip to save space. In order to properly manage it
 
 ```bash
 backupobject add \
-  --uuid bo-trusty5d \
+  --uuid bo-ubuntu5d \
   --display-name "Ubuntu 14.04 (Trusty Tahr) root partition" \
   --storage-id bkst-local \
   --object-key ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz \
@@ -280,9 +280,9 @@ backupobject add \
 Next we tell Wakame-vdc that this backup object is a machine image that we can start instances of.
 
 ```bash
-image add local bo-trusty5d \
+image add local bo-ubuntu5d \
   --account-id a-shpoolxx \
-  --uuid wmi-trusty5d \
+  --uuid wmi-ubuntu5d \
   --root-device uuid:148bc5df-3fc5-4e93-8a16-7328907cb1c0 \
   --display-name "Ubuntu 14.04 (Trusty Tahr)"
 ```
@@ -428,7 +428,7 @@ sudo start vdc-webui
 
 If everything went right, Wakame-vdc is now up and running. Start a web browser and surf to your machine's IP address on port 9000. If you're using the same IP address as this guide, that would be `192.168.3.100:9000`. Log in with user `demo` and password `demo`.
 
-The `trusty5d` image has password login through ssh enabled. After starting instances you are able to log in using username `ubuntu` and password `ubuntu`. You are of course also able to log in using username `ubuntu` and a key pair registered with Wakame-vdc.
+The `ubuntu5d` image has password login through ssh enabled. After starting instances you are able to log in using username `ubuntu` and password `ubuntu`. You are of course also able to log in using username `ubuntu` and a key pair registered with Wakame-vdc.
 
 Check out the [basic usage guide](usage/index.md) if you're not sure were to go from here.
 
