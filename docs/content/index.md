@@ -24,7 +24,7 @@ Don't hesitate to let us know if you also use Wakame-vdc.
 
 ## Quick Start
 
-[Wakame-vdc pre-installed in VirtualBox](http://wakameusersgroup.org/demo_image.html)
+[Wakame-vdc pre-installed in VirtualBox](demo-image.md)
 
 This is the fastest most painless way to get yourself a working Wakame-vdc environment to play with. Just download the image, follow the VirtualBox setup steps and you're good to go.
 

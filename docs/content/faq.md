@@ -14,7 +14,7 @@ Absolutely. We do it all the time in development.
 
 It works really well when you use OpenVZ as your hypervisor. Since OpenVZ is a container and not full virtualization, it doesn't have the usual overhead that comes with nested virtualization. LXC should work just as well but isn't tested as extensively. Nested KVM also works if the host's cpu supports it but is a lot slower.
 
-Our [VirtualBox demo image](http://wakameusersgroup.org/demo_image.html) implements Wakame-vdc in a virtual machine using OpenVZ and our [installation guide](installation.md) can be used to do the same.
+Our [VirtualBox demo image](demo-image.md) implements Wakame-vdc in a virtual machine using OpenVZ and our [installation guide](installation.md) can be used to do the same.
 
 ## What Hypervisors does Wakame-vdc support?
 
