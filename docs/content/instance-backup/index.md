@@ -6,7 +6,7 @@ This is a quick and easy way to create new machine images. For example, you coul
 
 ## Requirements
 
-You of course need a working Wakame-vdc installation. You can use either the [VirtualBox demo image](http://wakameusersgroup.org/demo_image.html) or create your own environment using the [installation guide](../installation.md).
+You of course need a working Wakame-vdc installation. You can use either the [VirtualBox demo image](../demo-image.md) or create your own environment using the [installation guide](../installation.md).
 
 You need to tell Wakame-vdc which [backup storage](../jargon-dictionary.md#backup-storage) to use when backing up instances. Both the VirtualBox image and the installation guide will set that up but just in case, here it is again.
 
