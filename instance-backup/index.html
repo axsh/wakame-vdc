@@ -82,6 +82,13 @@
         
             
     <li class="toctree-l1 ">
+        <a class="" href="../demo-image/">Demo Image</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
         <a class="" href="../installation/">Installation</a>
         
     </li>
@@ -219,7 +226,7 @@
 <p>In Wakame-vdc it is possible to take a running <a href="../jargon-dictionary/#instance">instance</a> and turn it into a new <a href="../jargon-dictionary/#machine-image">machine image</a>. We simply call this process <em>backup</em>.</p>
 <p>This is a quick and easy way to create new machine images. For example, you could start up an instance, install a web server in it and then back it up. Now you'll have a machine image with a web server installed and you'll immediately be able to start a any amount of web server instances.</p>
 <h2 id="requirements">Requirements</h2>
-<p>You of course need a working Wakame-vdc installation. You can use either the <a href="http://wakameusersgroup.org/demo_image.html">VirtualBox demo image</a> or create your own environment using the <a href="../installation/">installation guide</a>.</p>
+<p>You of course need a working Wakame-vdc installation. You can use either the <a href="../demo-image/">VirtualBox demo image</a> or create your own environment using the <a href="../installation/">installation guide</a>.</p>
 <p>You need to tell Wakame-vdc which <a href="../jargon-dictionary/#backup-storage">backup storage</a> to use when backing up instances. Both the VirtualBox image and the installation guide will set that up but just in case, here it is again.</p>
 <p>Figure out which backup storage you want to use with <code>vdc-manage</code>.</p>
 <pre><code class="bash">/opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage backupstorage show

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Demo Image - Wakame-vdc</title>
+  
+
+  <link rel="shortcut icon" href="../favicon.ico">
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  <link href="../custom.css" rel="stylesheet">
+
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Demo Image";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script src="../js/theme.js"></script> 
+
+  
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-63388719-1', 'auto');
+      ga('send', 'pageview');
+  </script>
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Wakame-vdc</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="..">Home</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../concept/">Concept</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Getting started</span></li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Demo Image</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#demo-image">Demo Image</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#requirements">Requirements</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#what-works">What works?</a></li>
+                
+                    <li><a class="toctree-l4" href="#instances">Instances</a></li>
+                
+                    <li><a class="toctree-l4" href="#security-groups">Security Groups</a></li>
+                
+                    <li><a class="toctree-l4" href="#backups">Backups</a></li>
+                
+                    <li><a class="toctree-l4" href="#load-balancers">Load Balancers</a></li>
+                
+                    <li><a class="toctree-l4" href="#ssh-key-pairs">SSH Key Pairs</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#what-doesnt-work">What doesn’t work?</a></li>
+                
+                    <li><a class="toctree-l4" href="#volumes">Volumes</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#setup">Setup</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#usage">Usage</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#troubleshooting">Troubleshooting</a></li>
+                
+            
+            </ul>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../installation/">Installation</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../development/">Development</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Usage</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../usage/">Basics</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../usage/custom-machine-images/">Custom Machine Images</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../instance-backup/">Instance Backup</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../security-groups/">Security Groups</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Support</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../jargon-dictionary/">Jargon Dictionary</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../faq/">FAQ</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../community/">Community</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Wakame-vdc</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Getting started &raquo;</li>
+        
+      
+    
+    <li>Demo Image</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="https://github.com/axsh/wakame-vdc" class="icon icon-github"> Edit on GitHub</a>
+        
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h2 id="demo-image">Demo Image</h2>
+<p>This is a <a href="https://www.virtualbox.org/">Virtual Box</a> image that contains <a href="http://www.centos.org/">CentOS</a> 6.4 with Wakame-vdc pre-installed. This is intended for people to get a first introduction to Wakame-vdc with a minimal amount of configuring required.</p>
+<p><a href="http://dlc.wakame.axsh.jp/demo/1box/vmdk/1box-openvz.netfilter.x86_64.vmdk.20150212150344gitef418eb.zip">Download the Wakame-vdc demo image</a>.</p>
+<p>Unzipped mp5 sum: 7bc7587a0d60629c87895173b093b3bd</p>
+<p>Zipped md5 sum: 41d04365f36cd034ae1f9605e07c189f</p>
+<h2 id="requirements">Requirements</h2>
+<p>Any computer with an x86_64 processor capable of running VirtualBox.</p>
+<h2 id="what-works">What works?</h2>
+<h3 id="instances">Instances</h3>
+<p>This is Wakame-vdc’s key functionality. The ability to start and terminate virtual servers which we call <em>instances</em>.</p>
+<h3 id="security-groups">Security Groups</h3>
+<p>This is Wakame-vdc’s netfilter based dynamic firewall. You can create <em>security groups</em> and place <em>instances</em> in them. These groups have two functions to them.</p>
+<ul>
+<li>Firewall</li>
+</ul>
+<p>Users are able to write firewall rules into <em>security groups</em>. This will open specific ports on all <em>instances</em> in the group.</p>
+<ul>
+<li>Isolation</li>
+</ul>
+<p>This provides ARP and IP based isolation between <em>instances</em>. Only <em>Instances</em> that are in the same <em>security group</em> will be able to communicate on the network. In other words, <em>instances</em> in group B will look like they don’t exist to <em>instances</em> in group A.</p>
+<h3 id="backups">Backups</h3>
+<p>This allows you to create a new <em>Wakame Machine Image</em> from an existing <em>instance</em>. You will then in turn be able to start new <em>instances</em> of the newly created <em>image</em>.</p>
+<h3 id="load-balancers">Load Balancers</h3>
+<p>A <em>Load Balancer</em> in Wakame-vdc is a special <em>instance</em> that will have <a href="http://haproxy.1wt.eu/">HAProxy</a> running in it and can balance network traffic between <em>instances</em>. It’s also capable of doing OpenSSL encryption using <a href="https://github.com/bumptech/stud">Stud</a>.</p>
+<h3 id="ssh-key-pairs">SSH Key Pairs</h3>
+<p>We can log into instances over SSH using RSA private/public <em>key pairs</em>. You can let Wakame-vdc create a <em>key pair</em> for you or you can register your own existing public key.</p>
+<h2 id="what-doesnt-work">What doesn’t work?</h2>
+<h3 id="volumes">Volumes</h3>
+<p><em>Volumes</em> are virtual hard drives that can be attached to and detached from <em>instances</em> at will. It’s essentially a virtual version of USB hard drives that you can pass around and plug into different computers.</p>
+<p>You will be able to create and delete <em>volumes</em> but you won’t be able to attach them to <em>instances</em>. That’s because the Wakame-vdc demo image uses OpenVz as the hypervisor for <em>instances</em>. At the time of writing, <em>volumes</em> are not supported in our OpenVz implementation.</p>
+<h2 id="setup">Setup</h2>
+<p>Download and unzip the image.</p>
+<p>In VirtualBox, click <em>File</em> and select <em>Preferences</em>.</p>
+<p><img alt="Select file/preferences" src="../img/demo-image/01_File_Preferences.png" /></p>
+<p>Click on Network and create a new host-only network.</p>
+<p><img alt="Click *network*, then click *add host-only network (Ins)*" src="../img/demo-image/02_Settings_new.png" /></p>
+<p>Now click on the screwdriver icon for host-only network settings.</p>
+<p><img alt="Click the screwdriver icon" src="../img/demo-image/03_settings_screwdriver.png" /></p>
+<p>Set the IPv4 subnet to 10.0.2.2/24. Leave IPv6 fields blank.</p>
+<p><img alt="IPv4 Address: 10.0.2.2. IPv4 Network Mask: 255.255.255.0." src="../img/demo-image/04_host_onlysettings.png" /></p>
+<p>Disable the host-only network’s DHCP server.</p>
+<p><img alt="Click the DHCP Server tab and uncheck *Enable Server*" src="../img/demo-image/05_dhcp_settings.png" /></p>
+<p>You’re done with VirtualBox preferences. Now create a new virtual machine.</p>
+<p><img alt="Exit the preferences dialog and click *New*" src="../img/demo-image/06_new.png" /></p>
+<p>Set the following settings for name and operating system.</p>
+<p><img alt="Name: Wakame-vdc 1box, Type: Linux, Version: Red Hat (64 bit)" src="../img/demo-image/07_name_os.png" /></p>
+<p>Set the memory size for the VM. 3GB recommended. 1GB minimal.</p>
+<p><img alt="3072 recommended. 1024 minimal." src="../img/demo-image/08_memory.png" /></p>
+<p>Select <em>Use an existing virtual hard drive file</em> and browse to the Wakame-vdc demo image that you have downloaded.</p>
+<p><img alt="Select the Wakame-vdc demo image as the virtual hard drive file." src="../img/demo-image/09_hd.png" /></p>
+<p>You’ve now set up a VirtualBox VM but you still need to do some extra network settings before Wakame-vdc will work right. Select your new VM and click on <em>Settings</em>.</p>
+<p><img alt="Click *settings* in the main VirtualBox window." src="../img/demo-image/10_settings.png" /></p>
+<p>Click <em>Network</em> and enable <em>Adapter 1</em>. Attach it to the <em>Host-only Adapter</em> that you have created above. Make sure to set <em>Promiscuous Mode</em> to <em>Allow All</em>. This will allow us to make network connections to Wakame-vdc instances.</p>
+<p><img alt="Attached to: *Host-only Adapter*, Name: *vboxnet0*, Promiscuous Mode: *Allow All*, Cable connected: *true*" src="../img/demo-image/11_host_only.png" /></p>
+<p>Also enable <em>Adapter 2</em> and attach it to an <em>Internal Network</em>. Again set <em>Promiscuous Mode</em> to <em>Allow All</em>.</p>
+<p><img alt="Attached to: *Internal Network*, Name: *intnet*, Promiscuous Mode: *Allow All*, Cable connected: *true*" src="../img/demo-image/12_internal.png" /></p>
+<p>You’re done. Start the Wakame-vdc demo image.</p>
+<p><img alt="Click *start* in the main VirtualBox window." src="../img/demo-image/13_start.png" /></p>
+<p>On first boot, the image will take some time to set up several Wakame-vdc services like the MySQL databases.</p>
+<h2 id="usage">Usage</h2>
+<p>You can access Wakame-vdc’s WebUI by surfing to <a href="http://10.0.2.15:9000">http://10.0.2.15:9000</a> in a browser of your choice. Javascript needs to be enabled for the WebUI to function. Log into the WebUI with the following credentials.</p>
+<pre><code>Username: demo
+Password: demo
+</code></pre>
+
+<p>Before you can start an <em>instance</em>, you will need to create a <em>security group</em> and a <em>key pair</em>. Click on <em>Security Groups</em> in the menu on the left and click on <em>Create Security Group</em>. Choose a name for your group and paste the following rules. These example rules will open ports for ssh, http, dns and ping.</p>
+<pre><code># demo rules for demo instances
+tcp:22,22,ip4:0.0.0.0
+tcp:80,80,ip4:0.0.0.0
+udp:53,53,ip4:0.0.0.0
+icmp:-1,-1,ip4:0.0.0.0
+</code></pre>
+
+<p>Next we’ll create ourselves a <em>key pair</em>. Click on <em>Key Pairs</em> in the menu on the left. There should be a demo key already registered there. This is again a leftover from development that we haven’t had time to remove. Please ignore it.</p>
+<p>Click on <em>Create Key Pair</em>. You can either register your own public key here, or have Wakame-vdc create a new one for you by leaving the <em>Public Key</em> field blank.</p>
+<p>Now we’re ready to start an instance. Click on <em>Machine Images</em> in the menu on the left. There will be four <em>Wakame Machine Images</em> available here.</p>
+<ul>
+<li>haproxy1d64</li>
+</ul>
+<p>This is the <em>Load Balancer</em> image. The fact that it appears in the list of <em>Wakame Machine Images</em> is a bug in the Wakame-vdc demo image. Since this is only a minor issue, we haven’t fixed it yet. <em>Load Balancers</em> are not intended to be started from this image. They should be started from the <em>LoadBalancers</em> option in the menu on the left.</p>
+<ul>
+<li>lbnode1d64</li>
+</ul>
+<p>This is an <em>image</em> with a tiny http server on port 80 that returns the <em>instance’s</em> host name. This is intended to demonstrate the <em>load balancer</em>.</p>
+<ul>
+<li>vanilla1d64</li>
+<li>centos1d64</li>
+</ul>
+<p>Both of these are simple <em>images</em> with a basic Centos 6.4 in them. The difference is that <em>vanilla1d64</em> has password authentication enabled and <em>centos1d64</em> doesn’t. Since no working users are configured for <em>vanilla1d64</em>, these <em>images</em> are essentially the same.</p>
+<p>Let’s start an instance of <em>centos1d64</em> as an example. Select it and click <em>Launch Instance</em>. In the dialog that comes up, choose an <em>Instance Name</em> and an optional <em>Host Name</em>.</p>
+<p>Choose an <em>Instance Spec</em> to launch your <em>instance</em> with. <em>Instance Specs</em> define the specifications of your <em>instance</em> such as amount of cpus and memory size. You can choose between the following three:</p>
+<pre><code>vz.small:
+  cpu_cores: 1
+  memory_size: 256
+  hypervisor: 'openvz'
+  quota_weight: 1.0
+vz.large:
+  cpu_cores: 2
+  memory_size: 256
+  hypervisor: 'openvz'
+  quota_weight: 2.0
+vz.xlarge:
+  cpu_cores: 2
+  memory_size: 1536
+  hypervisor: 'openvz'
+  quota_weight: 2.0
+</code></pre>
+
+<p>You will see the <em>security group</em> you just created in <em>Available Groups</em>. Move it to <em>Launch in</em> so we can put our new instance in it.</p>
+<p>Next we need to create a network interface for our <em>instance</em> and attach it to a network. Click the drop-down list next to <em>eth0</em>. You will see a list of many possible networks to attach it to. Choose the network <em>[nw-demo1] demo1</em>. The other networks are leftovers from our development environments and do not work in this image.</p>
+<p>The <em>User Data</em> below that is a ambiguous field where you can fill in any metadata that you might want to pass to the image. You would then be able to read that data from any custom software you might have running in there. Right now we don’t have any of that stuff so go ahead and leave it blank.</p>
+<p>Finally there’s <em>Network Monitoring</em>. This is a <a href="http://www.zabbix.com/">Zabbix</a> based monitoring service. Just leave it disabled for now.</p>
+<p>You’re done. Click on <em>Launch</em>.</p>
+<p>You will now be able to see the <em>instance</em> when you click on <em>Instances</em> in the menu on the left. You will probably see your <em>instance</em> in the <em>initializing</em> state. This means Wakame-vdc is starting it up and it will take a little while. Even after your <em>instance’s</em> state turns to <em>running</em>, it will still take a little while for the OS inside of it to boot up completely.</p>
+<p>If the instance state turns to <em>terminated</em>, that is likely due to a known bug that we have been encountering only in the Wakame-vdc demo image and haven’t had time to fix yet. Just try again. It’s likely that your instance will work the second time around.</p>
+<p>You can ssh into the instance using the <em>key pair</em> that you created. They listen on port 22 and you can log in with username <em>root</em>. If your own computer is running Linux, this would be a typical command to log into an instance.</p>
+<pre><code>ssh -i /path/to/ssh/key.pem root@10.0.2.100
+</code></pre>
+
+<p>It’s possible that you will get this kind of message.</p>
+<pre><code>@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Permissions 0744 for '/home/geek/ssh_demo.pem' are too open.
+It is recommended that your private key files are NOT accessible by others.
+This private key will be ignored.
+bad permissions: ignore key: /home/geek/ssh_demo.pem
+</code></pre>
+
+<p>That means everybody can read your private key and that’s not very private now is it? Change your key’s permissions with the following command.</p>
+<pre><code>chmod 600 /path/to/shh/key.pem
+</code></pre>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>If you need to do any troubleshooting, you can ssh into the Wakame-vdc demo image with the following credentials. The image’s ip is 10.0.2.15 and ssh is running on the standard tcp port of 22.</p>
+<pre><code>Username: centos
+Password: centos
+</code></pre>
+
+<p>Wakame-vdc’s logs are located in the following directory:</p>
+<pre><code>/var/log/wakame-vdc/
+</code></pre>
+
+<p>Wakame-vdc’s configuration files are located here:</p>
+<pre><code>/etc/wakame-vdc/
+</code></pre>
+
+<p>You can perform a large number of CRUD tasks on the Wakame-vdc database using the <em>vdc-manage</em> command line interface. To use to type the following:</p>
+<pre><code>[centos@wakame-vdc-1box ~]$ cd /opt/axsh/wakame-vdc/dcmgr/bin/
+[centos@wakame-vdc-1box bin]$ ./vdc-manage
+vdc-manage&gt;&gt; help
+</code></pre>
+
+<p><em>vdc-manage</em> will give you a list of sub commands. You can type any of them followed by help to get more specific usage on them. There is a similar cli for the WebUI.</p>
+<pre><code>[centos@wakame-vdc-1box ~]$ cd /opt/axsh/wakame-vdc/frontend/dcmgr_gui/bin/
+[centos@wakame-vdc-1box bin]$ ./gui-manage
+gui-manage&gt;&gt; help
+</code></pre>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../installation/" class="btn btn-neutral float-right" title="Installation"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../concept/" class="btn btn-neutral" title="Concept"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../concept/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../installation/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+
+</body>
+</html>
