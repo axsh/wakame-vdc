@@ -20,7 +20,7 @@ Quick Start
 
 [Install Wakame-vdc on CentOS 6](http://wakame-vdc.org/installation/)
 
-[Try Wakame-vdc pre-installed in VirtualBox.](http://wakameusersgroup.org/demo_image.html)
+[Try Wakame-vdc pre-installed in VirtualBox.](http://wakame-vdc.org/demo-image/)
 
 Contact us
 ----------
