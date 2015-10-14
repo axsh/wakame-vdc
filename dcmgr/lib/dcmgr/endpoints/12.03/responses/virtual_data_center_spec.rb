@@ -11,6 +11,7 @@ module Dcmgr::Endpoints::V1203::Responses
       @virtual_data_center_spec.instance_exec {
         h = {
           :uuid => canonical_uuid,
+          :account_id => account_id,
           :name => name,
           :file => file,
           :created_at => created_at,
