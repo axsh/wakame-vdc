@@ -228,17 +228,18 @@ Wakame-vdc's default directory for keeping images is `/var/lib/wakame-vdc/images
 sudo mkdir -p /var/lib/wakame-vdc/images
 ```
 
-Now download the image in that directory.
+Now download the image in that directory. For a passwordless login image, replace ```passwd-login-enabled``` by ```passwd-login-disabled``` in the link.
 
 ```bash
 cd /var/lib/wakame-vdc/images
-sudo curl -O http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-kvm-md-32.raw.gz
+sudo curl -O http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
 ```
 
-The image should have the following md5 sum. We will need it when registering it in the database.
+The images should have the following md5 sum. We will need it when registering it in the database.
 
 ```bash
-1f841b195e0fdfd4342709f77325ce29  ubuntu-lucid-kvm-md-32.raw.gz
+8b4a076363e3e03f6ade2b5b505435bf    ubuntu-14.04.3-x86_64-30g-passwd-login-disabled.raw.tgz
+81bb27d621f2d1e90ce24625a1dcb311    ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
 ```
 
 Now we need to let Wakame-vdc know that it has a machine image to start instances from. First of all here's a brief explanation of how Wakame-vdc treats machine images. There are two terms we'll need to understand here. **Backup objects** and **machine images**. A *backup object* is basically a hard drive image. A *machine image* is a backup object that's bootable. In case of a linux instance, the *machine image* would hold the root partition.
@@ -266,24 +267,24 @@ This image is compressed with gzip to save space. In order to properly manage it
 
 ```bash
 backupobject add \
-  --uuid bo-lucid5d \
-  --display-name "Ubuntu 10.04 (Lucid Lynx) root partition" \
+  --uuid bo-trusty5d \
+  --display-name "Ubuntu 14.04 (Trusty Tahr) root partition" \
   --storage-id bkst-local \
-  --object-key ubuntu-lucid-kvm-md-32.raw.gz \
+  --object-key ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz \
   --size 149084 \
   --allocation-size 359940 \
   --container-format gz \
-  --checksum 1f841b195e0fdfd4342709f77325ce29
+  --checksum 81bb27d621f2d1e90ce24625a1dcb311
 ```
 
 Next we tell Wakame-vdc that this backup object is a machine image that we can start instances of.
 
 ```bash
-image add local bo-lucid5d \
+image add local bo-trusty5d \
   --account-id a-shpoolxx \
-  --uuid wmi-lucid5d \
+  --uuid wmi-trusty5d \
   --root-device uuid:148bc5df-3fc5-4e93-8a16-7328907cb1c0 \
-  --display-name "Ubuntu 10.04 (Lucid Lynx)"
+  --display-name "Ubuntu 14.04 (Trusty Tahr)"
 ```
 
 #### Register a network
@@ -427,7 +428,7 @@ sudo start vdc-webui
 
 If everything went right, Wakame-vdc is now up and running. Start a web browser and surf to your machine's IP address on port 9000. If you're using the same IP address as this guide, that would be `192.168.3.100:9000`. Log in with user `demo` and password `demo`.
 
-The `lucid5d` image has password login through ssh enabled. After starting instances you are able to log in using username `ubuntu` and password `ubuntu`. You are of course also able to log in using username `ubuntu` and a key pair registered with Wakame-vdc.
+The `trusty5d` image has password login through ssh enabled. After starting instances you are able to log in using username `ubuntu` and password `ubuntu`. You are of course also able to log in using username `ubuntu` and a key pair registered with Wakame-vdc.
 
 Check out the [basic usage guide](usage/index.md) if you're not sure were to go from here.
 
