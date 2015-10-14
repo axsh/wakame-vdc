@@ -132,5 +132,22 @@ vdc_spec:
   end
 
   describe "GET" do
+    before(:each) { get("virtual_data_centers", params) }
+
+    context "with no parameters" do
+      let(:params) { Hash.new }
+
+      context "with no virtual_data_centers in the database" do
+        it "shows that there are indeed no virtual_data_center_spec in the database" do
+          expect(body).to eq [{
+                                "total" => 0,
+                                "start" => 0,
+                                "limit" => 250,
+                                "results" => []
+                              }]
+        end
+      end
+    end
+
   end
 end 
