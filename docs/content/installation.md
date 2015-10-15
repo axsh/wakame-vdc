@@ -228,11 +228,24 @@ Wakame-vdc's default directory for keeping images is `/var/lib/wakame-vdc/images
 sudo mkdir -p /var/lib/wakame-vdc/images
 ```
 
-Now download the image in that directory. For a passwordless login image, replace ```passwd-login-enabled``` by ```passwd-login-disabled``` in the link.
+Now download the image in that directory.
 
 ```bash
 cd /var/lib/wakame-vdc/images
-sudo curl -O http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
+sudo curl -O https://www.dropbox.com/s/chrx5fs1i3vi03t/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz?dl=0
+```
+
+If you don't need a password login and want to use public/private keypair login, use the following image :
+
+```bash
+sudo curl -O https://www.dropbox.com/s/uzgbh62qf4gas7i/ubuntu-14.04.3-x86_64-30g-passwd-login-disabled.raw.tgz?dl=0
+```
+
+IF you're unable to download from Dropbox, we have a second mirror available here :
+
+```
+http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
+http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-14.04.3-x86_64-30g-passwd-login-disabled.raw.tgz
 ```
 
 The images should have the following md5 sum. We will need it when registering it in the database.
@@ -267,22 +280,36 @@ This image is compressed with gzip to save space. In order to properly manage it
 
 ```bash
 backupobject add \
-  --uuid bo-ubuntu5d \
+  --uuid bo-ubuntu \
   --display-name "Ubuntu 14.04 (Trusty Tahr) root partition" \
   --storage-id bkst-local \
   --object-key ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz \
-  --size 149084 \
-  --allocation-size 359940 \
+  --size 312530432 \
+  --allocation-size 312530604 \
   --container-format gz \
   --checksum 81bb27d621f2d1e90ce24625a1dcb311
+```
+
+When using the passwd login disabled image, use the following command :
+
+```bash
+backupobject add \
+  --uuid bo-ubuntu \
+  --display-name "Ubuntu 14.04 (Trusty Tahr) root partition" \
+  --storage-id bkst-local \
+  --object-key ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz \
+  --size 312551936 \
+  --allocation-size 312552233 \
+  --container-format gz \
+  --checksum 8b4a076363e3e03f6ade2b5b505435bf
 ```
 
 Next we tell Wakame-vdc that this backup object is a machine image that we can start instances of.
 
 ```bash
-image add local bo-ubuntu5d \
+image add local bo-ubuntu \
   --account-id a-shpoolxx \
-  --uuid wmi-ubuntu5d \
+  --uuid wmi-ubuntu \
   --root-device uuid:148bc5df-3fc5-4e93-8a16-7328907cb1c0 \
   --display-name "Ubuntu 14.04 (Trusty Tahr)"
 ```
@@ -428,7 +455,7 @@ sudo start vdc-webui
 
 If everything went right, Wakame-vdc is now up and running. Start a web browser and surf to your machine's IP address on port 9000. If you're using the same IP address as this guide, that would be `192.168.3.100:9000`. Log in with user `demo` and password `demo`.
 
-The `ubuntu5d` image has password login through ssh enabled. After starting instances you are able to log in using username `ubuntu` and password `ubuntu`. You are of course also able to log in using username `ubuntu` and a key pair registered with Wakame-vdc.
+The `ubuntu` image has password login through ssh enabled. After starting instances you are able to log in using username `ubuntu` and password `ubuntu`. You are of course also able to log in using username `ubuntu` and a key pair registered with Wakame-vdc.
 
 Check out the [basic usage guide](usage/index.md) if you're not sure were to go from here.
 
