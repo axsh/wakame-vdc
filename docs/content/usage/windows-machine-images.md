@@ -9,7 +9,7 @@ When launching new instances, Microsoft requires that its Windows sysprep utilit
 
 In order to make getting started with Windows as easy as possible, Wakame-vdc includes scripts that can create working Windows seed images automatically.  The only preparation necessary is to download a Windows installation ISO image from microsoft.com, or copy one from a Windows Installation DVD.  The seed images are created using a default configuration that should work well for many Windows-on-Wakame-vdc applications.  The details of the scripts provide a known-to-work example that should greatly accelerate the efforts of users who need to work out customized configurations.
 
-## Default Configuration
+## Default Image Configuration
 
 ## Image Creation Scripts
 
@@ -345,3 +345,39 @@ base64 --decode | openssl rsautl -decrypt -inkey "${ssh_key_pair_path}" -oaep
 
 In the future, functionality to retrieve the initial random password will
 be added to the Wakame-vdc web GUI.
+
+## Wakame-vdc Configuration Options
+
+Four configuration options specific for Windows instances can
+optionally be put into the Wakame-vdc configuration file at
+`/etc/wakame-vdc/hva.conf`.  The following example code could be
+appended to `hva.conf` to set all four options.   Note that Ruby
+expressions can be used for the values.
+
+```ruby
+windows {
+    thread_concurrency 10
+    password_generation_sleeptime 2
+    password_generation_timeout 60 * 15
+    delete_password_after_minutes 0
+}
+```
+
+`thread_concurrency` sets the maximum number of Windows instances that
+can be going through first boot at one time.
+`password_generation_sleeptime` sets how often (in seconds) Wakame-vdc
+waits between checks that first boot has completed.
+`password_generation_timeout` sets the maximum amount of time (in
+seconds) to wait before first boot to finish.
+`delete_password_after_minutes` controls a feature that automatically
+removes the encrypted password from the database.  If set to zero, the
+feature is turned off.  Otherwise, it is an integer that specifies a
+number of minutes after first boot has finished.  After those minutes
+have passed, Wakame-vdc will automatically delete the encrypted
+password.
+
+Options that are not specified in `hva.conf' are set to default
+values.  The code above actually shows these default values: 10
+threads, 2 seconds, 900 seconds, and automatic password deletion
+disabled.
+
