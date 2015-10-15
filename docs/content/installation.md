@@ -267,7 +267,7 @@ First of all we need to tell Wakame-vdc how we are storing these *backup objects
 
 ```bash
 backupstorage add \
-  --uuid bkst-local \
+  --uuid bkst-demo1 \
   --display-name "local storage" \
   --base-uri "file:///var/lib/wakame-vdc/images/" \
   --storage-type local \
