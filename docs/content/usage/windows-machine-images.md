@@ -281,18 +281,17 @@ After launching a Windows instance, the Wakame-vdc web GUI will show
 that the instance's state is *initializing*.  This is the same
 behavior as with Linux instances, however, Windows instances stay in
 the *initializing* state for a longer time, because the machine image
-starts out in a sysprepped state and therefore must go through a time
-consuming *first-boot* initialization procedure.
+starts out in a sysprepped state and therefore must go through a
+time-consuming *first-boot* initialization procedure.
 
 After about 10 minutes (or longer depending on the speed of the host
-machine and its load), the state should change to running.  Now
+machine and its load), the state should change to running, which is when
 Windows starts a second boot, and soon (after about 30 seconds) it
 starts the remote desktop server.  At this point it should be possible
 to log in.  Connecting to the instance's IP address with any remote
 desktop client should show the Windows *cltr-alt-delete* screen.  To
 log in to a new instance for the first time, use the user name
-*Administrator* and the initial password.  How to find out what the
-initial password is is explained next.
+*Administrator* and an initial password that will be explained next.
 
 During first-boot, a special Wakame-vdc initialization script
 generates a random initial password and sets it to the *Administrator*
@@ -311,9 +310,38 @@ $ mussel instance decrypt_password i-mrdw5pcf ssh-cbixzm91.pem
 wvh?^A&}&}
 ```
 
-The instance uuid is the third parameters and the fourth parameter is
+The instance uuid is the third parameter. The fourth parameter is
 the private part of the ssh key that was selected when launching the
 instance.  For this example, the password is `wvh?^A&}&}`.
+
+Internally, `mussel` gets the encrypted password by using Wakame-vdc's
+web API, which returns it in
+[Base64](https://en.wikipedia.org/wiki/Base64).  It then uses
+`openssl` to do the decryption.  For those who wish to create custom
+solutions, an example of using the web API using `curl` is shown here:
+
+```bash
+$ curl -fsSkL -H X_VDC_ACCOUNT_UUID:a-shpoolxx -X GET http://127.0.0.1:9001/api/12.03/instances/i-n7al9iqu/password.yml
+---
+:id: i-n7al9iqu
+:encrypted_password: |
+  bOSfazrL4Qj6Go4/0Rnszb8CR+iZhE5OEeoBVTsdnK6CiQw1nJjMDWfAefS/
+  SuxGm/UyfCvK5QMY5h8Tr32cRw8b4p0f7nttJs6paKuop+azytFbPG1+UTWq
+  QkFWGk2wcXU9gnw50ItPmBAKt6pUtQsGasGpR23gL5uyvpjEK8ABZ/jfP3//
+  kvCeRXzA3RDfC68bky4o1g0T2foz3GVCo0wkdR9BguHZNbg9p66Defcd2q7P
+  upWrEl5ASrxyGNDD4CKAh7uJO57HpnQvXfjPU5KCsXi1HONAKCHnJIqRLsxo
+  xhUnPVEzSXtoOyl06fyICAiCpwtw/63Oi06j2DrXjw==
+```
+
+The code to decrypt the password can be found inside the function
+`task_decrypt_password()`, which is in the file
+[instance.sh](https://github.com/axsh/wakame-vdc/blob/develop/client/mussel/v12.03.d/instance.sh).
+
+The details for using `openssl` can be seen in this part of the code:
+
+```bash
+base64 --decode | openssl rsautl -decrypt -inkey "${ssh_key_pair_path}" -oaep
+```
 
 In the future, functionality to retrieve the initial random password will
 be added to the Wakame-vdc web GUI.
