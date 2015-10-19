@@ -115,13 +115,13 @@ set-environment-var-defaults()
     portforward="$portforward,hostfwd=tcp:0.0.0.0:10${UD}51-:10051"  # zabbix
 
     scriptArray=(
-	wakame-init-first-boot.ps1
 	sysprep-for-backup.cmd
 	SetupComplete-firstboot.cmd
 	SetupComplete-install.cmd
 	wakame-init-every-boot.cmd
-	wakame-init-every-boot.ps1
-	wakame-functions.ps1
+	../../../wakame-init/windows/wakame-init-first-boot.ps1
+	../../../wakame-init/windows/wakame-init-every-boot.ps1
+	../../../wakame-init/windows/wakame-functions.ps1
     )
 
     VIRTIOISO="virtio-win-0.1-74.iso"  # version of virtio disk and network drivers known to work
