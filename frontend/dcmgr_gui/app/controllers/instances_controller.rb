@@ -10,7 +10,7 @@ class InstancesController < ApplicationController
         :image_id => params[:image_id],
         :instance_spec_id => params[:instance_spec_id],
         :host_node_id => params[:host_node_id],
-        :hostname => params[:host_name],
+        :host_name => params[:host_name],
         :user_data => params[:user_data],
         :security_groups => params[:security_groups],
         :ssh_key => params[:ssh_key],

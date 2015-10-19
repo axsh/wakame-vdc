@@ -11,7 +11,7 @@ module Hijiki::DcmgrResource::V1203
                                  :state,
                                  :status,
                                  :ssh_key_pair,
-                                 :hostname,
+                                 :host_name,
                                  :ha_enabled,
                                  :hypervisor,
                                  :display_name,
