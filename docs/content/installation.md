@@ -232,7 +232,7 @@ Now download the image in that directory.
 
 ```bash
 cd /var/lib/wakame-vdc/images
-sudo curl -O https://dl.dropboxusercontent.com/s/chrx5fs1i3vi03t/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz?dl=0
+sudo curl https://dl.dropboxusercontent.com/s/chrx5fs1i3vi03t/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz?dl=0 > ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
 ```
 
 IF you're unable to download from Dropbox, we have a second mirror available here :
