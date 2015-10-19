@@ -573,11 +573,11 @@ image-add()
 set -x
 set -e
 
-for i in "$@"; do
-  case "$i" in
+for i in "\$@"; do
+  case "\$i" in
     backupobject) bo-add ;;
     image) image-add ;;
-    *) echo "unexpected parameter: $i" ;;
+    *) echo "unexpected parameter: \$i" ;;
   esac
 done
 
