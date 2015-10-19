@@ -235,23 +235,15 @@ cd /var/lib/wakame-vdc/images
 sudo curl -O https://dl.dropboxusercontent.com/s/chrx5fs1i3vi03t/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz?dl=0
 ```
 
-If you don't need a password login and want to use public/private keypair login, use the following image. Please be aware that using this file will change certain parameters in this guide.
-
-```bash
-sudo curl -O https://dl.dropboxusercontent.com/s/uzgbh62qf4gas7i/ubuntu-14.04.3-x86_64-30g-passwd-login-disabled.raw.tgz?dl=0
-```
-
 IF you're unable to download from Dropbox, we have a second mirror available here :
 
 ```
 http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
-http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-14.04.3-x86_64-30g-passwd-login-disabled.raw.tgz
 ```
 
 The images should have the following md5 sum. We will need it when registering it in the database.
 
 ```bash
-8b4a076363e3e03f6ade2b5b505435bf    ubuntu-14.04.3-x86_64-30g-passwd-login-disabled.raw.tgz
 81bb27d621f2d1e90ce24625a1dcb311    ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
 ```
 
