@@ -56,7 +56,7 @@ sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/load_balancer_spec.yml.ex
 # Download machine image
 sudo mkdir -p /var/lib/wakame-vdc/images
 cd /var/lib/wakame-vdc/images
-sudo curl -O http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-kvm-md-32.raw.gz
+sudo curl https://dl.dropboxusercontent.com/s/chrx5fs1i3vi03t/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz?dl=0 > ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
 
 # Set hva node id
 uncomment 'NODE_ID=demo1' '/etc/default/vdc-hva'
@@ -92,21 +92,21 @@ grep -v '\s*#' <<CMDSET | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
 
   # Add the image's backup object (hard drive image)
   backupobject add \
-    --uuid bo-lucid5d \
-    --display-name "Ubuntu 10.04 (Lucid Lynx) root partition" \
+    --uuid bo-ubuntu14043ple \
+    --display-name "ubuntu 14.04.3 passwd login enable" \
     --storage-id bkst-local \
-    --object-key ubuntu-lucid-kvm-md-32.raw.gz \
-    --size 149084 \
-    --allocation-size 359940 \
-    --container-format gz \
-    --checksum 1f841b195e0fdfd4342709f77325ce29
+    --object-key ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz \
+    --size 312530432 \
+    --allocation-size 312530604 \
+    --container-format tgz \
+    --checksum 81bb27d621f2d1e90ce24625a1dcb311
 
   # Tell Wakame-vdc that this backup object is a bootable machine image
-  image add local bo-lucid5d \
+  image add local bo-ubuntu14043ple \
     --account-id a-shpoolxx \
-    --uuid wmi-lucid5d \
-    --root-device uuid:148bc5df-3fc5-4e93-8a16-7328907cb1c0 \
-    --display-name "Ubuntu 10.04 (Lucid Lynx)"
+    --uuid wmi-ubuntu14043ple \
+    --root-device label:root \
+    --display-name "ubuntu 14.04.3 passwd login enabled"
 
   # Give Wakame-vdc a network to start instances in
   network add \
