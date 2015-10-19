@@ -648,18 +648,11 @@ parse-initial-params()
     # than explain, so will leave the rest of this comment as a TODO
     # item.
 
-    if [[ "${params[0]//[0-9]/}" == -* ]]; then
-	# if no build directories start with a sequence of zero
-	# or more numbers followed by a dash, then this must be a command
-	thecommand="${params[0]}"
-	bd_partialpath="./run-"  # guess dir is in current directory and has prefix run-
-	unset params[0]
-    else
-	thecommand="${params[1]}"
-	bd_partialpath="${params[0]}"  # guess dir has the given prefix
-	unset params[1]
-	unset params[0]
-    fi
+    bdir_relpath="${params[0]}"
+    thecommand="${params[1]}"
+
+    unset params[1]
+    unset params[0]
     params=( "${params[@]}" )  # shift array
 
     if [[ "$thecommand" = "0-init" ]]; then
@@ -667,39 +660,10 @@ parse-initial-params()
 	[ "${params[0]}" = 2008 ] || [ "${params[0]}" = 2012 ] || usage
     fi
     
-    # if path has explicit slash at the end, skip heuristic stuff below. 
-    if [[ "$bd_partialpath" == */ ]]; then
-	# Use exactly what the user gives.
-	bdir_fullpath="$bd_partialpath"
-	if [[ "$thecommand" = "0-init" ]]; then
-	    evalcheck 'mkdir "$bdir_fullpath"'
-	fi
-	bdir_fullpath="$(cd "$bdir_fullpath" && pwd)"
-	return 0 # skip heuristic
-    fi
-	    
-    # the heuristic stuff
     if [[ "$thecommand" = "0-init" ]]; then
-	# extend prefix until it is a unique, new directory
-	firstparam="${params[0]}"  # assume 2008 or 2012
-	ccc=0
-	while bdir_fullpath="$bd_partialpath$firstparam-$(printf "%04d" $ccc)" && \
-		[ -d "$bdir_fullpath" ]; do
-	    [ "$ccc" -lt 10000 ] || reportfail "Could not generate unique directory path"
-	    ccc=$(( ccc + 1 ))
-	done
-	evalcheck 'mkdir "$bdir_fullpath"'
-	bdir_fullpath="$(cd "$bdir_fullpath" && pwd)"
-    else
-	shopt -s nullglob
-	bdir_fullpath=""
-	for apath in "$bd_partialpath"*; do  # should already be sorted
-	    [ -f "$apath/active" ] && bdir_fullpath="$apath"
-	done
-	[ "$bdir_fullpath" = "" ] && reportfail "No active build directories found"
-	# use the latest that is still active
-	bdir_fullpath="$(cd "$bdir_fullpath" && pwd)"
+	evalcheck 'mkdir "$bdir_relpath"'
     fi
+    bdir_fullpath="$(cd "$bdir_relpath" && pwd)"
     # There.  Now the rest of the code should be straightforward, only
     # using $thecommand, $bdir_fullpath, and "${params[@]}"
 }
