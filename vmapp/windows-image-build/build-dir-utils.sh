@@ -38,30 +38,29 @@ UTILS_DIR="$SCRIPT_DIR/utils"
 
 usage() {
     cat <<'EOF'
-(NOTE: this documentation is out-of-date.)
 
-A quick guide for using this script to make Windows images is in
-README.md.  This script also has other features for experimenting with
-Windows images.  In order to use these, it is probably necessary read
-through it to understand the script and its limitations.  However, for
-quick hints, the intended use is as follows:
+Information about the main Windows image build features of this script
+can be found in the Wakame-vdc documentation at
+http://wakame-vdc.org. (The source for the website's contents can be
+found in the same repository as this script)
 
-1) Follow instruction in README.md
-2) keep calling $SDIR/build-dir-utils.sh 2008 -next
+This script also has other features for experimenting with Windows
+images.  In order to use these, it is probably necessary read through
+the it to understand the script and its limitations.
 
-This will cycle the window image through first boot, second boot,
-shutdown, reboot, sysprep, shutdown, and then start again with first
-boot, etc.  At various points, the script will output Windows log
-files and network packet dumps to a special build directory. (The scripts
-use the path stored in $bdir_fullpath as the build directory.)  The
-first set of log files have "gen0" in the log file names.  After the
-next first boot, "gen1" becomes part of the log file names, etc., so
-that each cycle from first-boot to sysprep gets uniquely named files.
-It is easer to make sense of all the log files if the directory is
-sorted by date.
+There is also testing code that can cycle a Windows image through first
+boot, second boot, shutdown, reboot, sysprep, shutdown, and then start
+again with first boot, etc.  At various points, the script will output
+Windows log files and network packet dumps to a special build
+directory. (The scripts use the path stored in $bdir_fullpath as the
+build directory.)  The first set of log files have "gen0" in the log
+file names.  After the next first boot, "gen1" becomes part of the log
+file names, etc., so that each cycle from first-boot to sysprep gets
+uniquely named files.  It is easer to make sense of all the log files
+if the directory is sorted by date.
 
-Some of the steps refer to various environment variables, which are
-documented in the file windows-image-build.ini.
+Some of the build and test steps refer to various environment
+variables, which are documented in the file windows-image-build.ini.
 EOF
     exit
 }

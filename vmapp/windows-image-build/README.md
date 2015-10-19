@@ -1,27 +1,16 @@
-# Overview
 
-The main two scripts are `build-dir-utils.sh` and
-`windows-image-smoke-test.sh`.  The first script evolved over time to
-automate various things that were useful when building Windows images
-and debugging PowerShell scripts.  It focuses on things that were easy
-to automate and has many commands and options.  It can be used by
-itself, but it does not automate everything.
 
-In contrast, `windows-image-smoke-test.sh` is a script that was
-written quickly.  Its purpose is to wrap
-`build-dir-utils.sh` with a simple interface that is easy to
-integrate into Jenkins.  One consequence of this is that it must automate everything
-including user interface actions inside of Windows, which it does by
-using `supernext.sh` and `kvm-ui-util.sh`.
+Documentation for how to use the scripts in this directory
+is at [http://wakame-vdc.org](http://wakame-vdc.org/usage/windows-machine-images/).
 
-## The `bash` script files:
+Some of specific files are described below:
 
 ### build-dir-utils.sh
 
 This script's main functions are starting and stopping Windows VMs and
 dealing with the images files.  One typical use is to boot a VM, do
 something interactively with the VM, and then record some log files
-from the VM, then more manually start sysprep, then record more log
+from the VM, then manually start sysprep, then record more log
 files, etc.  To make sending multiple commands to the same VM easier,
 a persistent *build directory* is associated with a Windows image.  It
 keeps track of details like the KVM ports so that such low-level
@@ -45,36 +34,33 @@ the next step, which can be invoked automatically by calling the
 script like this:
 
 ```
-$ ./build-dir-utils.sh /path/to/builddir -next
+$ ./build-dir-utils.sh /path/to/builddir -do-next
 ```
 
-Between the steps, manual actions are usually needed.  By doing these
-actions and invoking the above command line, a developer can reliably
-run through a test scenario that is time-consuming,
-tedious, and otherwise easy to mess up.
+Steps that are easier to do manually are also included.  For such
+steps, the user does the needed actions and indicates completion by
+calling the script like this:
 
-### windows-image-smoke-test.sh
+```
+$ ./build-dir-utils.sh /path/to/builddir -done
+```
 
-To make things easy for Jenkins, this script does three things.
-First, it makes sure all the extra files that are required by
-`build-dir-utils.sh` (such as the Windows install DVD ISO
-image) are available.  Then it creates a new build directory.  Then it
-calls `build-dir-utils.sh` until it has completed the first
-three steps of the scenario, which are the steps that install Windows.
+By doing these actions and invoking the above command line, a
+developer can reliably run through a test scenario that is
+time-consuming, tedious, and otherwise easy to mess up.
 
-### supernext.sh
+### auto-windows-image-build.sh
 
-This script is used by `windows-image-smoke-test.sh` to simulate user
-interface actions that are not automated by
-`build-dir-utils.sh`.  It relies on the `nextstep` file to
-know what actions need to be done.
+This is an experimental script that attempts to do the
+manual steps in `./build-dir-utils.sh`.  It can usually
+totally automate the building of Windows images.
 
 ### kvm-ui-util.sh
 
 This is a low-level script that is used to simulate user actions in
-KVM.  It is only called by `supernext.sh`, although a little setup
-code for its use is in `build-dir-utils.sh`.  This script
-has potential for reuse in other project.
+KVM.  It is only called by `auto-windows-image-build.sh`, although a
+little setup code for its use is in `build-dir-utils.sh`.  This script
+has potential for reuse in other projects.
 
 ## The other files
 
@@ -103,68 +89,3 @@ little setup and then runs the sysprep command with the correct
 parameters.  Note that the build-dir-utils.sh sometimes
 modifies this batch file on-the-fly so that it installs zabbix before
 running sysprep.
-
-# Running locally:
-
-## Copy the following resource files to this directory (or follow alternative instructions given below):
-
-* Windows installation ISO files for Windows Server 2008 and 2012
-* virtio-win-0.1-74.iso (from http://alt.fedoraproject.org/pub/alt/virtio-win/)
-* zabbix_agent-1.8.15-1.JP_installer.exe (from http://repo.zabbix.jp/zabbix/zabbix-1.8/windows/)
-* An example metadata.img image in a tar file named metadata.img.tar.gz
-* Files named key2008 and key2012, with the Windows 5x5 activation keys on one line
-
-## Remember path to this directory.
-
-```
-$ SDIR="$(pwd)"
-```
-
-* And then in a writable directory somewhere run the script with 2008
-  or 2012 as the parameter:
-
-```
-$ $SDIR/windows-image-smoke-test.sh 2008
-```
-
-This will create a new build directory named ./builddirs/smoketest-2008 or
-./builddirs/smoketest-2012, build a seed image there, and confirm that
-the file `C:\Windows\Setup\State\State.ini` indicates sysprep ran correctly.
-
-# Automatic download of resource files
-
-The `windows-image-smoke-test.sh` script provides an automatic
-download feature that is convenient for Jenkins.  Instead of manually
-putting the files in the directory, put the required files in an
-Amazon S3 bucket and do the following:
-
-  * Create a `~/.s3cfg` that gives enough permissions to access the bucket.
-  * In the shell do: export S3URL=s3://a.b.c.d/the/path/to/the/iso/files
-
-As an alternative to putting the sensitive key2008 and key2012 files in S3,
-the following is also possible.
-
-```
-export JenkinsENV_key2008="aaaaa-bbbbb-ccccc-ddddd-eeeee"  # key for Windows Server 2008
-export JenkinsENV_key2012="fffff-ggggg-hhhhh-iiiii-jjjjj"  # key for Windows Server 2012
-```
-
-Then running the same command as above will first download the needed
-resources and then build the seed image:
-
-```
-$ $SDIR/windows-image-smoke-test.sh 2008
-```
-
-# Final packaging
-
-To create a seed image that is ready to be used with Wakame-vdc, do
-the following command steps manually:
-
- ```
-$ $SDIR/build-dir-utils.sh  /path/to/builddirs/smoketest-2008  3-tar-the-image
-$ $SDIR/build-dir-utils.sh  /path/to/builddirs/smoketest-2008  -package
-```
-
-The ready-to-use images will be created at
-/path/to/builddirs/smoketest-2008/final-seed-image/windows2008r2.x86_64.kvm.md.raw.tar.gz.
