@@ -220,7 +220,7 @@ Remarks:
 
 #### Download and register a machine image
 
-Of course we can't start any instances if we don't have a machine image to instantiate. For this guide we are just going to download a simple machine image containing Ubuntu 10.04 (Lucid Lynx).
+Of course we can't start any instances if we don't have a machine image to instantiate. For this guide we are just going to download a simple machine image containing Ubuntu.
 
 Wakame-vdc's default directory for keeping images is `/var/lib/wakame-vdc/images`. Create it.
 
