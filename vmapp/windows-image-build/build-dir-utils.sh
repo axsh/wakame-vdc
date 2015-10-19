@@ -954,7 +954,8 @@ dispatch-command()
               echo "If desired, invoke again with -do-next to do a 'first-boot' test of the image." )"
 	    update-nextstep 1001-gen0-first-boot
 	    ;;
-	
+
+	## TODO: document and fix the test code below, possibly renaming the step names and removing the gen* hack
 	1001-gen*-first-boot)  ##step-name##
 	    mount-tar-umount ./before-$cmd.tar.gz
 	    [ "$NATNET" = "" ] && boot-without-networking || boot-with-networking

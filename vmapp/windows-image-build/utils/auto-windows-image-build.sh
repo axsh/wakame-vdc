@@ -274,7 +274,7 @@ case "$2" in
 	    grep -F -e "$target_step" || reportfail "step name not found"
 	;;
     --sysprep) target_step="26-make-simple-tar-of-image" ;;
-    --package) target_step="1001-gen*-first-boot" ;;
+    --package) target_step="1001-gen0-first-boot" ;;
     -1 | --one*) target_step="--one-step" ;;
     *) auto-windows-usage ; exit 255 ;;
 esac
