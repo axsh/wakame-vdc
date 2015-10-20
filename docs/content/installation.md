@@ -96,7 +96,7 @@ For the sake of this guide, we are going to assume that we will start instances 
 
 The network setup that this guide assumes places the host in the same network as the instances. That means the instances will have access to everything the host has access to. If the host can connect to the internet, the instances will be able to as well.
 
-**Remark:** With this setup, the host itself will not be able to connect to the instances through networking because of security groups' arp wall. More info on that will be available in the near future, when we write a guide for security groups.
+**Remark:** With this setup, the host itself will not be able to connect to the instances through networking because of security groups' arp wall. More info on that is available on the [security groups guide](../security-groups/#isolation)
 
 Create the file `/etc/sysconfig/network-scripts/ifcfg-br0` with the following contents
 
@@ -183,7 +183,7 @@ cd /opt/axsh/wakame-vdc/dcmgr
 
 #### Register the HVA
 
-As describe above, the HVA or host node is the part of Wakame-vdc that actually starts instances. Wakame-vdc can manage any number of these. The words HVA and host node will be use interchangeably in this guide.
+As describe above, the HVA or host node is the part of Wakame-vdc that actually starts instances. Wakame-vdc can manage any number of these. The words HVA and host node will be used interchangeably in this guide.
 
 Wakame-vdc recognises host nodes by their `node id`. That is a unique id that [AMQP](http://www.amqp.org) uses to identify each service. We will assign the id `demo1` to our HVA.
 
