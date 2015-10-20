@@ -334,7 +334,7 @@ attach instances to.</p>
 <p>For the sake of this guide, we are going to assume that we will start instances in network <code>192.168.3.0/24</code>. The host has a network interface <code>eth0</code> with static IP address <code>192.168.3.100</code>.
 <strong>Change these values to match your environment.</strong></p>
 <p>The network setup that this guide assumes places the host in the same network as the instances. That means the instances will have access to everything the host has access to. If the host can connect to the internet, the instances will be able to as well.</p>
-<p><strong>Remark:</strong> With this setup, the host itself will not be able to connect to the instances through networking because of security groups' arp wall. More info on that will be available in the near future, when we write a guide for security groups.</p>
+<p><strong>Remark:</strong> With this setup, the host itself will not be able to connect to the instances through networking because of security groups' arp wall. More info on that is available on the <a href="../../security-groups/#isolation">security groups guide</a></p>
 <p>Create the file <code>/etc/sysconfig/network-scripts/ifcfg-br0</code> with the following contents</p>
 <pre><code class="bash">DEVICE=br0
 TYPE=Bridge
@@ -396,7 +396,7 @@ mysqladmin -uroot create wakame_dcmgr
 </code></pre>
 
 <h4 id="register-the-hva">Register the HVA</h4>
-<p>As describe above, the HVA or host node is the part of Wakame-vdc that actually starts instances. Wakame-vdc can manage any number of these. The words HVA and host node will be use interchangeably in this guide.</p>
+<p>As describe above, the HVA or host node is the part of Wakame-vdc that actually starts instances. Wakame-vdc can manage any number of these. The words HVA and host node will be used interchangeably in this guide.</p>
 <p>Wakame-vdc recognises host nodes by their <code>node id</code>. That is a unique id that <a href="http://www.amqp.org">AMQP</a> uses to identify each service. We will assign the id <code>demo1</code> to our HVA.</p>
 <p>Edit the file <code>/etc/default/vdc-hva</code> and uncomment the following line:</p>
 <pre><code class="bash">NODE_ID=demo1
