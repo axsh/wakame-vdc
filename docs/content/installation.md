@@ -232,7 +232,7 @@ Now download the image in that directory.
 
 ```bash
 cd /var/lib/wakame-vdc/images
-sudo curl https://dl.dropboxusercontent.com/s/chrx5fs1i3vi03t/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz?dl=0 > ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
+sudo sh -c 'curl https://dl.dropboxusercontent.com/s/chrx5fs1i3vi03t/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz?dl=0 > ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz'
 ```
 
 IF you're unable to download from Dropbox, we have a second mirror available here :
@@ -241,7 +241,7 @@ IF you're unable to download from Dropbox, we have a second mirror available her
 http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
 ```
 
-The images should have the following md5 sum. We will need it when registering it in the database.
+The image should have the following md5 sum. We will need it when registering it in the database.
 
 ```bash
 81bb27d621f2d1e90ce24625a1dcb311    ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz

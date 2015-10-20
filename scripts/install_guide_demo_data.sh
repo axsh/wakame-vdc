@@ -56,7 +56,7 @@ sudo cp /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/load_balancer_spec.yml.ex
 # Download machine image
 sudo mkdir -p /var/lib/wakame-vdc/images
 cd /var/lib/wakame-vdc/images
-sudo curl https://dl.dropboxusercontent.com/s/chrx5fs1i3vi03t/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz?dl=0 > ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
+sudo sh -c 'curl https://dl.dropboxusercontent.com/s/chrx5fs1i3vi03t/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz?dl=0 > ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz'
 
 # Set hva node id
 uncomment 'NODE_ID=demo1' '/etc/default/vdc-hva'
