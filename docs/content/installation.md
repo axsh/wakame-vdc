@@ -139,7 +139,7 @@ Next we are going to configure Wakame-vdc and download a machine image containin
 
 #### Using the script
 
-The script can be found here: [install_guide_demo_data.sh](https://raw.githubusercontent.com/axsh/wakame-vdc/master/scripts/install_guide_demo_data.sh)
+The script can be found here: [install_guide_demo_data.sh](../scripts/install_guide_demo_data.sh)
 
 It will perform all the steps explained below except reserving IP addresses. (which is optional)
 
