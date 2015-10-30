@@ -259,7 +259,7 @@ First of all we need to tell Wakame-vdc how we are storing these *backup objects
 
 ```bash
 backupstorage add \
-  --uuid bkst-demo1 \
+  --uuid bkst-local \
   --display-name "local storage" \
   --base-uri "file:///var/lib/wakame-vdc/images/" \
   --storage-type local \
@@ -274,7 +274,7 @@ This image is compressed with gzip to save space. In order to properly manage it
 backupobject add \
   --uuid bo-ubuntu14043ple \
   --display-name "ubuntu 14.04.3 passwd login enabled" \
-  --storage-id bkst-demo1 \
+  --storage-id bkst-local \
   --object-key ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz \
   --container-format tgz \
   --size=312530432 \
