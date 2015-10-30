@@ -2,7 +2,7 @@
 
 This guide will set up a basic Wakame-vdc environment on a single host. When we are done with this guide we will have the following features available:
 
-  * We will have a simple *machine image* running Ubuntu 10.04 (Lucid Lynx). We will be able to start instances of this image.
+  * We will have a simple *machine image* running Ubuntu. We will be able to start instances of this image.
 
   * We will be able to create dynamic firewalls using [Security Groups](security-groups/index.md).
 
@@ -139,7 +139,7 @@ Next we are going to configure Wakame-vdc and download a machine image containin
 
 #### Using the script
 
-The script can be found here: [install_guide_demo_data.sh](https://raw.githubusercontent.com/axsh/wakame-vdc/master/scripts/install_guide_demo_data.sh)
+The script can be found here: [install_guide_demo_data.sh](../scripts/install_guide_demo_data.sh)
 
 It will perform all the steps explained below except reserving IP addresses. (which is optional)
 
@@ -220,7 +220,7 @@ Remarks:
 
 #### Download and register a machine image
 
-Of course we can't start any instances if we don't have a machine image to instantiate. For this guide we are just going to download a simple machine image containing Ubuntu 10.04 (Lucid Lynx).
+Of course we can't start any instances if we don't have a machine image to instantiate. For this guide we are just going to download a simple machine image containing Ubuntu.
 
 Wakame-vdc's default directory for keeping images is `/var/lib/wakame-vdc/images`. Create it.
 
@@ -232,13 +232,19 @@ Now download the image in that directory.
 
 ```bash
 cd /var/lib/wakame-vdc/images
-sudo curl -O http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-kvm-md-32.raw.gz
+sudo sh -c 'curl https://dl.dropboxusercontent.com/s/chrx5fs1i3vi03t/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz?dl=0 > ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz'
+```
+
+IF you're unable to download from Dropbox, we have a second mirror available here :
+
+```
+http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
 ```
 
 The image should have the following md5 sum. We will need it when registering it in the database.
 
 ```bash
-1f841b195e0fdfd4342709f77325ce29  ubuntu-lucid-kvm-md-32.raw.gz
+81bb27d621f2d1e90ce24625a1dcb311    ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz
 ```
 
 Now we need to let Wakame-vdc know that it has a machine image to start instances from. First of all here's a brief explanation of how Wakame-vdc treats machine images. There are two terms we'll need to understand here. **Backup objects** and **machine images**. A *backup object* is basically a hard drive image. A *machine image* is a backup object that's bootable. In case of a linux instance, the *machine image* would hold the root partition.
@@ -266,24 +272,25 @@ This image is compressed with gzip to save space. In order to properly manage it
 
 ```bash
 backupobject add \
-  --uuid bo-lucid5d \
-  --display-name "Ubuntu 10.04 (Lucid Lynx) root partition" \
+  --uuid bo-ubuntu14043ple \
+  --display-name "ubuntu 14.04.3 passwd login enabled" \
   --storage-id bkst-local \
-  --object-key ubuntu-lucid-kvm-md-32.raw.gz \
-  --size 149084 \
-  --allocation-size 359940 \
-  --container-format gz \
-  --checksum 1f841b195e0fdfd4342709f77325ce29
+  --object-key ubuntu-14.04.3-x86_64-30g-passwd-login-enabled.raw.tgz \
+  --container-format tgz \
+  --size=312530432 \
+  --allocation-size=312530604 \
+  --checksum=81bb27d621f2d1e90ce24625a1dcb311
+
 ```
 
 Next we tell Wakame-vdc that this backup object is a machine image that we can start instances of.
 
 ```bash
-image add local bo-lucid5d \
+image add local bo-ubuntu14043ple \
   --account-id a-shpoolxx \
-  --uuid wmi-lucid5d \
-  --root-device uuid:148bc5df-3fc5-4e93-8a16-7328907cb1c0 \
-  --display-name "Ubuntu 10.04 (Lucid Lynx)"
+  --uuid wmi-ubuntu14043ple \
+  --root-device label:root \
+  --display-name "ubuntu 14.04.3 passwd login enabled"
 ```
 
 #### Register a network
@@ -427,7 +434,7 @@ sudo start vdc-webui
 
 If everything went right, Wakame-vdc is now up and running. Start a web browser and surf to your machine's IP address on port 9000. If you're using the same IP address as this guide, that would be `192.168.3.100:9000`. Log in with user `demo` and password `demo`.
 
-The `lucid5d` image has password login through ssh enabled. After starting instances you are able to log in using username `ubuntu` and password `ubuntu`. You are of course also able to log in using username `ubuntu` and a key pair registered with Wakame-vdc.
+The `bo-ubuntu14043ple` image has password login through ssh enabled. After starting instances you are able to log in using username `ubuntu` and password `ubuntu`. You are of course also able to log in using username `ubuntu` and a key pair registered with Wakame-vdc.
 
 Check out the [basic usage guide](usage/index.md) if you're not sure were to go from here.
 
