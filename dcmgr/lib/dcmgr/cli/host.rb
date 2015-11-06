@@ -62,10 +62,10 @@ class Host < Base
   method_option :node_id, :type => :string, :size => 255, :desc => "The node ID for the host node"
   common_options
   def modify(uuid)
-    if options.has_key?(:arch) && !SUPPORTED_ARCH.member?(options[:arch])
+    if options[:arch] && !SUPPORTED_ARCH.member?(options[:arch])
       UnsupportedArchError.raise(options[:arch])
     end
-    if options.has_key?(:hypervisor) && !SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
+    if options[:hypervisor] && !SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
       UnsupportedHypervisorError.raise(options[:hypervisor])
     end
 
