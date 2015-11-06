@@ -52,6 +52,10 @@ module Dcmgr::Models
         errors.add(:arch, "unknown architecture type: #{self.arch}")
       end
 
+      unless SUPPORTED_HYPERVISOR.member?(self.hypervisor)
+        errors.add(:hypervisor, "unknown hypervisor: #{self.hypervisor}")
+      end
+
       if self.offering_cpu_cores < 0
         errors.add(:offering_cpu_cores, "it can not be less than zero")
       end
