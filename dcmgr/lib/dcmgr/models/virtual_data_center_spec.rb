@@ -150,11 +150,8 @@ module Dcmgr::Models
 
     def self.load(spec_file)
       argument_type_check(spec_file, String)
-      vdc_spec = begin
-                   YAML.load(spec_file)
-                 rescue Psych::SyntaxError
-                   raise YamlLoadError, 'The spec_file parameter must be a yaml format.'
-                 end
+
+      vdc_spec = YAML.load(spec_file)
 
       vdc_spec
     end
