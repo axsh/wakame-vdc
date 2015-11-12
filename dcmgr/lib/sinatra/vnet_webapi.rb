@@ -19,7 +19,7 @@ module Sinatra
         r = if self.response.header["Content-Type"].include?("application/json")
               ::JSON.parse(self.response.body.first).symbolize_keys
             elsif self.response.header["Content-Type"].include?("text/yaml")
-              ::YAML.load(self.response.body.first).first.symbolize_keys
+              ::YAML.load(self.response.body.first).symbolize_keys
             else
               nil
             end
@@ -32,7 +32,8 @@ module Sinatra
             display_name: r[:uuid],
             ipv4_network: params[:network],
             ipv4_prefix: params[:prefix],
-            network_mode: 'virtual'
+            network_mode: 'virtual',
+            auto_dpnet: true
           )
         end
       end
