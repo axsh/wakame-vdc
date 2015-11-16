@@ -34,7 +34,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   end
 
   def check_dc_network(network_id)
-    nw = M::Network[network_id]
+    nw = M::Network[network_id] || raise(E::UnknownNetwork, network_id)
     dc = M::DcNetwork[nw[:dc_network_id].to_i]
     raise E::UnknownDcNetwork, network_id unless dc
   end
