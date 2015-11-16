@@ -39,10 +39,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_center_specs' do
           raise E::InvalidParameter, params['file']
         end
       end
-    rescue M::VirtualDataCenterSpec::YamlLoadError, Sequel::ValidationFailed => e
+    rescue M::VirtualDataCenterSpec::YamlLoadError, Sequel::ValidationFailed, Sequel::InvalidValue => e
       raise E::InvalidVirtualDataCenterSpec, e.message
-    rescue Sequel::InvalidValue
-      raise E::InvalidParameter, params['file']
     end
 
     respond_with(R::VirtualDataCenterSpec.new(vdcs).generate)
