@@ -57,7 +57,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
       instances << find_by_uuid(:Instance, instance[:id])
     }
     vdc.add_virtual_data_center_instance(instances)
-    
+
     respond_with(R::VirtualDataCenter.new(vdc).generate)
   end
 
