@@ -9,7 +9,7 @@ import (
 
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common"
-	//"github.com/mitchellh/packer/helper/communicator"
+	"github.com/mitchellh/packer/helper/communicator"
 	"github.com/mitchellh/packer/packer"
 )
 
@@ -50,18 +50,15 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		},
 		*/
 		new(stepCreateInstance),
-		/*
-		new(stepDropletInfo),
+		new(stepReadyInstance),
 		&communicator.StepConnect{
 			Config:    &b.config.Comm,
 			Host:      commHost,
-			SSHConfig: sshConfig,
+			//SSHConfig: sshConfig,
 		},
 		new(common.StepProvision),
-		new(stepShutdown),
 		new(stepPowerOff),
-		new(stepSnapshot),
-    */
+		new(stepBackup),
 	}
 
 	// Run the steps
@@ -99,4 +96,10 @@ func (b *Builder) Cancel() {
 		log.Println("Cancelling the step runner...")
 		b.runner.Cancel()
 	}
+}
+
+
+func commHost(state multistep.StateBag) (string, error) {
+	ipAddress := state.Get("ip_address").(string)
+	return ipAddress, nil
 }
