@@ -3,6 +3,10 @@
 All notable changes to Wakame-vdc will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+`Fixed` A bug where the WebAPI would crash when no account id was set in a request. It now fails gracefully with a 400 error instead.
+
 ## [16.1] - 2015-10-2
 
 `Added` More bash completion for mussel commands. Specifically alarm, *ip_pool*, *ip_handle*, *dc_network*, *host_node*, *volume*, *network_vif* and *instance_show_password*.
