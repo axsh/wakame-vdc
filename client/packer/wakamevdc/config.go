@@ -3,7 +3,7 @@ package wakamevdc
 import (
 	"errors"
 	//"fmt"
-	//"os"
+	"os"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -19,16 +19,13 @@ type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 	Comm                communicator.Config `mapstructure:",squash"`
 
-	//APIToken string `mapstructure:"api_token"`
+	APIEndpoint string `mapstructure:"api_endpoint"`
 
-	//Region string `mapstructure:"region"`
-	//Size   string `mapstructure:"size"`
-	Image  string `mapstructure:"image"`
+	ImageId  string `mapstructure:"image_id"`
+	AccountId string `mapstructure:"account_id"`
 
-	//PrivateNetworking bool          `mapstructure:"private_networking"`
 	SnapshotName      string        `mapstructure:"snapshot_name"`
 	StateTimeout      time.Duration `mapstructure:"state_timeout"`
-	//DropletName       string        `mapstructure:"droplet_name"`
 	UserData          string        `mapstructure:"user_data"`
 
 	ctx interpolate.Context
@@ -53,10 +50,9 @@ func NewConfig(raws ...interface{}) (*Config, []string, error) {
 	}
 
 	// Defaults
-	//if c.APIToken == "" {
-		// Default to environment variable for api_token, if it exists
-	//	c.APIToken = os.Getenv("DIGITALOCEAN_API_TOKEN")
-	//}
+	if c.APIEndpoint == "" {
+		c.APIEndpoint = os.Getenv("WAKAMEVDC_API_ENDPOINT")
+	}
 
 	if c.SnapshotName == "" {
 		def, err := interpolate.Render("packer-{{timestamp}}", nil)
@@ -84,21 +80,20 @@ func NewConfig(raws ...interface{}) (*Config, []string, error) {
 	if es := c.Comm.Prepare(&c.ctx); len(es) > 0 {
 		errs = packer.MultiErrorAppend(errs, es...)
 	}
-	//if c.APIToken == "" {
+	if c.APIEndpoint == "" {
 		// Required configurations that will display errors if not set
-//		errs = packer.MultiErrorAppend(
-	//		errs, errors.New("api_token for auth must be specified"))
-	//}
-
-	if c.Image == "" {
 		errs = packer.MultiErrorAppend(
-			errs, errors.New("image is required"))
+			errs, errors.New("api_endpoint must be specified"))
+	}
+
+	if c.ImageId == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("image_id is required"))
 	}
 
 	if errs != nil && len(errs.Errors) > 0 {
 		return nil, nil, errs
 	}
 
-	//common.ScrubConfig(c, c.APIToken)
 	return c, nil, nil
 }
