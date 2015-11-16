@@ -85,9 +85,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	}
 
 	artifact := &Artifact{
-		snapshotName: state.Get("snapshot_name").(string),
-		snapshotId:   state.Get("snapshot_image_id").(int),
-		regionName:   state.Get("region").(string),
+		ImageId:   state.Get("image_id").(string),
 		//client:       client,
 	}
 
