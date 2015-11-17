@@ -18,7 +18,7 @@ Sequel.migration do
       primary_key :id, :type=>"int(11)"
       column :uuid, "varchar(255)", :null=>false
       column :account_id, "varchar(255)", :null=>false
-      column :name, "varchar(255)", :null=>false
+      column :display_name, "varchar(255)", :null=>false
       column :file, "text", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false

@@ -12,7 +12,7 @@ module Dcmgr::Endpoints::V1203::Responses
         h = {
           :uuid => canonical_uuid,
           :account_id => account_id,
-          :name => name,
+          :display_name => display_name,
           :file => file,
           :created_at => created_at,
           :updated_at => updated_at,
