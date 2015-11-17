@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/axsh/wakame-vdc/client/packer/wakamevdc"
+	"github.com/axsh/wakame-vdc/client/packer-builder-wakamevdc/wakamevdc"
 	"github.com/mitchellh/packer/packer/plugin"
 )
 

@@ -1,0 +1,16 @@
+{
+  "builders": [
+    {
+      "type": "wakamevdc",
+      "api_endpoint": "http://localhost:8080/api/1301",
+      "image_id": "wmi-centos64",
+      "ssh_username": "root",
+      "ssh_timeout": "60m"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "shell"
+    }
+  ]
+}
