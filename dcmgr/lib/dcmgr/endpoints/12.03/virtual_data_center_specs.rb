@@ -33,7 +33,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_center_specs' do
       vdcs = M::VirtualDataCenterSpec.entry_new(@account) do |spec|
         case file = M::VirtualDataCenterSpec.load(params['file'])
         when Hash
-          spec.name = file['vdc_name']
+          spec.name = file['display_name']
           spec.file = file
         else
           raise E::InvalidParameter, params['file']
@@ -56,7 +56,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_center_specs' do
       begin
         case file = M::VirtualDataCenterSpec.load(params['file'])
         when Hash
-          vdcs.name = file['vdc_name']
+          vdcs.name = file['display_name']
           vdcs.file = file
           vdcs.save_changes
         else

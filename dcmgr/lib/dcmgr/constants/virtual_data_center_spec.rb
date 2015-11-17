@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Constants::VirtualDataCenterSpec
-  VDCS_PARAMS_STRING = 'vdc_name'.freeze
+  VDCS_PARAMS_STRING = 'display_name'.freeze
   VDCS_PARAMS_HASH = ['vdc_spec', 'instance_spec'].freeze
   VDCS_PARAMS = [VDCS_PARAMS_STRING, VDCS_PARAMS_HASH].flatten.freeze
 

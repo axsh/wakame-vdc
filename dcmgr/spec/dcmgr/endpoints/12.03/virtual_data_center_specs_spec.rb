@@ -31,7 +31,7 @@ describe "virtual_data_center_specs" do
   let(:spec) do
     {
       file: "---
-vdc_name: sample
+display_name: sample
 
 instance_spec:
   small:

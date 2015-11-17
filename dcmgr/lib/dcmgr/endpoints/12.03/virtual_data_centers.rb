@@ -35,7 +35,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
         vdcs = M::VirtualDataCenterSpec[params['vdc_spec']]
       when Hash
         vdcs = M::VirtualDataCenterSpec.entry_new(@account) do |spec|
-          spec.name = file['vdc_name']
+          spec.name = file['display_name']
           spec.file = file
         end
       else
