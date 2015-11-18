@@ -2,15 +2,18 @@
   "builders": [
     {
       "type": "wakamevdc",
-      "api_endpoint": "http://localhost:8080/api/1301",
+      "api_endpoint": "http://localhost:9001/api/12.03/",
       "image_id": "wmi-centos64",
       "ssh_username": "root",
       "ssh_timeout": "60m"
     }
   ],
-  "post-processors": [
+  "provisioners": [
     {
-      "type": "shell"
+      "type": "shell",
+      "inline": [
+        "echo RUN Provisioner."
+      ]
     }
   ]
 }
