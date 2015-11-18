@@ -26,3 +26,13 @@ Type: ``wakamevdc``
 - `account_id` (string) -
 
 - `api_endpoint` (string) - Base URL for the Web API. (default: ``http://localhost:9001/api/1203``)
+
+## Build & Install
+
+Once you complete to build, you'll see the ``packer-builder-wakamevdc`` binary. It can be installed to:
+
+- Same folder where ``packer`` is in.
+- ``$HOME/.packer.d/plugins``
+- Current working directory
+
+See [Installing Plugins](https://www.packer.io/docs/extend/plugins.html) section.
