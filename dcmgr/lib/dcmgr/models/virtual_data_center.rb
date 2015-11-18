@@ -8,6 +8,7 @@ module Dcmgr::Models
     alias :spec :virtual_data_center_spec
 
     one_to_many :instances
+    one_to_many :security_groups
 
     subset(:alives, {:deleted_at => nil})
 

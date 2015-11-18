@@ -40,6 +40,15 @@ module Dcmgr::Endpoints::V1203::Responses
           end
         end
 
+        sg_hash = {}
+        self.security_groups.each { |sg|
+          sg_hash[sg.name_in_virtual_data_center_spec] = {
+            uuid: sg.canonical_uuid,
+            rules: sg.rule
+          }
+        }
+        h[:security_groups] = sg_hash
+
         h
       }
     end

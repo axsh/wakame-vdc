@@ -37,6 +37,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
     instance_params = vdc.spec.generate_instance_params
     account_id = @account.canonical_uuid
 
+    # Create instances
     instance_params.each { |instance_param|
       res = request_forward do
         header('X-VDC-Account-UUID', account_id)
@@ -45,6 +46,45 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
       instance = YAML.load(res.body)
 
       vdc.add_instance find_by_uuid(:Instance, instance[:id])
+    }
+
+    # Create security groups
+    security_group_params = vdc.spec.file['security_groups']
+
+    # We create all security groups first and set their rules later.
+    # That is because rules might include other groups' UUIDs and we
+    # don't know what they are until they're created.
+    security_group_params.each { |secg_name, secg_param|
+      display_name = "#{vdc.canonical_uuid} #{secg_name}"
+
+      res = request_forward do
+        header('X-VDC-Account-UUID', account_id)
+        post("/security_groups", display_name: display_name)
+      end.last_response
+      secg_id = JSON.load(res.body)['id']
+
+      secg = find_by_uuid(:SecurityGroup, secg_id)
+
+      secg.name_in_virtual_data_center_spec = secg_name
+      secg.save_changes
+
+      vdc.add_security_group secg
+
+      secg_param['id'] = secg_id
+    }
+
+    # Now we set all the rules
+    security_group_params.each { |secg_name, secg_param|
+      security_group_params.keys.each { |secg_name2|
+        #TODO: Deal with the possibility of secg_names being substrings of each other
+        secg_param['rules'].gsub!(/#{secg_name2}/, security_group_params[secg_name2]['id'])
+      }
+
+      #TODO: Make sure these internal requests succeed
+      res = request_forward do
+        header('X-VDC-Account-UUID', account_id)
+        put("/security_groups/#{secg_param['id']}", rule: secg_param['rules'])
+      end
     }
 
     respond_with(R::VirtualDataCenter.new(vdc).generate)

@@ -39,14 +39,15 @@ describe "virtual_data_centers" do
       file: "---
 display_name: sample
 
-dcmgr_group:
-  rules: |
-    # webapi and webui port
-    tcp:9000,9001,ip4:0.0.0.0
-    # amqp port
-    tcp:5672,5672,ip4:0.0.0.0
-db_group:
-  rules: 'tcp:3306,3306,ip4:dcmgr_group'
+security_groups:
+  dcmgr_group:
+    rules: |
+      # webapi and webui port
+      tcp:9000,9001,ip4:0.0.0.0
+      # amqp port
+      tcp:5672,5672,ip4:0.0.0.0
+  db_group:
+    rules: 'tcp:3306,3306,dcmgr_group'
 
 instance_spec:
   small:
@@ -79,6 +80,7 @@ vdc_spec:
     stub_dcmgr_messaging
 
     allow(Dcmgr.messaging).to receive(:submit)
+    allow(Dcmgr.messaging).to receive(:event_publish)
   end
 
   describe "POST" do
@@ -115,18 +117,19 @@ vdc_spec:
         expect(M::Instance[uuid]).not_to be_nil
       end
 
+      #TODO: Tests to make sure that names in spec files are unique
       it 'has created the security groups in the database' do
         expect(last_response).to succeed
 
-        expect(body['security_groups'].keys).to match_array(['dcmgr_groups',
-                                                             'db_group'])
+        expect(body['vdc_spec']['security_groups'].keys).to match_array(['dcmgr_group',
+                                                                         'db_group'])
 
         vdc = M::VirtualDataCenter[body['uuid']]
         sgs = vdc.security_groups
         expect(sgs.size).to eq(2)
 
-        dcmgr_group = sgs.find(name_in_virtual_data_center_spec: 'dcmgr_group')
-        db_group = sgs.find(name_in_virtual_data_center_spec: 'db_group')
+        dcmgr_group = sgs.find { |sg| sg[:name_in_virtual_data_center_spec] == 'dcmgr_group' }
+        db_group = sgs.find { |sg| sg[:name_in_virtual_data_center_spec] == 'db_group' }
 
         expect(dcmgr_group).not_to be_nil
         expect(db_group).not_to be_nil
@@ -134,12 +137,13 @@ vdc_spec:
         expect(dcmgr_group.display_name).to eq "#{vdc.canonical_uuid} dcmgr_group"
         expect(db_group.display_name).to eq "#{vdc.canonical_uuid} db_group"
 
-        expect(dcmgr_group.rules).to eq "# webapi and webui port
+        expect(dcmgr_group.rule).to eq "# webapi and webui port
 tcp:9000,9001,ip4:0.0.0.0
 # amqp port
-tcp:5672,5672,ip4:0.0.0.0"
+tcp:5672,5672,ip4:0.0.0.0
+"
 
-        expect(db_group.rules).to eq "tcp:3306,3306,ip4:#{dcmgr_group.canonical_uuid}"
+        expect(db_group.rule).to eq "tcp:3306,3306,#{dcmgr_group.canonical_uuid}"
       end
     end
 

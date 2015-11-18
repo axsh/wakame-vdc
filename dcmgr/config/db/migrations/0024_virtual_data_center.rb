@@ -30,6 +30,11 @@ Sequel.migration do
     alter_table(:instances) do
       add_column :virtual_data_center_id, "int(11)", :null=>true
     end
+
+    alter_table(:security_groups) do
+      add_column :virtual_data_center_id, "int(11)", :null=>true
+      add_column :name_in_virtual_data_center_spec, "varchar(255)", :null=>true
+    end
   end
 
   down do
