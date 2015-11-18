@@ -91,7 +91,9 @@ vdc_spec:
       let(:params) { {vdc_spec: vdc_spec_id } }
 
       it 'returns json describing the created virtual data center' do
-        expect(body['account_id']).to eq account.canonical_uuid
+        expect(last_response).to succeed.with_body_containing({
+          account_id: account.canonical_uuid
+        })
       end
 
       it 'has created a new virtual data center in the database' do
