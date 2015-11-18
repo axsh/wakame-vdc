@@ -20,15 +20,6 @@ module Dcmgr::Models
       vdc
     end
 
-    def add_virtual_data_center_instance(instances)
-      # Mash is passed in some cases.
-      argument_type_check(instances, Array)
-      instances.each { |instance|
-        instance.virtual_data_center_id = self.id
-        instance.save_changes
-      }
-    end
-
     private
     def _destroy_delete
       self.deleted_at ||= Time.now

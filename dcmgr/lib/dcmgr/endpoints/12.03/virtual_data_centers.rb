@@ -36,7 +36,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
 
     instance_params = vdc.spec.generate_instance_params
     account_id = @account.canonical_uuid
-    instances = []
 
     instance_params.each { |instance_param|
       res = request_forward do
@@ -44,9 +43,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
         post("/instances.yml", instance_param)
       end.last_response
       instance = YAML.load(res.body)
-      instances << find_by_uuid(:Instance, instance[:id])
+
+      vdc.add_instance find_by_uuid(:Instance, instance[:id])
     }
-    vdc.add_virtual_data_center_instance(instances)
 
     respond_with(R::VirtualDataCenter.new(vdc).generate)
   end
