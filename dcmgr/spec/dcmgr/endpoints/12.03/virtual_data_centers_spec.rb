@@ -39,6 +39,15 @@ describe "virtual_data_centers" do
       file: "---
 display_name: sample
 
+dcmgr_group:
+  rules: |
+    # webapi and webui port
+    tcp:9000,9001,ip4:0.0.0.0
+    # amqp port
+    tcp:5672,5672,ip4:0.0.0.0
+db_group:
+  rules: 'tcp:3306,3306,ip4:dcmgr_group'
+
 instance_spec:
   small:
     cpu_cores: 1
@@ -104,6 +113,33 @@ vdc_spec:
       it 'has created a new instance in the database' do
         uuid = body['instances'].first['uuid']
         expect(M::Instance[uuid]).not_to be_nil
+      end
+
+      it 'has created the security groups in the database' do
+        expect(last_response).to succeed
+
+        expect(body['security_groups'].keys).to match_array(['dcmgr_groups',
+                                                             'db_group'])
+
+        vdc = M::VirtualDataCenter[body['uuid']]
+        sgs = vdc.security_groups
+        expect(sgs.size).to eq(2)
+
+        dcmgr_group = sgs.find(name_in_virtual_data_center_spec: 'dcmgr_group')
+        db_group = sgs.find(name_in_virtual_data_center_spec: 'db_group')
+
+        expect(dcmgr_group).not_to be_nil
+        expect(db_group).not_to be_nil
+
+        expect(dcmgr_group.display_name).to eq "#{vdc.canonical_uuid} dcmgr_group"
+        expect(db_group.display_name).to eq "#{vdc.canonical_uuid} db_group"
+
+        expect(dcmgr_group.rules).to eq "# webapi and webui port
+tcp:9000,9001,ip4:0.0.0.0
+# amqp port
+tcp:5672,5672,ip4:0.0.0.0"
+
+        expect(db_group.rules).to eq "tcp:3306,3306,ip4:#{dcmgr_group.canonical_uuid}"
       end
     end
 
