@@ -30,12 +30,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
     raise E::UndefinedRequiredParameter, 'vdc_spec' if params['vdc_spec'].nil?
 
     vdc = M::VirtualDataCenter.entry_new(@account) do |vdc|
-      case file = M::VirtualDataCenterSpec.load(params['vdc_spec'])
-      when String
-        vdcs = M::VirtualDataCenterSpec[params['vdc_spec']]
-      else
-        raise E::InvalidParameter, params['vdc_spec']
-      end
+      vdcs = find_by_uuid(:VirtualDataCenterSpec, params['vdc_spec'])
       vdc.virtual_data_center_spec_id = vdcs.id
     end
 

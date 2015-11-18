@@ -79,12 +79,16 @@ vdc_spec:
            Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
     end
 
-    context 'with only the required parameter: spec_file.' do
-      let(:params) do
-        {
-          vdc_spec: spec[:file],
-        }
-      end
+    let(:vdc_spec_id) do
+      post("virtual_data_center_specs",
+           spec,
+           Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
+
+      body['uuid']
+    end
+
+    context 'with the required parameter: vdc_spec_id' do
+      let(:params) { {vdc_spec: vdc_spec_id } }
 
       it 'returns json describing the created virtual data center' do
         expect(body['account_id']).to eq account.canonical_uuid
@@ -101,33 +105,14 @@ vdc_spec:
       end
     end
 
-    context 'with the required parameter: vdc_spec_id' do
-      let(:params) do
-        {
-          vdc_spec: vdc_spec,
-        }
-      end
+    context 'with a malformed vdc_spec_id' do
+      let(:params) { {vdc_spec: "i am not a uuid"} }
 
-      let(:vdc_spec) do
-        post("virtual_data_center_specs",
-             spec,
-             Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
-        body['uuid']
-      end
+      it_fails_with_error 400,
+                          'Dcmgr::Endpoints::Errors::InvalidParameter',
+                          'Invalid UUID Syntax: i am not a uuid'
 
-      it 'returns json describing the created virtual data center' do
-        expect(body['account_id']).to eq account.canonical_uuid
-      end
 
-      it 'has created a new virtual data center in the database' do
-        uuid = body['uuid']
-        expect(M::VirtualDataCenter[uuid]).not_to be_nil
-      end
-
-      it 'has created a new instance in the database' do
-        uuid = body['instances'].first['uuid']
-        expect(M::Instance[uuid]).not_to be_nil
-      end
     end
   end
 
