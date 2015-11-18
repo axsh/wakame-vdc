@@ -19,11 +19,11 @@ import (
 
 const (
 	libraryVersion = "0.1.0"
-	defaultBaseURL = "https://localhost:9001/api/1203"
+	defaultBaseURL = "https://localhost:9001/api/12.03/"
 	userAgent      = "go-wakamevdc/" + libraryVersion
 	mediaType      = "application/json"
 
-	headerRateLimit     = "X-RateLimit-Limit"
+	headerVDCAccount     = "X-VDC-Account-Id"
 )
 
 // Client manages communication with DigitalOcean V2 API.
@@ -38,12 +38,14 @@ type Client struct {
   UserAgent string
 }
 
-func NewClient(httpClient *http.Client) *Client {
+func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
+	if baseURL == nil {
+		baseURL, _ = url.Parse(defaultBaseURL)
+	}
+
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
-
-  baseURL, _ := url.Parse(defaultBaseURL)
 
   c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
   return c
@@ -82,5 +84,5 @@ func (c *Client) Request(http_method, api_path string, body interface{}) (*http.
     }
   }()
 
-  return resp, nil
+  return resp, err
 }

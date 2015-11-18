@@ -6,6 +6,7 @@ package wakamevdc
 import (
 	//"fmt"
 	"log"
+	"net/url"
 
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common"
@@ -32,12 +33,17 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 }
 
 func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packer.Artifact, error) {
-	//client := nil
+	base_url, err := url.Parse(b.config.APIEndpoint + "/")
+	if err != nil {
+		return nil, err
+	}
+
+	client := NewClient(base_url, nil)
 
 	// Set up the state
 	state := new(multistep.BasicStateBag)
 	state.Put("config", b.config)
-	//state.Put("client", client)
+	state.Put("client", client)
 	state.Put("hook", hook)
 	state.Put("ui", ui)
 

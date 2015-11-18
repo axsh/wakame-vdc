@@ -5,6 +5,7 @@ import (
 	//"fmt"
 	"os"
 	"time"
+	"net/url"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/packer/common"
@@ -81,9 +82,13 @@ func NewConfig(raws ...interface{}) (*Config, []string, error) {
 		errs = packer.MultiErrorAppend(errs, es...)
 	}
 	if c.APIEndpoint == "" {
-		// Required configurations that will display errors if not set
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("api_endpoint must be specified"))
+		c.APIEndpoint = defaultBaseURL
+	} else {
+		_, err := url.Parse(c.APIEndpoint)
+		if err != nil {
+			errs = packer.MultiErrorAppend(
+				errs, errors.New("api_endpoint is invalid"))
+		}
 	}
 
 	if c.ImageId == "" {
