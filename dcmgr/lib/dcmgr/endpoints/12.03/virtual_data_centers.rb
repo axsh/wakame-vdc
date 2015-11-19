@@ -96,12 +96,21 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/virtual_data_centers' do
     vdc = find_by_uuid_alives(:VirtualDataCenter, params[:id])
 
     account_id = @account.canonical_uuid
+
     vdc.instances.each do |instance|
       request_forward do
         header('X-VDC-Account-UUID', account_id)
-        delete("/instances/#{instance.canonical_uuid}.yml")
-      end.last_response
+        delete("/instances/#{instance.canonical_uuid}")
+      end
     end
+
+    vdc.security_groups.each do |security_group|
+      request_forward do
+        header('X-VDC-Account-UUID', account_id)
+        delete("/security_groups/#{security_group.canonical_uuid}")
+      end
+    end
+
     vdc.destroy
 
     respond_with([vdc.canonical_uuid])
