@@ -4,16 +4,6 @@ import (
   "net/http"
 	"net/url"
 	"github.com/dghubble/sling"
-  /*
-  "fmt"
-	"io"
-	"io/ioutil"
-	"reflect"
-	"strconv"
-	"time"
-
-	"github.com/google/go-querystring/query"
-  */
 )
 
 const (
