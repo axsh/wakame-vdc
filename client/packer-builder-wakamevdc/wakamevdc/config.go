@@ -82,7 +82,7 @@ func NewConfig(raws ...interface{}) (*Config, []string, error) {
 		errs = packer.MultiErrorAppend(errs, es...)
 	}
 	if c.APIEndpoint == "" {
-		c.APIEndpoint = defaultBaseURL
+		c.APIEndpoint = "http://localhost:9001/api/12.03/"
 	} else {
 		_, err := url.Parse(c.APIEndpoint)
 		if err != nil {

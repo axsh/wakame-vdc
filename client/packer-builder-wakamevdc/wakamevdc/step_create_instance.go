@@ -3,21 +3,26 @@ package wakamevdc
 import (
 	"fmt"
 
-	//"github.com/digitalocean/godo"
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/packer"
+	wakamevdc "github.com/axsh/wakame-vdc/client/go-wakamevdc"
 )
 
 type stepCreateInstance struct {
-	InstanceId string
+	InstanceID string
 }
 
 func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction {
-	client := state.Get("client").(*Client)
+	client := state.Get("client").(*wakamevdc.Client)
 	ui := state.Get("ui").(packer.Ui)
 
   ui.Say("Creating instance...")
-	resp, err := client.Request("POST", "instances", nil)
+	inst, resp, err := client.Instance.Create(&wakamevdc.InstanceCreateParams{
+    Hypervisor: "openvz",
+    CPUCores: 1,
+    MemorySize: 128,
+    ImageID: "wmi-centos1d64",
+  })
 	if err == nil &&  resp.StatusCode != 200 {
 		err = fmt.Errorf(resp.Status)
 	}
@@ -27,8 +32,9 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	ui.Say(resp.Status)
-  state.Put("instance_id", "i-xxxx")
+
+	s.InstanceID = inst.ID
+  state.Put("instance_id", inst.ID)
   return multistep.ActionContinue
 }
 

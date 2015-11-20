@@ -12,6 +12,7 @@ import (
 	"github.com/mitchellh/packer/common"
 	"github.com/mitchellh/packer/helper/communicator"
 	"github.com/mitchellh/packer/packer"
+	wakamevdc "github.com/axsh/wakame-vdc/client/go-wakamevdc"
 )
 
 // The unique id for the builder
@@ -38,7 +39,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		return nil, err
 	}
 
-	client := NewClient(base_url, nil)
+	client := wakamevdc.NewClient(base_url, nil)
 
 	// Set up the state
 	state := new(multistep.BasicStateBag)
