@@ -20,6 +20,7 @@ type Client struct {
   sling *sling.Sling
   accountID string
   Instance  *InstanceService
+  SecurityGroup *SecurityGroupService
   SshKey    *SshKeyService
 }
 
@@ -33,6 +34,7 @@ func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
 	sl.Add(headerVDCAccountID, "a-shpoolxx")
 	c := &Client{sling: sl}
   c.Instance = &InstanceService{client: c}
+  c.SecurityGroup = &SecurityGroupService{client: c}
 	c.SshKey = &SshKeyService{client: c}
   return c
 }
