@@ -27,9 +27,10 @@ const (
 
 // Client manages communication with Wakame-vdc API.
 type Client struct {
-	sling *sling.Sling
-	accountID string
-	SshKey *SshKeyService
+  sling *sling.Sling
+  accountID string
+  Instance  *InstanceService
+  SshKey    *SshKeyService
 }
 
 func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
@@ -41,6 +42,7 @@ func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
 	sl.Add("User-Agent", userAgent)
 	sl.Add(headerVDCAccountID, "a-shpoolxx")
 	c := &Client{sling: sl}
+  c.Instance = &InstanceService{client: c}
 	c.SshKey = &SshKeyService{client: c}
   return c
 }
