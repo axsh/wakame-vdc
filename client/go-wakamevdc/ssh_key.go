@@ -8,7 +8,7 @@ import (
 const SshKeyPath = "ssh_key_pairs"
 
 type SshKey struct {
-  ID          string `json:"uuid"`
+  ID          string `json:"id"`
   PublicKey   string `json:"public_key"`
   Fingerprint string `json:"finger_print"`
   CreatedAt   string `json:"created_at"`
