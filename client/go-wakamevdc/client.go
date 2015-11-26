@@ -4,6 +4,7 @@ import (
   "net/http"
 	"net/url"
 	"github.com/dghubble/sling"
+  "fmt"
 )
 
 const (
@@ -41,4 +42,14 @@ func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
 
 func (c *Client) Sling() *sling.Sling {
 	return c.sling.New()
+}
+
+type APIError struct {
+  ErrorType string `json:"error"`
+  Message string `json:"message"`
+  Code string `json:"code"`
+}
+
+func (e *APIError) Error() string {
+  return fmt.Sprintf("Type: %s, Code: %s, Message: %s", e.ErrorType, e.Code, e.Message)
 }

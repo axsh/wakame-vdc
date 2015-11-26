@@ -89,7 +89,12 @@ func (s *InstanceService) Create(req *InstanceCreateParams) (*Instance, *http.Re
     req.VIFsJSON = buf.String()
   }
   inst := new(Instance)
-  resp, err := s.client.Sling().Post(InstancePath).BodyForm(req).ReceiveSuccess(inst)
+
+  api_err := &APIError{}
+  resp, err := s.client.Sling().Post(InstancePath).BodyForm(req).Receive(inst, api_err)
+  if code := resp.StatusCode; 400 <= code {
+    err = fmt.Errorf("HTTP Error %d, %s", code, api_err.Error())
+  }
   return inst, resp, err
 }
 
