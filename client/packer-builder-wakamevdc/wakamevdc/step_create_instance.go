@@ -5,7 +5,7 @@ import (
 
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/packer"
-	wakamevdc "github.com/axsh/wakame-vdc/client/go-wakamevdc"
+	goclient "github.com/axsh/wakame-vdc/client/go-wakamevdc"
 )
 
 type stepCreateInstance struct {
@@ -13,19 +13,23 @@ type stepCreateInstance struct {
 }
 
 func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction {
-	client := state.Get("client").(*wakamevdc.Client)
+	client := state.Get("client").(*goclient.Client)
 	ui := state.Get("ui").(packer.Ui)
+	conf := state.Get("config").(Config)
 
   ui.Say("Creating instance...")
-	inst, resp, err := client.Instance.Create(&wakamevdc.InstanceCreateParams{
-    Hypervisor: "openvz",
-    CPUCores: 1,
-    MemorySize: 128,
-    ImageID: "wmi-centos1d64",
+	inst, _, err := client.Instance.Create(&goclient.InstanceCreateParams{
+    Hypervisor: conf.Hypervisor,
+    CPUCores: conf.CPUCores,
+    MemorySize: conf.MemorySize,
+    ImageID: conf.ImageID,
+		HostNodeID: conf.HostNodeID,
+		//UserData: conf.UserData,
+		SshKeyID: conf.SshKeyID,
+		VIFs: map[string]goclient.InstanceCreateVIFParams {
+				"eth0": {NetworkID: conf.VIF1NetworkID},
+		},
   })
-	if err == nil &&  resp.StatusCode != 200 {
-		err = fmt.Errorf(resp.Status)
-	}
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
 		state.Put("error", err)

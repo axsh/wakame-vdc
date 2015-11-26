@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	wakamevdc "github.com/axsh/wakame-vdc/client/go-wakamevdc"
+	goclient "github.com/axsh/wakame-vdc/client/go-wakamevdc"
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/packer"
 )
@@ -13,7 +13,7 @@ import (
 type stepReadyInstance struct {}
 
 func (s *stepReadyInstance) Run(state multistep.StateBag) multistep.StepAction {
-	client := state.Get("client").(*wakamevdc.Client)
+	client := state.Get("client").(*goclient.Client)
 	ui := state.Get("ui").(packer.Ui)
 	c := state.Get("config").(Config)
 	inst_id := state.Get("instance_id").(string)
@@ -27,7 +27,7 @@ func (s *stepReadyInstance) Run(state multistep.StateBag) multistep.StepAction {
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	_, _, err = client.Instance.GetByID(inst_id)
+	inst, _, err := client.Instance.GetByID(inst_id)
 	if err != nil {
 		err := fmt.Errorf("Error retrieving instance: %s", err)
 		state.Put("error", err)
@@ -35,7 +35,7 @@ func (s *stepReadyInstance) Run(state multistep.StateBag) multistep.StepAction {
 		return multistep.ActionHalt
 	}
 
-	state.Put("ip_address", "0.0.0.0")
+	state.Put("ip_address", inst.VIFs[0].IPv4.Address)
   return multistep.ActionContinue
 }
 
@@ -45,7 +45,7 @@ func (s *stepReadyInstance) Cleanup(state multistep.StateBag) {
 
 func waitForInstanceState(
 	desiredState string, instanceID string,
-	client *wakamevdc.Client, timeout time.Duration) error {
+	client *goclient.Client, timeout time.Duration) error {
 	done := make(chan struct{})
 	defer close(done)
 

@@ -22,12 +22,18 @@ type Config struct {
 
 	APIEndpoint string `mapstructure:"api_endpoint"`
 
-	ImageId  string `mapstructure:"image_id"`
-	AccountId string `mapstructure:"account_id"`
+	ImageID  string `mapstructure:"image_id"`
+	AccountID string `mapstructure:"account_id"`
 
-	SnapshotName      string        `mapstructure:"snapshot_name"`
-	StateTimeout      time.Duration `mapstructure:"state_timeout"`
+	Hypervisor string `mapstructure:"hypervisor"`
+	CPUCores   int  `mapstructure:"cpu_cores"`
+	MemorySize int  `mapstructure:"memory_size"`
+	HostNodeID string `mapstructure:"host_node_id"`
+	VIF1NetworkID string `mapstructure:"network_id"`
+	SshKeyID   string `mapstructure:"ssh_key_id"`
 	UserData          string        `mapstructure:"user_data"`
+
+	StateTimeout      time.Duration `mapstructure:"state_timeout"`
 
 	ctx interpolate.Context
 }
@@ -55,14 +61,12 @@ func NewConfig(raws ...interface{}) (*Config, []string, error) {
 		c.APIEndpoint = os.Getenv("WAKAMEVDC_API_ENDPOINT")
 	}
 
-	if c.SnapshotName == "" {
-		def, err := interpolate.Render("packer-{{timestamp}}", nil)
-		if err != nil {
-			panic(err)
-		}
+	if c.CPUCores == 0 {
+		c.CPUCores = 1
+	}
 
-		// Default to packer-{{ unix timestamp (utc) }}
-		c.SnapshotName = def
+	if c.MemorySize == 0 {
+		c.MemorySize = 512
 	}
 
 	if c.Comm.SSHUsername == "" {
@@ -91,9 +95,29 @@ func NewConfig(raws ...interface{}) (*Config, []string, error) {
 		}
 	}
 
-	if c.ImageId == "" {
+	if c.ImageID == "" {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("image_id is required"))
+	}
+
+	if c.CPUCores < 1 {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("cpu_cores must have positive integer"))
+	}
+
+	if c.MemorySize < 1 {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("memorys_size must have positive integer"))
+	}
+
+	if c.Hypervisor == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("hypervisor must be either of available hyperivsors: lxc, openvz, kvm"))
+	}
+
+	if c.VIF1NetworkID == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("network_id is required"))
 	}
 
 	if errs != nil && len(errs.Errors) > 0 {
