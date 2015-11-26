@@ -10,9 +10,9 @@ import (
 
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common"
-	"github.com/mitchellh/packer/helper/communicator"
+	//"github.com/mitchellh/packer/helper/communicator"
 	"github.com/mitchellh/packer/packer"
-	wakamevdc "github.com/axsh/wakame-vdc/client/go-wakamevdc"
+	goclient "github.com/axsh/wakame-vdc/client/go-wakamevdc"
 )
 
 // The unique id for the builder
@@ -39,7 +39,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		return nil, err
 	}
 
-	client := wakamevdc.NewClient(base_url, nil)
+	client := goclient.NewClient(base_url, nil)
 
 	// Set up the state
 	state := new(multistep.BasicStateBag)
@@ -58,14 +58,15 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		*/
 		new(stepCreateInstance),
 		new(stepReadyInstance),
-		&communicator.StepConnect{
+/*		&communicator.StepConnect{
 			Config:    &b.config.Comm,
 			Host:      commHost,
-			//SSHConfig: sshConfig,
+			SSHConfig: sshConfig,
 		},
-		new(common.StepProvision),
+		new(common.StepProvision), */
 		new(stepPowerOff),
 		new(stepBackup),
+		new(stepTerminate),
 	}
 
 	// Run the steps
