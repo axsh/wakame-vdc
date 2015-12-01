@@ -17,6 +17,8 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 	ui := state.Get("ui").(packer.Ui)
 	conf := state.Get("config").(Config)
 
+	ssh_key_id := state.Get("ssh_key_id").(string)
+	security_group_ids := []string { state.Get("security_group_id").(string) }
   ui.Say("Creating instance...")
 	inst, _, err := client.Instance.Create(&goclient.InstanceCreateParams{
     Hypervisor: conf.Hypervisor,
@@ -25,9 +27,12 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
     ImageID: conf.ImageID,
 		HostNodeID: conf.HostNodeID,
 		//UserData: conf.UserData,
-		SshKeyID: conf.SshKeyID,
+		SshKeyID: ssh_key_id,
 		VIFs: map[string]goclient.InstanceCreateVIFParams {
-				"eth0": {NetworkID: conf.VIF1NetworkID},
+				"eth0": {
+					NetworkID: conf.VIF1NetworkID,
+					SecurityGroupIDs: security_group_ids,
+				},
 		},
   })
 	if err != nil {

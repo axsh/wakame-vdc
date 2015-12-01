@@ -4,15 +4,16 @@
 package wakamevdc
 
 import (
-	//"fmt"
+	"fmt"
 	"log"
 	"net/url"
 
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common"
-	//"github.com/mitchellh/packer/helper/communicator"
+	"github.com/mitchellh/packer/helper/communicator"
 	"github.com/mitchellh/packer/packer"
 	goclient "github.com/axsh/wakame-vdc/client/go-wakamevdc"
+	"golang.org/x/crypto/ssh"
 )
 
 // The unique id for the builder
@@ -56,12 +57,12 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		},
 		new(stepCreateInstance),
 		new(stepReadyInstance),
-/*		&communicator.StepConnect{
+		&communicator.StepConnect{
 			Config:    &b.config.Comm,
 			Host:      commHost,
 			SSHConfig: sshConfig,
 		},
-		new(common.StepProvision), */
+		//new(common.StepProvision),
 		new(stepPowerOff),
 		new(stepBackup),
 		new(stepTerminate),
@@ -108,4 +109,21 @@ func (b *Builder) Cancel() {
 func commHost(state multistep.StateBag) (string, error) {
 	ipAddress := state.Get("ip_address").(string)
 	return ipAddress, nil
+}
+
+func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
+	config := state.Get("config").(Config)
+	privateKey := state.Get("ssh_private_key").(string)
+
+	signer, err := ssh.ParsePrivateKey([]byte(privateKey))
+	if err != nil {
+		return nil, fmt.Errorf("Error setting up SSH config: %s", err)
+	}
+
+	return &ssh.ClientConfig{
+		User: config.Comm.SSHUsername,
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+	}, nil
 }
