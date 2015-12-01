@@ -50,12 +50,10 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 
 	// Build the steps
 	steps := []multistep.Step{
-    /*
-		&stepCreateSSHKey{
-			Debug:        b.config.PackerDebug,
-			DebugKeyPath: fmt.Sprintf("do_%s.pem", b.config.PackerBuildName),
+		&stepSetup{
+			//Debug:        b.config.PackerDebug,
+			//DebugKeyPath: fmt.Sprintf("do_%s.pem", b.config.PackerBuildName),
 		},
-		*/
 		new(stepCreateInstance),
 		new(stepReadyInstance),
 /*		&communicator.StepConnect{
