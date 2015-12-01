@@ -108,3 +108,32 @@ func (s *InstanceService) GetByID(id string) (*Instance, *http.Response, error) 
   resp, err := s.client.Sling().Get(fmt.Sprintf(InstancePath + "/%s", id)).ReceiveSuccess(inst)
   return inst, resp, err
 }
+
+func (s *InstanceService) PowerOff(id string) (*http.Response, error) {
+  resp, err := s.client.Sling().Put(fmt.Sprintf(InstancePath + "/%s/poweroff", id)).Receive(nil, nil)
+  return resp, err
+}
+
+func (s *InstanceService) PowerOn(id string) (*http.Response, error) {
+  resp, err := s.client.Sling().Put(fmt.Sprintf(InstancePath + "/%s/poweron", id)).Receive(nil, nil)
+  return resp, err
+}
+
+type InstanceBackupParams struct {
+  All bool `url:"all,omitempty"`
+  DisplayName  string `url:"display_name,omitempty"`
+  Description  string `url:"description,omitempty"`
+  IsPublic bool `url:"is_public,omitempty"`
+  IsCacheable bool `url:"is_cacheable,omitempty"`
+}
+
+type InstanceBackup struct {
+  ImageID string `json:"image_id"`
+  BackupObjectID string `json:"backup_object_id"`
+}
+
+func (s *InstanceService) Backup(id string, params *InstanceBackupParams) (string, *http.Response, error) {
+  backup_resp := new(InstanceBackup)
+  resp, err := s.client.Sling().Put(fmt.Sprintf(InstancePath + "/%s/backup", id)).BodyForm(params).Receive(backup_resp, nil)
+  return backup_resp.ImageID, resp, err
+}
