@@ -16,7 +16,8 @@
     {
       "type": "shell",
       "inline": [
-        "echo RUN Provisioner."
+        "echo RUN Provisioner.",
+        "yum install -y httpd"
       ]
     }
   ]

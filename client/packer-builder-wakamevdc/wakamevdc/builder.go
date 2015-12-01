@@ -62,7 +62,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 			Host:      commHost,
 			SSHConfig: sshConfig,
 		},
-		//new(common.StepProvision),
+		new(common.StepProvision),
 		new(stepPowerOff),
 		new(stepBackup),
 		new(stepTerminate),
