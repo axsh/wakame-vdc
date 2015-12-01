@@ -27,6 +27,7 @@ type Client struct {
   Instance  *InstanceService
   SecurityGroup *SecurityGroupService
   SshKey    *SshKeyService
+  Image     *ImageService
 }
 
 func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
@@ -41,6 +42,7 @@ func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
   c.Instance = &InstanceService{client: c}
   c.SecurityGroup = &SecurityGroupService{client: c}
   c.SshKey = &SshKeyService{client: c}
+  c.Image = &ImageService{client: c}
   return c
 }
 
