@@ -19,7 +19,7 @@ type SecurityGroupService struct {
 }
 
 type SecurityGroupCreateParams struct {
-	DisplayName  string `url:"display_name,omitempty"`
+  DisplayName  string `url:"display_name,omitempty"`
   Rule string `url:"rules"`
 }
 

@@ -72,7 +72,7 @@ type InstanceCreateParams struct {
   SshKeyID     string `url:"ssh_key_id,omitempty"`
   Hostname     string `url:"hostname,omitempty"`
   HAEnabled    int    `url:"ha_enabled,omitempty"`
-	DisplayName  string `url:"display_name,omitempty"`
+  DisplayName  string `url:"display_name,omitempty"`
   Description  string `url:"description,omitempty"`
   VIFsJSON     string `url:"vifs,omitempty"`
   VIFs         map[string]InstanceCreateVIFParams
