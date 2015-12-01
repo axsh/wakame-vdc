@@ -19,7 +19,10 @@ type Instance struct {
   Status      string `json:"status"`
   Arch        string `json:"arch"`
   HostNode    string `json:"host_node"`
-  SshKeyID    string `json:"ssh_key_pair"`
+  SshKey      struct {
+    ID string `json:"uuid"`
+    DisplayName string `json:display_name`
+  } `json:"ssh_key_pair"`
   Hostname    string `json:"hostname"`
   HAEnabled   int    `json:"ha_enabled"`
   QuotaWeight float32 `json:"quota_weight"`
@@ -40,6 +43,10 @@ type Instance struct {
       NATAddress string `json:"nat_address"`
     } `json:"ipv4"`
   } `json:"vif"`
+}
+
+func (i *Instance) SshKeyID() string {
+  return i.SshKey.ID
 }
 
 type InstanceService struct {
