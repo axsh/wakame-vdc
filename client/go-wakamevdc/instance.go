@@ -137,3 +137,11 @@ func (s *InstanceService) Backup(id string, params *InstanceBackupParams) (strin
   resp, err := s.client.Sling().Put(fmt.Sprintf(InstancePath + "/%s/backup", id)).BodyForm(params).Receive(backup_resp, nil)
   return backup_resp.ImageID, resp, err
 }
+
+func (s *InstanceService) CompareState(id string, state string) (bool, error) {
+  inst, _, err := s.GetByID(id)
+  if err != nil {
+    return false, err
+  }
+  return (inst.State == state), nil
+}

@@ -16,6 +16,10 @@ const (
   headerVDCAccountID     = "X-VDC-Account-UUID"
 )
 
+type StateCompare interface {
+  CompareState(id string, state string) (bool, error)
+}
+
 // Client manages communication with Wakame-vdc API.
 type Client struct {
   sling *sling.Sling
