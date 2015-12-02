@@ -13,6 +13,7 @@ type SshKey struct {
   Fingerprint string `json:"finger_print"`
   CreatedAt   string `json:"created_at"`
   Description string `json:"description"`
+  PrivateKey  string `json:"private_key"`
 }
 
 type SshKeyService struct {

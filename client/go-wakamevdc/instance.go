@@ -15,11 +15,16 @@ type Instance struct {
   DisplayName string `json:"display_name"`
   Description string `json:"description"`
   ServiceType string `json:"service_type"`
+  CPUCores    int `json:"cpu_cores"`
+  MemorySize  int `json:"memory_size"`
   State       string `json:"state"`
   Status      string `json:"status"`
   Arch        string `json:"arch"`
   HostNode    string `json:"host_node"`
-  SshKeyID    string `json:"ssh_key_pair"`
+  SshKey      struct {
+    ID string `json:"uuid"`
+    DisplayName string `json:display_name`
+  } `json:"ssh_key_pair"`
   Hostname    string `json:"hostname"`
   HAEnabled   int    `json:"ha_enabled"`
   QuotaWeight float32 `json:"quota_weight"`
@@ -40,6 +45,10 @@ type Instance struct {
       NATAddress string `json:"nat_address"`
     } `json:"ipv4"`
   } `json:"vif"`
+}
+
+func (i *Instance) SshKeyID() string {
+  return i.SshKey.ID
 }
 
 type InstanceService struct {
@@ -107,4 +116,41 @@ func (s *InstanceService) GetByID(id string) (*Instance, *http.Response, error) 
   inst := new(Instance)
   resp, err := s.client.Sling().Get(fmt.Sprintf(InstancePath + "/%s", id)).ReceiveSuccess(inst)
   return inst, resp, err
+}
+
+func (s *InstanceService) PowerOff(id string) (*http.Response, error) {
+  resp, err := s.client.Sling().Put(fmt.Sprintf(InstancePath + "/%s/poweroff", id)).Receive(nil, nil)
+  return resp, err
+}
+
+func (s *InstanceService) PowerOn(id string) (*http.Response, error) {
+  resp, err := s.client.Sling().Put(fmt.Sprintf(InstancePath + "/%s/poweron", id)).Receive(nil, nil)
+  return resp, err
+}
+
+type InstanceBackupParams struct {
+  All bool `url:"all,omitempty"`
+  DisplayName  string `url:"display_name,omitempty"`
+  Description  string `url:"description,omitempty"`
+  IsPublic bool `url:"is_public,omitempty"`
+  IsCacheable bool `url:"is_cacheable,omitempty"`
+}
+
+type InstanceBackup struct {
+  ImageID string `json:"image_id"`
+  BackupObjectID string `json:"backup_object_id"`
+}
+
+func (s *InstanceService) Backup(id string, params *InstanceBackupParams) (string, *http.Response, error) {
+  backup_resp := new(InstanceBackup)
+  resp, err := s.client.Sling().Put(fmt.Sprintf(InstancePath + "/%s/backup", id)).BodyForm(params).Receive(backup_resp, nil)
+  return backup_resp.ImageID, resp, err
+}
+
+func (s *InstanceService) CompareState(id string, state string) (bool, error) {
+  inst, _, err := s.GetByID(id)
+  if err != nil {
+    return false, err
+  }
+  return (inst.State == state), nil
 }
