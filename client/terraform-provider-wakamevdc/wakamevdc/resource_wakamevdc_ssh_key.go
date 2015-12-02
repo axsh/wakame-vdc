@@ -40,3 +40,19 @@ func resourceWakamevdcSSHKey() *schema.Resource {
     },
   }
 }
+
+func resourceWakamevdcSSHKeyCreate(d *schema.ResourceData, m interface{}) error {
+  return nil
+}
+
+func resourceWakamevdcSSHKeyRead(d *schema.ResourceData, m interface{}) error {
+  return nil
+}
+
+func resourceWakamevdcSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
+  return nil
+}
+
+func resourceWakamevdcSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
+  return nil
+}
