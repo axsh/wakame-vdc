@@ -3,13 +3,12 @@ package wakamevdc
 import (
 	"errors"
 	//"fmt"
+	"net/url"
 	"os"
 	"time"
-	"net/url"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/packer/common"
-	//"github.com/mitchellh/packer/common/uuid"
 	"github.com/mitchellh/packer/helper/communicator"
 	"github.com/mitchellh/packer/helper/config"
 	"github.com/mitchellh/packer/packer"
@@ -22,18 +21,18 @@ type Config struct {
 
 	APIEndpoint string `mapstructure:"api_endpoint"`
 
-	ImageID  string `mapstructure:"image_id"`
+	ImageID   string `mapstructure:"image_id"`
 	AccountID string `mapstructure:"account_id"`
 
-	Hypervisor string `mapstructure:"hypervisor"`
-	CPUCores   int  `mapstructure:"cpu_cores"`
-	MemorySize int  `mapstructure:"memory_size"`
-	HostNodeID string `mapstructure:"host_node_id"`
+	Hypervisor    string `mapstructure:"hypervisor"`
+	CPUCores      int    `mapstructure:"cpu_cores"`
+	MemorySize    int    `mapstructure:"memory_size"`
+	HostNodeID    string `mapstructure:"host_node_id"`
 	VIF1NetworkID string `mapstructure:"network_id"`
-	SshKeyID   string `mapstructure:"ssh_key_id"`
-	UserData          string        `mapstructure:"user_data"`
+	SshKeyID      string `mapstructure:"ssh_key_id"`
+	UserData      string `mapstructure:"user_data"`
 
-	StateTimeout      time.Duration `mapstructure:"state_timeout"`
+	StateTimeout time.Duration `mapstructure:"state_timeout"`
 
 	ctx interpolate.Context
 }

@@ -1,6 +1,3 @@
-// The digitalocean package contains a packer.Builder implementation
-// that builds DigitalOcean images (snapshots).
-
 package wakamevdc
 
 import (
@@ -8,11 +5,11 @@ import (
 	"log"
 	"net/url"
 
+	goclient "github.com/axsh/wakame-vdc/client/go-wakamevdc"
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common"
 	"github.com/mitchellh/packer/helper/communicator"
 	"github.com/mitchellh/packer/packer"
-	goclient "github.com/axsh/wakame-vdc/client/go-wakamevdc"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -35,12 +32,12 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 }
 
 func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packer.Artifact, error) {
-	base_url, err := url.Parse(b.config.APIEndpoint + "/")
+	baseURL, err := url.Parse(b.config.APIEndpoint + "/")
 	if err != nil {
 		return nil, err
 	}
 
-	client := goclient.NewClient(base_url, nil)
+	client := goclient.NewClient(baseURL, nil)
 
 	// Set up the state
 	state := new(multistep.BasicStateBag)
@@ -51,10 +48,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 
 	// Build the steps
 	steps := []multistep.Step{
-		&stepSetup{
-			//Debug:        b.config.PackerDebug,
-			//DebugKeyPath: fmt.Sprintf("do_%s.pem", b.config.PackerBuildName),
-		},
+		&stepSetup{},
 		new(stepCreateInstance),
 		new(stepReadyInstance),
 		&communicator.StepConnect{
@@ -104,7 +98,6 @@ func (b *Builder) Cancel() {
 		b.runner.Cancel()
 	}
 }
-
 
 func commHost(state multistep.StateBag) (string, error) {
 	ipAddress := state.Get("ip_address").(string)

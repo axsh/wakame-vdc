@@ -36,6 +36,6 @@ func (a *Artifact) State(name string) interface{} {
 
 func (a *Artifact) Destroy() error {
 	log.Printf("Destroying image: %s", a.ImageId)
-	_, err := a.client.Images.Delete(a.ImageId)
+	_, err := a.client.Image.Delete(a.ImageId)
 	return err
 }

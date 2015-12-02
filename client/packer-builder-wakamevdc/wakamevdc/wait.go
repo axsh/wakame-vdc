@@ -3,13 +3,14 @@ package wakamevdc
 import (
 	"fmt"
 	"log"
-  "time"
+	"time"
+
 	goclient "github.com/axsh/wakame-vdc/client/go-wakamevdc"
 )
 
 func waitForResourceState(
-	desiredState string, resource_id string,
-	wait_for_tgt goclient.StateCompare, timeout time.Duration) error {
+	desiredState string, resourceID string,
+	waitForTgt goclient.StateCompare, timeout time.Duration) error {
 	done := make(chan struct{})
 	defer close(done)
 
@@ -19,14 +20,14 @@ func waitForResourceState(
 		for {
 			attempts += 1
 
-			log.Printf("Checking %s status... (attempt: %d)", resource_id, attempts)
-			state_match, err := wait_for_tgt.CompareState(resource_id, desiredState)
+			log.Printf("Checking %s status... (attempt: %d)", resourceID, attempts)
+			stateMatch, err := waitForTgt.CompareState(resourceID, desiredState)
 			if err != nil {
 				result <- err
 				return
 			}
 
-			if state_match == true {
+			if stateMatch == true {
 				result <- nil
 				return
 			}

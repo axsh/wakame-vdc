@@ -8,16 +8,16 @@ import (
 	"github.com/mitchellh/packer/packer"
 )
 
-type stepBackup struct {}
+type stepBackup struct{}
 
 func (s *stepBackup) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(*goclient.Client)
 	ui := state.Get("ui").(packer.Ui)
 	conf := state.Get("config").(Config)
-	inst_id := state.Get("instance_id").(string)
+	instID := state.Get("instance_id").(string)
 
-  ui.Say("Take instance backup...")
-	image_id, _, err := client.Instance.Backup(inst_id, &goclient.InstanceBackupParams {
+	ui.Say("Take instance backup...")
+	imageID, _, err := client.Instance.Backup(instID, &goclient.InstanceBackupParams{
 		All: false,
 	})
 	if err != nil {
@@ -26,9 +26,9 @@ func (s *stepBackup) Run(state multistep.StateBag) multistep.StepAction {
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	ui.Say("New image: " + image_id)
+	ui.Say("New image: " + imageID)
 
-	err = waitForResourceState("available", image_id, client.Image, conf.StateTimeout)
+	err = waitForResourceState("available", imageID, client.Image, conf.StateTimeout)
 	if err != nil {
 		err := fmt.Errorf("Error waiting for image to become available: %s", err)
 		state.Put("error", err)
@@ -37,11 +37,10 @@ func (s *stepBackup) Run(state multistep.StateBag) multistep.StepAction {
 	}
 	ui.Say("Image created...")
 
-
-	state.Put("image_id", image_id)
-  return multistep.ActionContinue
+	state.Put("image_id", imageID)
+	return multistep.ActionContinue
 }
 
 func (s *stepBackup) Cleanup(state multistep.StateBag) {
-  return
+	return
 }

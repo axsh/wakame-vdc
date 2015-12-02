@@ -8,7 +8,7 @@ import (
 	"github.com/mitchellh/packer/packer"
 )
 
-type stepSetup struct {}
+type stepSetup struct{}
 
 func (s *stepSetup) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(*goclient.Client)
@@ -16,16 +16,16 @@ func (s *stepSetup) Run(state multistep.StateBag) multistep.StepAction {
 	//conf := state.Get("config").(Config)
 
 	ui.Say("Creating SSH Key...")
-	ssh_key, _, err := client.SshKey.Create(&goclient.SshKeyCreateParams{})
+	sshKey, _, err := client.SshKey.Create(&goclient.SshKeyCreateParams{})
 	if err != nil {
 		err := fmt.Errorf("Error creating ssh key: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	ui.Say("New SSH Key: " + ssh_key.ID)
-	state.Put("ssh_key_id", ssh_key.ID)
-	state.Put("ssh_private_key", ssh_key.PrivateKey)
+	ui.Say("New SSH Key: " + sshKey.ID)
+	state.Put("ssh_key_id", sshKey.ID)
+	state.Put("ssh_private_key", sshKey.PrivateKey)
 	// Validate private key syntax
 	_, err = sshConfig(state)
 	if err != nil {
@@ -36,7 +36,7 @@ func (s *stepSetup) Run(state multistep.StateBag) multistep.StepAction {
 	}
 
 	ui.Say("Creating Security Group...")
-	security_group, _, err := client.SecurityGroup.Create(&goclient.SecurityGroupCreateParams{
+	securityGroup, _, err := client.SecurityGroup.Create(&goclient.SecurityGroupCreateParams{
 		Rule: "tcp:22,22,ip4:0.0.0.0",
 	})
 	if err != nil {
@@ -45,12 +45,12 @@ func (s *stepSetup) Run(state multistep.StateBag) multistep.StepAction {
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	ui.Say("New Security Group: " + security_group.ID)
-	state.Put("security_group_id", security_group.ID)
+	ui.Say("New Security Group: " + securityGroup.ID)
+	state.Put("security_group_id", securityGroup.ID)
 
-  return multistep.ActionContinue
+	return multistep.ActionContinue
 }
 
 func (s *stepSetup) Cleanup(state multistep.StateBag) {
-  return
+	return
 }
