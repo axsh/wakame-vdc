@@ -17,6 +17,7 @@
       "type": "shell",
       "inline": [
         "echo RUN Provisioner.",
+        "echo \"nameserver 8.8.8.8\" >> /etc/resolve.conf",
         "yum install -y httpd"
       ]
     }
