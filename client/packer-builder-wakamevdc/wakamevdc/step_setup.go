@@ -2,6 +2,7 @@ package wakamevdc
 
 import (
 	"fmt"
+	"log"
 
 	goclient "github.com/axsh/wakame-vdc/client/go-wakamevdc"
 	"github.com/mitchellh/multistep"
@@ -52,5 +53,29 @@ func (s *stepSetup) Run(state multistep.StateBag) multistep.StepAction {
 }
 
 func (s *stepSetup) Cleanup(state multistep.StateBag) {
+	client := state.Get("client").(*goclient.Client)
+	ui := state.Get("ui").(packer.Ui)
+
+	sshKeyID := state.Get("ssh_key_id").(string)
+	if sshKeyID != "" {
+		ui.Say("Deleting temporary ssh key...")
+		_, err := client.SshKey.Delete(sshKeyID)
+		if err != nil {
+			log.Printf("Error cleaning up ssh key (%s): %s", sshKeyID, err)
+			ui.Error(fmt.Sprintf(
+				"Error cleaning up ssh key (%s). Please delete the key manually: %s", sshKeyID, err))
+		}
+	}
+
+	securityGroupID := state.Get("security_group_id").(string)
+	if securityGroupID != "" {
+		ui.Say("Deleting temporary security group...")
+		_, err := client.SecurityGroup.Delete(securityGroupID)
+		if err != nil {
+			log.Printf("Error cleaning up ssecurity group (%s): %s", securityGroupID, err)
+			ui.Error(fmt.Sprintf(
+				"Error cleaning up security group (%s). Please delete the security group manually: %s", securityGroupID, err))
+		}
+	}
 	return
 }
