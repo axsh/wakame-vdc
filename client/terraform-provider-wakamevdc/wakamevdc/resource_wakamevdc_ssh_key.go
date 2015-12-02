@@ -1,16 +1,7 @@
 package wakamevdc
 
 import (
-  /*
-  "fmt"
-  "log"
-  "strconv"
-  "strings"
-  "time"
-  */
-
   //"github.com/axsh/wakame-vdc/client/go-wakamevdc"
-  //"github.com/hashicorp/terraform/helper/resource"
   "github.com/hashicorp/terraform/helper/schema"
 )
 
