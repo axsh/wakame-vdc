@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	//"github.com/digitalocean/godo"
+	goclient "github.com/axsh/wakame-vdc/client/go-wakamevdc"
 )
 
 type Artifact struct {
 	ImageId string
 
 	// The client for making API calls
-	//client *godo.Client
+	client *goclient.Client
 }
 
 func (*Artifact) BuilderId() string {
@@ -19,16 +19,15 @@ func (*Artifact) BuilderId() string {
 }
 
 func (*Artifact) Files() []string {
-	// No files with DigitalOcean
 	return nil
 }
 
 func (a *Artifact) Id() string {
-	return fmt.Sprintf("%s", a.ImageId)
+	return a.ImageId
 }
 
 func (a *Artifact) String() string {
-	return fmt.Sprintf("A snapshot was created: '%s'", a.ImageId)
+	return fmt.Sprintf("A machine image was created: '%s'", a.ImageId)
 }
 
 func (a *Artifact) State(name string) interface{} {
@@ -37,7 +36,6 @@ func (a *Artifact) State(name string) interface{} {
 
 func (a *Artifact) Destroy() error {
 	log.Printf("Destroying image: %s", a.ImageId)
-	//_, err := a.client.Images.Delete(a.snapshotId)
-	//return err
-  return nil
+	_, err := a.client.Images.Delete(a.ImageId)
+	return err
 }

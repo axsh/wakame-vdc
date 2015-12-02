@@ -91,8 +91,8 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	}
 
 	artifact := &Artifact{
-		ImageId:   state.Get("image_id").(string),
-		//client:       client,
+		ImageId: state.Get("image_id").(string),
+		client:  client,
 	}
 
 	return artifact, nil
