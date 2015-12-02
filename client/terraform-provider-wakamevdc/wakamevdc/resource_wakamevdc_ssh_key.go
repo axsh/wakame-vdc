@@ -16,6 +16,11 @@ import (
 
 func resourceWakamevdcSSHKey() *schema.Resource {
   return &schema.Resource{
+    Create: resourceWakamevdcSSHKeyCreate,
+    Read: resourceWakamevdcSSHKeyRead,
+    Update: resourceWakamevdcSSHKeyUpdate,
+    Delete: resourceWakamevdcSSHKeyDelete,
+
     Schema: map[string]*schema.Schema{
       "id": &schema.Schema{
         Type:     schema.TypeString,
