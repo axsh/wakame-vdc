@@ -2,20 +2,20 @@ package wakamevdc
 
 import (
   /*
-	"fmt"
-	"log"
-	"strconv"
-	"strings"
-	"time"
+  "fmt"
+  "log"
+  "strconv"
+  "strings"
+  "time"
   */
 
   //"github.com/axsh/wakame-vdc/client/go-wakamevdc"
-	//"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+  //"github.com/hashicorp/terraform/helper/resource"
+  "github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourceWakamevdcInstance() *schema.Resource {
-	return &schema.Resource{
+  return &schema.Resource{
     Schema: map[string]*schema.Schema{
       "image_id": &schema.Schema{
         Type:     schema.TypeString,

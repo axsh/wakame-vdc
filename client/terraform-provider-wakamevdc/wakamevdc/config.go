@@ -1,9 +1,9 @@
 package wakamevdc
 
 import (
-	//"log"
+  //"log"
 
-	//"github.com/axsh/wakame-vdc/client/go-wakamevdc"
+  //"github.com/axsh/wakame-vdc/client/go-wakamevdc"
 )
 
 type Config struct {
