@@ -13,6 +13,7 @@ type SshKey struct {
   Fingerprint string `json:"finger_print"`
   CreatedAt   string `json:"created_at"`
   Description string `json:"description"`
+  PrivateKey  string `json:"private_key"`
 }
 
 type SshKeyService struct {
@@ -20,8 +21,8 @@ type SshKeyService struct {
 }
 
 type SshKeyCreateParams struct {
-	DisplayName  string `url:"display_name,omitempty"`
-	PublicKey    string `url:"public_key"`
+  DisplayName  string `url:"display_name,omitempty"`
+  PublicKey    string `url:"public_key"`
 }
 
 func (s *SshKeyService) Create(req *SshKeyCreateParams) (*SshKey, *http.Response, error) {
