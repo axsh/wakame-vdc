@@ -27,7 +27,7 @@ func resourceWakamevdcSSHKey() *schema.Resource {
         Computed: true,
       },
 
-      "name": &schema.Schema{
+      "display_name": &schema.Schema{
         Type:     schema.TypeString,
         Required: true,
       },
