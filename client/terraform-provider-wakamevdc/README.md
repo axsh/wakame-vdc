@@ -74,6 +74,34 @@ resource "wakamevdc_ssh_key" "ssh1" {
 * `id` - ID for the security group
 * `finger_print` - finger print of the ssh key.
 
+## wakamevdc\_network
+
+Resource to handle `$api_endpoint/networks` API.
+
+## Example Usage
+
+```
+resource "wakamevdc_network" "net1" {
+  description = "Demo network"
+  display_name = "net1"
+  network = "192.168.0.0"
+  prefix = 24
+  dc_network = "public"
+}
+```
+
+## Argument Reference
+
+* `network` - (Required) Network address for the network.
+* `prefix` - (Required) Netmask bit size for the network.
+* `dc_network` - (Required) L2 segment name.
+* `description` - (Optional)
+* `display_name` - (Optional)
+
+## Attributes Reference
+
+* `id` - ID for the network.
+
 ## wakamevdc\_instance
 
 Resource to handle `$api_endpoint/instances` API.
