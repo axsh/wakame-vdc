@@ -31,5 +31,5 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
     APIEndpoint: d.Get("api_endpoint").(string),
   }
 
-  return config, nil
+  return config.Client()
 }

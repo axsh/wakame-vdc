@@ -1,8 +1,9 @@
 package wakamevdc
 
 import (
-  //"github.com/axsh/wakame-vdc/client/go-wakamevdc"
+  "github.com/axsh/wakame-vdc/client/go-wakamevdc"
   "github.com/hashicorp/terraform/helper/schema"
+  "errors"
 )
 
 func resourceWakamevdcSSHKey() *schema.Resource {
@@ -38,7 +39,10 @@ func resourceWakamevdcSSHKey() *schema.Resource {
 }
 
 func resourceWakamevdcSSHKeyCreate(d *schema.ResourceData, m interface{}) error {
-  return nil
+  client := m.(*wakamevdc.Client)
+  sshkey, _, _ := client.SshKey.GetByID("ssh-7nb0the5")
+
+  return errors.New(sshkey.ID)
 }
 
 func resourceWakamevdcSSHKeyRead(d *schema.ResourceData, m interface{}) error {
