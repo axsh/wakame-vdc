@@ -26,8 +26,8 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		MemorySize: conf.MemorySize,
 		ImageID:    conf.ImageID,
 		HostNodeID: conf.HostNodeID,
-		//UserData: conf.UserData,
-		SshKeyID: sshKeyID,
+		UserData:   conf.UserData,
+		SshKeyID:   sshKeyID,
 		VIFs: map[string]goclient.InstanceCreateVIFParams{
 			"eth0": {
 				NetworkID:        conf.VIF1NetworkID,
