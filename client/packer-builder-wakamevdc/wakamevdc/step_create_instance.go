@@ -9,7 +9,7 @@ import (
 )
 
 type stepCreateInstance struct {
-	InstanceID string
+	instanceID string
 }
 
 func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction {
@@ -42,7 +42,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		return multistep.ActionHalt
 	}
 
-	s.InstanceID = inst.ID
+	s.instanceID = inst.ID
 	state.Put("instance_id", inst.ID)
 	return multistep.ActionContinue
 }
