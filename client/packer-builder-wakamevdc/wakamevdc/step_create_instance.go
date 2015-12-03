@@ -48,5 +48,15 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 }
 
 func (s *stepCreateInstance) Cleanup(state multistep.StateBag) {
-	return
+	if s.instanceID == "" || !isStepAborted(state) {
+		return
+	}
+
+	ui := state.Get("ui").(packer.Ui)
+	ui.Say("Terminating the instance because cancelation or error...")
+	client := state.Get("client").(*goclient.Client)
+	if _, err := client.Instance.Delete(s.instanceID); err != nil {
+		ui.Error(fmt.Sprintf("Error terminating instance, may still be around: %s", err))
+		return
+	}
 }
