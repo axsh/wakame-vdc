@@ -79,9 +79,10 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		return nil, rawErr.(error)
 	}
 
-	if _, ok := state.GetOk("snapshot_name"); !ok {
-		log.Println("Failed to find snapshot_name in state. Bug?")
-		return nil, nil
+	if !isStepAborted(state) {
+		if _, ok := state.GetOk("image_id"); !ok {
+			return nil, fmt.Errorf("Failed to find image_id in state. Bug?")
+		}
 	}
 
 	artifact := &Artifact{
@@ -119,4 +120,10 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 			ssh.PublicKeys(signer),
 		},
 	}, nil
+}
+
+func isStepAborted(state multistep.StateBag) bool {
+	_, cancelled := state.GetOk(multistep.StateCancelled)
+	_, halted := state.GetOk(multistep.StateHalted)
+	return cancelled || halted
 }
