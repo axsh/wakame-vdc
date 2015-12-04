@@ -59,4 +59,10 @@ func (s *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		ui.Error(fmt.Sprintf("Error terminating instance, may still be around: %s", err))
 		return
 	}
+
+	conf := state.Get("config").(Config)
+	err := waitForResourceState("terminated", s.instanceID, client.Instance, conf.StateTimeout)
+	if err != nil {
+		ui.Error(fmt.Sprintf("Error waiting for instance to become terminated: %s", err))
+	}
 }
