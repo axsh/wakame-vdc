@@ -100,34 +100,37 @@ func (s *InstanceService) Create(req *InstanceCreateParams) (*Instance, *http.Re
 		req.VIFsJSON = buf.String()
 	}
 	inst := new(Instance)
+	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
+		return s.client.Sling().Post(InstancePath).BodyForm(req).Receive(inst, apiErr)
+	})
 
-	api_err := &APIError{}
-	resp, err := s.client.Sling().Post(InstancePath).BodyForm(req).Receive(inst, api_err)
-	if code := resp.StatusCode; 400 <= code {
-		err = fmt.Errorf("HTTP Error %d, %s", code, api_err.Error())
-	}
 	return inst, resp, err
 }
 
 func (s *InstanceService) Delete(id string) (*http.Response, error) {
-	resp, err := s.client.Sling().Delete(fmt.Sprintf(InstancePath+"/%s", id)).Receive(nil, nil)
-	return resp, err
+	return trapAPIError(func(apiErr *APIError) (*http.Response, error) {
+		return s.client.Sling().Delete(fmt.Sprintf(InstancePath+"/%s", id)).Receive(nil, apiErr)
+	})
 }
 
 func (s *InstanceService) GetByID(id string) (*Instance, *http.Response, error) {
 	inst := new(Instance)
-	resp, err := s.client.Sling().Get(fmt.Sprintf(InstancePath+"/%s", id)).ReceiveSuccess(inst)
+	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
+		return s.client.Sling().Get(fmt.Sprintf(InstancePath+"/%s", id)).Receive(inst, apiErr)
+	})
 	return inst, resp, err
 }
 
 func (s *InstanceService) PowerOff(id string) (*http.Response, error) {
-	resp, err := s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/poweroff", id)).Receive(nil, nil)
-	return resp, err
+	return trapAPIError(func(apiErr *APIError) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/poweroff", id)).Receive(nil, apiErr)
+	})
 }
 
 func (s *InstanceService) PowerOn(id string) (*http.Response, error) {
-	resp, err := s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/poweron", id)).Receive(nil, nil)
-	return resp, err
+	return trapAPIError(func(apiErr *APIError) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/poweron", id)).Receive(nil, apiErr)
+	})
 }
 
 type InstanceBackupParams struct {
@@ -144,9 +147,11 @@ type InstanceBackup struct {
 }
 
 func (s *InstanceService) Backup(id string, params *InstanceBackupParams) (string, *http.Response, error) {
-	backupResp := new(InstanceBackup)
-	resp, err := s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/backup", id)).BodyForm(params).Receive(backupResp, nil)
-	return backupResp.ImageID, resp, err
+	backup_resp := new(InstanceBackup)
+	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/backup", id)).BodyForm(params).Receive(backup_resp, apiErr)
+	})
+	return backup_resp.ImageID, resp, err
 }
 
 func (s *InstanceService) CompareState(id string, state string) (bool, error) {
