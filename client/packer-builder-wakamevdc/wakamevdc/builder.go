@@ -74,15 +74,20 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 
 	b.runner.Run(state)
 
-	// If there was an error, return that
-	if rawErr, ok := state.GetOk("error"); ok {
-		return nil, rawErr.(error)
+	_, cancelled := state.GetOk(multistep.StateCancelled)
+	if cancelled {
+		return nil, nil
+	}
+	_, halted := state.GetOk(multistep.StateHalted)
+	if halted {
+		if rawErr, ok := state.GetOk("error"); ok {
+			return nil, rawErr.(error)
+		}
+		return nil, fmt.Errorf("Failed to build image by unkown reason.")
 	}
 
-	if !isStepAborted(state) {
-		if _, ok := state.GetOk("image_id"); !ok {
-			return nil, fmt.Errorf("Failed to find image_id in state. Bug?")
-		}
+	if _, ok := state.GetOk("image_id"); !ok {
+		return nil, fmt.Errorf("Failed to find image_id in state. Bug?")
 	}
 
 	artifact := &Artifact{
