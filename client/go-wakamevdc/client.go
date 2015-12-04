@@ -60,3 +60,22 @@ type APIError struct {
 func (e *APIError) Error() string {
 	return fmt.Sprintf("Type: %s, Code: %s, Message: %s", e.ErrorType, e.Code, e.Message)
 }
+
+type errorRaiser func(apiErr *APIError) (*http.Response, error)
+
+/* Utility that helps to handle API error.
+Example:
+resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
+  return s.client.Sling().Post(SecurityGroupPath).BodyForm(req).Receive(secg, apiErr)
+})
+*/
+func trapAPIError(fn errorRaiser) (*http.Response, error) {
+	apiErr := &APIError{}
+	resp, err := fn(apiErr)
+	if err == nil {
+		if code := resp.StatusCode; 400 <= code {
+			err = fmt.Errorf("API Error: %s, (HTTP %d)", apiErr.Error(), code)
+		}
+	}
+	return resp, err
+}

@@ -26,18 +26,23 @@ type SshKeyCreateParams struct {
 }
 
 func (s *SshKeyService) Create(req *SshKeyCreateParams) (*SshKey, *http.Response, error) {
-	sshKey := new(SshKey)
-	resp, err := s.client.Sling().Post(SshKeyPath).BodyForm(req).ReceiveSuccess(sshKey)
-	return sshKey, resp, err
+	ssh_key := new(SshKey)
+	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
+		return s.client.Sling().Post(SshKeyPath).BodyForm(req).Receive(ssh_key, apiErr)
+	})
+	return ssh_key, resp, err
 }
 
 func (s *SshKeyService) Delete(id string) (*http.Response, error) {
-	resp, err := s.client.Sling().Delete(fmt.Sprintf(SshKeyPath+"/%s", id)).Receive(nil, nil)
-	return resp, err
+	return trapAPIError(func(apiErr *APIError) (*http.Response, error) {
+		return s.client.Sling().Delete(fmt.Sprintf(SshKeyPath+"/%s", id)).Receive(nil, apiErr)
+	})
 }
 
 func (s *SshKeyService) GetByID(id string) (*SshKey, *http.Response, error) {
-	sshKey := new(SshKey)
-	resp, err := s.client.Sling().Get(fmt.Sprintf(SshKeyPath+"/%s", id)).ReceiveSuccess(sshKey)
-	return sshKey, resp, err
+	ssh_key := new(SshKey)
+	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
+		return s.client.Sling().Get(fmt.Sprintf(SshKeyPath+"/%s", id)).Receive(ssh_key, apiErr)
+	})
+	return ssh_key, resp, err
 }
