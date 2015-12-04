@@ -87,7 +87,7 @@ type InstanceCreateParams struct {
 	UserData    string `url:"user_data,omitempty"`
 	VIFsJSON    string `url:"vifs,omitempty"`
 	VIFs        map[string]InstanceCreateVIFParams
-	Volumes     []InstanceCreateVolumeParams `url:volumes,omitempty`
+	Volumes     []InstanceCreateVolumeParams `url:"volumes,omitempty"`
 }
 
 func (s *InstanceService) Create(req *InstanceCreateParams) (*Instance, *http.Response, error) {
