@@ -9,9 +9,14 @@ const SecurityGroupPath = "security_groups"
 
 type SecurityGroup struct {
 	ID          string `json:"id"`
+	AccountID   string `json:"account_id"`
+	ServiceType string `json:"service_type"`
 	CreatedAt   string `json:"created_at"`
 	DisplayName string `json:"display_name"`
 	Description string `json:"description"`
+	Rules       string `json:"rule"`
+	UpdatedAt   string `json:"updated_at"`
+	DeletedAt   string `json:"deleted_at"`
 }
 
 type SecurityGroupService struct {
@@ -19,8 +24,10 @@ type SecurityGroupService struct {
 }
 
 type SecurityGroupCreateParams struct {
+	ServiceType string `url:"service_type,omitempty"`
+	Description string `url:"description,omitempty"`
 	DisplayName string `url:"display_name,omitempty"`
-	Rule        string `url:"rule"`
+	Rules       string `url:"rule"`
 }
 
 func (s *SecurityGroupService) Create(req *SecurityGroupCreateParams) (*SecurityGroup, *http.Response, error) {
