@@ -38,7 +38,7 @@ func (s *stepSetup) Run(state multistep.StateBag) multistep.StepAction {
 
 	ui.Say("Creating Security Group...")
 	securityGroup, _, err := client.SecurityGroup.Create(&goclient.SecurityGroupCreateParams{
-		Rule: "tcp:22,22,ip4:0.0.0.0",
+		Rules: "tcp:22,22,ip4:0.0.0.0",
 	})
 	if err != nil {
 		err := fmt.Errorf("Error creating security group: %s", err)
