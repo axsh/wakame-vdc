@@ -20,7 +20,7 @@ type SecurityGroupService struct {
 
 type SecurityGroupCreateParams struct {
 	DisplayName string `url:"display_name,omitempty"`
-	Rule        string `url:"rules"`
+	Rule        string `url:"rule"`
 }
 
 func (s *SecurityGroupService) Create(req *SecurityGroupCreateParams) (*SecurityGroup, *http.Response, error) {
