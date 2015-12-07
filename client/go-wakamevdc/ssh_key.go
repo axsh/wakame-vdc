@@ -9,6 +9,7 @@ const SshKeyPath = "ssh_key_pairs"
 
 type SshKey struct {
 	ID          string `json:"id"`
+	DisplayName string `json:"display_name"`
 	PublicKey   string `json:"public_key"`
 	Fingerprint string `json:"finger_print"`
 	CreatedAt   string `json:"created_at"`
