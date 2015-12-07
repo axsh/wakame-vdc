@@ -45,7 +45,9 @@ func resourceWakamevdcSSHKeyCreate(d *schema.ResourceData, m interface{}) error 
     PublicKey: d.Get("public_key").(string),
   }
 
-  _, _, err := client.SshKey.Create(&params)
+  key, _, err := client.SshKey.Create(&params)
+
+  d.SetId(key.ID)
 
   return err
 }
