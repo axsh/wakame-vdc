@@ -30,6 +30,10 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 
 func koeienstep() resource.TestCheckFunc {
   return func(s *terraform.State) error {
-    return fmt.Errorf("gij bent een koe en ik niet")
+    rs, ok := s.RootModule().Resources["wakamevdc_ssh_key.testkey"]
+    fmt.Printf("%+v\n", rs)
+    fmt.Println("=================")
+    fmt.Printf("%+v\n", ok)
+    return nil
   }
 }
