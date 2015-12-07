@@ -53,7 +53,17 @@ func resourceWakamevdcSSHKeyCreate(d *schema.ResourceData, m interface{}) error 
 }
 
 func resourceWakamevdcSSHKeyRead(d *schema.ResourceData, m interface{}) error {
-  return nil
+	client := m.(*wakamevdc.Client)
+
+	key, _, err := client.SshKey.GetByID(d.Id())
+	if err != nil {
+		return err
+	}
+
+	d.Set("display_name", key.DisplayName)
+	d.Set("public_key", key.PublicKey)
+	d.Set("fingerprint", key.Fingerprint)
+	return err
 }
 
 func resourceWakamevdcSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
