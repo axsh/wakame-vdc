@@ -1,10 +1,10 @@
 package wakamevdc
 
 import (
-	"testing"
-        "fmt"
+	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"testing"
 )
 
 const testKeyPair = `
@@ -16,24 +16,24 @@ resource "wakamevdc_ssh_key" "testkey" {
 
 func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: nil,
-		Providers: testVdcProviders,
+		PreCheck:     nil,
+		Providers:    testVdcProviders,
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
-                  resource.TestStep{
-                    Config: testKeyPair,
-                    Check: checkTestKeyCreated(),
-                  },
+			resource.TestStep{
+				Config: testKeyPair,
+				Check:  checkTestKeyCreated(),
+			},
 		},
 	})
 }
 
 func checkTestKeyCreated() resource.TestCheckFunc {
-  return func(s *terraform.State) error {
-    rs, ok := s.RootModule().Resources["wakamevdc_ssh_key.testkey"]
-    fmt.Printf("%+v\n", rs)
-    fmt.Println("=================")
-    fmt.Printf("%+v\n", ok)
-    return nil
-  }
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources["wakamevdc_ssh_key.testkey"]
+		fmt.Printf("%+v\n", rs)
+		fmt.Println("=================")
+		fmt.Printf("%+v\n", ok)
+		return nil
+	}
 }
