@@ -22,13 +22,13 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 		Steps: []resource.TestStep{
                   resource.TestStep{
                     Config: testKeyPair,
-                    Check: koeienstep(),
+                    Check: checkTestKeyCreated(),
                   },
 		},
 	})
 }
 
-func koeienstep() resource.TestCheckFunc {
+func checkTestKeyCreated() resource.TestCheckFunc {
   return func(s *terraform.State) error {
     rs, ok := s.RootModule().Resources["wakamevdc_ssh_key.testkey"]
     fmt.Printf("%+v\n", rs)
