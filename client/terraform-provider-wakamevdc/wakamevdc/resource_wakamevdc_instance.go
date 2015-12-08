@@ -3,7 +3,6 @@ package wakamevdc
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/axsh/wakame-vdc/client/go-wakamevdc"
@@ -132,6 +131,13 @@ func resourceWakamevdcInstanceDelete(d *schema.ResourceData, m interface{}) erro
 
 	_, err := client.Instance.Delete(d.Id())
 	if err != nil {
+		if apiErr, ok := err.(*wakamevdc.APIError); ok {
+			// API Error: HTTP Status: 400, Type: Dcmgr::Endpoints::Errors::InvalidInstanceState, Code: 125, Message: terminated
+			if apiErr.Code() == "125" {
+				log.Printf("Instance is in unexpected state. %s", err)
+				return nil
+			}
+		}
 		return err
 	}
 
