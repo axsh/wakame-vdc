@@ -51,17 +51,36 @@ func (c *Client) Sling() *sling.Sling {
 	return c.sling.New()
 }
 
-type APIError struct {
+type ErrorResponse struct {
 	ErrorType string `json:"error"`
 	Message   string `json:"message"`
 	Code      string `json:"code"`
 }
 
-func (e *APIError) Error() string {
-	return fmt.Sprintf("Type: %s, Code: %s, Message: %s", e.ErrorType, e.Code, e.Message)
+// APIError is the response to show error from server.
+type APIError struct {
+	HTTPStatus int
+	ErrorBody  ErrorResponse
 }
 
-type errorRaiser func(apiErr *APIError) (*http.Response, error)
+func (e *APIError) Error() string {
+	return fmt.Sprintf("API Error: HTTP Status: %d, Type: %s, Code: %s, Message: %s",
+		e.HTTPStatus, e.ErrorBody.ErrorType, e.ErrorBody.Code, e.ErrorBody.Message)
+}
+
+func (e *APIError) ErrorType() string {
+	return e.ErrorBody.ErrorType
+}
+
+func (e *APIError) Code() string {
+	return e.ErrorBody.Code
+}
+
+func (e *APIError) Message() string {
+	return e.ErrorBody.Message
+}
+
+type errorRaiser func(errResp *ErrorResponse) (*http.Response, error)
 
 /* Utility that helps to handle API error.
 Example:
@@ -70,11 +89,14 @@ resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
 })
 */
 func trapAPIError(fn errorRaiser) (*http.Response, error) {
-	apiErr := &APIError{}
-	resp, err := fn(apiErr)
+	errResp := ErrorResponse{}
+	resp, err := fn(&errResp)
 	if err == nil {
 		if code := resp.StatusCode; 400 <= code {
-			err = fmt.Errorf("API Error: %s, (HTTP %d)", apiErr.Error(), code)
+			err = &APIError{
+				HTTPStatus: code,
+				ErrorBody:  errResp,
+			}
 		}
 	}
 	return resp, err
