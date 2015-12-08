@@ -32,23 +32,23 @@ type SecurityGroupCreateParams struct {
 
 func (s *SecurityGroupService) Create(req *SecurityGroupCreateParams) (*SecurityGroup, *http.Response, error) {
 	secg := new(SecurityGroup)
-	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Post(SecurityGroupPath).BodyForm(req).Receive(secg, apiErr)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Post(SecurityGroupPath).BodyForm(req).Receive(secg, errResp)
 	})
 
 	return secg, resp, err
 }
 
 func (s *SecurityGroupService) Delete(id string) (*http.Response, error) {
-	return trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Delete(fmt.Sprintf(SecurityGroupPath+"/%s", id)).Receive(nil, apiErr)
+	return trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Delete(fmt.Sprintf(SecurityGroupPath+"/%s", id)).Receive(nil, errResp)
 	})
 }
 
 func (s *SecurityGroupService) GetByID(id string) (*SecurityGroup, *http.Response, error) {
 	secg := new(SecurityGroup)
-	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Get(fmt.Sprintf(SecurityGroupPath+"/%s", id)).Receive(secg, apiErr)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(fmt.Sprintf(SecurityGroupPath+"/%s", id)).Receive(secg, errResp)
 	})
 
 	return secg, resp, err

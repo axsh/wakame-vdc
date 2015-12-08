@@ -28,15 +28,15 @@ type ImageService struct {
 }
 
 func (s *ImageService) Delete(id string) (*http.Response, error) {
-	return trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Delete(fmt.Sprintf(ImagePath+"/%s", id)).Receive(nil, apiErr)
+	return trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Delete(fmt.Sprintf(ImagePath+"/%s", id)).Receive(nil, errResp)
 	})
 }
 
 func (s *ImageService) GetByID(id string) (*Image, *http.Response, error) {
 	img := new(Image)
-	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Get(fmt.Sprintf(ImagePath+"/%s", id)).Receive(img, apiErr)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(fmt.Sprintf(ImagePath+"/%s", id)).Receive(img, errResp)
 	})
 	return img, resp, err
 }
