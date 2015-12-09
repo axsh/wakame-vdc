@@ -71,5 +71,9 @@ func resourceWakamevdcSSHKeyUpdate(d *schema.ResourceData, m interface{}) error 
 }
 
 func resourceWakamevdcSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
+	client := m.(*wakamevdc.Client)
+
+	_, err := client.SshKey.Delete(d.Id())
+
+	return err
 }
