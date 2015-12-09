@@ -15,6 +15,8 @@ resource "wakamevdc_ssh_key" "testkey" {
 }
 `
 
+var testKeyID string
+
 func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     nil,
@@ -49,6 +51,8 @@ func checkTestKeyCreated() resource.TestCheckFunc {
 			return fmt.Errorf("Ssh key had the wrong id. Expected %s, Got %s", key.ID, rs.Primary.ID)
 		}
 
+		testKeyID = key.ID
+
 		return nil
 	}
 }
@@ -56,16 +60,11 @@ func checkTestKeyCreated() resource.TestCheckFunc {
 func testResourceSshKeyDestroyed(s *terraform.State) error {
 	client := testVdcProvider.Meta().(*wakamevdc.Client)
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "wakamevdc_ssh_key" {
-			continue
-		}
+	key, _, err := client.SshKey.GetByID(testKeyID)
 
-		_, _, err := client.SshKey.GetByID(rs.Primary.ID)
-		if err == nil {
-			return fmt.Errorf("Ssh Key still exists")
-		}
+	if key.DeletedAt == "" {
+		return fmt.Errorf("Ssh key wasn't deleted after 'terraform destroy'")
 	}
 
-	return nil
+	return err
 }
