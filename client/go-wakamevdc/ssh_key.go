@@ -17,7 +17,6 @@ type SshKey struct {
 	DeletedAt   string              `json:"deleted_at"`
 	ServiceType string              `json:"service_type"`
 	DisplayName string              `json:"display_name"`
-	PrivateKey  string              `json:"private_key"`
 	Labels      []map[string]string `json:"labels"`
 }
 
