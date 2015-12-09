@@ -184,3 +184,26 @@ Parameters in the `shared_volume` section:
 ## Attributes Reference
 
 * `id` - ID for the instance
+
+# Testing the provider
+
+In this section we'll briefly explain how to run the tests included with the provider.
+
+The terraform test framework requires the `TF_ACC` environment variable to be set or all tests will be skipped. This is to avoid running the tests accidentally and creating real resources in the process.
+
+```
+export TF_ACC="some value"
+```
+
+The tests also require an actual working Wakame-vdc to be set up and running. The following environment variable needs to be set for the tests to know where to send Wakame-vdc api requests.
+
+```
+export WAKAMEVDC_API_ENDPOINT="http://192.168.3.100:9001/api/12.03"
+```
+
+Finally, terraform's test framework requires the `-v` flag to be set when running its tests.
+
+```
+cd /path/to/wakame-vdc/client/terraform-provider-wakamevdc/wakamevdc
+go test -v
+```
