@@ -2,6 +2,7 @@ package wakamevdc
 
 import (
 	"fmt"
+	"github.com/axsh/wakame-vdc/client/go-wakamevdc"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"testing"
@@ -30,10 +31,24 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 
 func checkTestKeyCreated() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources["wakamevdc_ssh_key.testkey"]
-		fmt.Printf("%+v\n", rs)
-		fmt.Println("=================")
-		fmt.Printf("%+v\n", ok)
+		resource_name := "wakamevdc_ssh_key.testkey"
+		rs, ok := s.RootModule().Resources[resource_name]
+
+		if !ok {
+			return fmt.Errorf("Not found: %s", resource_name)
+		}
+
+		client := testVdcProvider.Meta().(*wakamevdc.Client)
+
+		key, _, err := client.SshKey.GetByID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		if key.ID != rs.Primary.ID {
+			return fmt.Errorf("Ssh key had the wrong id. Expected %s, Got %s", key.ID, rs.Primary.ID)
+		}
+
 		return nil
 	}
 }
