@@ -8,13 +8,17 @@ import (
 const SshKeyPath = "ssh_key_pairs"
 
 type SshKey struct {
-	ID          string `json:"id"`
-	DisplayName string `json:"display_name"`
-	PublicKey   string `json:"public_key"`
-	Fingerprint string `json:"finger_print"`
-	CreatedAt   string `json:"created_at"`
-	Description string `json:"description"`
-	PrivateKey  string `json:"private_key"`
+	ID          string              `json:"id"`
+	AccountId   string              `json:"account_id"`
+	Fingerprint string              `json:"finger_print"`
+	PublicKey   string              `json:"public_key"`
+	Description string              `json:"description"`
+	CreatedAt   string              `json:"created_at"`
+	DeletedAt   string              `json:"deleted_at"`
+	ServiceType string              `json:"service_type"`
+	DisplayName string              `json:"display_name"`
+	PrivateKey  string              `json:"private_key"`
+	Labels      []map[string]string `json:"labels"`
 }
 
 type SshKeyService struct {
