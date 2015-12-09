@@ -19,7 +19,7 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     nil,
 		Providers:    testVdcProviders,
-		CheckDestroy: nil,
+		CheckDestroy: testResourceSshKeyDestroyed,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testKeyPair,
@@ -51,4 +51,21 @@ func checkTestKeyCreated() resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func testResourceSshKeyDestroyed(s *terraform.State) error {
+	client := testVdcProvider.Meta().(*wakamevdc.Client)
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "wakamevdc_ssh_key" {
+			continue
+		}
+
+		_, _, err := client.SshKey.GetByID(rs.Primary.ID)
+		if err == nil {
+			return fmt.Errorf("Ssh Key still exists")
+		}
+	}
+
+	return nil
 }
