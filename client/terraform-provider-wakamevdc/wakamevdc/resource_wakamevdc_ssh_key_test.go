@@ -29,10 +29,6 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkTestKeyCreated(),
 					resource.TestCheckResourceAttr(
-						"wakamevdc_ssh_key.testkey", "display_name", "testkey"),
-					resource.TestCheckResourceAttr(
-						"wakamevdc_ssh_key.testkey", "description", "A generic key for testing purposes"),
-					resource.TestCheckResourceAttr(
 						"wakamevdc_ssh_key.testkey", "fingerprint", "38:a5:ff:06:87:10:a5:88:fe:c7:73:9b:7f:9d:bb:9b"),
 				),
 			},
@@ -76,6 +72,7 @@ func checkTestKeyCreated() resource.TestCheckFunc {
 			return parameterCheckFailed("public_key", key.PublicKey, rs.Primary.Attributes["public_key"])
 		}
 
+		// We store the test key id in a global variable so we can check if it's properly deleted later.
 		testKeyID = key.ID
 
 		return nil
