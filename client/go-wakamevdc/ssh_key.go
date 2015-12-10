@@ -27,6 +27,7 @@ type SshKeyService struct {
 
 type SshKeyCreateParams struct {
 	DisplayName string `url:"display_name,omitempty"`
+	Description string `url:"description"`
 	PublicKey   string `url:"public_key"`
 }
 
