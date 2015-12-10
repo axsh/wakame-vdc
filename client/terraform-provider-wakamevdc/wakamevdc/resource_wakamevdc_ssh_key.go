@@ -23,6 +23,11 @@ func resourceWakamevdcSSHKey() *schema.Resource {
 				Required: true,
 			},
 
+			"description": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+
 			"public_key": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -42,6 +47,7 @@ func resourceWakamevdcSSHKeyCreate(d *schema.ResourceData, m interface{}) error 
 
 	params := wakamevdc.SshKeyCreateParams{
 		DisplayName: d.Get("display_name").(string),
+		Description: d.Get("description").(string),
 		PublicKey:   d.Get("public_key").(string),
 	}
 
