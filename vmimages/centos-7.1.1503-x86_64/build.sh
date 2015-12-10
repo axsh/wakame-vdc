@@ -5,6 +5,14 @@
 # reportfailed(), $skip_rest_if_already_done, etc.
 source "$(dirname "$0")/bin/simple-defaults-for-bashsteps.source" || exit
 
+# This step references data from the step that built (or will build)
+# the base image.  If not otherwise set, assume it is relative to
+# the DATADIR for this step.
+oneup="${DATADIR%/*}"
+twoup="${oneup%/*}"
+: ${base_image_DATADIR:="$twoup/centos-7.1.1503-x86_64-base/output"}
+export base_image_DATADIR
+
 (
     $starting_dependents "Build centos-7.1.1503-x86_64 image"
 

@@ -11,8 +11,8 @@ $starting_checks "Extract minimal image to start public image build"
 $skip_rest_if_already_done
 set -e
 cd "$DATADIR"
-cp "$CODEDIR/base-image-dir/runscript.sh" .
-cp "$CODEDIR/base-image-dir/tmp-sshkeypair" .
-cp "$CODEDIR/base-image-dir/ssh-shortcut.sh" .
-tar xzvf "$CODEDIR/base-image-dir/minimal-image.raw.tar.gz"
+cp "$base_image_DATADIR/runscript.sh" .
+cp "$base_image_DATADIR/tmp-sshkeypair" .
+cp "$base_image_DATADIR/ssh-shortcut.sh" .
+tar xzvf "$base_image_DATADIR/minimal-image.raw.tar.gz"
 sed -i 's/tmp.raw/minimal-image.raw/' "./runscript.sh"
