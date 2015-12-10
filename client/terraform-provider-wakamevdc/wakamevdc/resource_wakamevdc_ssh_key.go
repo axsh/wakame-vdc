@@ -54,6 +54,7 @@ func resourceWakamevdcSSHKeyCreate(d *schema.ResourceData, m interface{}) error 
 	key, _, err := client.SshKey.Create(&params)
 
 	d.SetId(key.ID)
+	d.Set("fingerprint", key.Fingerprint)
 
 	return err
 }
