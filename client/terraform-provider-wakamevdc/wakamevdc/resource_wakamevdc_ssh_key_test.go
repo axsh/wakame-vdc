@@ -40,6 +40,10 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 	})
 }
 
+func parameterCheckFailed(param_name string, expected string, got string) error {
+	return fmt.Errorf("Ssh key had the wrong %s. Expected: '%s', Got: '%s'", param_name, expected, got)
+}
+
 func checkTestKeyCreated() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resource_name := "wakamevdc_ssh_key.testkey"
@@ -57,7 +61,11 @@ func checkTestKeyCreated() resource.TestCheckFunc {
 		}
 
 		if key.ID != rs.Primary.ID {
-			return fmt.Errorf("Ssh key had the wrong id. Expected %s, Got %s", key.ID, rs.Primary.ID)
+			return parameterCheckFailed("id", key.ID, rs.Primary.ID)
+		}
+
+		if key.Description != rs.Primary.Attributes["description"] {
+			return parameterCheckFailed("description", key.Description, rs.Primary.Attributes["description"])
 		}
 
 		testKeyID = key.ID
