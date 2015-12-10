@@ -1,0 +1,87 @@
+reportfailed()
+{
+    echo "Script failed...exiting. ($*)" 1>&2
+    exit 255
+}
+
+prev_cmd_failed()
+{
+    # this is needed because '( cmd1 ; cmd2 ; set -e ; cmd3 ; cmd4 ) || reportfailed'
+    # does not work because the || disables set -e, even inside the subshell!
+    # see http://unix.stackexchange.com/questions/65532/why-does-set-e-not-work-inside
+    # A workaround is to do  '( cmd1 ; cmd2 ; set -e ; cmd3 ; cmd4 ) ; prev_cmd_failed'
+    (($? == 0)) || reportfailed "$*"
+}
+
+## Hints to understand the scripts that source this file:
+
+## (1) Every step is put in its own process.  The easiest way to do this
+##     is to use ( ), but calling other scripts is also possible for
+##     code reuse or readability reasons.  (In addition, it is necessary
+##     to make sure the script terminates if *any* of the processes exit with
+##     an error.  This is easy, but does take a little care in bash. See
+##     the comments in prev_cmd_failed.)
+## (2) All steps start with commands that check whether the step has
+##     already been done.  These commands should only check.  They should
+##     not change any state.
+## (3) The return code of the last "check" command is used to decide whether
+##     the rest of the step (i.e. the step's process) needs to be done.
+##     This should be done by inserting "$skip_rest_if_already_done" at
+##     that point in the step.
+##     ((TODO: update the doc))
+## (4) An optional '$starting_step "Description of the step"' can appear
+##     at the start of the step.
+
+##  Therefore, with minimal effort, it should be possible to take a
+##  the simplest easy-to-read sequential script and make it (at least
+##  somewhat) idempotent.  In other words, it should be possible to
+##  run the script multiple times, and have it gracefully recover from
+##  failures.
+
+##  $starting_step and $skip_rest_if_already_done are simple bash variables
+##  and can serve as hooks for controlling the script in useful ways.
+##  The setting below provide simple defaults that provide some log output
+##  and some idempotent behavior.
+
+##  The action of $starting_step as defined below is to only remember the title.
+##  It will be used by $skip_rest_if_already_done.
+
+## The action of $skip_rest_if_already_done as defined below is to exit
+## the process if the return code is 0.  In addition it outputs a
+## header line that reports the step's title and whether it is being
+## done or skipped.
+
+## If these variables are already defined, the code below leaves them
+## unchanged.  Therefore higher-level wrapper scripts can customize
+## the behavior to provide more control, status updates, or debugging
+## output.
+
+## On the other extream, it is always be possible to set both variables
+## to ":", which should (if everything is written correctly) turn the scripts
+## back into a typical script that blindly runs from start to finish.
+
+: ${starting_dependents:=default_set_title}
+: ${starting_checks:=default_set_title}
+: ${skip_rest_if_already_done:=default_skip_step} # exit (sub)process if return code is 0
+export starting_dependents
+export starting_checks
+export skip_rest_if_already_done
+
+default_set_title()
+{
+    [ "$*" != "" ] && step_title="$*"
+}
+export -f default_set_title
+
+default_skip_step()
+{
+    if (($? == 0)); then
+	echo "** Skipping step: $step_title"
+	step_title=""
+	exit 0
+    else
+	echo ; echo "** DOING STEP: $step_title"
+	step_title=""
+    fi
+}
+export -f default_skip_step

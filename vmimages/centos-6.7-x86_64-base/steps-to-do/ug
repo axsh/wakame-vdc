@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ -d "$CODEDIR" ] && [ -n "$DATADIR" ] || {
+    echo "($0)" 1>&2
+    echo "This step expects calling script to set up environment" 1>&2
+    exit 255
+}
+
