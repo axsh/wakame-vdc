@@ -27,8 +27,15 @@ type SshKeyService struct {
 
 type SshKeyCreateParams struct {
 	DisplayName string `url:"display_name,omitempty"`
-	Description string `url:"description"`
+	Description string `url:"description,omitempty"`
+	ServiceType string `url:"service_type,omitempty"`
 	PublicKey   string `url:"public_key"`
+}
+
+type SshKeyUpdateParams struct {
+	DisplayName string `url:"display_name,omitempty"`
+	Description string `url:"description,omitempty"`
+	ServiceType string `url:"service_type,omitempty"`
 }
 
 func (s *SshKeyService) Create(req *SshKeyCreateParams) (*SshKey, *http.Response, error) {
@@ -37,6 +44,13 @@ func (s *SshKeyService) Create(req *SshKeyCreateParams) (*SshKey, *http.Response
 		return s.client.Sling().Post(SshKeyPath).BodyForm(req).Receive(ssh_key, errResp)
 	})
 	return ssh_key, resp, err
+}
+
+func (s *SshKeyService) Update(id string, req *SshKeyUpdateParams) (*http.Response, error) {
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(SshKeyPath+"/%s", id)).BodyForm(req).Receive(nil, errResp)
+	})
+	return resp, err
 }
 
 func (s *SshKeyService) Delete(id string) (*http.Response, error) {
