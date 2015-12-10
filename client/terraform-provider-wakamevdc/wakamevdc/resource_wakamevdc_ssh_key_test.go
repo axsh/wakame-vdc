@@ -19,7 +19,15 @@ resource "wakamevdc_ssh_key" "testkey" {
 const testKeyPairUpdated = `
 resource "wakamevdc_ssh_key" "testkey" {
   display_name = "testkeyUpdated"
-  discription = "Now this needs to change"
+  description = "Now this needs to change"
+}
+`
+
+//Updating the public key will force a new key to be created
+const testKeyPairForceNew = `
+resource "wakamevdc_ssh_key" "testkey" {
+  display_name = "testkeyUpdated"
+  description = "Now this needs to change"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA0AE/KL/uhSCZto6YTlNb5rMo/UN7e2qpSBXI0Sb0+lw2VARrTsFNc2+os2WFXgGyFeUULAxhmoZMOAq4k8eOt3+/79pDbWXnvhoAfQCsH6AGMDWZvw6bRwqas3CxZQgl77UWgw54kK6rvFta0m5/sA+c3s9HKxp1SXPTCrCCcTqlYBGAGdJ6boAfOfXpOXqzf1yM2A7X63qArsvhJZeFtKtdfQWEOvz2v1crEZt+1OwTE6H66IJFFj1LbBqQCLeakTyOdKbbw2L8piBDl2Nmuk4QMuHwdJhb8tYiKXOJFytO4lfHLHWSsehMtlKhBTNJnF6dYNMt0pW0pagnfsIglQ=="
 }
 `
@@ -40,12 +48,53 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 						"wakamevdc_ssh_key.testkey", "fingerprint", "38:a5:ff:06:87:10:a5:88:fe:c7:73:9b:7f:9d:bb:9b"),
 				),
 			},
+			resource.TestStep{
+				Config: testKeyPairUpdated,
+				Check: resource.ComposeTestCheckFunc(
+					checkTestKeyUpdated(),
+				),
+			},
+			resource.TestStep{
+				Config: testKeyPairForceNew,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"wakamevdc_ssh_key.testkey", "fingerprint", "3a:33:75:a6:57:e7:e8:80:df:36:13:b5:8d:8c:e5:69"),
+				),
+			},
 		},
 	})
 }
 
 func parameterCheckFailed(param_name string, wakame string, terraform string) error {
 	return fmt.Errorf("The ssh key's field '%s' didn't match.\nWakame-vdc had: '%s'\nTerraform had: '%s'", param_name, wakame, terraform)
+}
+
+func checkTestKeyUpdated() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		resource_name := "wakamevdc_ssh_key.testkey"
+		rs, ok := s.RootModule().Resources[resource_name]
+
+		if !ok {
+			return fmt.Errorf("Not found: %s", resource_name)
+		}
+
+		client := testVdcProvider.Meta().(*wakamevdc.Client)
+
+		key, _, err := client.SshKey.GetByID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		if key.Description != rs.Primary.Attributes["description"] {
+			return parameterCheckFailed("description", key.Description, rs.Primary.Attributes["description"])
+		}
+
+		if key.DisplayName != rs.Primary.Attributes["display_name"] {
+			return parameterCheckFailed("display_name", key.DisplayName, rs.Primary.Attributes["display_name"])
+		}
+
+		return nil
+	}
 }
 
 func checkTestKeyCreated() resource.TestCheckFunc {
