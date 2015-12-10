@@ -45,7 +45,9 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkTestKeyCreated(),
 					resource.TestCheckResourceAttr(
-						"wakamevdc_ssh_key.testkey", "fingerprint", "38:a5:ff:06:87:10:a5:88:fe:c7:73:9b:7f:9d:bb:9b"),
+						"wakamevdc_ssh_key.testkey",
+						"fingerprint",
+						"38:a5:ff:06:87:10:a5:88:fe:c7:73:9b:7f:9d:bb:9b"),
 				),
 			},
 			resource.TestStep{
@@ -58,7 +60,9 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 				Config: testKeyPairForceNew,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"wakamevdc_ssh_key.testkey", "fingerprint", "3a:33:75:a6:57:e7:e8:80:df:36:13:b5:8d:8c:e5:69"),
+						"wakamevdc_ssh_key.testkey",
+						"fingerprint",
+						"3a:33:75:a6:57:e7:e8:80:df:36:13:b5:8d:8c:e5:69"),
 				),
 			},
 		},
@@ -91,11 +95,15 @@ func checkTestKeyUpdated() resource.TestCheckFunc {
 		}
 
 		if key.Description != rs.Primary.Attributes["description"] {
-			return parameterCheckFailed("description", key.Description, rs.Primary.Attributes["description"])
+			return parameterCheckFailed("description",
+				key.Description,
+				rs.Primary.Attributes["description"])
 		}
 
 		if key.DisplayName != rs.Primary.Attributes["display_name"] {
-			return parameterCheckFailed("display_name", key.DisplayName, rs.Primary.Attributes["display_name"])
+			return parameterCheckFailed("display_name",
+				key.DisplayName,
+				rs.Primary.Attributes["display_name"])
 		}
 
 		return nil
@@ -114,15 +122,21 @@ func checkTestKeyCreated() resource.TestCheckFunc {
 		}
 
 		if key.Description != rs.Primary.Attributes["description"] {
-			return parameterCheckFailed("description", key.Description, rs.Primary.Attributes["description"])
+			return parameterCheckFailed("description",
+				key.Description,
+				rs.Primary.Attributes["description"])
 		}
 
 		if key.DisplayName != rs.Primary.Attributes["display_name"] {
-			return parameterCheckFailed("display_name", key.DisplayName, rs.Primary.Attributes["display_name"])
+			return parameterCheckFailed("display_name",
+				key.DisplayName,
+				rs.Primary.Attributes["display_name"])
 		}
 
 		if key.PublicKey != rs.Primary.Attributes["public_key"] {
-			return parameterCheckFailed("public_key", key.PublicKey, rs.Primary.Attributes["public_key"])
+			return parameterCheckFailed("public_key",
+				key.PublicKey,
+				rs.Primary.Attributes["public_key"])
 		}
 
 		// We store the test key id in a global variable so we can check if it's properly deleted later.
