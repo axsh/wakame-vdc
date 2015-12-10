@@ -28,7 +28,7 @@ source "$CODEDIR/bin/simple-defaults-for-bashsteps.source"
     done
 
     export UUID=centos7
-    "$CODEDIR/set-of-steps/steps-for-packaging.sh" \
+    "$CODEDIR/other-steps/steps-for-packaging.sh" \
 	"$DATADIR/minimal-image.raw" \
 	"$DATADIR/centos-7.x86_64.kvm.md.raw.tar.gz"
 

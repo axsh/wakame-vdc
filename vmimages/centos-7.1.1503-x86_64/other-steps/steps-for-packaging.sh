@@ -1,0 +1,1 @@
+../../shared-code/steps-for-packaging.sh
