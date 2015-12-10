@@ -1,17 +1,32 @@
-reportfailed()
-{
-    echo "Script failed...exiting. ($*)" 1>&2
-    exit 255
-}
+# Sourcing this code defines and exports the following:
+#   reportfailed(), prev_cmd_failed(), $starting_dependents,
+#   $starting_checks, and $skip_rest_if_already_done.
 
-prev_cmd_failed()
-{
-    # this is needed because '( cmd1 ; cmd2 ; set -e ; cmd3 ; cmd4 ) || reportfailed'
-    # does not work because the || disables set -e, even inside the subshell!
-    # see http://unix.stackexchange.com/questions/65532/why-does-set-e-not-work-inside
-    # A workaround is to do  '( cmd1 ; cmd2 ; set -e ; cmd3 ; cmd4 ) ; prev_cmd_failed'
-    (($? == 0)) || reportfailed "$*"
-}
+# For any of these that are already defined, no change is made but the
+# item is still exported.  Therefore, simple subscripts steps that are
+# not written to be called independently can assume these are already
+# defined.
+
+if ! declare -f reportfailed >/dev/null; then
+    reportfailed()		      
+    {
+	echo "Script failed...exiting. ($*)" 1>&2
+	exit 255
+    }
+fi
+export -f reportfailed
+
+if ! declare -f prev_cmd_failed >/dev/null; then
+    prev_cmd_failed()
+    {
+	# this is needed because '( cmd1 ; cmd2 ; set -e ; cmd3 ; cmd4 ) || reportfailed'
+	# does not work because the || disables set -e, even inside the subshell!
+	# see http://unix.stackexchange.com/questions/65532/why-does-set-e-not-work-inside
+	# A workaround is to do  '( cmd1 ; cmd2 ; set -e ; cmd3 ; cmd4 ) ; prev_cmd_failed'
+	(($? == 0)) || reportfailed "$*"
+    }
+fi
+export -f prev_cmd_failed
 
 ## Hints to understand the scripts that source this file:
 
