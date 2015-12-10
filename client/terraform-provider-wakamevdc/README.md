@@ -195,10 +195,10 @@ The terraform test framework requires the `TF_ACC` environment variable to be se
 export TF_ACC="some value"
 ```
 
-The tests also require an actual working Wakame-vdc to be set up and running. The following environment variable needs to be set for the tests to know where to send Wakame-vdc api requests.
+The tests also require an actual working Wakame-vdc to be set up and running. The following environment variable needs to be set for the tests to know where to send Wakame-vdc api requests. Make sure the trailing slash is included. The tests will not work otherwise.
 
 ```
-export WAKAMEVDC_API_ENDPOINT="http://192.168.3.100:9001/api/12.03"
+export WAKAMEVDC_API_ENDPOINT="http://192.168.3.100:9001/api/12.03/"
 ```
 
 Finally, terraform's test framework requires the `-v` flag to be set when running its tests.
