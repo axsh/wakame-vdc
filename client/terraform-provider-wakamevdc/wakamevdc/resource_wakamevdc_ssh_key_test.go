@@ -68,6 +68,14 @@ func checkTestKeyCreated() resource.TestCheckFunc {
 			return parameterCheckFailed("description", key.Description, rs.Primary.Attributes["description"])
 		}
 
+		if key.DisplayName != rs.Primary.Attributes["display_name"] {
+			return parameterCheckFailed("display_name", key.DisplayName, rs.Primary.Attributes["display_name"])
+		}
+
+		if key.PublicKey != rs.Primary.Attributes["public_key"] {
+			return parameterCheckFailed("public_key", key.PublicKey, rs.Primary.Attributes["public_key"])
+		}
+
 		testKeyID = key.ID
 
 		return nil
