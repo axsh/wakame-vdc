@@ -52,9 +52,7 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 			},
 			resource.TestStep{
 				Config: testKeyPairUpdated,
-				Check: resource.ComposeTestCheckFunc(
-					checkTestKeyUpdated(),
-				),
+				Check:  checkTestKeyUpdated(),
 			},
 			resource.TestStep{
 				Config: testKeyPairForceNew,
