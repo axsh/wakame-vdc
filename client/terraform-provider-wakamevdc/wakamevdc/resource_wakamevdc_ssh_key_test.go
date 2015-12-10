@@ -8,7 +8,12 @@ import (
 	"testing"
 )
 
-const testKeyPair = `
+//This global variable will be used to track the key's uuid in Wakame-vdc since
+//we can't query that from terraform after it's been deleted.
+var testKeyID string
+
+func TestResourceWakamevdcSSHKeyCreateUpdateDelete(t *testing.T) {
+	testKeyPair := `
 resource "wakamevdc_ssh_key" "testkey" {
   display_name = "testkey"
   description = "A generic key for testing purposes"
@@ -16,7 +21,7 @@ resource "wakamevdc_ssh_key" "testkey" {
 }
 `
 
-const testKeyPairUpdated = `
+	testKeyPairUpdated := `
 resource "wakamevdc_ssh_key" "testkey" {
   display_name = "testkeyUpdated"
   description = "Now this needs to change"
@@ -24,18 +29,14 @@ resource "wakamevdc_ssh_key" "testkey" {
 }
 `
 
-//Updating the public key will force a new key to be created
-const testKeyPairForceNew = `
+	//Updating the public key will force a new key to be created
+	testKeyPairForceNew := `
 resource "wakamevdc_ssh_key" "testkey" {
   display_name = "testkeyUpdated"
   description = "Now this needs to change"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA0AE/KL/uhSCZto6YTlNb5rMo/UN7e2qpSBXI0Sb0+lw2VARrTsFNc2+os2WFXgGyFeUULAxhmoZMOAq4k8eOt3+/79pDbWXnvhoAfQCsH6AGMDWZvw6bRwqas3CxZQgl77UWgw54kK6rvFta0m5/sA+c3s9HKxp1SXPTCrCCcTqlYBGAGdJ6boAfOfXpOXqzf1yM2A7X63qArsvhJZeFtKtdfQWEOvz2v1crEZt+1OwTE6H66IJFFj1LbBqQCLeakTyOdKbbw2L8piBDl2Nmuk4QMuHwdJhb8tYiKXOJFytO4lfHLHWSsehMtlKhBTNJnF6dYNMt0pW0pagnfsIglQ=="
 }
 `
-
-var testKeyID string
-
-func TestResourceWakamevdcSSHKeyCreateUpdateDelete(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     nil,
 		Providers:    testVdcProviders,
@@ -99,16 +100,16 @@ func checkForcedNew() resource.TestCheckFunc {
 			return fmt.Errorf("Ssh key wasn't deleted when trying to update its public key")
 		}
 
-		rs, key, err := getTerraformResourceAndWakameKey(s, "wakamevdc_ssh_key.testkey")
+		rs, new_key, err := getTerraformResourceAndWakameKey(s, "wakamevdc_ssh_key.testkey")
 		if err != nil {
 			return err
 		}
 
-		testKeyID = key.ID
+		testKeyID = new_key.ID
 
-		if key.PublicKey != rs.Primary.Attributes["public_key"] {
+		if new_key.PublicKey != rs.Primary.Attributes["public_key"] {
 			return parameterCheckFailed("public_key",
-				key.PublicKey,
+				new_key.PublicKey,
 				rs.Primary.Attributes["public_key"])
 		}
 
