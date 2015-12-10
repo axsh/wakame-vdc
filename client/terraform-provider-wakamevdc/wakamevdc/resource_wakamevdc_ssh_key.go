@@ -74,7 +74,16 @@ func resourceWakamevdcSSHKeyRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceWakamevdcSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
-	return nil
+	client := m.(*wakamevdc.Client)
+
+	params := wakamevdc.SshKeyUpdateParams{
+		DisplayName: d.Get("display_name").(string),
+		Description: d.Get("description").(string),
+	}
+
+	_, err := client.SshKey.Update(d.Id(), &params)
+
+	return err
 }
 
 func resourceWakamevdcSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
