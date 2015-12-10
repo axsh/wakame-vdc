@@ -62,6 +62,7 @@ func TestResourceWakamevdcSSHKeyCreateUpdateDelete(t *testing.T) {
 						"wakamevdc_ssh_key.testkey",
 						"fingerprint",
 						"3a:33:75:a6:57:e7:e8:80:df:36:13:b5:8d:8c:e5:69"),
+					checkForcedNew(),
 				),
 			},
 		},
@@ -84,6 +85,35 @@ func getTerraformResourceAndWakameKey(s *terraform.State, resource_name string) 
 	key, _, err := client.SshKey.GetByID(rs.Primary.ID)
 
 	return rs, key, err
+}
+
+func checkForcedNew() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testVdcProvider.Meta().(*wakamevdc.Client)
+		old_key, _, err := client.SshKey.GetByID(testKeyID)
+		if err != nil {
+			return err
+		}
+
+		if old_key.DeletedAt == "" {
+			return fmt.Errorf("Ssh key wasn't deleted when trying to update its public key")
+		}
+
+		rs, key, err := getTerraformResourceAndWakameKey(s, "wakamevdc_ssh_key.testkey")
+		if err != nil {
+			return err
+		}
+
+		testKeyID = key.ID
+
+		if key.PublicKey != rs.Primary.Attributes["public_key"] {
+			return parameterCheckFailed("public_key",
+				key.PublicKey,
+				rs.Primary.Attributes["public_key"])
+		}
+
+		return nil
+	}
 }
 
 func checkTestKeyUpdated() resource.TestCheckFunc {
