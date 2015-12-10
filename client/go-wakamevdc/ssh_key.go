@@ -66,3 +66,23 @@ func (s *SshKeyService) GetByID(id string) (*SshKey, *http.Response, error) {
 	})
 	return ssh_key, resp, err
 }
+
+type SshKeysList struct {
+	Total   int      `json:"total"`
+	Start   int      `json:"start"`
+	Limit   int      `json:"limit"`
+	Results []SshKey `json:"results"`
+}
+
+func (s *SshKeyService) List(req *ListRequestParams) (*SshKeysList, *http.Response, error) {
+	sshkList := make([]SshKeysList, 1)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(SshKeyPath).QueryStruct(req).Receive(&sshkList, errResp)
+	})
+
+	if err == nil && len(sshkList) > 0 {
+		return &sshkList[0], resp, err
+	}
+	// Return empty list object.
+	return &SshKeysList{}, resp, err
+}

@@ -48,3 +48,23 @@ func (s *ImageService) CompareState(id string, state string) (bool, error) {
 	}
 	return (img.State == state), nil
 }
+
+type ImagesList struct {
+	Total   int     `json:"total"`
+	Start   int     `json:"start"`
+	Limit   int     `json:"limit"`
+	Results []Image `json:"results"`
+}
+
+func (s *ImageService) List(req *ListRequestParams) (*ImagesList, *http.Response, error) {
+	imgList := make([]ImagesList, 1)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(ImagePath).QueryStruct(req).Receive(&imgList, errResp)
+	})
+
+	if err == nil && len(imgList) > 0 {
+		return &imgList[0], resp, err
+	}
+	// Return empty list object.
+	return &ImagesList{}, resp, err
+}

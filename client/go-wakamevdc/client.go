@@ -101,3 +101,8 @@ func trapAPIError(fn errorRaiser) (*http.Response, error) {
 	}
 	return resp, err
 }
+
+type ListRequestParams struct {
+	Start int `url:"start,omitempty"`
+	Limit int `url:"limit,omitempty"`
+}

@@ -53,3 +53,23 @@ func (s *SecurityGroupService) GetByID(id string) (*SecurityGroup, *http.Respons
 
 	return secg, resp, err
 }
+
+type SecurityGroupsList struct {
+	Total   int             `json:"total"`
+	Start   int             `json:"start"`
+	Limit   int             `json:"limit"`
+	Results []SecurityGroup `json:"results"`
+}
+
+func (s *SecurityGroupService) List(req *ListRequestParams) (*SecurityGroupsList, *http.Response, error) {
+	sgList := make([]SecurityGroupsList, 1)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(SecurityGroupPath).QueryStruct(req).Receive(&sgList, errResp)
+	})
+
+	if err == nil && len(sgList) > 0 {
+		return &sgList[0], resp, err
+	}
+	// Return empty list object.
+	return &SecurityGroupsList{}, resp, err
+}
