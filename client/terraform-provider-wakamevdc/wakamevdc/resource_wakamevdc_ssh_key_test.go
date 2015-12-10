@@ -16,6 +16,14 @@ resource "wakamevdc_ssh_key" "testkey" {
 }
 `
 
+const testKeyPairUpdated = `
+resource "wakamevdc_ssh_key" "testkey" {
+  display_name = "testkeyUpdated"
+  discription = "Now this needs to change"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA0AE/KL/uhSCZto6YTlNb5rMo/UN7e2qpSBXI0Sb0+lw2VARrTsFNc2+os2WFXgGyFeUULAxhmoZMOAq4k8eOt3+/79pDbWXnvhoAfQCsH6AGMDWZvw6bRwqas3CxZQgl77UWgw54kK6rvFta0m5/sA+c3s9HKxp1SXPTCrCCcTqlYBGAGdJ6boAfOfXpOXqzf1yM2A7X63qArsvhJZeFtKtdfQWEOvz2v1crEZt+1OwTE6H66IJFFj1LbBqQCLeakTyOdKbbw2L8piBDl2Nmuk4QMuHwdJhb8tYiKXOJFytO4lfHLHWSsehMtlKhBTNJnF6dYNMt0pW0pagnfsIglQ=="
+}
+`
+
 var testKeyID string
 
 func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
