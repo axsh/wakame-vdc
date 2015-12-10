@@ -69,18 +69,23 @@ func parameterCheckFailed(param_name string, wakame string, terraform string) er
 	return fmt.Errorf("The ssh key's field '%s' didn't match.\nWakame-vdc had: '%s'\nTerraform had: '%s'", param_name, wakame, terraform)
 }
 
+func getTerraformResourceAndWakameKey(s *terraform.State, resource_name string) (*terraform.ResourceState, *wakamevdc.SshKey, error) {
+	rs, ok := s.RootModule().Resources[resource_name]
+
+	if !ok {
+		return nil, nil, fmt.Errorf("Not found: %s", resource_name)
+	}
+
+	client := testVdcProvider.Meta().(*wakamevdc.Client)
+
+	key, _, err := client.SshKey.GetByID(rs.Primary.ID)
+
+	return rs, key, err
+}
+
 func checkTestKeyUpdated() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resource_name := "wakamevdc_ssh_key.testkey"
-		rs, ok := s.RootModule().Resources[resource_name]
-
-		if !ok {
-			return fmt.Errorf("Not found: %s", resource_name)
-		}
-
-		client := testVdcProvider.Meta().(*wakamevdc.Client)
-
-		key, _, err := client.SshKey.GetByID(rs.Primary.ID)
+		rs, key, err := getTerraformResourceAndWakameKey(s, "wakamevdc_ssh_key.testkey")
 		if err != nil {
 			return err
 		}
@@ -99,16 +104,7 @@ func checkTestKeyUpdated() resource.TestCheckFunc {
 
 func checkTestKeyCreated() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resource_name := "wakamevdc_ssh_key.testkey"
-		rs, ok := s.RootModule().Resources[resource_name]
-
-		if !ok {
-			return fmt.Errorf("Not found: %s", resource_name)
-		}
-
-		client := testVdcProvider.Meta().(*wakamevdc.Client)
-
-		key, _, err := client.SshKey.GetByID(rs.Primary.ID)
+		rs, key, err := getTerraformResourceAndWakameKey(s, "wakamevdc_ssh_key.testkey")
 		if err != nil {
 			return err
 		}
