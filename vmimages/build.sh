@@ -1,22 +1,12 @@
 #!/bin/bash
 
-######################################################################
-## Directory Paths
-######################################################################
+reportfailed()		      
+{
+    echo "Script failed...exiting. ($*)" 1>&2
+    exit 255
+}
 
-export CODEDIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd -P)" || reportfailed
-export DATADIR="/proc/self"  # i.e. not set yet
-
-# put the current directory someplace unwritable to force use
-# of the above variables
-cd -P /proc/self
-
-######################################################################
-## Build Steps
-######################################################################
-
-# set reportfailed, $skip_rest_if_already_done, etc.
-source "$CODEDIR/bin/simple-defaults-for-bashsteps.source"
+export CODEDIR="$(cd "$(dirname "$0")" && pwd -P)" || reportfailed CODEDIR
 
 # check all directories first, before starting time-consuming builds
 for i in "$@"; do
