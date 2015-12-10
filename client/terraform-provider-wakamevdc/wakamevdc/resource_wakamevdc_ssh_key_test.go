@@ -35,7 +35,7 @@ resource "wakamevdc_ssh_key" "testkey" {
 
 var testKeyID string
 
-func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
+func TestResourceWakamevdcSSHKeyCreateUpdateDelete(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     nil,
 		Providers:    testVdcProviders,
