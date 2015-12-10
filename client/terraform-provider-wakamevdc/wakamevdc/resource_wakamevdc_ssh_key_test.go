@@ -40,8 +40,8 @@ func TestResourceWakamevdcSSHKeyCreate(t *testing.T) {
 	})
 }
 
-func parameterCheckFailed(param_name string, expected string, got string) error {
-	return fmt.Errorf("Ssh key had the wrong %s. Expected: '%s', Got: '%s'", param_name, expected, got)
+func parameterCheckFailed(param_name string, wakame string, terraform string) error {
+	return fmt.Errorf("The ssh key's field '%s' didn't match.\nWakame-vdc had: '%s'\nTerraform had: '%s'", param_name, wakame, terraform)
 }
 
 func checkTestKeyCreated() resource.TestCheckFunc {
