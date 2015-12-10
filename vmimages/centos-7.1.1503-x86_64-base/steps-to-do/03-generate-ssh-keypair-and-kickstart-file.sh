@@ -17,6 +17,7 @@ cat >"$DATADIR/ks-sshpair.cfg" <<EOF
 $ks_text
 
 %post
+sed -i -e 's/\(^SELINUX=\).*$/\1permissive/' /etc/selinux/config
 ls -l /root/  >/tmp.listing
 mkdir /root/.ssh
 chmod 700 /root/.ssh
