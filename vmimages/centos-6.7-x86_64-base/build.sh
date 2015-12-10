@@ -8,7 +8,7 @@ source "$(dirname "$0")/bin/simple-defaults-for-bashsteps.source" || exit
 source "$CODEDIR/build.conf"
 
 # explicitly export configuration vars that will be needed in the substeps:
-export CENTOSISO CENTOSMIRROR ISOMD5
+export CENTOSISO CENTOSMIRROR ISOMD5 MEMSIZE DISKSIZE
 
 (
     $starting_dependents "Build centos-6.7-x86_64-base image"

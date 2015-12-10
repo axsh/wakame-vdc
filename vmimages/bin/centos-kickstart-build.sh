@@ -4,6 +4,7 @@ install_iso="$1"
 kickstart_file="$2"
 target_image="$3"
 memory="$4"
+disksize="$5"
 
 : ${KVMSTYLE:=wakame}
 
@@ -34,6 +35,8 @@ prev-cmd-failed()
 
 [[ "$memory" == *M ]] || reportfailed "Fourth parameter (memory) should end with M, e.g. 1024M"
 
+[[ "$disksize" == *[MG] ]] || reportfailed "Fifth parameter (disksize) should end with M or G, e.g. 32G"
+
 # Make sure it is writable
 touch "$target_image" || reportfailed "Could not create '$target_image' (the third parameter)"
 
@@ -53,7 +56,7 @@ KSFPY="$TARGET_DIR/kickstart_floppy.img"
 (
     set -e
     rm -f "$target_image"
-    qemu-img create -f raw "$target_image" 10000M
+    qemu-img create -f raw "$target_image" "$disksize"
 ) ; prev-cmd-failed "Problem while creating empty raw image"
 
 binlist=(
