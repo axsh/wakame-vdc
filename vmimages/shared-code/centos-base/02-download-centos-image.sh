@@ -6,7 +6,8 @@
     exit 255
 }
 
-source "$CODEDIR/build.conf"
+# These must be set by the caller.  Exit if not set:
+: ${CENTOSISO:?} ${CENTOSMIRROR:?} ${ISOMD5:?}
 
 $starting_checks "Download CentOS ISO install image"
 [ -f "$DATADIR/$CENTOSISO" ] &&

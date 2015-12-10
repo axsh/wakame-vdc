@@ -6,7 +6,8 @@
     exit 255
 }
 
-source "$CODEDIR/build.conf"
+# This must be set by the caller.  Exit if not set:
+: ${CENTOSISO:?}
 
 $starting_checks "Install minimal image with kickstart"
 [ -f "$DATADIR/minimal-image.raw" ] || \
