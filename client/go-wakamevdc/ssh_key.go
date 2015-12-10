@@ -14,6 +14,7 @@ type SshKey struct {
 	PublicKey   string              `json:"public_key"`
 	Description string              `json:"description"`
 	CreatedAt   string              `json:"created_at"`
+	UpdatedAt   string              `json:"updated_at"`
 	DeletedAt   string              `json:"deleted_at"`
 	ServiceType string              `json:"service_type"`
 	DisplayName string              `json:"display_name"`
@@ -26,6 +27,7 @@ type SshKeyService struct {
 
 type SshKeyCreateParams struct {
 	DisplayName string `url:"display_name,omitempty"`
+	Description string `url:"description"`
 	PublicKey   string `url:"public_key"`
 }
 
