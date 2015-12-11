@@ -15,6 +15,7 @@ const (
 	mediaType      = "application/json"
 
 	headerVDCAccountID = "X-VDC-Account-UUID"
+	defaultAccountID   = "a-shpoolxx"
 )
 
 type StateCompare interface {
@@ -38,8 +39,7 @@ func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
 
 	sl := sling.New().Base(baseURL.String()).Client(httpClient)
 	sl.Add("User-Agent", userAgent)
-	sl.Add(headerVDCAccountID, "a-shpoolxx")
-	c := &Client{sling: sl}
+	c := &Client{sling: sl, accountID: defaultAccountID}
 	c.Instance = &InstanceService{client: c}
 	c.SecurityGroup = &SecurityGroupService{client: c}
 	c.SshKey = &SshKeyService{client: c}
@@ -47,8 +47,15 @@ func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
 	return c
 }
 
+// AccountID is a chain method to set Account ID for the API request.
+func (c *Client) AccountID(accountID string) *Client {
+	c.accountID = accountID
+	return c
+}
+
+// Sling returns new Sling object which is configured to access to the API Endpoint.
 func (c *Client) Sling() *sling.Sling {
-	return c.sling.New()
+	return c.sling.New().Set(headerVDCAccountID, c.accountID)
 }
 
 type ErrorResponse struct {
@@ -100,4 +107,9 @@ func trapAPIError(fn errorRaiser) (*http.Response, error) {
 		}
 	}
 	return resp, err
+}
+
+type ListRequestParams struct {
+	Start int `url:"start,omitempty"`
+	Limit int `url:"limit,omitempty"`
 }

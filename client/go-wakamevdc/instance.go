@@ -161,3 +161,23 @@ func (s *InstanceService) CompareState(id string, state string) (bool, error) {
 	}
 	return (inst.State == state), nil
 }
+
+type InstancesList struct {
+	Total   int        `json:"total"`
+	Start   int        `json:"start"`
+	Limit   int        `json:"limit"`
+	Results []Instance `json:"results"`
+}
+
+func (s *InstanceService) List(req *ListRequestParams) (*InstancesList, *http.Response, error) {
+	instList := make([]InstancesList, 1)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(InstancePath).QueryStruct(req).Receive(&instList, errResp)
+	})
+
+	if err == nil && len(instList) > 0 {
+		return &instList[0], resp, err
+	}
+	// Return empty list object.
+	return &InstancesList{}, resp, err
+}
