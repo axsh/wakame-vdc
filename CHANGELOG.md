@@ -3,6 +3,10 @@
 All notable changes to Wakame-vdc will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+`Fixed` A crash that occurred when performing a POST request to the ssh_key_pairs endpoint without including the "public_key" field in the parameters.
+
 ## [16.1] - 2015-10-2
 
 `Added` More bash completion for mussel commands. Specifically alarm, *ip_pool*, *ip_handle*, *dc_network*, *host_node*, *volume*, *network_vif* and *instance_show_password*.
