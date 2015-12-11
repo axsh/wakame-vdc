@@ -17,7 +17,6 @@ describe "ssh_key_pairs" do
       let(:params) { Hash.new }
 
       it "doesn't crash" do
-        #expect(last_response.errors).to be_empty
         if !last_response.errors.empty?
           raise "The API call crashed.\n#{last_response.errors}"
         end
