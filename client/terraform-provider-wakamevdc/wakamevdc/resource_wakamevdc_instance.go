@@ -104,7 +104,11 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 		return fmt.Errorf(
 			"Error waiting for instance (%s) to running: %s", d.Id(), err)
 	}
-	return resourceWakamevdcInstanceRead(d, m)
+
+	// Set value for "computed" attributes.
+	d.Set("state", "running")
+
+	return nil
 }
 
 func resourceWakamevdcInstanceRead(d *schema.ResourceData, m interface{}) error {
