@@ -36,6 +36,16 @@ module Sinatra
             auto_dpnet: true
           )
         end
+
+        if request.path_info == "/security_groups"
+          
+          VNetAPIClient::SecurityGroup.create(
+            uuid: r[:uuid],
+            display_name: r[:uuid],
+            description: params[:description],
+            rules: openvnet_rules(params[:rule]).join("\n")
+          )
+        end
       end
     end
   end
