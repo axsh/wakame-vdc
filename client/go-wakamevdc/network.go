@@ -8,7 +8,33 @@ import (
 const NetworkPath = "networks"
 
 type Network struct {
-	ID          string `json:"id"`
+	ID                 string   `json:"id"`
+	AccountID          string   `json:"account_id"`
+	IPv4Network        string   `json:"ipv4_network"`
+	IPv4GW             string   `json:"ipv4_gw"`
+	Prefix             int      `json:"prefix"`
+	NATNetworkID       string   `json:"nat_network_id"`
+	Metric             int      `json:"metric"`
+	IPAssignment       string   `json:"ip_assignment"`
+	Editable           bool     `json:"editable"`
+	DomainName         string   `json:"domain_name"`
+	DNSServer          string   `json:"dns_server"`
+	DHCPServer         string   `json:"dhcp_server"`
+	MetadataServer     string   `json:"metadata_server"`
+	MetadataServerPort int      `json:"metadata_server_port"`
+	NetworkMode        string   `json:"network_mode"`
+	NetworkServices    []string `json:"network_services"`
+	DCNetwork          struct {
+		ID                   string   `json:"id"`
+		Name                 string   `json:"name"`
+		Description          string   `json:"description"`
+		VLANLeaseID          string   `json:"vlan_lease_id"`
+		OfferringNetworkMode []string `json:"offering_network_modes"`
+		AllowNewNetworks     bool     `json:"allow_new_networks"`
+		CreatedAt            string   `json:"created_at"`
+		UpdatedAt            string   `json:"updated_at"`
+	} `json:"dc_network"`
+	ServiceType string `json:"service_type"`
 	DisplayName string `json:"display_name"`
 	Description string `json:"description"`
 	CreatedAt   string `json:"created_at"`
@@ -21,10 +47,20 @@ type NetworkService struct {
 }
 
 type NetworkCreateParams struct {
-	ServiceType string `url:"service_type,omitempty"`
-	Description string `url:"description,omitempty"`
-	DisplayName string `url:"display_name,omitempty"`
-	Rules       string `url:"rule"`
+	AccountID    string `url:"account_id,omitempty"`
+	IPv4Network  string `url:"network"`
+	IPv4GW       string `url:"gw,omitempty"`
+	Prefix       int    `url:"prefix"`
+	DCNetworkID  string `url:"dc_network"`
+	NetworkMode  string `url:"network_mode,omitempty"`
+	DomainName   string `url:"domain_name,omitempty"`
+	IPAssignment string `url:"ip_assignment,omitempty"`
+	Editable     bool   `url:"editable,omitempty"`
+	Metric       int    `url:"metric,omitempty"`
+	ServiceType  string `url:"service_type,omitempty"`
+	Description  string `url:"description,omitempty"`
+	DisplayName  string `url:"display_name,omitempty"`
+	// TODO: service_dhcp, service_dns, service_gateway
 }
 
 func (s *NetworkService) Create(req *NetworkCreateParams) (*Network, *http.Response, error) {
