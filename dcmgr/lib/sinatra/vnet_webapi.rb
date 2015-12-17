@@ -19,7 +19,7 @@ module Sinatra
         r = if self.response.header["Content-Type"].include?("application/json")
               ::JSON.parse(self.response.body.first)
             elsif self.response.header["Content-Type"].include?("text/yaml")
-              ::YAML.load(self.response.body.first).first
+              ::YAML.load(self.response.body.first)
             else
               nil
             end
