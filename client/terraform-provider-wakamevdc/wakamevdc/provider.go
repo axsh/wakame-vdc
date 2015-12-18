@@ -21,6 +21,7 @@ func Provider() terraform.ResourceProvider {
 			"wakamevdc_instance":       resourceWakamevdcInstance(),
 			"wakamevdc_ssh_key":        resourceWakamevdcSSHKey(),
 			"wakamevdc_security_group": resourceWakamevdcSecurityGroup(),
+			"wakamevdc_network":        resourceWakamevdcNetwork(),
 		},
 
 		ConfigureFunc: providerConfigure,
