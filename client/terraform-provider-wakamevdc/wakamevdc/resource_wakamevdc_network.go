@@ -58,7 +58,12 @@ func resourceWakamevdcNetwork() *schema.Resource {
 
 			"dc_network_id": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+			},
+
+			"dc_network_name": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 
 			"ipv4_gw": &schema.Schema{
@@ -99,12 +104,27 @@ func resourceWakamevdcNetworkCreate(d *schema.ResourceData, m interface{}) error
 		IPv4Network:  d.Get("ipv4_network").(string),
 		Prefix:       d.Get("prefix").(int),
 		NetworkMode:  d.Get("network_mode").(string),
-		DCNetworkID:  d.Get("dc_network_id").(string),
 		IPAssignment: d.Get("ip_assignment").(string),
 		IPv4GW:       d.Get("ipv4_gw").(string),
 		Editable:     d.Get("editable").(bool),
 		DisplayName:  d.Get("display_name").(string),
 		Description:  d.Get("description").(string),
+	}
+
+	if _, ok := d.GetOk("dc_network_id"); ok {
+		params.DCNetworkID = d.Get("dc_network_id").(string)
+	} else if dcnName, ok := d.GetOk("dc_network_name"); ok {
+		dcnList, _, err := client.DCNetwork.List(nil, dcnName.(string))
+		if err != nil {
+			return err
+		}
+		if len(dcnList.Results) < 1 {
+			return fmt.Errorf("Unknown dc_network_name: %s", dcnName.(string))
+		}
+		params.DCNetworkID = dcnList.Results[0].ID
+		d.Set("dc_network_id", params.DCNetworkID)
+	} else {
+		return fmt.Errorf("Either dc_network_id or dc_network_name has to be specified")
 	}
 
 	nw, _, err := client.Network.Create(&params)
