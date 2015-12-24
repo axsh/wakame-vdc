@@ -1,5 +1,5 @@
 provider "wakamevdc" {
-  api_endpoint = "http://192.168.3.100:9001/api/12.03/"
+  api_endpoint = "http://localhost:9001/api/12.03/"
 }
 
 resource "wakamevdc_ssh_key" "ssh1" {
