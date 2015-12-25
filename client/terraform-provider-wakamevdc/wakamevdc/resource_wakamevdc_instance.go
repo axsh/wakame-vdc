@@ -21,21 +21,25 @@ func resourceWakamevdcInstance() *schema.Resource {
 			"image_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"cpu_cores": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"memory_size": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"hypervisor": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"state": &schema.Schema{
@@ -43,16 +47,19 @@ func resourceWakamevdcInstance() *schema.Resource {
 				Computed: true,
 			},
 
+			"status": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"display_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
 			},
 
 			"description": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
 			},
 
 			"ssh_key_id": &schema.Schema{
@@ -105,10 +112,7 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 			"Error waiting for instance (%s) to running: %s", d.Id(), err)
 	}
 
-	// Set value for "computed" attributes.
-	d.Set("state", "running")
-
-	return nil
+	return resourceWakamevdcInstanceRead(d, m)
 }
 
 func resourceWakamevdcInstanceRead(d *schema.ResourceData, m interface{}) error {
@@ -121,6 +125,8 @@ func resourceWakamevdcInstanceRead(d *schema.ResourceData, m interface{}) error 
 
 	d.Set("display_name", inst.DisplayName)
 	d.Set("state", inst.State)
+	d.Set("status", inst.Status)
+
 	return err
 }
 
