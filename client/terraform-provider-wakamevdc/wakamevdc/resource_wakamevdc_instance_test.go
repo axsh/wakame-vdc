@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-const testInstanceConfig = `
+const testInstanceConfig1 = `
 resource "wakamevdc_instance" "inst1" {
-  display_name = "sg1"
+  display_name = "inst1"
   cpu_cores = 1
   memory_size = 512
   image_id = "wmi-centos1d64"
@@ -53,7 +53,17 @@ func TestResourceWakamevdcInstanceCreate(t *testing.T) {
 		CheckDestroy: testCheckDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testInstanceConfig,
+				Config: testInstanceConfig1,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("wakamevdc_instance.inst1", "cpu_cores", "1"),
+					resource.TestCheckResourceAttr("wakamevdc_instance.inst1", "memory_size", "512"),
+					resource.TestCheckResourceAttr("wakamevdc_instance.inst1", "image_id", "wmi-centos1d64"),
+					resource.TestCheckResourceAttr("wakamevdc_instance.inst1", "hypervisor", "openvz"),
+					resource.TestCheckResourceAttr("wakamevdc_instance.inst1", "display_name", "inst1"),
+				),
+			},
+			resource.TestStep{
+				Config: testInstanceConfig1,
 				Check:  testCheck,
 			},
 		},
