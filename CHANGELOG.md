@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+`Added` Security groups support to the OpenVNet integration.
+
 `Fixed` A crash that occurred when performing a POST request to the ssh_key_pairs endpoint without including the "public_key" field in the parameters.
 
 ## [16.1] - 2015-10-2
