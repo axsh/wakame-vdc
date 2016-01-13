@@ -46,6 +46,12 @@ def body
   JSON.parse(last_response.body)
 end
 
+def it_fails_with_error(code, name, message = nil)
+  it "should return a #{code} error (#{name})" do
+    expect(last_response).to fail.with_code(code).with_error(name, message)
+  end
+end
+
 #
 # Rack/test setup
 #

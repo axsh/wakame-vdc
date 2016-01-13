@@ -178,5 +178,8 @@ module Dcmgr
     define_error(:UnknownEvaluationPeriods, 400, '199')
     define_error(:UnknownNotificationPeriods, 400, '200')
     define_error(:PasswordNotInDatabase, 410, '201')
+    define_error(:UnknownVirtualDataCenter, 400, '202')
+    define_error(:UnknownVirtualDataCenterSpec, 400, '203')
+    define_error(:InvalidVirtualDataCenterSpec, 400, '204')
   end
 end

@@ -2,6 +2,7 @@
 
 require 'dcmgr/version'
 require 'ext/time'
+require 'ext/kernel'
 require 'dcmgr/initializer'
 
 module Dcmgr
@@ -33,6 +34,7 @@ module Dcmgr
     autoload :HostNode, 'dcmgr/constants/host_node'
     autoload :StorageNode, 'dcmgr/constants/storage_node'
     autoload :Alarm, 'dcmgr/constants/alarm'
+    autoload :VirtualDataCenterSpec, 'dcmgr/constants/virtual_data_center_spec'
   end
   Const = Constants
 
@@ -98,6 +100,8 @@ module Dcmgr
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
     autoload :QueuedJob, 'dcmgr/models/queued_job'
     autoload :Alarm, 'dcmgr/models/alarm'
+    autoload :VirtualDataCenter, 'dcmgr/models/virtual_data_center'
+    autoload :VirtualDataCenterSpec, 'dcmgr/models/virtual_data_center_spec'
 
     require 'dcmgr/models/log_storage/base'
     module LogStorage
