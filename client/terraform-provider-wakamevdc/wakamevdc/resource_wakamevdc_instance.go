@@ -26,13 +26,13 @@ func resourceWakamevdcInstance() *schema.Resource {
 
 			"cpu_cores": &schema.Schema{
 				Type:     schema.TypeInt,
-				Optional: true,
+				Required: true,
 				ForceNew: true,
 			},
 
 			"memory_size": &schema.Schema{
 				Type:     schema.TypeInt,
-				Optional: true,
+				Required: true,
 				ForceNew: true,
 			},
 
