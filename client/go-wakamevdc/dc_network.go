@@ -22,7 +22,7 @@ type DCNetworkService struct {
 }
 
 type DCNetworkCreateParams struct {
-	Name        string `json:"name"`
+	Name        string `url:"name"`
 	Description string `url:"description,omitempty"`
 }
 

@@ -13,7 +13,6 @@ type Instance struct {
 	ID          string `json:"id"`
 	AccountID   string `json:"account_id"`
 	DisplayName string `json:"display_name"`
-	Description string `json:"description"`
 	ServiceType string `json:"service_type"`
 	CPUCores    int    `json:"cpu_cores"`
 	MemorySize  int    `json:"memory_size"`
@@ -83,7 +82,6 @@ type InstanceCreateParams struct {
 	Hostname    string `url:"hostname,omitempty"`
 	HAEnabled   int    `url:"ha_enabled,omitempty"`
 	DisplayName string `url:"display_name,omitempty"`
-	Description string `url:"description,omitempty"`
 	UserData    string `url:"user_data,omitempty"`
 	VIFsJSON    string `url:"vifs,omitempty"`
 	VIFs        map[string]InstanceCreateVIFParams
