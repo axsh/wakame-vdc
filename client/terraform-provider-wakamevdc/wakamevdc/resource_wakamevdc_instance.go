@@ -57,11 +57,6 @@ func resourceWakamevdcInstance() *schema.Resource {
 				Optional: true,
 			},
 
-			"description": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-
 			"ssh_key_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -86,7 +81,6 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 		Hypervisor:  d.Get("hypervisor").(string),
 		ImageID:     d.Get("image_id").(string),
 		DisplayName: d.Get("display_name").(string),
-		Description: d.Get("description").(string),
 		UserData:    d.Get("user_data").(string),
 	}
 
