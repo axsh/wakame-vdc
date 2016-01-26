@@ -79,6 +79,7 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 		CPUCores:    d.Get("cpu_cores").(int),
 		MemorySize:  d.Get("memory_size").(int),
 		Hypervisor:  d.Get("hypervisor").(string),
+		SshKeyID:    d.Get("ssh_key_id").(string),
 		ImageID:     d.Get("image_id").(string),
 		DisplayName: d.Get("display_name").(string),
 		UserData:    d.Get("user_data").(string),

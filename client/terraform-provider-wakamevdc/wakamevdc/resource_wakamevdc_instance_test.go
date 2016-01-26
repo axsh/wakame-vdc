@@ -16,6 +16,7 @@ resource "wakamevdc_instance" "inst1" {
   memory_size = 512
   image_id = "wmi-centos1d64"
   hypervisor = "openvz"
+  ssh_key_id = "ssh-demo"
 }
 `
 
@@ -60,6 +61,7 @@ func TestResourceWakamevdcInstanceCreate(t *testing.T) {
 					resource.TestCheckResourceAttr("wakamevdc_instance.inst1", "image_id", "wmi-centos1d64"),
 					resource.TestCheckResourceAttr("wakamevdc_instance.inst1", "hypervisor", "openvz"),
 					resource.TestCheckResourceAttr("wakamevdc_instance.inst1", "display_name", "inst1"),
+					resource.TestCheckResourceAttr("wakamevdc_instance.inst1", "ssh_key_id", "ssh-demo"),
 				),
 			},
 			resource.TestStep{
