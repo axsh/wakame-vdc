@@ -38,7 +38,7 @@ func resourceWakamevdcInstance() *schema.Resource {
 
 			"hypervisor": &schema.Schema{
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 				ForceNew: true,
 			},
 
