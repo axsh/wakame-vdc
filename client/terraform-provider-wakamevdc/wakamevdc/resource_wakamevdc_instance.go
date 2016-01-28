@@ -42,6 +42,12 @@ func resourceWakamevdcInstance() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"host_node_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+
 			"state": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -72,6 +78,7 @@ func resourceWakamevdcInstance() *schema.Resource {
 			"vif": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
@@ -92,7 +99,8 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 			key := fmt.Sprintf("eth%v", i)
 
 			vifs[key] = wakamevdc.InstanceCreateVIFParams{
-				NetworkID: vifs_map["network_id"].(string),
+				NetworkID:   vifs_map["network_id"].(string),
+				IPv4Address: vifs_map["ip_address"].(string),
 			}
 		}
 	}
@@ -101,6 +109,7 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 		CPUCores:    d.Get("cpu_cores").(int),
 		MemorySize:  d.Get("memory_size").(int),
 		Hypervisor:  d.Get("hypervisor").(string),
+		HostNodeID:  d.Get("host_node_id").(string),
 		SshKeyID:    d.Get("ssh_key_id").(string),
 		ImageID:     d.Get("image_id").(string),
 		DisplayName: d.Get("display_name").(string),

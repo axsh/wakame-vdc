@@ -8,8 +8,10 @@ resource "wakamevdc_instance" "inst1" {
   hypervisor = "openvz"
   image_id = "wmi-centos1d64"
   display_name = "inst1"
+  host_node_id = "hn-1box64"
 
   vif {
     network_id = "nw-demo1"
+    ip_address = "10.0.2.135"
   }
 }
