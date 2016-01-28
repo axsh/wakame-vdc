@@ -17,6 +17,10 @@ resource "wakamevdc_instance" "inst1" {
   image_id = "wmi-centos1d64"
   hypervisor = "openvz"
   ssh_key_id = "ssh-demo"
+
+  vif {
+    network_id = "nw-demo1"
+  }
 }
 `
 

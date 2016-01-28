@@ -68,12 +68,34 @@ func resourceWakamevdcInstance() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+
+			"vif": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
+				},
+			},
 		},
 	}
 }
 
 func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*wakamevdc.Client)
+	var vifs map[string]wakamevdc.InstanceCreateVIFParams
+
+	if v := d.Get("vif"); v != nil {
+		vifs = make(map[string]wakamevdc.InstanceCreateVIFParams)
+
+		for i, v := range v.([]interface{}) {
+			vifs_map := v.(map[string]interface{})
+			key := fmt.Sprintf("eth%v", i)
+
+			vifs[key] = wakamevdc.InstanceCreateVIFParams{
+				NetworkID: vifs_map["network_id"].(string),
+			}
+		}
+	}
 
 	params := &wakamevdc.InstanceCreateParams{
 		CPUCores:    d.Get("cpu_cores").(int),
@@ -83,6 +105,7 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 		ImageID:     d.Get("image_id").(string),
 		DisplayName: d.Get("display_name").(string),
 		UserData:    d.Get("user_data").(string),
+		VIFs:        vifs,
 	}
 
 	inst, _, err := client.Instance.Create(params)
