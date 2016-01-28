@@ -76,11 +76,30 @@ func resourceWakamevdcInstance() *schema.Resource {
 			},
 
 			"vif": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
-				ForceNew: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"network_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+
+						"ip_address": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+
+						"security_groups": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
 				},
 			},
 		},
@@ -95,12 +114,19 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 		vifs = make(map[string]wakamevdc.InstanceCreateVIFParams)
 
 		for i, v := range v.([]interface{}) {
-			vifs_map := v.(map[string]interface{})
+			var security_groups []string
+
+			vif_map := v.(map[string]interface{})
 			key := fmt.Sprintf("eth%v", i)
 
+			for i, secg_id := range vif_map["security_groups"].([]interface{}) {
+				security_groups[i] = secg_id.(string)
+			}
+
 			vifs[key] = wakamevdc.InstanceCreateVIFParams{
-				NetworkID:   vifs_map["network_id"].(string),
-				IPv4Address: vifs_map["ip_address"].(string),
+				NetworkID:        vif_map["network_id"].(string),
+				IPv4Address:      vif_map["ip_address"].(string),
+				SecurityGroupIDs: security_groups,
 			}
 		}
 	}
