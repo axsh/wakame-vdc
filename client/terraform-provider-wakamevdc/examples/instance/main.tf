@@ -13,6 +13,6 @@ resource "wakamevdc_instance" "inst1" {
   vif {
     network_id = "nw-demo1"
     ip_address = "10.0.2.135"
-    security_groups = ["sg-joske", "sg-jefke"]
+    security_groups = ["sg-1p9i5re6", "sg-bzz0kesk"]
   }
 }
