@@ -113,20 +113,20 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 	if v := d.Get("vif"); v != nil {
 		vifs = make(map[string]wakamevdc.InstanceCreateVIFParams)
 
-		for i, v := range v.([]interface{}) {
-			var security_groups []string
+		for i, vifMapInterface := range v.(*schema.Set).List() {
+			//var security_groups []string
+			vifMap := vifMapInterface.(map[string]interface{})
 
-			vif_map := v.(map[string]interface{})
 			key := fmt.Sprintf("eth%v", i)
 
-			for i, secg_id := range vif_map["security_groups"].([]interface{}) {
-				security_groups[i] = secg_id.(string)
-			}
+			//for i, secg_id := range vif_set["security_groups"].([]interface{}) {
+			//	security_groups[i] = secg_id.(string)
+			//}
 
 			vifs[key] = wakamevdc.InstanceCreateVIFParams{
-				NetworkID:        vif_map["network_id"].(string),
-				IPv4Address:      vif_map["ip_address"].(string),
-				SecurityGroupIDs: security_groups,
+				NetworkID:   vifMap["network_id"].(string),
+				IPv4Address: vifMap["ip_address"].(string),
+				//SecurityGroupIDs: security_groups,
 			}
 		}
 	}
