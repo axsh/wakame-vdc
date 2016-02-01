@@ -1,0 +1,5 @@
+## wakame-init params
+#USER=root
+#IPV6INIT=no
+#IPV6_AUTOCONF=no
+#METADATA_LOCATION=drive
