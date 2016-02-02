@@ -15,6 +15,7 @@ const (
 	mediaType      = "application/json"
 
 	headerVDCAccountID = "X-VDC-Account-UUID"
+	defaultAccountID   = "a-shpoolxx"
 )
 
 type StateCompare interface {
@@ -29,6 +30,8 @@ type Client struct {
 	SecurityGroup *SecurityGroupService
 	SshKey        *SshKeyService
 	Image         *ImageService
+	Network       *NetworkService
+	DCNetwork     *DCNetworkService
 }
 
 func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
@@ -38,30 +41,57 @@ func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
 
 	sl := sling.New().Base(baseURL.String()).Client(httpClient)
 	sl.Add("User-Agent", userAgent)
-	sl.Add(headerVDCAccountID, "a-shpoolxx")
-	c := &Client{sling: sl}
+	c := &Client{sling: sl, accountID: defaultAccountID}
 	c.Instance = &InstanceService{client: c}
 	c.SecurityGroup = &SecurityGroupService{client: c}
 	c.SshKey = &SshKeyService{client: c}
 	c.Image = &ImageService{client: c}
+	c.Network = &NetworkService{client: c}
+	c.DCNetwork = &DCNetworkService{client: c}
 	return c
 }
 
-func (c *Client) Sling() *sling.Sling {
-	return c.sling.New()
+// AccountID is a chain method to set Account ID for the API request.
+func (c *Client) AccountID(accountID string) *Client {
+	c.accountID = accountID
+	return c
 }
 
-type APIError struct {
+// Sling returns new Sling object which is configured to access to the API Endpoint.
+func (c *Client) Sling() *sling.Sling {
+	return c.sling.New().Set(headerVDCAccountID, c.accountID)
+}
+
+type ErrorResponse struct {
 	ErrorType string `json:"error"`
 	Message   string `json:"message"`
 	Code      string `json:"code"`
 }
 
-func (e *APIError) Error() string {
-	return fmt.Sprintf("Type: %s, Code: %s, Message: %s", e.ErrorType, e.Code, e.Message)
+// APIError is the response to show error from server.
+type APIError struct {
+	HTTPStatus int
+	ErrorBody  ErrorResponse
 }
 
-type errorRaiser func(apiErr *APIError) (*http.Response, error)
+func (e *APIError) Error() string {
+	return fmt.Sprintf("API Error: HTTP Status: %d, Type: %s, Code: %s, Message: %s",
+		e.HTTPStatus, e.ErrorBody.ErrorType, e.ErrorBody.Code, e.ErrorBody.Message)
+}
+
+func (e *APIError) ErrorType() string {
+	return e.ErrorBody.ErrorType
+}
+
+func (e *APIError) Code() string {
+	return e.ErrorBody.Code
+}
+
+func (e *APIError) Message() string {
+	return e.ErrorBody.Message
+}
+
+type errorRaiser func(errResp *ErrorResponse) (*http.Response, error)
 
 /* Utility that helps to handle API error.
 Example:
@@ -70,12 +100,20 @@ resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
 })
 */
 func trapAPIError(fn errorRaiser) (*http.Response, error) {
-	apiErr := &APIError{}
-	resp, err := fn(apiErr)
+	errResp := ErrorResponse{}
+	resp, err := fn(&errResp)
 	if err == nil {
 		if code := resp.StatusCode; 400 <= code {
-			err = fmt.Errorf("API Error: %s, (HTTP %d)", apiErr.Error(), code)
+			err = &APIError{
+				HTTPStatus: code,
+				ErrorBody:  errResp,
+			}
 		}
 	}
 	return resp, err
+}
+
+type ListRequestParams struct {
+	Start int `url:"start,omitempty"`
+	Limit int `url:"limit,omitempty"`
 }

@@ -28,15 +28,15 @@ type ImageService struct {
 }
 
 func (s *ImageService) Delete(id string) (*http.Response, error) {
-	return trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Delete(fmt.Sprintf(ImagePath+"/%s", id)).Receive(nil, apiErr)
+	return trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Delete(fmt.Sprintf(ImagePath+"/%s", id)).Receive(nil, errResp)
 	})
 }
 
 func (s *ImageService) GetByID(id string) (*Image, *http.Response, error) {
 	img := new(Image)
-	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Get(fmt.Sprintf(ImagePath+"/%s", id)).Receive(img, apiErr)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(fmt.Sprintf(ImagePath+"/%s", id)).Receive(img, errResp)
 	})
 	return img, resp, err
 }
@@ -47,4 +47,24 @@ func (s *ImageService) CompareState(id string, state string) (bool, error) {
 		return false, err
 	}
 	return (img.State == state), nil
+}
+
+type ImagesList struct {
+	Total   int     `json:"total"`
+	Start   int     `json:"start"`
+	Limit   int     `json:"limit"`
+	Results []Image `json:"results"`
+}
+
+func (s *ImageService) List(req *ListRequestParams) (*ImagesList, *http.Response, error) {
+	imgList := make([]ImagesList, 1)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(ImagePath).QueryStruct(req).Receive(&imgList, errResp)
+	})
+
+	if err == nil && len(imgList) > 0 {
+		return &imgList[0], resp, err
+	}
+	// Return empty list object.
+	return &ImagesList{}, resp, err
 }

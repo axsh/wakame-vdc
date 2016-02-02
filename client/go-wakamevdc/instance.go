@@ -13,7 +13,6 @@ type Instance struct {
 	ID          string `json:"id"`
 	AccountID   string `json:"account_id"`
 	DisplayName string `json:"display_name"`
-	Description string `json:"description"`
 	ServiceType string `json:"service_type"`
 	CPUCores    int    `json:"cpu_cores"`
 	MemorySize  int    `json:"memory_size"`
@@ -83,7 +82,6 @@ type InstanceCreateParams struct {
 	Hostname    string `url:"hostname,omitempty"`
 	HAEnabled   int    `url:"ha_enabled,omitempty"`
 	DisplayName string `url:"display_name,omitempty"`
-	Description string `url:"description,omitempty"`
 	UserData    string `url:"user_data,omitempty"`
 	VIFsJSON    string `url:"vifs,omitempty"`
 	VIFs        map[string]InstanceCreateVIFParams
@@ -100,45 +98,46 @@ func (s *InstanceService) Create(req *InstanceCreateParams) (*Instance, *http.Re
 		req.VIFsJSON = buf.String()
 	}
 	inst := new(Instance)
-	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Post(InstancePath).BodyForm(req).Receive(inst, apiErr)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Post(InstancePath).BodyForm(req).Receive(inst, errResp)
 	})
 
 	return inst, resp, err
 }
 
 func (s *InstanceService) Delete(id string) (*http.Response, error) {
-	return trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Delete(fmt.Sprintf(InstancePath+"/%s", id)).Receive(nil, apiErr)
+	return trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Delete(fmt.Sprintf(InstancePath+"/%s", id)).Receive(nil, errResp)
 	})
 }
 
 func (s *InstanceService) GetByID(id string) (*Instance, *http.Response, error) {
 	inst := new(Instance)
-	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Get(fmt.Sprintf(InstancePath+"/%s", id)).Receive(inst, apiErr)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(fmt.Sprintf(InstancePath+"/%s", id)).Receive(inst, errResp)
 	})
 	return inst, resp, err
 }
 
 func (s *InstanceService) PowerOff(id string) (*http.Response, error) {
-	return trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/poweroff", id)).Receive(nil, apiErr)
+	return trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/poweroff", id)).Receive(nil, errResp)
 	})
 }
 
 func (s *InstanceService) PowerOn(id string) (*http.Response, error) {
-	return trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/poweron", id)).Receive(nil, apiErr)
+	return trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/poweron", id)).Receive(nil, errResp)
 	})
 }
 
 type InstanceBackupParams struct {
-	All         bool   `url:"all,omitempty"`
-	DisplayName string `url:"display_name,omitempty"`
-	Description string `url:"description,omitempty"`
-	IsPublic    bool   `url:"is_public,omitempty"`
-	IsCacheable bool   `url:"is_cacheable,omitempty"`
+	All             bool   `url:"all,omitempty"`
+	DisplayName     string `url:"display_name,omitempty"`
+	Description     string `url:"description,omitempty"`
+	IsPublic        bool   `url:"is_public,omitempty"`
+	IsCacheable     bool   `url:"is_cacheable,omitempty"`
+	BackupStorageID string `url:"backup_storage_id,omitempty"`
 }
 
 type InstanceBackup struct {
@@ -148,8 +147,8 @@ type InstanceBackup struct {
 
 func (s *InstanceService) Backup(id string, params *InstanceBackupParams) (string, *http.Response, error) {
 	backup_resp := new(InstanceBackup)
-	resp, err := trapAPIError(func(apiErr *APIError) (*http.Response, error) {
-		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/backup", id)).BodyForm(params).Receive(backup_resp, apiErr)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s/backup", id)).BodyForm(params).Receive(backup_resp, errResp)
 	})
 	return backup_resp.ImageID, resp, err
 }
@@ -160,4 +159,24 @@ func (s *InstanceService) CompareState(id string, state string) (bool, error) {
 		return false, err
 	}
 	return (inst.State == state), nil
+}
+
+type InstancesList struct {
+	Total   int        `json:"total"`
+	Start   int        `json:"start"`
+	Limit   int        `json:"limit"`
+	Results []Instance `json:"results"`
+}
+
+func (s *InstanceService) List(req *ListRequestParams) (*InstancesList, *http.Response, error) {
+	instList := make([]InstancesList, 1)
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(InstancePath).QueryStruct(req).Receive(&instList, errResp)
+	})
+
+	if err == nil && len(instList) > 0 {
+		return &instList[0], resp, err
+	}
+	// Return empty list object.
+	return &InstancesList{}, resp, err
 }
