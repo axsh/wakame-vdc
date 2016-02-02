@@ -132,11 +132,12 @@ func (s *InstanceService) PowerOn(id string) (*http.Response, error) {
 }
 
 type InstanceBackupParams struct {
-	All         bool   `url:"all,omitempty"`
-	DisplayName string `url:"display_name,omitempty"`
-	Description string `url:"description,omitempty"`
-	IsPublic    bool   `url:"is_public,omitempty"`
-	IsCacheable bool   `url:"is_cacheable,omitempty"`
+	All             bool   `url:"all,omitempty"`
+	DisplayName     string `url:"display_name,omitempty"`
+	Description     string `url:"description,omitempty"`
+	IsPublic        bool   `url:"is_public,omitempty"`
+	IsCacheable     bool   `url:"is_cacheable,omitempty"`
+	BackupStorageID string `url:"backup_storage_id,omitempty"`
 }
 
 type InstanceBackup struct {
