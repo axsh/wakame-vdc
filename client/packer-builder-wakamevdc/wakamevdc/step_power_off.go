@@ -26,7 +26,7 @@ func (s *stepPowerOff) Run(state multistep.StateBag) multistep.StepAction {
 	}
 	err = waitForResourceState("halted", instID, client.Instance, conf.StateTimeout)
 	if err != nil {
-		err := fmt.Errorf("Error waiting for instance to become running: %s", err)
+		err := fmt.Errorf("Error waiting for instance to become halted: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
