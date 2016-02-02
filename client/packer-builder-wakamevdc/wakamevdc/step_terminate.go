@@ -14,6 +14,7 @@ func (s *stepTerminate) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(*goclient.Client)
 	ui := state.Get("ui").(packer.Ui)
 	instID := state.Get("instance_id").(string)
+	conf := state.Get("config").(Config)
 
 	ui.Say("Terminate instance...")
 	_, err := client.Instance.Delete(instID)
@@ -23,6 +24,15 @@ func (s *stepTerminate) Run(state multistep.StateBag) multistep.StepAction {
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
+	err = waitForResourceState("terminated", instID, client.Instance, conf.StateTimeout)
+	if err != nil {
+		err := fmt.Errorf("Error waiting for instance to become terminated: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
+	ui.Say("Instance terminated...")
+
 	return multistep.ActionContinue
 }
 
