@@ -18,10 +18,14 @@ func (s *stepBackup) Run(state multistep.StateBag) multistep.StepAction {
 	conf := state.Get("config").(Config)
 	instID := state.Get("instance_id").(string)
 
-	ui.Say("Taking instance backup...")
-	imageID, _, err := client.Instance.Backup(instID, &goclient.InstanceBackupParams{
+	backupParams := &goclient.InstanceBackupParams{
 		All: false,
-	})
+	}
+	if conf.BackupStorageID != "" {
+		backupParams.BackupStorageID = conf.BackupStorageID
+	}
+	ui.Say("Taking instance backup...")
+	imageID, _, err := client.Instance.Backup(instID, backupParams)
 	if err != nil {
 		err := fmt.Errorf("Error taking instance backup: %s", err)
 		state.Put("error", err)

@@ -24,13 +24,14 @@ type Config struct {
 	ImageID   string `mapstructure:"image_id"`
 	AccountID string `mapstructure:"account_id"`
 
-	Hypervisor    string `mapstructure:"hypervisor"`
-	CPUCores      int    `mapstructure:"cpu_cores"`
-	MemorySize    int    `mapstructure:"memory_size"`
-	HostNodeID    string `mapstructure:"host_node_id"`
-	VIF1NetworkID string `mapstructure:"network_id"`
-	SshKeyID      string `mapstructure:"ssh_key_id"`
-	UserData      string `mapstructure:"user_data"`
+	Hypervisor      string `mapstructure:"hypervisor"`
+	CPUCores        int    `mapstructure:"cpu_cores"`
+	MemorySize      int    `mapstructure:"memory_size"`
+	HostNodeID      string `mapstructure:"host_node_id"`
+	VIF1NetworkID   string `mapstructure:"network_id"`
+	SshKeyID        string `mapstructure:"ssh_key_id"`
+	UserData        string `mapstructure:"user_data"`
+	BackupStorageID string `mapstructure:"backup_storage_id"`
 
 	StateTimeout time.Duration `mapstructure:"state_timeout"`
 

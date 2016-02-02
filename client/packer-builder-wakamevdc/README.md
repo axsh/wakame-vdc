@@ -36,7 +36,8 @@ Type: ``wakamevdc``
 - `host_node_id` (string) - Host Node ID to run instance.
 - `user_data` (string) - User data for the instance.
 - `state_timeout` (string) - Duration in seconds to wait for instance's state transition. (Default: 360)
-- `ssh_username` (string) - User name for SSH connection. (Defaut: root)
+- `ssh_username` (string) - User name for SSH connection. (Default: root)
+- `backup_storage_id` (string) - Backup Storage ID (bkst-xxxx) to upload image file. (Default: same storage)
 
 ## Build & Install
 
