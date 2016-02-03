@@ -28,7 +28,7 @@ func TestNetworkList(t *testing.T) {
 	}
 }
 
-func TestNetworkCreate(t *testing.T) {
+func TestNetworkFull(t *testing.T) {
 	c := NewClient(nil, nil)
 	// 1box image sets "allow_new_networks" true
 	dcnList, _, err := c.DCNetwork.List(nil, "vnet")
@@ -42,10 +42,19 @@ func TestNetworkCreate(t *testing.T) {
 		IPv4Network: "10.0.0.0",
 		Prefix:      24,
 		NetworkMode: "l2overlay",
+		Editable:    true,
 		DCNetworkID: dcnList.Results[0].ID,
 	})
 	if err != nil {
 		t.Fatalf("Failed to create network: %v", err)
+	}
+
+	_, err = c.Network.DHCPRangeCreate(nw.ID, &DHCPRangeCreateParams{
+		RangeBegin: "10.0.0.20",
+		RangeEnd:   "10.0.0.30",
+	})
+	if err != nil {
+		t.Fatalf("Failed to create dhcp range: %v", err)
 	}
 
 	_, err = c.Network.Delete(nw.ID)
