@@ -9,4 +9,14 @@ resource "wakamevdc_network" "nw1" {
   network_mode = "l2overlay"
   dc_network_name = "vnet"
   display_name = "nw1"
+
+  dhcp_range {
+    range_begin "10.0.0.10"
+    range_end "10.0.0.50"
+  }
+
+  dhcp_range {
+    range_begin "10.0.0.100"
+    range_end "10.0.0.200"
+  }
 }
