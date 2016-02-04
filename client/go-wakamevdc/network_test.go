@@ -57,6 +57,16 @@ func TestNetworkFull(t *testing.T) {
 		t.Fatalf("Failed to create dhcp range: %v", err)
 	}
 
+	dhcpRanges, _, err := c.Network.DHCPRangeList(nw.ID)
+	if err != nil {
+		t.Fatalf("Failed to query dhcp range: %v", err)
+	}
+
+	if len(*dhcpRanges) != 1 {
+		t.Fatalf("Got more dhcp ranges than expected. Expected 1, got %d",
+			len(*dhcpRanges))
+	}
+
 	_, err = c.Network.Delete(nw.ID)
 	if err != nil {
 		t.Fatalf("Failed to delete network: %s", nw.ID)
