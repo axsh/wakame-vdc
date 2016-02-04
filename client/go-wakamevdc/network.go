@@ -129,3 +129,16 @@ func (s *NetworkService) DHCPRangeCreate(id string, req *DHCPRangeCreateParams) 
 
 	return resp, err
 }
+
+type DHCPRangeDeleteParams struct {
+	RangeBegin string `url:"range_begin"`
+	RangeEnd   string `url:"range_end"`
+}
+
+func (s *NetworkService) DHCPRangeDelete(id string, req *DHCPRangeDeleteParams) (*http.Response, error) {
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(NetworkPath+"/%s/dhcp_ranges/remove", id)).BodyForm(req).Receive(nil, errResp)
+	})
+
+	return resp, err
+}

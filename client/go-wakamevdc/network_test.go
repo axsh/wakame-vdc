@@ -72,6 +72,21 @@ func TestNetworkFull(t *testing.T) {
 			*dhcpRanges)
 	}
 
+	_, err = c.Network.DHCPRangeDelete(nw.ID, &DHCPRangeDeleteParams{
+		RangeBegin: "10.0.0.20",
+		RangeEnd:   "10.0.0.30",
+	})
+
+	dhcpRanges, _, err = c.Network.DHCPRangeList(nw.ID)
+	if err != nil {
+		t.Fatalf("Failed to query dhcp range: %v", err)
+	}
+
+	if len(*dhcpRanges) != 0 {
+		t.Fatalf("Dhcp range didn't get deleted. Expected empty slice. got %v",
+			*dhcpRanges)
+	}
+
 	_, err = c.Network.Delete(nw.ID)
 	if err != nil {
 		t.Fatalf("Failed to delete network: %s", nw.ID)
