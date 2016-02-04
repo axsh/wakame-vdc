@@ -106,3 +106,39 @@ func (s *NetworkService) List(req *ListRequestParams) (*NetworksList, *http.Resp
 	// Return empty list object.
 	return &NetworksList{}, resp, err
 }
+
+func (s *NetworkService) DHCPRangeList(id string) (*[][]string, *http.Response, error) {
+	var drl [][]string
+
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(fmt.Sprintf(NetworkPath+"/%s/dhcp_ranges", id)).Receive(&drl, errResp)
+	})
+
+	return &drl, resp, err
+}
+
+type DHCPRangeCreateParams struct {
+	RangeBegin string `url:"range_begin"`
+	RangeEnd   string `url:"range_end"`
+}
+
+func (s *NetworkService) DHCPRangeCreate(id string, req *DHCPRangeCreateParams) (*http.Response, error) {
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(NetworkPath+"/%s/dhcp_ranges/add", id)).BodyForm(req).Receive(nil, errResp)
+	})
+
+	return resp, err
+}
+
+type DHCPRangeDeleteParams struct {
+	RangeBegin string `url:"range_begin"`
+	RangeEnd   string `url:"range_end"`
+}
+
+func (s *NetworkService) DHCPRangeDelete(id string, req *DHCPRangeDeleteParams) (*http.Response, error) {
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(NetworkPath+"/%s/dhcp_ranges/remove", id)).BodyForm(req).Receive(nil, errResp)
+	})
+
+	return resp, err
+}
