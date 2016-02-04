@@ -67,6 +67,11 @@ func TestNetworkFull(t *testing.T) {
 			len(*dhcpRanges))
 	}
 
+	if (*dhcpRanges)[0][0] != "10.0.0.20" || (*dhcpRanges)[0][1] != "10.0.0.30" {
+		t.Fatalf("Unexpected dhcp range. Expected: [[10.0.0.20 10.0.0.30]]. Got: %v",
+			*dhcpRanges)
+	}
+
 	_, err = c.Network.Delete(nw.ID)
 	if err != nil {
 		t.Fatalf("Failed to delete network: %s", nw.ID)
