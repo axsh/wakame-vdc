@@ -118,8 +118,8 @@ func (s *NetworkService) DHCPRangeList(id string) (*[][]string, *http.Response, 
 }
 
 type DHCPRangeCreateParams struct {
-	RangeBegin string `url:range_begin`
-	RangeEnd   string `url:range_end`
+	RangeBegin string `url:"range_begin"`
+	RangeEnd   string `url:"range_end"`
 }
 
 func (s *NetworkService) DHCPRangeCreate(id string, req *DHCPRangeCreateParams) (*http.Response, error) {
