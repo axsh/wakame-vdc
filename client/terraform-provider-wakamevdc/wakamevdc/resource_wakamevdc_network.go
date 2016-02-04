@@ -88,6 +88,24 @@ func resourceWakamevdcNetwork() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+
+			"dhcp_range": &schema.Schema{
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"range_begin": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"range_end": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -137,6 +155,22 @@ func resourceWakamevdcNetworkCreate(d *schema.ResourceData, m interface{}) error
 	// Set computed parameters
 	d.Set("ip_assignment", nw.IPAssignment)
 	d.Set("metric", nw.Metric)
+
+	if dhcpRangeSetI := d.Get("dhcp_range"); dhcpRangeSetI != nil {
+		for _, dhcpRangeI := range dhcpRangeSetI.(*schema.Set).List() {
+			dhcpRangeMap := dhcpRangeI.(map[string]interface{})
+
+			dhcpRangeStruct := wakamevdc.DHCPRangeCreateParams{
+				RangeBegin: dhcpRangeMap["range_begin"].(string),
+				RangeEnd:   dhcpRangeMap["range_end"].(string),
+			}
+
+			_, err = client.Network.DHCPRangeCreate(nw.ID, &dhcpRangeStruct)
+			if err != nil {
+				return fmt.Errorf("Error creating dhcp range: %s", err)
+			}
+		}
+	}
 
 	return nil
 }

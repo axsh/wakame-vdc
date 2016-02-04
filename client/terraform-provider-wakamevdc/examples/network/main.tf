@@ -1,5 +1,5 @@
 provider "wakamevdc" {
-  api_endpoint = "http://localhost:9001/api/12.03/"
+  api_endpoint = "http://10.0.2.15:9001/api/12.03/"
 }
 
 resource "wakamevdc_network" "nw1" {
@@ -9,14 +9,15 @@ resource "wakamevdc_network" "nw1" {
   network_mode = "l2overlay"
   dc_network_name = "vnet"
   display_name = "nw1"
+  editable = true
 
   dhcp_range {
-    range_begin "10.0.0.10"
-    range_end "10.0.0.50"
+    range_begin = "10.0.0.10"
+    range_end = "10.0.0.50"
   }
 
   dhcp_range {
-    range_begin "10.0.0.100"
-    range_end "10.0.0.200"
+    range_begin = "10.0.0.100"
+    range_end = "10.0.0.200"
   }
 }
