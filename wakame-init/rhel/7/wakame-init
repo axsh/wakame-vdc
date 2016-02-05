@@ -90,6 +90,10 @@ function set_host_name() {
       hostname $HN
       sed -i "s/HOSTNAME=.*/HOSTNAME=$HN/" /etc/sysconfig/network
     fi
+    grep -q "$HN" /etc/hostname
+    if [ $? -ne 0 ]; then
+      echo $HN > /etc/hostname
+    fi
 
     # Add it to the hosts file if not there yet
     grep -q "$HN" /etc/hosts
@@ -155,7 +159,7 @@ function set_network_configuration() {
     mac_path=network/interfaces/macs/${macaddr%%/}
     mac=`get_metadata ${mac_path}/mac`
 
-    nic=`ifconfig -a | grep -i $mac | tr -s ' ' | cut -d ' ' -f1`
+    IFS=/ read xempty xsys xclass xnet nic therest <<<"$(grep "$mac" /sys/class/net/*/address)"
 
     ip=`get_metadata ${mac_path}/local-ipv4s`
     broadcast=`get_metadata ${mac_path}/x-broadcast`
