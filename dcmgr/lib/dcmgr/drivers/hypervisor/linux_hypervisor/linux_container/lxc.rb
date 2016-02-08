@@ -62,7 +62,7 @@ module Dcmgr
         # check mount point
         Dir.mkdir(ctx.root_mount_path) unless File.directory?(ctx.root_mount_path)
         # "rootfs" directory should be created before running lxc-create.
-        sh("lxc-create -f %s -n %s", [ctx.lxc_conf_path, ctx.inst[:uuid]])
+        sh("lxc-create -t none -f %s -n %s", [ctx.lxc_conf_path, ctx.inst[:uuid]])
 
         poweron_instance(ctx)
       end
