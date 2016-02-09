@@ -76,7 +76,7 @@ func resourceWakamevdcInstance() *schema.Resource {
 			},
 
 			"vif": &schema.Schema{
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -89,6 +89,7 @@ func resourceWakamevdcInstance() *schema.Resource {
 						"ip_address": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 							ForceNew: true,
 						},
 
@@ -113,7 +114,7 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 	if v := d.Get("vif"); v != nil {
 		vifs = make(map[string]wakamevdc.InstanceCreateVIFParams)
 
-		for i, vifMapInterface := range v.(*schema.Set).List() {
+		for i, vifMapInterface := range v.([]interface{}) {
 			vifMap := vifMapInterface.(map[string]interface{})
 
 			vifStruct := wakamevdc.InstanceCreateVIFParams{
@@ -185,6 +186,15 @@ func resourceWakamevdcInstanceRead(d *schema.ResourceData, m interface{}) error 
 	d.Set("display_name", inst.DisplayName)
 	d.Set("state", inst.State)
 	d.Set("status", inst.Status)
+
+	vifs := make([]map[string]interface{}, len(inst.VIFs))
+	for i, vif := range inst.VIFs {
+		vifs[i] = make(map[string]interface{})
+		vifs[i]["network_id"] = vif.NetworkID
+		vifs[i]["ip_address"] = vif.IPv4.Address
+		vifs[i]["security_groups"] = vif.SecurityGroupIDs
+	}
+	d.Set("vif", vifs)
 
 	return err
 }
