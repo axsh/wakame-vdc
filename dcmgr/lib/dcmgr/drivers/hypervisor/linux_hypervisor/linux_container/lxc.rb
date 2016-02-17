@@ -76,7 +76,7 @@ module Dcmgr
         SkipCheckHelper.skip_check(ctx.inst_id) {
           sh("lxc-stop -n #{ctx.inst[:uuid]}")
           sh("lxc-wait -n %s -s STOPPED", [ctx.inst_id])
-          sh("lxc-start -n %s -d -c %s/console.log", [ctx.inst[:uuid], ctx.inst_data_dir])
+          lxc_start(ctx)
         }
       end
 
@@ -87,7 +87,7 @@ module Dcmgr
         Dir.mkdir(ctx.metadata_drive_mount_path) unless File.directory?(ctx.metadata_drive_mount_path)
         mount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
 
-        sh("lxc-start -d -n %s", [ctx.inst[:uuid], ctx.inst_data_dir])
+        lxc_start(ctx)
         sh("lxc-wait -n %s -s RUNNING", [ctx.inst_id])
         ctx.logger.info("Started container")
       end
@@ -155,6 +155,12 @@ module Dcmgr
         vifs = ctx.inst[:vif]
 
         render_template('lxc.conf', ctx.lxc_conf_path, binding)
+      end
+
+      def lxc_start(ctx)
+        log_level = Dcmgr::Configurations.hva.lxc_log_level.to_s.upcase
+        sh("lxc-start -n %s -d -c %s/console.log -o %s/lxc.log -l %s",
+          [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst_data_dir, log_level])
       end
 
 

@@ -275,6 +275,8 @@ module Dcmgr
       # Dolphin server connection string
       param :dolphin_server_uri, :default=> 'http://127.0.0.1:9004/'
 
+      param :lxc_log_level, :default => :error
+
       def validate(errors)
         if @config[:vm_data_dir].nil?
           errors << "vm_data_dir not set"
@@ -284,6 +286,11 @@ module Dcmgr
 
         unless ['netfilter', 'legacy_netfilter', 'openflow', 'openvnet', 'off'].member?(@config[:edge_networking])
           errors << "Unknown value for edge_networking: #{@config[:edge_networking]}"
+        end
+
+        unless ::Dcmgr::Constants::LXC::LOG_LEVELS.member?(@config[:lxc_log_level])
+          errors << "Invalid value for lxc_log_level. Must be one of the following: %s" %
+            ::Dcmgr::Constants::LXC::LOG_LEVELS.to_s
         end
       end
     end
