@@ -68,8 +68,16 @@ module Dcmgr
       end
 
       def terminate_instance(ctx)
-        poweroff_instance(ctx)
-        shell.run("lxc-destroy -n #{ctx.inst_id}")
+        if lxc_current_state(ctx.inst_id) == "RUNNING" then
+          # We are terminating the instance so no need to shutdown cleanly.
+          # We save some time by just killing it.
+          shell.run("lxc-stop --kill -n #{ctx.inst_id}")
+          umount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
+          umount_root_image(ctx, ctx.root_mount_path)
+          shell.run("lxc-destroy -n #{ctx.inst_id}")
+        else
+          # TODO
+        end
       end
 
       def reboot_instance(ctx)
@@ -163,6 +171,10 @@ module Dcmgr
           [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst_data_dir, log_level])
       end
 
+      def lxc_current_state(instance_uuid)
+        output = sh("lxc-info -n #{instance_uuid}")[:stdout]
+        output.split("State:").last.split("\n").first.strip
+      end
 
       Task::Tasklet.register(self) {
         self.new
