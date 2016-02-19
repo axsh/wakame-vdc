@@ -176,6 +176,12 @@ module Dcmgr
       end
 
       def lxc_start(ctx)
+        # This is a workaround for a bug where some time lxc instances would
+        # get stuck in initializing because they're unable to create a pty.
+        # It is currently not known yet why this bug occurs.
+        shell.run("mount -o remount,rw /dev/pts")
+        shell.run("udevadm settle")
+
         log_level = Dcmgr::Configurations.hva.lxc_log_level.to_s.upcase
         sh("lxc-start -n %s -d -c %s/console.log -o %s/lxc.log -l %s",
           [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst_data_dir, log_level])
