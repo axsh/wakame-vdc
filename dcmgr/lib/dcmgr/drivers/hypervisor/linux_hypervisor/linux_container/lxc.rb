@@ -76,8 +76,18 @@ module Dcmgr
           umount_root_image(ctx, ctx.root_mount_path)
           shell.run("lxc-destroy -n #{ctx.inst_id}")
         else
-          # TODO
+          if is_mountpoint?(ctx.metadata_drive_mount_path)
+            umount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
+          end
+
+          if is_mountpoint?(ctx.root_mount_path)
+            umount_root_image(ctx, ctx.root_mount_path)
+          end
+
+          shell.run("lxc-destroy -n #{ctx.inst_id}")
         end
+
+        cleanup_vif(ctx)
       end
 
       def reboot_instance(ctx)

@@ -85,6 +85,10 @@ module Dcmgr
         end
       end
 
+      def is_mountpoint?(directory)
+        shell.run("mountpoint #{directory}").success?
+      end
+
     end
   end
 end
