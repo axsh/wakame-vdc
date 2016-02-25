@@ -21,6 +21,25 @@ module Dcmgr::Endpoints::V1203
     if Dcmgr::Configurations.dcmgr.features.openvnet
       register Sinatra::VnetWebapi
       enable_vnet_webapi
+
+      # These methods converts wakame-vdc's string format into the slightly
+      # different format that openvnet uses.
+      define_method("openvnet_rules") { |rules|
+        rules.split(/\r?\n/).map { |r|          
+          r = split_rule(r)
+          r = "#{r[:protocol]}:#{r[:port_start]}:#{r[:subject]}"
+        }
+      }
+
+      define_method("split_rule") { |rule|
+        parts = rule.split(/[\s,:]/)
+        { :protocol   => parts[0],
+          :port_start => parts[1],
+          :port_end   => parts[2],
+          :subject    => parts.last
+        }
+      }
+
     end
 
     # To access constants in this namespace

@@ -5,7 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+`Added` Security groups support to the OpenVNet integration.
+
 `Fixed` A bug where the WebAPI would crash when no account id was set in a request. It now fails gracefully with a 400 error instead.
+
+`Fixed` A crash that occurred when performing a POST request to the ssh_key_pairs endpoint without including the "public_key" field in the parameters.
+
+`Fixed` A bug in the `lxc-start` command generation, causing LXC instances to crash on startup.
+
+`Fixed` A bug that would some times occur when starting LXC instances, causing `/dev/pty` to become mounted read only.
 
 ## [16.1] - 2015-10-2
 
