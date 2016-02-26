@@ -42,7 +42,7 @@ function test_get_volume() {
 function test_volume_backup_under_instances() {
   run_cmd instance show_volumes "${instance_uuid}"| ydump > $last_result_path
   assertEquals 0 $?
-  
+
   local boot_volume_uuid=$(yfind '0/:uuid:' < $last_result_path)
   test -n "$boot_volume_uuid"
   assertEquals 0 $?
@@ -119,9 +119,12 @@ cat $last_result_path
   test -n "$backup_obj_uuid2"
   assertEquals 0 $?
 
-  retry_until "document_pair? backup_object ${backup_obj_uuid1} state available"
+  # We raise the timeout for these jobs because LXC has been completing successfully
+  # 10 seconds after the timeout passed. A slightly larger timeout should be acceptable
+  # when doing multiple IO-heavy operations at the same time.
+  RETRY_WAIT_SEC=180 retry_until "document_pair? backup_object ${backup_obj_uuid1} state available"
   assertEquals 0 $?
-  retry_until "document_pair? backup_object ${backup_obj_uuid2} state available"
+  RETRY_WAIT_SEC=180 retry_until "document_pair? backup_object ${backup_obj_uuid2} state available"
   assertEquals 0 $?
 
   run_cmd backup_object destroy ${backup_obj_uuid1}
