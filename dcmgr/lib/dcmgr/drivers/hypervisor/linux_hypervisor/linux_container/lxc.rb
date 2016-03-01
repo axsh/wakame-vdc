@@ -62,21 +62,39 @@ module Dcmgr
         # check mount point
         Dir.mkdir(ctx.root_mount_path) unless File.directory?(ctx.root_mount_path)
         # "rootfs" directory should be created before running lxc-create.
-        sh("lxc-create -f %s -n %s", [ctx.lxc_conf_path, ctx.inst[:uuid]])
+        sh("lxc-create -t none -f %s -n %s", [ctx.lxc_conf_path, ctx.inst[:uuid]])
 
         poweron_instance(ctx)
       end
 
       def terminate_instance(ctx)
-        poweroff_instance(ctx)
-        shell.run("lxc-destroy -n #{ctx.inst_id}")
+        if lxc_current_state(ctx.inst_id) == "RUNNING" then
+          # We are terminating the instance so no need to shutdown cleanly.
+          # We save some time by just killing it.
+          shell.run("lxc-stop --kill -n #{ctx.inst_id}")
+          umount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
+          umount_root_image(ctx, ctx.root_mount_path)
+          shell.run("lxc-destroy -n #{ctx.inst_id}")
+        else
+          if is_mountpoint?(ctx.metadata_drive_mount_path)
+            umount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
+          end
+
+          if is_mountpoint?(ctx.root_mount_path)
+            umount_root_image(ctx, ctx.root_mount_path)
+          end
+
+          shell.run("lxc-destroy -n #{ctx.inst_id}")
+        end
+
+        cleanup_vif(ctx)
       end
 
       def reboot_instance(ctx)
         SkipCheckHelper.skip_check(ctx.inst_id) {
           sh("lxc-stop -n #{ctx.inst[:uuid]}")
           sh("lxc-wait -n %s -s STOPPED", [ctx.inst_id])
-          sh("lxc-start -n %s -d -c %s/console.log", [ctx.inst[:uuid], ctx.inst_data_dir])
+          lxc_start(ctx)
         }
       end
 
@@ -87,7 +105,7 @@ module Dcmgr
         Dir.mkdir(ctx.metadata_drive_mount_path) unless File.directory?(ctx.metadata_drive_mount_path)
         mount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
 
-        sh("lxc-start -d -n %s", [ctx.inst[:uuid], ctx.inst_data_dir])
+        lxc_start(ctx)
         sh("lxc-wait -n %s -s RUNNING", [ctx.inst_id])
         ctx.logger.info("Started container")
       end
@@ -157,6 +175,22 @@ module Dcmgr
         render_template('lxc.conf', ctx.lxc_conf_path, binding)
       end
 
+      def lxc_start(ctx)
+        # This is a workaround for a bug where some time lxc instances would
+        # get stuck in initializing because they're unable to create a pty.
+        # It is currently not known yet why this bug occurs.
+        shell.run("mount -o remount,rw /dev/pts")
+        shell.run("udevadm settle")
+
+        log_level = Dcmgr::Configurations.hva.lxc_log_level.to_s.upcase
+        sh("lxc-start -n %s -d -c %s/console.log -o %s/lxc.log -l %s",
+          [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst_data_dir, log_level])
+      end
+
+      def lxc_current_state(instance_uuid)
+        output = sh("lxc-info -n #{instance_uuid}")[:stdout]
+        output.split("State:").last.split("\n").first.strip
+      end
 
       Task::Tasklet.register(self) {
         self.new

@@ -33,6 +33,7 @@ module Dcmgr
     autoload :HostNode, 'dcmgr/constants/host_node'
     autoload :StorageNode, 'dcmgr/constants/storage_node'
     autoload :Alarm, 'dcmgr/constants/alarm'
+    autoload :LXC, 'dcmgr/constants/lxc'
   end
   Const = Constants
 
