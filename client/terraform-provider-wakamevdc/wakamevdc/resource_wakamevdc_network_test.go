@@ -13,11 +13,11 @@ import (
 
 const testConfig = `
 resource "wakamevdc_network" "nw1" {
-  ipv4_network = "10.0.0.0"
+	ipv4_network = "10.0.0.0"
 	prefix = 24
 	network_mode = "l2overlay"
 	dc_network_id = "%s"
-  display_name = "nw1"
+	display_name = "nw1"
 }
 `
 
