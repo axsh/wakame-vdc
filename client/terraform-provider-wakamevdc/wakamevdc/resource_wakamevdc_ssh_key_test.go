@@ -10,7 +10,7 @@ import (
 
 //This global variable will be used to track the key's uuid in Wakame-vdc since
 //we can't query that from terraform after it's been deleted.
-var to_be_deleted_key_id string
+var toBeDeletedKeyID string
 
 func TestResourceWakamevdcSSHKeyCreateUpdateDelete(t *testing.T) {
 	testKeyPair := `
@@ -91,7 +91,7 @@ func getTerraformResourceAndWakameKey(s *terraform.State, resource_name string) 
 func checkForcedNew() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testVdcProvider.Meta().(*wakamevdc.Client)
-		old_key, _, err := client.SshKey.GetByID(to_be_deleted_key_id)
+		old_key, _, err := client.SshKey.GetByID(toBeDeletedKeyID)
 		if err != nil {
 			return err
 		}
@@ -105,7 +105,7 @@ func checkForcedNew() resource.TestCheckFunc {
 			return err
 		}
 
-		to_be_deleted_key_id = new_key.ID
+		toBeDeletedKeyID = new_key.ID
 
 		if new_key.PublicKey != rs.Primary.Attributes["public_key"] {
 			return parameterCheckFailed("public_key",
@@ -170,7 +170,7 @@ func checkTestKeyCreated() resource.TestCheckFunc {
 		}
 
 		// We store the test key id in a global variable so we can check if it's properly deleted later.
-		to_be_deleted_key_id = key.ID
+		toBeDeletedKeyID = key.ID
 
 		return nil
 	}
@@ -179,7 +179,7 @@ func checkTestKeyCreated() resource.TestCheckFunc {
 func testResourceSshKeyDestroyed(s *terraform.State) error {
 	client := testVdcProvider.Meta().(*wakamevdc.Client)
 
-	key, _, err := client.SshKey.GetByID(to_be_deleted_key_id)
+	key, _, err := client.SshKey.GetByID(toBeDeletedKeyID)
 
 	if key.DeletedAt == "" {
 		return fmt.Errorf("Ssh key wasn't deleted after 'terraform destroy'")
