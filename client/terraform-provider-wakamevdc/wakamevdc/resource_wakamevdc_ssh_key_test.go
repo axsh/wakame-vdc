@@ -70,15 +70,15 @@ resource "wakamevdc_ssh_key" "testkey" {
 	})
 }
 
-func parameterCheckFailed(param_name string, wakame string, terraform string) error {
-	return fmt.Errorf("The ssh key's field '%s' didn't match.\nWakame-vdc had: '%s'\nTerraform had: '%s'", param_name, wakame, terraform)
+func parameterCheckFailed(ParamName string, wakame string, terraform string) error {
+	return fmt.Errorf("The ssh key's field '%s' didn't match.\nWakame-vdc had: '%s'\nTerraform had: '%s'", ParamName, wakame, terraform)
 }
 
-func getTerraformResourceAndWakameKey(s *terraform.State, resource_name string) (*terraform.ResourceState, *wakamevdc.SshKey, error) {
-	rs, ok := s.RootModule().Resources[resource_name]
+func getTerraformResourceAndWakameKey(s *terraform.State, resourceName string) (*terraform.ResourceState, *wakamevdc.SshKey, error) {
+	rs, ok := s.RootModule().Resources[resourceName]
 
 	if !ok {
-		return nil, nil, fmt.Errorf("Not found: %s", resource_name)
+		return nil, nil, fmt.Errorf("Not found: %s", resourceName)
 	}
 
 	client := testVdcProvider.Meta().(*wakamevdc.Client)
@@ -91,25 +91,25 @@ func getTerraformResourceAndWakameKey(s *terraform.State, resource_name string) 
 func checkForcedNew() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testVdcProvider.Meta().(*wakamevdc.Client)
-		old_key, _, err := client.SshKey.GetByID(toBeDeletedKeyID)
+		oldKey, _, err := client.SshKey.GetByID(toBeDeletedKeyID)
 		if err != nil {
 			return err
 		}
 
-		if old_key.DeletedAt == "" {
+		if oldKey.DeletedAt == "" {
 			return fmt.Errorf("Ssh key wasn't deleted when trying to update its public key")
 		}
 
-		rs, new_key, err := getTerraformResourceAndWakameKey(s, "wakamevdc_ssh_key.testkey")
+		rs, newKey, err := getTerraformResourceAndWakameKey(s, "wakamevdc_ssh_key.testkey")
 		if err != nil {
 			return err
 		}
 
-		toBeDeletedKeyID = new_key.ID
+		toBeDeletedKeyID = newKey.ID
 
-		if new_key.PublicKey != rs.Primary.Attributes["public_key"] {
+		if newKey.PublicKey != rs.Primary.Attributes["public_key"] {
 			return parameterCheckFailed("public_key",
-				new_key.PublicKey,
+				newKey.PublicKey,
 				rs.Primary.Attributes["public_key"])
 		}
 
