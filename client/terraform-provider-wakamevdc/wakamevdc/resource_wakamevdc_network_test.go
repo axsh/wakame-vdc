@@ -111,6 +111,10 @@ func TestResourceWakamevdcNetworkFull(t *testing.T) {
 		return nil
 	}
 
+	testNetworkUpdated := func(s *terraform.State) error {
+		return nil
+	}
+
 	testCheckDestroy := func(s *terraform.State) error {
 		client := testVdcProvider.Meta().(*wakamevdc.Client)
 		_, _, err := client.Network.GetByID(resourceID)
@@ -128,6 +132,10 @@ func TestResourceWakamevdcNetworkFull(t *testing.T) {
 			resource.TestStep{
 				Config: fmt.Sprintf(testConfig, dcnID),
 				Check:  testNetworkCreated,
+			},
+			resource.TestStep{
+				Config: fmt.Sprintf(testConfigUpdate, dcnID),
+				Check:  testNetworkUpdated,
 			},
 		},
 	})
