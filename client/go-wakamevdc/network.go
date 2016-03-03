@@ -63,6 +63,10 @@ type NetworkCreateParams struct {
 	// TODO: service_dhcp, service_dns, service_gateway
 }
 
+type NetworkUpdateParams struct {
+	DisplayName string `url:"display_name,omitempty"`
+}
+
 func (s *NetworkService) Create(req *NetworkCreateParams) (*Network, *http.Response, error) {
 	nw := new(Network)
 	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
@@ -70,6 +74,13 @@ func (s *NetworkService) Create(req *NetworkCreateParams) (*Network, *http.Respo
 	})
 
 	return nw, resp, err
+}
+
+func (s *NetworkService) Update(id string, req *NetworkUpdateParams) (*http.Response, error) {
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(NetworkPath+"/%s", id)).BodyForm(req).Receive(nil, errResp)
+	})
+	return resp, err
 }
 
 func (s *NetworkService) Delete(id string) (*http.Response, error) {
