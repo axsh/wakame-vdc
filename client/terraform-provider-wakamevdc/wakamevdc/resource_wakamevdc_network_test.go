@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/axsh/wakame-vdc/client/go-wakamevdc"
@@ -72,6 +73,37 @@ func TestResourceWakamevdcNetworkFull(t *testing.T) {
 			return parameterCheckFailed("description",
 				network.Description,
 				rs.Primary.Attributes["description"])
+		}
+
+		if network.NetworkMode != rs.Primary.Attributes["network_mode"] {
+			return parameterCheckFailed("network_mode",
+				network.NetworkMode,
+				rs.Primary.Attributes["network_mode"])
+		}
+
+		if network.DisplayName != rs.Primary.Attributes["display_name"] {
+			return parameterCheckFailed("display_name",
+				network.DisplayName,
+				rs.Primary.Attributes["display_name"])
+		}
+
+		prefixStr := strconv.Itoa(network.Prefix)
+		if rs.Primary.Attributes["prefix"] != prefixStr {
+			return parameterCheckFailed("prefix",
+				prefixStr,
+				rs.Primary.Attributes["prefix"])
+		}
+
+		if network.IPv4Network != rs.Primary.Attributes["ipv4_network"] {
+			return parameterCheckFailed("ipv4_network",
+				network.IPv4Network,
+				rs.Primary.Attributes["ipv4_network"])
+		}
+
+		if network.DCNetwork.ID != rs.Primary.Attributes["dc_network_id"] {
+			return parameterCheckFailed("dc_network_id",
+				network.DCNetwork.ID,
+				rs.Primary.Attributes["dc_network_id"])
 		}
 
 		resourceID = rs.Primary.ID
