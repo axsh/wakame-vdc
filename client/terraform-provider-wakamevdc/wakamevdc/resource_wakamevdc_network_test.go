@@ -29,8 +29,8 @@ resource "wakamevdc_network" "nw1" {
 	prefix = 24
 	network_mode = "l2overlay"
 	dc_network_id = "%s"
-	display_name = "newname"
-	description = "Now I got changes"
+	display_name = "a new name for me"
+	description = "I am a testing network"
 }
 `
 
@@ -112,6 +112,18 @@ func TestResourceWakamevdcNetworkFull(t *testing.T) {
 	}
 
 	testNetworkUpdated := func(s *terraform.State) error {
+		rs, network, err := getTerraformResourceAndWakameNetwork(s, "wakamevdc_network.nw1")
+
+		if err != nil {
+			return err
+		}
+
+		if network.DisplayName != rs.Primary.Attributes["display_name"] {
+			return parameterCheckFailed("display_name",
+				network.DisplayName,
+				rs.Primary.Attributes["display_name"])
+		}
+
 		return nil
 	}
 

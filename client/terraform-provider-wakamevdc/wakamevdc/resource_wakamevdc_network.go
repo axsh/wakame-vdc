@@ -193,7 +193,15 @@ func resourceWakamevdcNetworkRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceWakamevdcNetworkUpdate(d *schema.ResourceData, m interface{}) error {
-	return nil
+	client := m.(*wakamevdc.Client)
+
+	params := wakamevdc.NetworkUpdateParams{
+		DisplayName: d.Get("display_name").(string),
+	}
+
+	_, err := client.Network.Update(d.Id(), &params)
+
+	return err
 }
 
 func resourceWakamevdcNetworkDelete(d *schema.ResourceData, m interface{}) error {
