@@ -31,7 +31,7 @@ module Sinatra
           if request.path_info == "/networks"
             VNetAPIClient::Network.create(
               uuid: r[:uuid],
-              display_name: r[:uuid],
+              display_name: params[:display_name] || r[:uuid],
               ipv4_network: params[:network],
               ipv4_prefix: params[:prefix],
               network_mode: 'virtual'
@@ -41,7 +41,7 @@ module Sinatra
           if request.path_info == "/security_groups"
             VNetAPIClient::SecurityGroup.create(
               uuid: r[:uuid],
-              display_name: r[:uuid],
+              display_name: params[:display_name] || r[:uuid],
               description: params[:description],
               rules: openvnet_rules(params[:rule]).join("\n")
             )
@@ -52,7 +52,7 @@ module Sinatra
           if path == "security_groups"
             vnet_params = {}
 
-            # Not updating display name since it's always set to uuid on creation
+            vnet_params[:display_name] = params[:display_name] if params[:display_name]
             vnet_params[:description] = params[:description] if params[:description]
             vnet_params[:rules] = openvnet_rules(params[:rule]).join("\n") if params[:rule]
 
