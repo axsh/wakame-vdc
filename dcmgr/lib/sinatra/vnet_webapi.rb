@@ -58,6 +58,12 @@ module Sinatra
 
             VNetAPIClient::SecurityGroup.update(uuid, vnet_params)
           end
+
+          if path == "networks"
+            vnet_params = {}
+            vnet_params[:display_name] = params[:display_name] if params[:display_name]
+            VNetAPIClient::Network.update(uuid, vnet_params)
+          end
         else
           VNetAPIClient::Network.delete(r.first) if request.path_info.include?("/networks")
           VNetAPIClient::SecurityGroup.delete(r.first) if request.path_info.include?("/security_groups")
