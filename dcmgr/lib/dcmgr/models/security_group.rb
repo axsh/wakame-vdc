@@ -115,7 +115,10 @@ module Dcmgr::Models
       if Dcmgr::Configurations.dcmgr.features.openvnet
         prule = self.class.parse_rule(rule)
 
-        if prule[:ip_fport] != prule[:ip_tport]
+        if prule &&
+          [:tcp, :udp].member?(prule[:protocol]) &&
+          prule[:ip_fport] != prule[:ip_tport]
+
           raise InvalidSecurityGroupRuleSyntax, "OpenVNet does not support port ranges: #{rule}"
         end
       end

@@ -14,7 +14,7 @@ module Sinatra
       VNetAPIClient.uri = "http://#{endpoint}:#{port}"
 
       after do
-        return if not ["POST","DELETE"].include?(request.request_method)
+        return if not ["POST", "PUT", "DELETE"].include?(request.request_method)
 
         r = if self.response.header["Content-Type"].include?("application/json")
               ::JSON.parse(self.response.body.first)
@@ -37,7 +37,7 @@ module Sinatra
               network_mode: 'virtual'
             )
           end
-          
+
           if request.path_info == "/security_groups"
             VNetAPIClient::SecurityGroup.create(
               uuid: r[:uuid],
@@ -45,6 +45,18 @@ module Sinatra
               description: params[:description],
               rules: openvnet_rules(params[:rule]).join("\n")
             )
+          end
+        elsif request.request_method == "PUT"
+          _, path, uuid = request.path_info.split("/")
+
+          if path == "security_groups"
+            vnet_params = {}
+
+            # Not updating display name since it's always set to uuid on creation
+            vnet_params[:description] = params[:description] if params[:description]
+            vnet_params[:rules] = openvnet_rules(params[:rule]).join("\n") if params[:rule]
+
+            VNetAPIClient::SecurityGroup.update(uuid, vnet_params)
           end
         else
           VNetAPIClient::Network.delete(r.first) if request.path_info.include?("/networks")
