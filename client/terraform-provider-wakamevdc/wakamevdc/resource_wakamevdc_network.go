@@ -214,7 +214,9 @@ func resourceWakamevdcNetworkUpdate(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 
-	if dhcpRangeSetI := d.Get("dhcp_range"); dhcpRangeSetI != nil {
+	// Create the ranges that didn't exist yet
+	dhcpRangeSetI := d.Get("dhcp_range")
+	if dhcpRangeSetI != nil {
 		for _, dhcpRangeI := range dhcpRangeSetI.(*schema.Set).List() {
 			dhcpRangeMap := dhcpRangeI.(map[string]interface{})
 
@@ -233,14 +235,34 @@ func resourceWakamevdcNetworkUpdate(d *schema.ResourceData, m interface{}) error
 				if err != nil {
 					return err
 				}
+			}
+		}
+	}
 
-				_, err = client.Network.DHCPRangeCreate(d.Id(), &dhcpRangeStruct)
-				if err != nil {
-					return fmt.Errorf("Error creating dhcp range: %s", err)
-				}
+	// Delete the ranges that are no longer in the terraform file
+	for i := 0; i < len(currentDhcpRanges); i++ {
+		rangeExists := false
+		for _, dhcpRangeI := range dhcpRangeSetI.(*schema.Set).List() {
+			dhcpRangeMap := dhcpRangeI.(map[string]interface{})
+
+			rangeExists = (currentDhcpRanges[i][0] == dhcpRangeMap["range_begin"].(string) &&
+				currentDhcpRanges[i][1] == dhcpRangeMap["range_end"].(string))
+
+			if rangeExists {
+				break
 			}
 
-			//TODO: Delete ranges that are no longer in the terraform file
+			if !rangeExists {
+				dhcpRangeStruct := wakamevdc.DHCPRangeDeleteParams{
+					RangeBegin: currentDhcpRanges[i][0],
+					RangeEnd:   currentDhcpRanges[i][1],
+				}
+
+				_, err := client.Network.DHCPRangeDelete(d.Id(), &dhcpRangeStruct)
+				if err != nil {
+					return fmt.Errorf("Error deleting dhcp range: %s", err)
+				}
+			}
 		}
 	}
 
