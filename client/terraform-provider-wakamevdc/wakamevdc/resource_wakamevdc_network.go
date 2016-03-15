@@ -170,14 +170,9 @@ func resourceWakamevdcNetworkCreate(d *schema.ResourceData, m interface{}) error
 		for _, dhcpRangeI := range dhcpRangeSetI.(*schema.Set).List() {
 			dhcpRangeMap := dhcpRangeI.(map[string]interface{})
 
-			dhcpRangeStruct := wakamevdc.DHCPRangeCreateParams{
-				RangeBegin: dhcpRangeMap["range_begin"].(string),
-				RangeEnd:   dhcpRangeMap["range_end"].(string),
-			}
-
-			_, err = client.Network.DHCPRangeCreate(nw.ID, &dhcpRangeStruct)
+			err = createDHCPRange(client, nw.ID, dhcpRangeMap)
 			if err != nil {
-				return fmt.Errorf("Error creating dhcp range: %s", err)
+				return err
 			}
 		}
 	}
@@ -234,9 +229,9 @@ func resourceWakamevdcNetworkUpdate(d *schema.ResourceData, m interface{}) error
 			}
 
 			if !rangeExists {
-				dhcpRangeStruct := wakamevdc.DHCPRangeCreateParams{
-					RangeBegin: dhcpRangeMap["range_begin"].(string),
-					RangeEnd:   dhcpRangeMap["range_end"].(string),
+				err = createDHCPRange(client, d.Id(), dhcpRangeMap)
+				if err != nil {
+					return err
 				}
 
 				_, err = client.Network.DHCPRangeCreate(d.Id(), &dhcpRangeStruct)
@@ -259,5 +254,20 @@ func resourceWakamevdcNetworkDelete(d *schema.ResourceData, m interface{}) error
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+//helper functions
+func createDHCPRange(c *wakamevdc.Client, uuid string, dhcpRangeMap map[string]interface{}) error {
+	dhcpRangeStruct := wakamevdc.DHCPRangeCreateParams{
+		RangeBegin: dhcpRangeMap["range_begin"].(string),
+		RangeEnd:   dhcpRangeMap["range_end"].(string),
+	}
+
+	_, err := c.Network.DHCPRangeCreate(uuid, &dhcpRangeStruct)
+	if err != nil {
+		return fmt.Errorf("Error creating dhcp range: %s", err)
+	}
+
 	return nil
 }
