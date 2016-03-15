@@ -20,6 +20,12 @@ resource "wakamevdc_network" "nw1" {
 	dc_network_id = "%s"
 	display_name = "nw1"
 	description = "I am a testing network"
+	editable = true
+
+	dhcp_range {
+		range_begin = "10.0.0.100"
+		range_end = "10.0.0.150"
+	}
 }
 `
 
@@ -31,6 +37,12 @@ resource "wakamevdc_network" "nw1" {
 	dc_network_id = "%s"
 	display_name = "a new name for me"
 	description = "I am a testing network"
+	editable = true
+
+	dhcp_range {
+		range_begin = "10.0.0.100"
+		range_end = "10.0.0.150"
+	}
 }
 `
 
@@ -108,6 +120,12 @@ func TestResourceWakamevdcNetworkFull(t *testing.T) {
 
 		resourceID = rs.Primary.ID
 
+		expectedDhcpRanges := make([][]string, 0)
+		err = checkDhcpRange(resourceID, expectedDhcpRanges)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}
 
@@ -165,4 +183,21 @@ func getTerraformResourceAndWakameNetwork(s *terraform.State, resourceName strin
 	network, _, err := client.Network.GetByID(rs.Primary.ID)
 
 	return rs, network, err
+}
+
+func checkDhcpRange(uuid string, expectedRanges [][]string) error {
+	client := testVdcProvider.Meta().(*wakamevdc.Client)
+
+	ranges, _, err := client.Network.DHCPRangeList(uuid)
+	if err != nil {
+		return err
+	}
+
+	if len(ranges) != len(expectedRanges) {
+		return fmt.Errorf("ranges and expectedRanges had different lengths")
+	}
+
+	//TODO: Check that the ranges are the same
+
+	return nil
 }
