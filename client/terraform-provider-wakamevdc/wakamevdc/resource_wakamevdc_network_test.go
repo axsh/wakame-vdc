@@ -40,11 +40,6 @@ resource "wakamevdc_network" "nw1" {
 	editable = true
 
 	dhcp_range {
-		range_begin = "10.0.0.100"
-		range_end = "10.0.0.150"
-	}
-
-	dhcp_range {
 		range_begin = "10.0.0.160"
 		range_end = "10.0.0.160"
 	}
@@ -153,10 +148,9 @@ func TestResourceWakamevdcNetworkFull(t *testing.T) {
 				rs.Primary.Attributes["display_name"])
 		}
 
-		expectedDhcpRanges := make([][]string, 3)
-		expectedDhcpRanges[0] = []string{"10.0.0.100", "10.0.0.150"}
-		expectedDhcpRanges[1] = []string{"10.0.0.160", "10.0.0.160"}
-		expectedDhcpRanges[2] = []string{"10.0.0.200", "10.0.0.230"}
+		expectedDhcpRanges := make([][]string, 2)
+		expectedDhcpRanges[0] = []string{"10.0.0.160", "10.0.0.160"}
+		expectedDhcpRanges[1] = []string{"10.0.0.200", "10.0.0.230"}
 		err = checkDhcpRange(resourceID, expectedDhcpRanges)
 		if err != nil {
 			return err
