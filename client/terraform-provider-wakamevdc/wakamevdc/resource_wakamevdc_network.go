@@ -65,12 +65,14 @@ func resourceWakamevdcNetwork() *schema.Resource {
 			"dc_network_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
 
 			"dc_network_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
 
@@ -165,6 +167,8 @@ func resourceWakamevdcNetworkCreate(d *schema.ResourceData, m interface{}) error
 	// Set computed parameters
 	d.Set("ip_assignment", nw.IPAssignment)
 	d.Set("metric", nw.Metric)
+	d.Set("dc_network_id", nw.DCNetwork.ID)
+	d.Set("dc_network_name", nw.DCNetwork.Name)
 
 	if dhcpRangeSetI := d.Get("dhcp_range"); dhcpRangeSetI != nil {
 		for _, dhcpRangeI := range dhcpRangeSetI.(*schema.Set).List() {
