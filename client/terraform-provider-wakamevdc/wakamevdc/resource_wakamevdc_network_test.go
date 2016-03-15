@@ -120,7 +120,8 @@ func TestResourceWakamevdcNetworkFull(t *testing.T) {
 
 		resourceID = rs.Primary.ID
 
-		expectedDhcpRanges := make([][]string, 0)
+		expectedDhcpRanges := make([][]string, 1)
+		expectedDhcpRanges[0] = []string{"10.0.0.100", "10.0.0.150"}
 		err = checkDhcpRange(resourceID, expectedDhcpRanges)
 		if err != nil {
 			return err
@@ -194,10 +195,24 @@ func checkDhcpRange(uuid string, expectedRanges [][]string) error {
 	}
 
 	if len(ranges) != len(expectedRanges) {
-		return fmt.Errorf("ranges and expectedRanges had different lengths")
+		return fmt.Errorf("The DHCP ranges for '%v' where not what we expected.\n"+
+			"Expected: %v\nGot: %v", uuid, expectedRanges, ranges)
 	}
 
-	//TODO: Check that the ranges are the same
+	for i := 0; i < len(ranges); i++ {
+		if len(ranges[i]) != 2 {
+			return fmt.Errorf("The ranges we got were formatted incorrectly. One of inner slices had more than 2 elements. %v", ranges)
+		}
+
+		if len(expectedRanges[i]) != 2 {
+			return fmt.Errorf("The expected ranges we got were formatted incorrectly. One of inner slices had more than 2 elements. %v", expectedRanges)
+		}
+
+		if expectedRanges[i][0] != ranges[i][0] || expectedRanges[i][1] != ranges[i][1] {
+			return fmt.Errorf("The DHCP ranges for '%v' where not what we expected.\n"+
+				"Expected: %v\nGot: %v", uuid, expectedRanges, ranges)
+		}
+	}
 
 	return nil
 }
