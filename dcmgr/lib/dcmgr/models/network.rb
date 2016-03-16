@@ -281,6 +281,8 @@ module Dcmgr::Models
         n.save
       }
 
+      self.dhcp_range.each { |i| i.destroy }
+
       #Delete all reserved ipleases in this network
       self.network_vif_ip_lease_dataset.filter(:alloc_type => NetworkVifIpLease::TYPE_RESERVED).each { |i|
         i.destroy
