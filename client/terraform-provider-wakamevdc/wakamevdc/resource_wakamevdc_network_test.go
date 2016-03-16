@@ -149,8 +149,8 @@ func TestResourceWakamevdcNetworkFull(t *testing.T) {
 		}
 
 		expectedDhcpRanges := make([][]string, 2)
-		expectedDhcpRanges[0] = []string{"10.0.0.160", "10.0.0.160"}
-		expectedDhcpRanges[1] = []string{"10.0.0.200", "10.0.0.230"}
+		expectedDhcpRanges[0] = []string{"10.0.0.200", "10.0.0.230"}
+		expectedDhcpRanges[1] = []string{"10.0.0.160", "10.0.0.160"}
 		err = checkDhcpRange(resourceID, expectedDhcpRanges)
 		if err != nil {
 			return err
