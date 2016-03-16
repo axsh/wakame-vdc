@@ -255,17 +255,17 @@ func resourceWakamevdcNetworkUpdate(d *schema.ResourceData, m interface{}) error
 			if rangeExists {
 				break
 			}
+		}
 
-			if !rangeExists {
-				dhcpRangeStruct := wakamevdc.DHCPRangeDeleteParams{
-					RangeBegin: currentDhcpRanges[i][0],
-					RangeEnd:   currentDhcpRanges[i][1],
-				}
+		if !rangeExists {
+			dhcpRangeStruct := wakamevdc.DHCPRangeDeleteParams{
+				RangeBegin: currentDhcpRanges[i][0],
+				RangeEnd:   currentDhcpRanges[i][1],
+			}
 
-				_, err := client.Network.DHCPRangeDelete(d.Id(), &dhcpRangeStruct)
-				if err != nil {
-					return fmt.Errorf("Error deleting dhcp range: %s", err)
-				}
+			_, err := client.Network.DHCPRangeDelete(d.Id(), &dhcpRangeStruct)
+			if err != nil {
+				return fmt.Errorf("Error deleting dhcp range: %s", err)
 			}
 		}
 	}
