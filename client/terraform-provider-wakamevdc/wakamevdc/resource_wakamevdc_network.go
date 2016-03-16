@@ -277,10 +277,7 @@ func resourceWakamevdcNetworkDelete(d *schema.ResourceData, m interface{}) error
 	client := m.(*wakamevdc.Client)
 
 	_, err := client.Network.Delete(d.Id())
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 //helper functions
