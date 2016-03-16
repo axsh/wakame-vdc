@@ -2,8 +2,6 @@ package wakamevdc
 
 import (
 	"fmt"
-	"net/url"
-	"os"
 	"strconv"
 	"testing"
 
@@ -17,7 +15,7 @@ resource "wakamevdc_network" "nw1" {
 	ipv4_network = "10.0.0.0"
 	prefix = 24
 	network_mode = "l2overlay"
-	dc_network_id = "%s"
+	dc_network_name = "vnet"
 	display_name = "nw1"
 	description = "I am a testing network"
 	editable = true
@@ -34,7 +32,7 @@ resource "wakamevdc_network" "nw1" {
 	ipv4_network = "10.0.0.0"
 	prefix = 24
 	network_mode = "l2overlay"
-	dc_network_id = "%s"
+	dc_network_name = "vnet"
 	display_name = "a new name for me"
 	description = "I am a testing network"
 	editable = true
@@ -51,29 +49,8 @@ resource "wakamevdc_network" "nw1" {
 }
 `
 
-func fetchDCN(name string) (string, error) {
-	apiURL, err := url.Parse(os.Getenv("WAKAMEVDC_API_ENDPOINT"))
-	if err != nil {
-		return "", err
-	}
-
-	client := wakamevdc.NewClient(apiURL, nil)
-
-	dcnList, _, err := client.DCNetwork.List(nil, "vnet")
-	if err != nil {
-		return "", err
-	}
-
-	return dcnList.Results[0].ID, nil
-}
-
 func TestResourceWakamevdcNetworkFull(t *testing.T) {
 	var resourceID string
-
-	dcnID, err := fetchDCN("vnet")
-	if err != nil {
-		t.Fatalf("Failed to find ID (dcn-xxxx) of \"vnet\" DC Network: %s", err)
-	}
 
 	testNetworkCreated := func(s *terraform.State) error {
 		rs, network, err := getTerraformResourceAndWakameNetwork(s, "wakamevdc_network.nw1")
@@ -174,11 +151,11 @@ func TestResourceWakamevdcNetworkFull(t *testing.T) {
 		CheckDestroy: testCheckDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: fmt.Sprintf(testConfig, dcnID),
+				Config: testConfig,
 				Check:  testNetworkCreated,
 			},
 			resource.TestStep{
-				Config: fmt.Sprintf(testConfigUpdate, dcnID),
+				Config: testConfigUpdate,
 				Check:  testNetworkUpdated,
 			},
 		},
