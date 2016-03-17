@@ -40,6 +40,39 @@ func TestResourceWakamevdcSecurityGroupMinimal(t *testing.T) {
 	})
 }
 
+const testConfigCreate = `
+resource "wakame_vdc_security_group" "sg2" {
+	display_name = "sg2"
+	account_id = "a-shpoolxx"
+	service_type = "std"
+	discritpion = "The second group in our test"
+	rules = <<EOS
+tcp:22,22,ip4:0.0.0.0
+icmp:-1,-1,ip4:0.0.0.0
+EOS
+}
+`
+
+func TestResourceWakamevdcSecurityGroupFull(t *testing.T) {
+	var resourceID string
+
+	testCreated := func(s *terraform.State) error {
+		return nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     nil,
+		Providers:    testVdcProviders,
+		CheckDestroy: testCheckDestroy(resourceID),
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testConfigCreate,
+				Check:  testCreated,
+			},
+		},
+	})
+}
+
 //helpers
 func testCheckDestroy(uuid string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
