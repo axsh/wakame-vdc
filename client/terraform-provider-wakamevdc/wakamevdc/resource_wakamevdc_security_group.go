@@ -24,6 +24,7 @@ func resourceWakamevdcSecurityGroup() *schema.Resource {
 			"account_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"service_type": &schema.Schema{
