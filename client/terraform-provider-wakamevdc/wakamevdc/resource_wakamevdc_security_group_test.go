@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-const testConfigMinimal = `
+const testConfigSGMinimal = `
 resource "wakamevdc_security_group" "sg1" {
   display_name = "sg1"
 }
@@ -33,14 +33,14 @@ func TestResourceWakamevdcSecurityGroupMinimal(t *testing.T) {
 		CheckDestroy: testCheckDestroy(resourceID),
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testConfigMinimal,
+				Config: testConfigSGMinimal,
 				Check:  testCheck,
 			},
 		},
 	})
 }
 
-const testConfigCreate = `
+const testConfigSGCreate = `
 resource "wakamevdc_security_group" "sg2" {
 	display_name = "sg2"
 	account_id = "a-shpoolxx"
@@ -52,6 +52,20 @@ icmp:-1,-1,ip4:0.0.0.0
 EOS
 }
 `
+
+const testConfigSGUpdate = `
+resource "wakamevdc_security_group" "sg2" {
+	display_name = "sg2 updated"
+	account_id = "a-shpoolxx"
+	service_type = "lb"
+	description = "The second updated group in our test"
+	rules = <<EOS
+udp:53,53,ip4:192.168.3.10/32
+EOS
+}
+`
+
+//TODO: test removing rules afterwards
 
 func TestResourceWakamevdcSecurityGroupFull(t *testing.T) {
 	var resourceID string
@@ -99,14 +113,22 @@ func TestResourceWakamevdcSecurityGroupFull(t *testing.T) {
 		return nil
 	}
 
+	testUpdated := func(s *terraform.State) error {
+		return nil
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     nil,
 		Providers:    testVdcProviders,
 		CheckDestroy: testCheckDestroy(resourceID),
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testConfigCreate,
+				Config: testConfigSGCreate,
 				Check:  testCreated,
+			},
+			resource.TestStep{
+				Config: testConfigSGUpdate,
+				Check:  testUpdated,
 			},
 		},
 	})
