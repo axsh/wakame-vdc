@@ -57,7 +57,7 @@ const testConfigSGUpdate = `
 resource "wakamevdc_security_group" "sg2" {
 	display_name = "sg2 updated"
 	account_id = "a-shpoolxx"
-	service_type = "lb"
+	service_type = "std"
 	description = "The second updated group in our test"
 	rules = <<EOS
 udp:53,53,ip4:192.168.3.10/32

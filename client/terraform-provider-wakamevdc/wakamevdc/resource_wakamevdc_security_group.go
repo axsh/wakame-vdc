@@ -21,6 +21,7 @@ func resourceWakamevdcSecurityGroup() *schema.Resource {
 				Computed: true,
 			},
 
+			//TODO: Test this! There's no account in the api client
 			"account_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -82,7 +83,18 @@ func resourceWakamevdcSecurityGroupRead(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceWakamevdcSecurityGroupUpdate(d *schema.ResourceData, m interface{}) error {
-	return nil
+	client := m.(*wakamevdc.Client)
+
+	params := wakamevdc.SecurityGroupUpdateParams{
+		ServiceType: d.Get("service_type").(string),
+		Description: d.Get("description").(string),
+		DisplayName: d.Get("display_name").(string),
+		Rules:       d.Get("rules").(string),
+	}
+
+	_, err := client.SecurityGroup.Update(d.Id(), &params)
+
+	return err
 }
 
 func resourceWakamevdcSecurityGroupDelete(d *schema.ResourceData, m interface{}) error {
