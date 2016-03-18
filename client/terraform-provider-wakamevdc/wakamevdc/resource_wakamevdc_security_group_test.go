@@ -63,8 +63,6 @@ EOS
 }
 `
 
-//TODO: test removing rules afterwards
-
 func TestResourceWakamevdcSecurityGroupFull(t *testing.T) {
 	var resourceID string
 

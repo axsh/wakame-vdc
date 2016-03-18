@@ -40,7 +40,7 @@ func resourceWakamevdcSecurityGroup() *schema.Resource {
 
 			"rules": &schema.Schema{
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 		},
 	}
