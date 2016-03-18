@@ -70,10 +70,6 @@ resource "wakamevdc_ssh_key" "testkey" {
 	})
 }
 
-func parameterCheckFailed(ParamName string, wakame string, terraform string) error {
-	return fmt.Errorf("The ssh key's field '%s' didn't match.\nWakame-vdc had: '%s'\nTerraform had: '%s'", ParamName, wakame, terraform)
-}
-
 func getTerraformResourceAndWakameKey(s *terraform.State, resourceName string) (*terraform.ResourceState, *wakamevdc.SshKey, error) {
 	rs, ok := s.RootModule().Resources[resourceName]
 
