@@ -78,6 +78,8 @@ func TestResourceWakamevdcSecurityGroupFull(t *testing.T) {
 			return parameterCheckFailed("id", secGroup.ID, rs.Primary.ID)
 		}
 
+		resourceID = secGroup.ID
+
 		if secGroup.DisplayName != rs.Primary.Attributes["display_name"] {
 			return parameterCheckFailed("display_name",
 				secGroup.DisplayName,
@@ -105,9 +107,8 @@ func TestResourceWakamevdcSecurityGroupFull(t *testing.T) {
 		return nil
 	}
 
-	testUpdated := func(s *terraform.State) error {
-		return nil
-	}
+	// The code to check attributes after creation and updating is the same
+	testUpdated := testCreated
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     nil,
