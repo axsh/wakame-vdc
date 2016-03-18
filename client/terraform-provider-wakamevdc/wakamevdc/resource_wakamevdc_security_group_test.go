@@ -66,6 +66,36 @@ func TestResourceWakamevdcSecurityGroupFull(t *testing.T) {
 			return parameterCheckFailed("id", secGroup.ID, rs.Primary.ID)
 		}
 
+		if secGroup.DisplayName != rs.Primary.Attributes["display_name"] {
+			return parameterCheckFailed("display_name",
+				secGroup.DisplayName,
+				rs.Primary.Attributes["display_name"])
+		}
+
+		if secGroup.AccountID != rs.Primary.Attributes["account_id"] {
+			return parameterCheckFailed("account_id",
+				secGroup.AccountID,
+				rs.Primary.Attributes["account_id"])
+		}
+
+		if secGroup.ServiceType != rs.Primary.Attributes["service_type"] {
+			return parameterCheckFailed("service_type",
+				secGroup.ServiceType,
+				rs.Primary.Attributes["service_type"])
+		}
+
+		if secGroup.Description != rs.Primary.Attributes["description"] {
+			return parameterCheckFailed("description",
+				secGroup.Description,
+				rs.Primary.Attributes["description"])
+		}
+
+		if secGroup.Rules != rs.Primary.Attributes["rules"] {
+			return parameterCheckFailed("rules",
+				secGroup.Rules,
+				rs.Primary.Attributes["rules"])
+		}
+
 		return nil
 	}
 
