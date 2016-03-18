@@ -30,6 +30,13 @@ type SecurityGroupCreateParams struct {
 	Rules       string `url:"rule"`
 }
 
+type SecurityGroupUpdateParams struct {
+	ServiceType string `url:"service_type,omitempty"`
+	Description string `url:"description,omitempty"`
+	DisplayName string `url:"display_name,omitempty"`
+	Rules       string `url:"rule,omitempty"`
+}
+
 func (s *SecurityGroupService) Create(req *SecurityGroupCreateParams) (*SecurityGroup, *http.Response, error) {
 	secg := new(SecurityGroup)
 	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
@@ -37,6 +44,12 @@ func (s *SecurityGroupService) Create(req *SecurityGroupCreateParams) (*Security
 	})
 
 	return secg, resp, err
+}
+
+func (s *SecurityGroupService) Update(id string, req *SecurityGroupUpdateParams) (*http.Response, error) {
+	return trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(SecurityGroupPath+"/%s", id)).BodyForm(req).Receive(nil, errResp)
+	})
 }
 
 func (s *SecurityGroupService) Delete(id string) (*http.Response, error) {
