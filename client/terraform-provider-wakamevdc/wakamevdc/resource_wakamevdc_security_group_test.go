@@ -44,7 +44,6 @@ const testConfigSGCreate = `
 resource "wakamevdc_security_group" "sg2" {
 	display_name = "sg2"
 	account_id = "a-shpoolxx"
-	service_type = "std"
 	description = "The second group in our test"
 	rules = <<EOS
 tcp:22,22,ip4:0.0.0.0
@@ -57,7 +56,6 @@ const testConfigSGUpdate = `
 resource "wakamevdc_security_group" "sg2" {
 	display_name = "sg2 updated"
 	account_id = "a-shpoolxx"
-	service_type = "std"
 	description = "The second updated group in our test"
 	rules = <<EOS
 udp:53,53,ip4:192.168.3.10/32
@@ -90,12 +88,6 @@ func TestResourceWakamevdcSecurityGroupFull(t *testing.T) {
 			return parameterCheckFailed("account_id",
 				secGroup.AccountID,
 				rs.Primary.Attributes["account_id"])
-		}
-
-		if secGroup.ServiceType != rs.Primary.Attributes["service_type"] {
-			return parameterCheckFailed("service_type",
-				secGroup.ServiceType,
-				rs.Primary.Attributes["service_type"])
 		}
 
 		if secGroup.Description != rs.Primary.Attributes["description"] {

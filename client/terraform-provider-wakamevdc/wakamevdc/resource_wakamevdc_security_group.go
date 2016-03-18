@@ -28,11 +28,6 @@ func resourceWakamevdcSecurityGroup() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"service_type": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-
 			"display_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -86,7 +81,6 @@ func resourceWakamevdcSecurityGroupUpdate(d *schema.ResourceData, m interface{})
 	client := m.(*wakamevdc.Client)
 
 	params := wakamevdc.SecurityGroupUpdateParams{
-		ServiceType: d.Get("service_type").(string),
 		Description: d.Get("description").(string),
 		DisplayName: d.Get("display_name").(string),
 		Rules:       d.Get("rules").(string),

@@ -27,6 +27,7 @@ func resourceWakamevdcNetwork() *schema.Resource {
 				ForceNew: true,
 			},
 
+			//TODO: Check whether or not service type actually works in all resources and remove it if not
 			"service_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
