@@ -41,11 +41,11 @@ func TestResourceWakamevdcSecurityGroupMinimal(t *testing.T) {
 }
 
 const testConfigCreate = `
-resource "wakame_vdc_security_group" "sg2" {
+resource "wakamevdc_security_group" "sg2" {
 	display_name = "sg2"
 	account_id = "a-shpoolxx"
 	service_type = "std"
-	discritpion = "The second group in our test"
+	description = "The second group in our test"
 	rules = <<EOS
 tcp:22,22,ip4:0.0.0.0
 icmp:-1,-1,ip4:0.0.0.0
@@ -57,6 +57,15 @@ func TestResourceWakamevdcSecurityGroupFull(t *testing.T) {
 	var resourceID string
 
 	testCreated := func(s *terraform.State) error {
+		rs, secGroup, err := getTerraformResourceAndWakameSecurityGroup(s, "wakamevdc_security_group.sg2")
+		if err != nil {
+			return err
+		}
+
+		if secGroup.ID != rs.Primary.ID {
+			return parameterCheckFailed("id", secGroup.ID, rs.Primary.ID)
+		}
+
 		return nil
 	}
 
@@ -74,6 +83,18 @@ func TestResourceWakamevdcSecurityGroupFull(t *testing.T) {
 }
 
 //helpers
+func getTerraformResourceAndWakameSecurityGroup(s *terraform.State, resourceName string) (*terraform.ResourceState, *wakamevdc.SecurityGroup, error) {
+	rs, ok := s.RootModule().Resources[resourceName]
+	if !ok {
+		return nil, nil, fmt.Errorf("Not found: %s", resourceName)
+	}
+
+	client := testVdcProvider.Meta().(*wakamevdc.Client)
+	securityGroup, _, err := client.SecurityGroup.GetByID(rs.Primary.ID)
+
+	return rs, securityGroup, err
+}
+
 func testCheckDestroy(uuid string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testVdcProvider.Meta().(*wakamevdc.Client)
