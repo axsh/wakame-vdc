@@ -208,6 +208,17 @@ func resourceWakamevdcInstanceRead(d *schema.ResourceData, m interface{}) error 
 }
 
 func resourceWakamevdcInstanceUpdate(d *schema.ResourceData, m interface{}) error {
+	client := m.(*wakamevdc.Client)
+
+	params := wakamevdc.InstanceUpdateParams{
+		DisplayName: d.Get("display_name").(string),
+	}
+
+	_, err := client.Instance.Update(d.Id(), &params)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
