@@ -19,6 +19,8 @@ resource "wakamevdc_instance" "inst1" {
   hypervisor = "openvz"
   ssh_key_id = "ssh-demo"
 
+	user_data = "joske"
+
   vif {
     network_id = "nw-demo1"
   }
@@ -42,6 +44,51 @@ func TestResourceWakamevdcInstanceCreate(t *testing.T) {
 		if instCPUCoresS != rs.Primary.Attributes["cpu_cores"] {
 			return parameterCheckFailed("cpu_cores", instCPUCoresS, rs.Primary.Attributes["cpu_cores"])
 		}
+
+		instMemorySizeS := strconv.Itoa(inst.MemorySize)
+		if instMemorySizeS != rs.Primary.Attributes["memory_size"] {
+			return parameterCheckFailed("memory_size",
+				instMemorySizeS,
+				rs.Primary.Attributes["memory_size"])
+		}
+
+		if inst.Hypervisor != rs.Primary.Attributes["hypervisor"] {
+			return parameterCheckFailed("hypervisor",
+				inst.Hypervisor,
+				rs.Primary.Attributes["hypervisor"])
+		}
+
+		if inst.HostNodeID != rs.Primary.Attributes["host_node_id"] {
+			return parameterCheckFailed("host_node_id",
+				inst.HostNodeID,
+				rs.Primary.Attributes["host_node_id"])
+		}
+
+		if inst.State != rs.Primary.Attributes["state"] {
+			return parameterCheckFailed("state",
+				inst.State,
+				rs.Primary.Attributes["state"])
+		}
+
+		if inst.Status != rs.Primary.Attributes["status"] {
+			return parameterCheckFailed("status",
+				inst.Status,
+				rs.Primary.Attributes["status"])
+		}
+
+		if inst.DisplayName != rs.Primary.Attributes["display_name"] {
+			return parameterCheckFailed("display_name",
+				inst.DisplayName,
+				rs.Primary.Attributes["display_name"])
+		}
+
+		if inst.SshKey.ID != rs.Primary.Attributes["ssh_key_id"] {
+			return parameterCheckFailed("ssh_key_id",
+				inst.SshKey.ID,
+				rs.Primary.Attributes["ssh_key_id"])
+		}
+
+		//We can't test user data since the Wakame-vdc api doesn't return it
 
 		resourceID = rs.Primary.ID
 		return nil

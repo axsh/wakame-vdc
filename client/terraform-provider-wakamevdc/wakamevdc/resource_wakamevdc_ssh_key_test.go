@@ -72,7 +72,6 @@ resource "wakamevdc_ssh_key" "testkey" {
 
 func getTerraformResourceAndWakameKey(s *terraform.State, resourceName string) (*terraform.ResourceState, *wakamevdc.SshKey, error) {
 	rs, ok := s.RootModule().Resources[resourceName]
-
 	if !ok {
 		return nil, nil, fmt.Errorf("Not found: %s", resourceName)
 	}
