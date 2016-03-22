@@ -16,11 +16,11 @@ type Instance struct {
 	ServiceType string `json:"service_type"`
 	CPUCores    int    `json:"cpu_cores"`
 	MemorySize  int    `json:"memory_size"`
-	UserData    string `json:"user_data"`
 	State       string `json:"state"`
 	Status      string `json:"status"`
 	Arch        string `json:"arch"`
-	HostNode    string `json:"host_node"`
+	HostNodeID  string `json:"host_node"`
+	Hypervisor  string `json:hypervisor`
 	SshKey      struct {
 		ID          string `json:"uuid"`
 		DisplayName string `json:"display_name"`
