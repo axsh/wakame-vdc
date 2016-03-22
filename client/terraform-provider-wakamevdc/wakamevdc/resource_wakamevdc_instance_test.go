@@ -89,6 +89,14 @@ func TestResourceWakamevdcInstanceCreate(t *testing.T) {
 		}
 
 		//We can't test user data since the Wakame-vdc api doesn't return it
+		for i, vif := range inst.VIFs {
+			attr := fmt.Sprintf("vif.%v.network_id", i)
+			if vif.NetworkID != rs.Primary.Attributes[attr] {
+				return parameterCheckFailed(attr,
+					vif.NetworkID,
+					rs.Primary.Attributes[attr])
+			}
+		}
 
 		resourceID = rs.Primary.ID
 		return nil
