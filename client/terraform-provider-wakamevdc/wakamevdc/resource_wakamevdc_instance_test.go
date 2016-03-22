@@ -41,7 +41,24 @@ resource "wakamevdc_instance" "inst1" {
 }
 `
 
-func TestResourceWakamevdcInstanceCreate(t *testing.T) {
+const testInstanceConfigUpdate = `
+resource "wakamevdc_instance" "inst1" {
+  display_name = "updated display name"
+  cpu_cores = 1
+  memory_size = 512
+  image_id = "wmi-centos1d64"
+  hypervisor = "openvz"
+  ssh_key_id = "ssh-demo"
+
+	user_data = "joske"
+
+  vif {
+    network_id = "nw-demo1"
+  }
+}
+`
+
+func TestResourceWakamevdcInstance(t *testing.T) {
 	var resourceID string
 
 	testCheck := func(s *terraform.State) error {
@@ -166,6 +183,10 @@ func TestResourceWakamevdcInstanceCreate(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testInstanceConfig1,
+				Check:  testCheck,
+			},
+			resource.TestStep{
+				Config: testInstanceConfigUpdate,
 				Check:  testCheck,
 			},
 		},
