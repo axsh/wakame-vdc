@@ -104,6 +104,28 @@ func TestResourceWakamevdcInstanceCreate(t *testing.T) {
 					vif.NetworkID,
 					rs.Primary.Attributes[attr])
 			}
+
+			sgCountAttr := fmt.Sprintf("vif.%v.security_groups.#", i)
+			sgCount, err := strconv.Atoi(rs.Primary.Attributes[sgCountAttr])
+			if err != nil {
+				return err
+			}
+
+			if len(vif.SecurityGroupIDs) != sgCount {
+				return fmt.Errorf("Security group count for vif '%v' didn't match.\n"+
+					"Wakame-vdc had: %v\n"+
+					"Terraform had: %v",
+					vif.ID, len(vif.SecurityGroupIDs), sgCount)
+			}
+
+			for j, sgID := range vif.SecurityGroupIDs {
+				attr = fmt.Sprintf("vif.%v.security_groups.%v", i, j)
+				if sgID != rs.Primary.Attributes[attr] {
+					return parameterCheckFailed(attr,
+						sgID,
+						rs.Primary.Attributes[attr])
+				}
+			}
 		}
 
 		resourceID = rs.Primary.ID
