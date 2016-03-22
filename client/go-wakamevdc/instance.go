@@ -16,7 +16,6 @@ type Instance struct {
 	ServiceType string `json:"service_type"`
 	CPUCores    int    `json:"cpu_cores"`
 	MemorySize  int    `json:"memory_size"`
-	UserData    string `json:"user_data"`
 	State       string `json:"state"`
 	Status      string `json:"status"`
 	Arch        string `json:"arch"`
