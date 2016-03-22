@@ -45,6 +45,7 @@ func resourceWakamevdcInstance() *schema.Resource {
 			"host_node_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
 
@@ -186,6 +187,7 @@ func resourceWakamevdcInstanceRead(d *schema.ResourceData, m interface{}) error 
 	d.Set("display_name", inst.DisplayName)
 	d.Set("state", inst.State)
 	d.Set("status", inst.Status)
+	d.Set("host_node_id", inst.HostNodeID)
 
 	vifs := make([]map[string]interface{}, len(inst.VIFs))
 	for i, vif := range inst.VIFs {
