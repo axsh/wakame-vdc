@@ -88,6 +88,10 @@ type InstanceCreateParams struct {
 	Volumes     []InstanceCreateVolumeParams `url:"volumes,omitempty"`
 }
 
+type InstanceUpdateParams struct {
+	DisplayName string `url:"display_name,omitempty"`
+}
+
 func (s *InstanceService) Create(req *InstanceCreateParams) (*Instance, *http.Response, error) {
 	if req.VIFs != nil {
 		buf := &bytes.Buffer{}
@@ -103,6 +107,12 @@ func (s *InstanceService) Create(req *InstanceCreateParams) (*Instance, *http.Re
 	})
 
 	return inst, resp, err
+}
+
+func (s *InstanceService) Update(id string, req *InstanceUpdateParams) (*http.Response, error) {
+	return trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s", id)).BodyForm(req).Receive(nil, errResp)
+	})
 }
 
 func (s *InstanceService) Delete(id string) (*http.Response, error) {
