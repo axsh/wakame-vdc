@@ -110,7 +110,7 @@ func (s *InstanceService) Create(req *InstanceCreateParams) (*Instance, *http.Re
 }
 
 func (s *InstanceService) Update(id string, req *InstanceUpdateParams) (*http.Response, error) {
-	trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+	return trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
 		return s.client.Sling().Put(fmt.Sprintf(InstancePath+"/%s", id)).BodyForm(req).Receive(nil, errResp)
 	})
 }
