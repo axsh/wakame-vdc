@@ -81,6 +81,11 @@ func resourceWakamevdcInstance() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+
 						"network_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
@@ -192,6 +197,7 @@ func resourceWakamevdcInstanceRead(d *schema.ResourceData, m interface{}) error 
 	vifs := make([]map[string]interface{}, len(inst.VIFs))
 	for i, vif := range inst.VIFs {
 		vifs[i] = make(map[string]interface{})
+		vifs[i]["id"] = vif.ID
 		vifs[i]["network_id"] = vif.NetworkID
 		vifs[i]["ip_address"] = vif.IPv4.Address
 		vifs[i]["security_groups"] = vif.SecurityGroupIDs
