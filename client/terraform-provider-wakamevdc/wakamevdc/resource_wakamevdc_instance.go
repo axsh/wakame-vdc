@@ -219,6 +219,36 @@ func resourceWakamevdcInstanceUpdate(d *schema.ResourceData, m interface{}) erro
 		return err
 	}
 
+	for _, vifI := range d.Get("vif").([]interface{}) {
+		vif := vifI.(map[string]interface{})
+		vifID := vif["id"].(string)
+
+		currentVif, _, err := client.NetworkVif.GetByID(vifID)
+		if err != nil {
+			return err
+		}
+
+		// Add the new security groups
+		for _, securityGroupIDI := range vif["security_groups"].([]interface{}) {
+			securityGroupID := securityGroupIDI.(string)
+			securityGroupExists := false
+
+			for _, currentSecurityGroupID := range currentVif.SecurityGroupIDs {
+				if securityGroupID == currentSecurityGroupID {
+					securityGroupExists = true
+					break
+				}
+			}
+
+			if !securityGroupExists {
+				_, _, err = client.NetworkVif.AddSecurityGroup(vifID, securityGroupID)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
