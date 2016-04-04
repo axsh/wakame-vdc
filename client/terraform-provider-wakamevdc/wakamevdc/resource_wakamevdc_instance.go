@@ -247,6 +247,27 @@ func resourceWakamevdcInstanceUpdate(d *schema.ResourceData, m interface{}) erro
 				}
 			}
 		}
+
+		// Remove the old security groups
+		for _, currentSecurityGroupID := range currentVif.SecurityGroupIDs {
+			securityGroupExists := false
+
+			for _, securityGroupIDI := range vif["security_groups"].([]interface{}) {
+				securityGroupID := securityGroupIDI.(string)
+
+				if securityGroupID == currentSecurityGroupID {
+					securityGroupExists = true
+					break
+				}
+			}
+
+			if !securityGroupExists {
+				_, _, err = client.NetworkVif.RemoveSecurityGroup(vifID, currentSecurityGroupID)
+				if err != nil {
+					return err
+				}
+			}
+		}
 	}
 
 	return nil
