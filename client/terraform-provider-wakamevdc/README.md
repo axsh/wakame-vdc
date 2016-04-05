@@ -11,7 +11,7 @@ provider "wakamevdc" {
 
 # Create an instance
 resource "wakamevdc_instance" "www" {
-    ...
+  ...
 }
 ```
 
@@ -33,17 +33,17 @@ resource "wakamevdc_security_group" "sg1" {
   description = "Allow SSH port"
   display_name = "sg1"
 
-  rules = [
-    "ip4,0.0.0.0,22"
-  ]
+  rules = <<EOS
+tcp:22,22,ip4:0.0.0.0
+EOS
 }
 ```
 
 ## Argument Reference
 
-* `rules` - (Required) String or Array representation.
-* `display_name` - (Optional)
-* `description` - (Optional)
+* `rules` - (Required) String
+* `display_name` - (Optional) String
+* `description` - (Optional) String
 
 ## Attributes Reference
 
