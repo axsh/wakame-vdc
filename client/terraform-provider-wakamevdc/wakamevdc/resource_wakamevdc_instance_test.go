@@ -67,6 +67,37 @@ resource "wakamevdc_instance" "inst1" {
 }
 `
 
+const testInstanceConfigUpdate2 = `
+resource "wakamevdc_security_group" "sg1" {
+	display_name = "sg1"
+	rules = ""
+}
+
+resource "wakamevdc_security_group" "sg2" {
+	display_name = "sg2"
+	rules = ""
+}
+
+resource "wakamevdc_instance" "inst1" {
+  display_name = "updated display name"
+  cpu_cores = 1
+  memory_size = 512
+  image_id = "wmi-centos1d64"
+  hypervisor = "openvz"
+  ssh_key_id = "ssh-demo"
+
+	user_data = "joske"
+
+  vif {
+    network_id = "nw-demo1"
+
+		security_groups = [
+			"${wakamevdc_security_group.sg1.id}",
+		]
+  }
+}
+`
+
 func TestResourceWakamevdcInstance(t *testing.T) {
 	var resourceID string
 
@@ -196,6 +227,10 @@ func TestResourceWakamevdcInstance(t *testing.T) {
 			},
 			resource.TestStep{
 				Config: testInstanceConfigUpdate,
+				Check:  testCheck,
+			},
+			resource.TestStep{
+				Config: testInstanceConfigUpdate2,
 				Check:  testCheck,
 			},
 		},
