@@ -8,7 +8,7 @@ func TestNetwork(t *testing.T) {
 	c := NewClient(nil, nil)
 
 	if c.Network == nil {
-		t.Errorf("ImageService should not be nil")
+		t.Errorf("NetworkService should not be nil")
 	}
 }
 
@@ -62,14 +62,14 @@ func TestNetworkFull(t *testing.T) {
 		t.Fatalf("Failed to query dhcp range: %v", err)
 	}
 
-	if len(*dhcpRanges) != 1 {
+	if len(dhcpRanges) != 1 {
 		t.Fatalf("Got more dhcp ranges than expected. Expected 1, got %d",
-			len(*dhcpRanges))
+			len(dhcpRanges))
 	}
 
-	if (*dhcpRanges)[0][0] != "10.0.0.20" || (*dhcpRanges)[0][1] != "10.0.0.30" {
+	if (dhcpRanges)[0][0] != "10.0.0.20" || (dhcpRanges)[0][1] != "10.0.0.30" {
 		t.Fatalf("Unexpected dhcp range. Expected: [[10.0.0.20 10.0.0.30]]. Got: %v",
-			*dhcpRanges)
+			dhcpRanges)
 	}
 
 	_, err = c.Network.DHCPRangeDelete(nw.ID, &DHCPRangeDeleteParams{
@@ -82,9 +82,9 @@ func TestNetworkFull(t *testing.T) {
 		t.Fatalf("Failed to query dhcp range: %v", err)
 	}
 
-	if len(*dhcpRanges) != 0 {
+	if len(dhcpRanges) != 0 {
 		t.Fatalf("Dhcp range didn't get deleted. Expected empty slice. got %v",
-			*dhcpRanges)
+			dhcpRanges)
 	}
 
 	_, err = c.Network.Delete(nw.ID)
