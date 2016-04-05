@@ -31,6 +31,27 @@ type NetworkVifService struct {
 	client *Client
 }
 
+type NetworkVifsList struct {
+	Total   int          `json:"total"`
+	Start   int          `json:"start"`
+	Limit   int          `json:"limit"`
+	Results []NetworkVif `json:"results"`
+}
+
+func (s *NetworkVifService) List(req *ListRequestParams) (*NetworkVifsList, *http.Response, error) {
+	nwVifList := make([]NetworkVifsList, 1)
+
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(NetworkVifPath).QueryStruct(req).Receive(&nwVifList, errResp)
+	})
+
+	if err != nil {
+		return &NetworkVifsList{}, resp, err
+	}
+
+	return &nwVifList[0], resp, nil
+}
+
 func (s *NetworkVifService) GetByID(id string) (*NetworkVif, *http.Response, error) {
 	nwVif := new(NetworkVif)
 
