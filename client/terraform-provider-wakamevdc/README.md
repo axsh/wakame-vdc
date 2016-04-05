@@ -82,21 +82,46 @@ Resource to handle `$api_endpoint/networks` API.
 
 ```
 resource "wakamevdc_network" "net1" {
-  description = "Demo network"
-  display_name = "net1"
-  network = "192.168.0.0"
+  ipv4_network = "10.0.0.0"
   prefix = 24
-  dc_network = "public"
+  network_mode = "l2overlay"
+  dc_network_name = "vnet"
+  display_name = "a new name for me"
+  description = "I am a testing network"
+  editable = true
+
+  dhcp_range {
+    range_begin = "10.0.0.160"
+    range_end = "10.0.0.160"
+  }
+
+  dhcp_range {
+    range_begin = "10.0.0.200"
+    range_end = "10.0.0.230"
+  }
 }
 ```
 
 ## Argument Reference
 
-* `network` - (Required) Network address for the network.
-* `prefix` - (Required) Netmask bit size for the network.
-* `dc_network` - (Required) L2 segment name.
-* `description` - (Optional)
-* `display_name` - (Optional)
+* `display_name` - (Optional) String
+* `description` - (Optional) String
+* `ipv4_network` - (Required) String - Network address for the network.
+* `prefix` - (Required) String - Netmask bit size for the network.
+* `ipv4_gw` - (Optional) String - Default gateway for this network if applicable.
+* `metric` - (Optional) Int - IPv4 metric for this network.
+* `ip_assignment` - (Optional) String
+* `network_mode` - (Required) String - The Wakame-vdc network mode to use.
+* `editable` - (Optional) Boolean - Flag that decides if this network can be edited.
+
+* `dc_network_id` - (Optional) String - Wakame-vdc datacenter network id.
+* `dc_network_name` - (Optional) String - Wakame-vdc Datacenter network name.
+
+  While both dc\_network\_id and dc\_network\_name are set to optional, it is required to provide one or the other.
+
+* `dhcp_range` - (Optional) TypeSet
+  - `range_begin` (Required) String - The start of the DHCP range.
+  - `range_end` (Required) String - The end of the DHCP range.
 
 ## Attributes Reference
 
