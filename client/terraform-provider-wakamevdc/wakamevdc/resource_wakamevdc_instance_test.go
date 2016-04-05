@@ -16,11 +16,6 @@ resource "wakamevdc_security_group" "sg1" {
 	rules = ""
 }
 
-resource "wakamevdc_security_group" "sg2" {
-	display_name = "sg2"
-	rules = ""
-}
-
 resource "wakamevdc_instance" "inst1" {
   display_name = "inst1"
   cpu_cores = 1
@@ -35,13 +30,22 @@ resource "wakamevdc_instance" "inst1" {
     network_id = "nw-demo1"
 		security_groups = [
 			"${wakamevdc_security_group.sg1.id}",
-			"${wakamevdc_security_group.sg2.id}",
 		]
   }
 }
 `
 
 const testInstanceConfigUpdate = `
+resource "wakamevdc_security_group" "sg1" {
+	display_name = "sg1"
+	rules = ""
+}
+
+resource "wakamevdc_security_group" "sg2" {
+	display_name = "sg2"
+	rules = ""
+}
+
 resource "wakamevdc_instance" "inst1" {
   display_name = "updated display name"
   cpu_cores = 1
@@ -54,6 +58,11 @@ resource "wakamevdc_instance" "inst1" {
 
   vif {
     network_id = "nw-demo1"
+
+		security_groups = [
+			"${wakamevdc_security_group.sg1.id}",
+			"${wakamevdc_security_group.sg2.id}",
+		]
   }
 }
 `
