@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-const NetworkVifPath = "network_vif"
+const NetworkVifPath = "network_vifs"
 
 type NetworkVif struct {
 	ID               string   `json:"id"`
@@ -17,7 +17,7 @@ type NetworkVif struct {
 	MacAddr          string   `json:"mac_addr"`
 	//TODO: Finish NetworkMonitors
 	//NetworkMonitors  []struct {} `json:"network_monitors"`
-	NetworkVifIpLease struct {
+	NetworkVifIpLease []struct {
 		IPv4      string `json:"ipv4"`
 		NetworkID string `json:"network_id"`
 		IPHandle  struct {
@@ -31,6 +31,27 @@ type NetworkVifService struct {
 	client *Client
 }
 
+type NetworkVifsList struct {
+	Total   int          `json:"total"`
+	Start   int          `json:"start"`
+	Limit   int          `json:"limit"`
+	Results []NetworkVif `json:"results"`
+}
+
+func (s *NetworkVifService) List(req *ListRequestParams) (*NetworkVifsList, *http.Response, error) {
+	nwVifList := make([]NetworkVifsList, 1)
+
+	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
+		return s.client.Sling().Get(NetworkVifPath).QueryStruct(req).Receive(&nwVifList, errResp)
+	})
+
+	if err != nil {
+		return &NetworkVifsList{}, resp, err
+	}
+
+	return &nwVifList[0], resp, nil
+}
+
 func (s *NetworkVifService) GetByID(id string) (*NetworkVif, *http.Response, error) {
 	nwVif := new(NetworkVif)
 
@@ -41,7 +62,7 @@ func (s *NetworkVifService) GetByID(id string) (*NetworkVif, *http.Response, err
 	return nwVif, resp, err
 }
 
-func (s *NetworkVifService) addSecurityGroup(id string, securityGroupID string) (*NetworkVif, *http.Response, error) {
+func (s *NetworkVifService) AddSecurityGroup(id string, securityGroupID string) (*NetworkVif, *http.Response, error) {
 	nwVif := new(NetworkVif)
 
 	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
@@ -51,7 +72,7 @@ func (s *NetworkVifService) addSecurityGroup(id string, securityGroupID string) 
 	return nwVif, resp, err
 }
 
-func (s *NetworkVifService) removeSecurityGroup(id string, securityGroupID string) (*NetworkVif, *http.Response, error) {
+func (s *NetworkVifService) RemoveSecurityGroup(id string, securityGroupID string) (*NetworkVif, *http.Response, error) {
 	nwVif := new(NetworkVif)
 
 	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
