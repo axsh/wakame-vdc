@@ -31,6 +31,7 @@ type Client struct {
 	SshKey        *SshKeyService
 	Image         *ImageService
 	Network       *NetworkService
+	NetworkVif    *NetworkVifService
 	DCNetwork     *DCNetworkService
 }
 
@@ -47,6 +48,7 @@ func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
 	c.SshKey = &SshKeyService{client: c}
 	c.Image = &ImageService{client: c}
 	c.Network = &NetworkService{client: c}
+	c.NetworkVif = &NetworkVifService{client: c}
 	c.DCNetwork = &DCNetworkService{client: c}
 	return c
 }

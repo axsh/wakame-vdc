@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-const NetworkVifPath = "network_vif"
+const NetworkVifPath = "network_vifs"
 
 type NetworkVif struct {
 	ID               string   `json:"id"`
@@ -41,7 +41,7 @@ func (s *NetworkVifService) GetByID(id string) (*NetworkVif, *http.Response, err
 	return nwVif, resp, err
 }
 
-func (s *NetworkVifService) addSecurityGroup(id string, securityGroupID string) (*NetworkVif, *http.Response, error) {
+func (s *NetworkVifService) AddSecurityGroup(id string, securityGroupID string) (*NetworkVif, *http.Response, error) {
 	nwVif := new(NetworkVif)
 
 	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
@@ -51,7 +51,7 @@ func (s *NetworkVifService) addSecurityGroup(id string, securityGroupID string) 
 	return nwVif, resp, err
 }
 
-func (s *NetworkVifService) removeSecurityGroup(id string, securityGroupID string) (*NetworkVif, *http.Response, error) {
+func (s *NetworkVifService) RemoveSecurityGroup(id string, securityGroupID string) (*NetworkVif, *http.Response, error) {
 	nwVif := new(NetworkVif)
 
 	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
