@@ -38,6 +38,14 @@ type NetworkVifsList struct {
 	Results []NetworkVif `json:"results"`
 }
 
+type AddSecurityGroupParams struct {
+	SecurityGroupID string `url:"security_group_id"`
+}
+
+type RemoveSecurityGroupParams struct {
+	SecurityGroupID string `url:"security_group_id"`
+}
+
 func (s *NetworkVifService) List(req *ListRequestParams) (*NetworkVifsList, *http.Response, error) {
 	nwVifList := make([]NetworkVifsList, 1)
 
@@ -65,8 +73,12 @@ func (s *NetworkVifService) GetByID(id string) (*NetworkVif, *http.Response, err
 func (s *NetworkVifService) AddSecurityGroup(id string, securityGroupID string) (*NetworkVif, *http.Response, error) {
 	nwVif := new(NetworkVif)
 
+	params := &AddSecurityGroupParams{
+		SecurityGroupID: securityGroupID,
+	}
+
 	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
-		return s.client.Sling().Put(fmt.Sprintf(NetworkVifPath+"/%s/add_security_group", id)).Receive(nwVif, errResp)
+		return s.client.Sling().Put(fmt.Sprintf(NetworkVifPath+"/%s/add_security_group", id)).BodyForm(params).Receive(nwVif, errResp)
 	})
 
 	return nwVif, resp, err
@@ -75,8 +87,12 @@ func (s *NetworkVifService) AddSecurityGroup(id string, securityGroupID string) 
 func (s *NetworkVifService) RemoveSecurityGroup(id string, securityGroupID string) (*NetworkVif, *http.Response, error) {
 	nwVif := new(NetworkVif)
 
+	params := &RemoveSecurityGroupParams{
+		SecurityGroupID: securityGroupID,
+	}
+
 	resp, err := trapAPIError(func(errResp *ErrorResponse) (*http.Response, error) {
-		return s.client.Sling().Put(fmt.Sprintf(NetworkVifPath+"/%s/remove_security_group", id)).Receive(nwVif, errResp)
+		return s.client.Sling().Put(fmt.Sprintf(NetworkVifPath+"/%s/remove_security_group", id)).BodyForm(params).Receive(nwVif, errResp)
 	})
 
 	return nwVif, resp, err
