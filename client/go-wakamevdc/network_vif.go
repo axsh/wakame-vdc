@@ -17,7 +17,7 @@ type NetworkVif struct {
 	MacAddr          string   `json:"mac_addr"`
 	//TODO: Finish NetworkMonitors
 	//NetworkMonitors  []struct {} `json:"network_monitors"`
-	NetworkVifIpLease struct {
+	NetworkVifIpLease []struct {
 		IPv4      string `json:"ipv4"`
 		NetworkID string `json:"network_id"`
 		IPHandle  struct {
