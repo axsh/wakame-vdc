@@ -29,7 +29,7 @@ module Dcmgr::Endpoints::V1203
       # These methods converts wakame-vdc's string format into the slightly
       # different format that openvnet uses.
       define_method("openvnet_rules") { |rules|
-        rules.split(/\r?\n/).map { |r|          
+        rules.split(/\r?\n/).map { |r|
           r = split_rule(r)
           r = "#{r[:protocol]}:#{r[:port_start]}:#{r[:subject]}"
         }
