@@ -119,6 +119,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                 desc: "The index to start listing from."
   param :limit, :Integer,
                 desc: "The maximum amount of instances to list."
+  #TODO: Remove this. Account ID is set in the http headers.
   param :account_id, :String,
                 desc: "Show only instances from this account id."
   param :state, :String,
@@ -242,7 +243,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                      },
                      desc: "The hypervisor that you want to start this instance with."
   post do
-    wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
+    wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID, "#{params[:image_id]} does not exist.")
+    wmi.backup_object || raise(E::InvalidImageID, "#{wmi.canonical_uuid} does not have a backup_object associated with it.")
 
     if M::HostNode.online_nodes.filter(:hypervisor=>params['hypervisor']).empty?
       raise E::InvalidParameter, "No online host nodes found for hypervisor: {params['hypervisor']}"

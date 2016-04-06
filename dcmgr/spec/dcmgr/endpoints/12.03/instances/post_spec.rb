@@ -94,6 +94,8 @@ describe Dcmgr::Endpoints::V1203::CoreAPI, "POST instances" do
       let(:image) { Fabricate(:image) }
 
       it_does_not_crash
+
+      it_returns_error(:InvalidImageID, 400)
     end
   end
 
