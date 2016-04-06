@@ -73,6 +73,12 @@ of contributors including their patches can be found at:
 
 https://github.com/axsh/wakame-vdc/contributors
 
+Supporters
+----------
+
+* Servers for Continuous Integration
+  - [NHN Techorus Corp.](https://nhn-techorus.com/en/)
+
 License
 ---------
 
