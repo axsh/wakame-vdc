@@ -8,12 +8,21 @@ module Dcmgr::Cli
 
     TYPES={"network"=>:NetworkGroup, "host"=>:HostNodeGroup, "storage"=>:StorageNodeGroup}.freeze
 
+    no_tasks {
+      def self.common_options
+        method_option :uuid, :type => :string, :desc => "The UUID for the new resource group"
+        method_option :account_id, :type => :string, :desc => "The UUID of the account that this resource group belongs to"
+        method_option :name, :type => :string, :desc => "The name for the new resource group"
+        method_option :attributes, :type => :string, :desc => "The attributes for the new resource group"
+      end
+    }
+
     desc "add [options]", "Create a new resource group"
-    method_option :uuid, :type => :string, :desc => "The UUID for the new resource group"
-    method_option :account_id, :type => :string, :desc => "The UUID of the account that this resource group belongs to", :required => true
+    common_options
+    # type field can not be modified.
     method_option :type, :type => :string, :desc => "The type for the new resource group. Valid types are [#{TYPES.keys.join(", ")}]", :required => true
-    method_option :name, :type => :string, :desc => "The name for the new resource group", :required => true
-    method_option :attributes, :type => :string, :desc => "The attributes for the new resource group"
+    method_options[:account_id].required = true
+    method_options[:name].required = true
     def add
       Error.raise("Invalid type: '#{options[:type]}'. Valid types are [#{TYPES.keys.join(", ")}].",100) unless TYPES.member? options[:type]
 
@@ -23,9 +32,7 @@ module Dcmgr::Cli
     end
 
     desc "modify UUID [options]", "Modify an existing resource group"
-    method_option :account_id, :type => :string, :desc => "The UUID of the account that this resource group belongs to"
-    method_option :name, :type => :string, :desc => "The name for the new resource group"
-    method_option :attributes, :type => :string, :desc => "The attributes for the new resource group"
+    common_options
     def modify(uuid)
       tag = M::Taggable.find(uuid)
       UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag

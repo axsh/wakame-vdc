@@ -224,7 +224,8 @@ en:
       locale: "Locale"
       time_zone: "Timezone"
     create_and_edit_group:
-      name: "Group name"
+      header: "Details"
+      name: "Group name"	
       uuid: "Group unique ID"
       description: "Discription"
       created_at: "Created"
@@ -565,9 +566,9 @@ en:
       origin_volume_id: "OriginVolumeID"
       checksum: "Checksum"
       progress: "Progress"
+      description: "Description"
       state: "State"
       status: "Status"
-      description: "Description"
       created_at: "Created At"
       updated_at: "Updated At"
   storage_pools:
@@ -702,6 +703,7 @@ en:
       host_node: "Host Pools"
       strage_node: "Strage Pools"
       instance_spec: "Spec"
+      machine_image: "Machine Image"
     button:
       host_node_create: "Add"
       host_node_update: "Update/Delete"

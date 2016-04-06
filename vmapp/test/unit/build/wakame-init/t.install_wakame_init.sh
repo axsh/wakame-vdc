@@ -29,6 +29,7 @@ EOS
   function chmod() { echo chmod $*; }
   function chown() { echo chown $*; }
   function prevent_interfaces_booting() { echo prevent_interfaces_booting $*; }
+  function chroot() { echo chroot $*; }
 }
 
 function tearDown() {

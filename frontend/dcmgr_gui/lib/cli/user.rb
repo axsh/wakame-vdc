@@ -6,9 +6,9 @@ require 'tzinfo'
 module Cli
   class UserCli < Base
     namespace :user
-    
+
     PASSWD_TABLE='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('').freeze
-    
+
     desc "add [options]", "Create a new user."
     method_option :name, :type => :string, :required => true, :aliases => "-n", :desc => "The display name for the new user." #Maximum size: 200
     method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new user."
@@ -30,13 +30,13 @@ module Cli
       else
         #Check if the primary account uuid exists
         Error.raise("Unknown Account UUID #{options[:primary_account_id]}",100) if options[:primary_account_id] != nil && Account[options[:primary_account_id]].nil?
-        
+
         #Generate password if password is null.
         passwd = options[:password] || Array.new(12) do PASSWD_TABLE[rand(PASSWD_TABLE.size)]; end.join
-        
+
         #Encrypt the password
         pwd_hash = User.encrypt_password(passwd)
-        
+
         #Put them in there
         fields = {:name => options[:name], :login_id => options[:login_id], :password => pwd_hash,
           :locale => options[:locale],
@@ -45,7 +45,7 @@ module Cli
         }
         fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
         new_uuid = super(User,fields)
-        
+
         #TODO: put this in the model instead
         unless options[:primary_account_id] == nil
           new_user = User[new_uuid]
@@ -109,7 +109,7 @@ __END
           if options[:with_deleted]
             row << (!u.deleted_at.nil?).to_s
           end
-          
+
           table << row
         }
         if table.size > 1
@@ -130,38 +130,38 @@ __END
       Error.raise("User name can not be longer than 200 characters",100) if options[:name] != nil && options[:name].length > 200
       Error.raise("User login_id can not be longer than 255 characters",100) if options[:login_id] != nil && options[:login_id].length > 255
       Error.raise("User password can not be longer than 255 characters",100) if options[:password] != nil && options[:password].length > 255
-      
+
       fields = options.merge({})
       fields[:password] = User.encrypt_password(options[:password]) if options[:password]
-      
+
       super(User,uuid,fields)
     end
 
     #TODO: allow deletion of multiple id's at once
-    desc "del UUID", "Delete an existing user."    
+    desc "del UUID", "Delete an existing user."
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def del(uuid)
       super(User,uuid)
       puts "User #{uuid} has been deleted." if options[:verbose]
     end
-    
+
     desc "primacc UUID", "Set or get the primary account for a user"
     method_option :account_id, :type => :string, :aliases => "-a", :desc => "The id of the new primary account"
     def primacc(uuid)
       user = User[uuid] || UnknownUUIDError.raise(uuid)
-      
-      if options[:account_id]
-        acc = Account[options[:account_id]] || UnknownUUIDError.raise(options[:account_id])
-        user.primary_account_id = acc.uuid
+
+      if acc_id = options[:account_id]
+        acc = Account[acc_id] || UnknownUUIDError.raise(acc_id)
+        user.primary_account_id = acc.canonical_uuid
         user.save
         user.add_account(acc)
       end
     end
-    
+
     desc "associate UUID", "Associate a user with one or multiple accounts."
-    method_option :account_ids, :type => :array, :required => true, :aliases => "-a", :desc => "The id of the acounts to associate these user with. Any non-existing or non numeral id will be ignored" 
+    method_option :account_ids, :type => :array, :required => true, :aliases => "-a", :desc => "The id of the acounts to associate these user with. Any non-existing or non numeral id will be ignored"
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
-    def associate(uuid)      
+    def associate(uuid)
       user = User[uuid] || UnknownUUIDError.raise(uuid)
       options[:account_ids].each { |a|
         acc = Account[a]
@@ -179,9 +179,9 @@ __END
         end
       }
     end
-    
+
     desc "dissociate UUID", "Dissociate a user from one or multiple accounts."
-    method_option :account_ids, :type => :array, :required => true, :aliases => "-a", :desc => "The id of the acounts to dissociate these user from. Any non-existing or non numeral id will be ignored" 
+    method_option :account_ids, :type => :array, :required => true, :aliases => "-a", :desc => "The id of the acounts to dissociate these user from. Any non-existing or non numeral id will be ignored"
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def dissociate(uuid)
       user = User[uuid] || UnknownUUIDError.raise(uuid)
@@ -193,9 +193,9 @@ __END
           puts "User #{uuid} is not associated with account #{a}." if options[:verbose]
         else
           user.remove_account(acc)
-          
+
           puts "User #{uuid} successfully dissociated from account #{a}." if options[:verbose]
-          
+
           if acc.canonical_uuid == user.primary_account_id
             user.primary_account_id = nil
             user.save
@@ -218,6 +218,6 @@ __END
       user.enabled = false
       user.save_changes
     end
-    
+
   end
 end

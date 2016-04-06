@@ -15,10 +15,6 @@ module Dcmgr::Models
     def validate
       super
 
-      if (evaluation_periods.nil? || evaluation_periods < 1) && is_metric_alarm?
-        errors.add(:evaluation_periods, "it must have digit more than 1")
-      end
-
       if (notification_periods.nil? || notification_periods < 1) && is_log_alarm?
         errors.add(:notiification_periods, "it must have digit more than 1")
       end
@@ -32,16 +28,6 @@ module Dcmgr::Models
 
         unless /^[0-9a-z._]+$/ =~ params['tag']
           errors.add(:tag, "Invalid format")
-        end
-
-      elsif self.is_metric_alarm?
-        notification_actions = RESOURCE_NOTIFICATION_ACTIONS
-        if params["threshold"] < 0
-          errors.add(:threshold, "it must have digit more than zero")
-        end
-
-        unless SUPPORT_COMPARISON_OPERATOR.include?(params['comparison_operator'])
-          errors.add(:comparison_operator, "it must have #{SUPPORT_COMPARISON_OPERATOR.keys.join(',')}")
         end
       else
         errors.add(:metric_name, 'Unknown metric name')
@@ -84,10 +70,6 @@ module Dcmgr::Models
 
     def is_log_alarm?
       LOG_METRICS.include?(metric_name)
-    end
-
-    def is_metric_alarm?
-      RESOURCE_METRICS.include?(metric_name)
     end
 
     def to_hash

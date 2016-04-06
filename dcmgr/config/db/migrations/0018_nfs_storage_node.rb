@@ -14,5 +14,10 @@ Sequel.migration do
       index [:nfs_storage_node_id]
     end
   end
+
+  down do
+    drop_table(:nfs_storage_nodes)
+    drop_table(:nfs_volumes)
+  end
 end
 

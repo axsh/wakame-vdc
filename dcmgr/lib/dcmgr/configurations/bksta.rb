@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require 'uri'
 require 'fuguta'
 
 module Dcmgr
   module Configurations
-    class Bksta < Fuguta::Configuration
+    class Bksta < Features
 
       usual_paths [
         ENV['CONF_PATH'].to_s,

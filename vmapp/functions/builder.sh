@@ -58,6 +58,10 @@ VDC_HYPERVISOR=${vm_hypervisor} \
    --keepcache     ${vm_keepcache:-0} \
    --fstab-type    ${vm_fstab_type} \
    --sshd-passauth ${vm_sshd_passauth} \
+   --sshd-gssapi-auth no \
+   --sshd-use-dns     no \
+   --devel-user    wakame-vdc \
+   --devel-pass    wakame-vdc \
    --execscript    $(pwd)/execscript.sh \
    $([[ -f "$(pwd)/copy.txt" ]] && echo \
    --copy          $(pwd)/copy.txt

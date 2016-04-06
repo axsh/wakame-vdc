@@ -38,20 +38,6 @@ map '/api' do
     end
   end
 
-  #TODO refactor
-  if Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_uri
-    require 'dcell'
-    DCell.start(:id => Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_id,
-      :addr => "tcp://#{Dcmgr::Configurations.dcmgr.dcmgr_dcell_node_uri}",
-      :registry => {
-        :adapter => Dcmgr::Configurations.dcmgr.dcell_adapter,
-        :host => Dcmgr::Configurations.dcmgr.dcell_host,
-        :port => Dcmgr::Configurations.dcmgr.dcell_port
-      }
-    )
-    Dcmgr.run_initializers('vnet_hook')
-  end
-
   map '/12.03' do
     run Dcmgr::Endpoints::V1203::CoreAPI.new
   end

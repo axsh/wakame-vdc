@@ -1,0 +1,9 @@
+Source: wakame-init
+Maintainer: Axsh Co. LTD <dev@axsh.net>
+Build-Depends: cdbs, debhelper
+Standards-Version: 3.9.6.1
+
+Package: wakame-init
+Architecture: all
+Description: Initialize virtual machine settings.
+

@@ -5,6 +5,18 @@ require 'dcmgr/endpoints/12.03/responses/network_vif_monitor'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
+  # Show list of network_vifs
+  get do
+    ds = M::NetworkVif
+    if params[:account_id]
+      ds = ds.filter(:account_id=>params[:account_id])
+    end
+
+    collection_respond_with(ds) do |paging_ds|
+      R::NetworkVifCollection.new(paging_ds).generate
+    end
+  end
+
   get '/:vif_id' do
     # description "Retrieve details about a vif"
     # params id, string, required

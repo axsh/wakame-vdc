@@ -206,15 +206,14 @@ module Dcmgr
                                                                       @vol[:transport_information][:lun]]
       end
 
-      def setup_metadata_drive
-        task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                            :setup_metadata_drive, [@hva_ctx, get_metadata_items])
-        # export as single yaml file.
-        @hva_ctx.dump_instance_parameter('metadata.yml', YAML.dump(get_metadata_items))
-       end
+      def setup_metadata_drive(options = {})
+        items = Dcmgr::Metadata.factory(@inst, options).get_items
 
-      def get_metadata_items
-        Dcmgr::Metadata.md_type(@inst).get_items
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :setup_metadata_drive, [@hva_ctx, items])
+
+        # export as single yaml file.
+        @hva_ctx.dump_instance_parameter('metadata.yml', YAML.dump(items))
       end
 
       # syntax sugar to catch any errors and continue to work the code
@@ -313,7 +312,7 @@ module Dcmgr
           next
         end
 
-        setup_metadata_drive
+        setup_metadata_drive(first_boot: true)
 
         check_interface
 
@@ -365,7 +364,7 @@ module Dcmgr
           rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:attaching, :attached_at=>nil})
         end
 
-        setup_metadata_drive
+        setup_metadata_drive(first_boot: true)
 
         check_interface
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -388,9 +387,10 @@ module Dcmgr
       job :terminate do
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
+        @force   = request.args[1]
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
-        unless ['running', 'halted'].member?(@inst[:state].to_s)
+        if @force != true && !['running', 'halted'].member?(@inst[:state].to_s)
           raise "Invalid instance state: #{@inst[:state]}"
         end
 

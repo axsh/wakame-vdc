@@ -3,29 +3,57 @@ Wakame-vdc
 
 [![Code Climate](https://codeclimate.com/github/axsh/wakame-vdc.png)](https://codeclimate.com/github/axsh/wakame-vdc)
 
-Wakame-vdc is an IaaS (Infrastructure as a Service) cloud computing framework, facilitating the provisioning and management of a heterogeneous virtualized infrastructure. Wakame-vdc virtualizes the entire data center; servers, storage, and networking. Wakame-vdc is managed via a native Web Interface, the Wakame-vdc CLI, or the powerful Wakame-vdc API.
+Wakame-vdc is a virtual datacenter or an IaaS (Infrastructure as a Service) suite.
+
+Visit http://wakame-vdc.org for a more detailed explanation.
+
+System requirements
+-------------------
+
+* Ruby version: 2.0.0-p598
+* OS: CentOS 6
+
+Other versions or operating systems may or may not work.
 
 Quick Start
 -----------
 
-[Install Wakame-vdc on CentOS 6.4](https://github.com/axsh/wakame-vdc/wiki/install-guide)
+[Install Wakame-vdc on CentOS 6](http://wakame-vdc.org/installation/)
 
-[Try Wakame-vdc pre-installed in VirtualBox.](http://wakameusersgroup.org/demo_image.html)
+[Try Wakame-vdc pre-installed in VirtualBox.](http://wakame-vdc.org/demo-image/)
 
 Contact us
 ----------
 
-The best way to contact us is to send a mail to the [Wakame Users Group](https://groups.google.com/forum/?hl=en-GB#!forum/wakame-ug) on Google Groups. Please don't hesitate to ask us any questions. We realise Wakame-vdc is difficult to set up and that our documentation is very limited at this time. If you want to try it out, we'll do our best to help you. There's no such thing as a stupid question.
+### Wakame Users Group
 
-If you happen to be in Tokyo, you can also attend one of our Wakame Users Group events. They are open to everybody. Further details on http://wakameusersgroup.org.
+The best way to contact us is to send a mail to the [Wakame Users Group](https://groups.google.com/forum/?hl=en-GB#!forum/wakame-ug) on Google Groups. Please don't hesitate to ask us any questions. If you want to try out Wakame-vdc, we'll do our best to help you. There's no such thing as a stupid question.
 
-Wiki
-----
+If you happen to be in Tokyo, you can also attend one of our Wakame Users Group events. We do them once every 3 months and they are open to everybody. Further details on http://wakameusersgroup.org.
 
-Further details about Wakame-vdc can be found on our [wiki](https://github.com/axsh/wakame-vdc/wiki).
+### Social Media
+
+#### Twitter
+
+* [@WakameTech](https://twitter.com/WakameTech): Japanese Wakame-vdc account
+
+* [@Wakamevdc](https://twitter.com/wakamevdc): English Wakame-vdc acccount
+
+* [@axsh_co_ltd](https://twitter.com/axsh_co_ltd): The Axsh company account
+
+#### Facebook
+
+* [Wakame-vdc Facebook page](https://www.facebook.com/datacenterhypervisor)
+
+Documentation
+-------------
+
+Documentation about Wakame-vdc can be found on http://wakame-vdc.org.
 
 Users
 -----
+
+Wakame-vdc is currently used by the following companies.
 
 * Kyushu Electric Power Co., Ltd. ( http://www.kyuden.co.jp/en_index.html )
 * National Institute of Informatics ( http://www.nii.ac.jp/en/ )
@@ -33,6 +61,7 @@ Users
   - [NTT PC Web Arena VPS Cloud](http://web.arena.ne.jp/vps-cloud/)
 * Kyocera Communication Systems Co., Ltd. ( http://www.kccs.co.jp/english/ )
   - [KCCS GreenOffice Unified Cloud](https://gouc.datacenter.ne.jp)
+* [TIS Inc.](http://www.tis.com/)
 
 If you already use this software, please let us know. Thank you.
 

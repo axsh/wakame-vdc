@@ -72,7 +72,7 @@ module Dcmgr::Models
         # uniqueness check for device names per instance
         names = self.instance.volumes_dataset.attached.all.map{|v| v.guest_device_name }.sort
         unless names.size == names.uniq.size
-          errors.add(:guest_device_name, "found duplicate device name (#{names.join(', ')}) for #{instance.caonnical_uuid}")
+          errors.add(:guest_device_name, "found duplicate device name (#{names.join(', ')}) for #{instance.canonical_uuid}")
         end
       end
 

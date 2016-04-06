@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# requires:
+#  bash
+#
+# description:
+#  wakame-vdc dcmgr(api) client wrapper
+#
+set -e
+set -o pipefail
+
+readonly installed_path=/opt/axsh/wakame-vdc/client/mussel
+
+if [[ -d "${installed_path}" ]]; then
+  # rpm
+  PATH=${installed_path}:${PATH}
+else
+  # non-rpm
+  PATH=${BASH_SOURCE[0]%/*}/../:${PATH}
+fi
+
+mussel.sh "${@}"

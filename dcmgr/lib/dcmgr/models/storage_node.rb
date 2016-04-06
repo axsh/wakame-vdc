@@ -35,8 +35,8 @@ module Dcmgr::Models
       #  errors.add(:storage_type, "unknown storage type: #{self.storage_type}")
       #end
 
-      unless self.offering_disk_space_mb > 0
-        errors.add(:offering_disk_space_mb, "it must have digit more than zero")
+      if self.offering_disk_space_mb.to_i < 0
+        errors.add(:offering_disk_space_mb, "it can not be less than zero")
       end
     end
 

@@ -13,6 +13,7 @@ function retry_until() {
   local sleep_sec=${RETRY_SLEEP_SEC:-3}
   local tries=0
   local start_at=$(date +%s)
+  local chk_cmd=
 
   while :; do
     eval "${blk}" && {
@@ -42,12 +43,12 @@ function open_port?() {
 
   local nc_opts="-w 3"
   case ${protocol} in
-  tcp) ;;
-  udp) nc_opts="${nc_opts} -u";;
-    *) ;;
+    tcp) ;;
+    udp) nc_opts="${nc_opts} -u";;
+      *) ;;
   esac
 
-  echo | nc ${nc_opts} ${ipaddr} ${port} >/dev/null
+  nc ${nc_opts} ${ipaddr} ${port} <<< "" >/dev/null
 }
 
 function network_connection?() {
@@ -77,6 +78,11 @@ function wait_for_httpd_to_be_ready() {
   wait_for_port_to_be_ready ${ipaddr} tcp 80
 }
 
+function wait_for_rdpd_to_be_ready() {
+  local ipaddr=$1
+  wait_for_port_to_be_ready ${ipaddr} tcp 3389
+}
+
 ## wait for *not to be*
 
 function wait_for_network_not_to_be_ready() {
@@ -97,4 +103,9 @@ function wait_for_sshd_not_to_be_ready() {
 function wait_for_httpd_not_to_be_ready() {
   local ipaddr=$1
   wait_for_port_not_to_be_ready ${ipaddr} tcp 80
+}
+
+function wait_for_rdpd_not_to_be_ready() {
+  local ipaddr=$1
+  wait_for_port_not_to_be_ready ${ipaddr} tcp 3389
 }

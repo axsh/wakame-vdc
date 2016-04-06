@@ -7,7 +7,7 @@ Sequel.migration do
     end
 
     alter_table(:instances) do
-      add_column :encrypted_password, "text"
+      add_column :encrypted_password, "varchar(255)"
     end
   end
 

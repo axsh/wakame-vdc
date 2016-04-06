@@ -38,7 +38,7 @@ class LoadBalancersController < ApplicationController
     catch_error do
       load_balancer_id = params[:id]
       detail = Hijiki::DcmgrResource::LoadBalancer.destroy(load_balancer_id)
-      respond_with(detail,:to => [:json])
+      render :json => detail
     end
   end
 

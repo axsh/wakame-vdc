@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require "dcmgr/configurations/features"
 require "fuguta"
 require 'dcmgr/node_modules/ha_manager'
 
 module Dcmgr
   module Configurations
-    class Hma < Fuguta::Configuration
+    class Hma < Features
 
       usual_paths [
         ENV['CONF_PATH'].to_s,
@@ -16,8 +17,10 @@ module Dcmgr
 
       class MonitorTarget < Fuguta::Configuration
         def after_initialize
+          super
           @config[:monitor_items] = {}
         end
+        private :after_initialize
 
         DSL do
           def monitor_item(name, klass_sym, &blk)

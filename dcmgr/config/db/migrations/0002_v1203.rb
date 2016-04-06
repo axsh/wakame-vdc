@@ -407,8 +407,35 @@ Sequel.migration do
   end
 
   down do
+    drop_table(:security_group_references)
     drop_table(:host_node_vnets)
     drop_table(:network_services)
+    drop_table(:network_vif_security_groups)
+
+    create_table(:security_group_rules) do
+      primary_key :id, :type=>"int(11)"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      column :security_group_id, "int(11)", :null=>false
+      column :permission, "varchar(255)", :null=>false
+
+      index [:security_group_id]
+    end
+
+    create_table(:instance_security_groups) do
+      primary_key :id, :type=>"int(11)"
+      column :instance_id, "int(11)", :null=>false
+      column :security_group_id, "int(11)", :null=>false
+
+      index [:instance_id]
+      index [:security_group_id]
+    end
+
+    drop_table(:accounting_logs)
+    drop_table(:load_balancers)
+    drop_table(:load_balancer_targets)
+    drop_table(:backup_objects)
+    drop_table(:backup_storages)
     drop_table(:mac_ranges)
     drop_table(:network_vif_monitors)
     drop_table(:instance_monitor_attrs)
@@ -434,7 +461,7 @@ Sequel.migration do
 
     alter_table(:vlan_leases) do
       drop_column :dc_network_id
-      drop_index :tag_id
+      drop_index [:dc_network_id, :tag_id]
       add_index [:tag_id], :unique=>true
     end
 
@@ -449,8 +476,6 @@ Sequel.migration do
 
     alter_table(:physical_networks) do
       add_column :interface, "varchar(255)"
-      drop_column :bridge
-      drop_column :bridge_type
     end
 
     alter_table(:instances) do
@@ -498,15 +523,9 @@ Sequel.migration do
       drop_column :display_name
     end
 
-    drop_table(:backup_storages)
-
     alter_table(:job_states) do
-      drop_column :session_id
       drop_index [:session_id]
-    end
-
-    alter_table(:job_states) do
-      drop_column :command
+      drop_column :session_id
     end
 
     alter_table(:volumes) do
@@ -539,7 +558,7 @@ Sequel.migration do
       add_column :alloc_type, "int(11)", :default=>0, :null=>false
       set_column_type :description, "text"
 
-      add_index[:instance_nic_id, :network_id]
+      add_index [:instance_nic_id, :network_id]
     end
 
     alter_table(:dhcp_ranges) do

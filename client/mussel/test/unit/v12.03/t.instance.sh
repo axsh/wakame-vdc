@@ -18,6 +18,13 @@ function setUp() {
   xquery=
   state=
   force=
+  function openssl() { : ; }  # for test_instance_decrypt_password_uuid_ssh
+  function base64() { : ; }  # for test_instance_decrypt_password_uuid_ssh
+  touch ssh-xxx.pem
+}
+
+function tearDown() {
+  rm -f ssh-xxx.pem
 }
 
 ### help
@@ -25,7 +32,7 @@ function setUp() {
 function test_instance_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|destroy|index|move|poweroff|poweron|reboot|show|show_volumes|xcreate]" "${res}"
+  assertEquals "$0 ${namespace} [help|backup|backup_volume|create|decrypt_password|delete_password|destroy|index|move|poweroff|poweron|reboot|show|show_password|show_volumes|update|xcreate]" "${res}"
 }
 
 ### index
@@ -130,6 +137,70 @@ function test_instance_poweron_uuid() {
   run_cmd ${MUSSEL_ARGS}
   assertEquals 0 $?
 }
+
+### update
+
+function test_instance_update_no_uuid() {
+  extract_args ${namespace} update
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals 0 $?
+}
+
+function test_instance_update_uuid() {
+  extract_args ${namespace} update i-xxx
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals 0 $?
+}
+
+### show_password
+
+function test_instance_show_password_no_uuid() {
+  extract_args ${namespace} show_password
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals 0 $?
+}
+
+function test_instance_show_password_uuid() {
+  extract_args ${namespace} show_password i-xxx
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals 0 $?
+}
+
+### delete_password
+
+function test_instance_delete_password_no_uuid() {
+  extract_args ${namespace} delete_password
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals 0 $?
+}
+
+function test_instance_delete_password_uuid() {
+  extract_args ${namespace} delete_password i-xxx
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals 0 $?
+}
+
+### decrypt_password
+
+function test_instance_decrypt_password_no_uuid() {
+  extract_args ${namespace} decrypt_password
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals 0 $?
+}
+
+function test_instance_decrypt_password_uuid_no_ssh() {
+  extract_args ${namespace} decrypt_password i-xxx
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals 0 $?
+}
+
+function test_instance_decrypt_password_uuid_ssh() {
+  extract_args ${namespace} decrypt_password i-xxx ssh-xxx.pem
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals 0 $?
+}
+
+## shunit2
 
 ## shunit2
 

@@ -10,6 +10,9 @@ Sequel.migration do
   end
 
   down do
+    alter_table(:storage_nodes) do
+      add_column :export_path, "varchar(255)", :null=>false
+      add_column :snapshot_base_path, "varchar(255)", :null=>false
+    end
   end
 end
-

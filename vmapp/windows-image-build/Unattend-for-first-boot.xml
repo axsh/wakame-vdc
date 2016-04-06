@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend">
+    <servicing></servicing>
+    <settings pass="oobeSystem">
+        <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <OOBE>
+                <HideEULAPage>true</HideEULAPage>
+            </OOBE>
+            <UserAccounts>
+                <AdministratorPassword>
+                    <Value>axsh4</Value>
+                    <PlainText>true</PlainText>
+                </AdministratorPassword>
+            </UserAccounts>
+        </component>
+        <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <InputLocale>ja-JP</InputLocale>
+            <SystemLocale>ja-JP</SystemLocale>
+            <UILanguage>ja-JP</UILanguage>
+            <UserLocale>ja-JP</UserLocale>
+            <UILanguageFallback>en-US</UILanguageFallback>
+        </component>
+    </settings>
+    <settings pass="generalize">
+      <component name="Microsoft-Windows-Security-SPP" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <SkipRearm>1</SkipRearm>
+      </component>
+    </settings>
+    <settings pass="windowsPE">
+        <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <UserData>
+                <AcceptEula>true</AcceptEula>
+                <FullName>amduser</FullName>
+                <Organization>amdorganization</Organization>
+            </UserData>
+        </component>
+    </settings>
+    <cpi:offlineImage cpi:source="wim:c:/test.wim#My Test" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
+</unattend>

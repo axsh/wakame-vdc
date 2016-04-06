@@ -1,0 +1,49 @@
+site_name: Wakame-vdc
+site_favicon: favicon.ico
+site_description: Documentation for Wakame-vdc
+
+theme: readthedocs
+docs_dir: content
+use_directory_urls: true
+
+repo_url: https://github.com/axsh/wakame-vdc
+
+copyright: Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
+google_analytics: ['UA-63388719-1', 'auto']
+
+pages:
+- Home: 'index.md'
+- Concept: 'concept.md'
+- Getting started:
+  - 'Demo Image': 'demo-image.md'
+  - 'Installation': 'installation.md'
+  #- 'Configuration': 'configuration.md'
+  - 'Development': 'development.md'
+- Usage:
+  - 'Basics': 'usage/index.md'
+  - 'Custom Machine Images': 'usage/custom-machine-images.md'
+  - 'Instance Backup': 'instance-backup/index.md'
+  - 'Security Groups': 'security-groups/index.md'
+#- Instance Backup 
+  #- 'About': 'instance-backup/index.md'
+  #- 'Configuration': 'instance-backup/configuration.md'
+  #- 'Usage': 'instance-backup/usage.md'
+  #- 'Troubleshooting': 'instance-backup/troubleshooting.md'
+#- Load Balancer
+  #- 'About': 'load-balancer/index.md'
+  #- 'Installation': 'load-balancer/installation.md'
+  #- 'Configuration': 'load-balancer/configuration.md'
+  #- 'Usage': 'load-balancer/usage.md'
+  #- 'Troubleshooting': 'load-balancer/troubleshooting.md'
+#- Security Groups
+  #- 'About': 'security-groups/index.md'
+  #- 'Configuration': 'security-groups/configuration.md'
+  #- 'Usage': 'security-groups/usage.md'
+  #- 'Troubleshooting': 'security-groups/troubleshooting.md'
+- Support:
+  - 'Jargon Dictionary': 'jargon-dictionary.md'
+  - 'FAQ': 'faq.md'
+  #- 'Troubleshooting': 'troubleshooting.md'
+  #- 'Support': 'support.md'
+  - 'Community': 'community.md'
+

@@ -4,16 +4,19 @@
 CURDIR ?= $(PWD)
 RUBYDIR ?= $(CURDIR)/ruby
 
+VDC_VERSION_TAG ?=
+VDC_RELEASE_TAG ?=
 VDC_BUILD_ID  ?= HEAD
 VDC_REPO_URI  ?= git://github.com/axsh/wakame-vdc.git
 VDC_SPEC_BASE := rpmbuild/SPECS/wakame-vdc.spec
 VDC_SPEC_SUBS := rpmbuild/SPECS/wakame-vdc-example-1box.spec
+VDC_SPEC_INIT := rpmbuild/SPECS/wakame-init.spec
 
 RPM_BUILD_ROOT ?= $(CURDIR)/rpmbuild/wakame-vdc
 RPMBUILD_CMD  ?= rpmbuild
 RPMBUILD_OPTS := --target=`arch`
 RPMCLEAN_SPEC := $(VDC_SPEC_BASE)
-RPMBUILD_SPEC := $(VDC_SPEC_BASE) $(VDC_SPEC_SUBS)
+RPMBUILD_SPEC := $(VDC_SPEC_BASE) $(VDC_SPEC_SUBS) $(VDC_SPEC_INIT)
 
 # .deb
 #TMP_INSTALL_ROOT ?= debian/wakame-vdc
@@ -130,6 +133,6 @@ binary:
 	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
 
 binary-snap:
-	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh $(VDC_BUILD_ID))" --define "repo_uri $(VDC_REPO_URI)"
+	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh $(VDC_BUILD_ID))" --define "repo_uri $(VDC_REPO_URI)" --define "version_tag $(VDC_VERSION_TAG)" --define "release_tag $(VDC_RELEASE_TAG)"
 
 .PHONY: build clean binary-indep binary-arch binary binary-snap install ruby-build bundle-install

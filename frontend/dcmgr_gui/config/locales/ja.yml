@@ -20,6 +20,7 @@ ja:
     launch: "起動"
     start: "再開"
     stop: "一時停止"
+    backup: "バックアップ"
     poweron: "電源オン"
     poweroff: "電源オフ"
   selectmenu:
@@ -447,6 +448,7 @@ ja:
       state: "状態"
     details:
       header: "詳細"
+      host_pool: "ホストプール"
       host_pool_id: "ホストプールID"
       hyper_visor: "ハイパーバイザ"
       cpu_cores: "CPUコア数"
@@ -594,17 +596,24 @@ ja:
       view_network: "View"
       create_network: "Create Network"
       delete_network: "Delete Network"
+    network_actions:
+      header: "アクチョン"
+      attach_network: "アタッチ"
+      detach_network: "デタッチ"
     list:
       network_id: "ネットワークID"
       display_name: "ネットワーク名"
       domain_name: "ドメインネーム"
-      created: ""
+      ipv4_network: "IPv4ネットワーク"
+      created: "作成日"
       action: "アクション"
     details:
       header: "詳細"
       network_id: "ネットワークID"
       display_name: "ネットワーク名"
       domain_name: "ドメインネーム"
+      ipv4_network: "ネットワーク"
+      ipv4_gw: "ゲートウエイ"
       created_at: "作成日"
       updated_at: "更新日"
   security_groups:

@@ -7,6 +7,7 @@ require 'sinatra/dcmgr_api_setup'
 require 'sinatra/quota_evaluation'
 require 'sinatra/internal_request'
 require 'sinatra/browse'
+require 'sinatra/vnet_webapi'
 
 require 'dcmgr/endpoints/errors'
 require 'dcmgr/endpoints/12.03/quota_definitions'
@@ -20,6 +21,11 @@ module Dcmgr::Endpoints::V1203
     register Sinatra::Browse
 
     disable :remove_undefined_parameters
+
+    if Dcmgr::Configurations.dcmgr.features.openvnet
+      register Sinatra::VnetWebapi
+      enable_vnet_webapi
+    end
 
     # To access constants in this namespace
     include Dcmgr::Endpoints

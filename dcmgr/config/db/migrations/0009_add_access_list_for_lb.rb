@@ -6,7 +6,7 @@ Sequel.migration do
   end
 
   down do
-    drop_table(:load_balancers) do
+    alter_table(:load_balancers) do
       drop_column :allow_list
     end
   end

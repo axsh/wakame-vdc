@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Metadata
+  I = Dcmgr::Constants::Image
 
-  # Factory method
-  def self.md_type(instance_hash)
-    # In the future we can use this to provide different types of metadata items
-    # depending on the instance_hash.
-
-    # For now we have only one type of metadata items so we're making one of those.
-    AWS.new(instance_hash)
+  def self.factory(instance_hash, options = {})
+    # We tell instances this is their first boot by placing a file named
+    # first-boot on the metadata drive.
+    # This is used by for example Windows instances. They need to generate
+    # the administrator password on first boot.
+    if options[:first_boot]
+      AWSWithFirstBoot.new(instance_hash)
+    else
+      AWS.new(instance_hash)
+    end
   end
 
   class MetadataType
@@ -18,7 +22,7 @@ module Dcmgr::Metadata
 
     def get_items
       raise NotImplementedError,
-        "Classes inheriting from MDType must override the get_items method"
+        "Classes inheriting from MetadataType must override the get_items method"
     end
   end
 end

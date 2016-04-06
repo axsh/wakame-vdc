@@ -20,5 +20,10 @@ Sequel.migration do
 
   down do
     drop_table(:load_balancer_inbounds)
+
+    alter_table(:load_balancers) do
+      add_column :port, "int(11)", :null=>false
+      add_column :protocol, "varchar(255)", :null=>false
+    end
   end
 end
