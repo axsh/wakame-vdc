@@ -107,6 +107,23 @@ module Dcmgr::Models
       super
     end
 
+    def validate
+      super
+
+      # Port range not supported in openvnet, raise
+      # error if start/end port differ
+      if Dcmgr::Configurations.dcmgr.features.openvnet
+        prule = self.class.parse_rule(rule)
+
+        if prule &&
+          [:tcp, :udp].member?(prule[:protocol]) &&
+          prule[:ip_fport] != prule[:ip_tport]
+
+          raise InvalidSecurityGroupRuleSyntax, "OpenVNet does not support port ranges: #{rule}"
+        end
+      end
+    end
+
     def after_save
       handle_refs(:create)
       super

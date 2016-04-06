@@ -3,6 +3,18 @@
 All notable changes to Wakame-vdc will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+`Added` Security groups support to the OpenVNet integration.
+
+`Fixed` A crash that occurred when performing a POST request to the ssh_key_pairs endpoint without including the "public_key" field in the parameters.
+
+`Fixed` A bug in the `lxc-start` command generation, causing LXC instances to crash on startup.
+
+`Fixed` A bug that would some times occur when starting LXC instances, causing `/dev/pty` to become mounted read only.
+
+`Fixed` A bug where dhcp ranges would remain in the database after their associated network was deleted.
+
 ## [16.1] - 2015-10-2
 
 `Added` More bash completion for mussel commands. Specifically alarm, *ip_pool*, *ip_handle*, *dc_network*, *host_node*, *volume*, *network_vif* and *instance_show_password*.

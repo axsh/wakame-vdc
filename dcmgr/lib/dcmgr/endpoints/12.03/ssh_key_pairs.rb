@@ -48,7 +48,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     private_key = nil
     ssh = M::SshKeyPair.entry_new(@account) do |s|
 
-      unless params[:public_key].empty?
+      if params[:public_key] && !params[:public_key].empty?
         unless SSHKey.valid_ssh_public_key?(params[:public_key])
           raise InvalidSshPublicKey, params[:public_key]
         end
