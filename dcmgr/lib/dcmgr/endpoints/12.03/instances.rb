@@ -134,7 +134,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   param :host_node_id, :String,
                        desc: "Show only instances from this host node."
   param :service_type, :String,
-                       in: Dcmgr::Configurations.dcmgr.service_types
+                       in: Dcmgr::Configurations.dcmgr.service_types,
                        desc: "Show only instances of this service type."
   param :display_name, :String,
                        desc: "Show only instances with this display name."
