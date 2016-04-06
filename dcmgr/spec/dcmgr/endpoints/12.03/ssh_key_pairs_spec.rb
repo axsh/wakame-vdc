@@ -5,9 +5,13 @@ describe "ssh_key_pairs" do
   before(:each) { stub_dcmgr_syncronized_message_ready }
 
   let(:account) { Fabricate(:account) }
+  # Contexts can override this let to execute code before the api calls
+  let(:before_api_call) {}
 
   describe "POST" do
     before(:each) do
+      before_api_call
+
       post("ssh_key_pairs",
            params,
            Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
@@ -26,14 +30,18 @@ describe "ssh_key_pairs" do
 
   describe "GET" do
     context "with no parameters" do
+      before(:each) do
+        before_api_call
+
+        get("ssh_key_pairs",
+             params,
+             Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
+      end
+
       let(:params) { Hash.new }
 
       context "with no ssh keys in the database" do
         it "returns an empty list of results" do
-          get("ssh_key_pairs",
-               params,
-               Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
-
           expect(body).to eq [{
            "total" => 0,
            "start" => 0,
@@ -44,32 +52,24 @@ describe "ssh_key_pairs" do
       end
 
       context "with ssh keys in the database" do
-        before(:each) do
+        let(:before_api_call) do
           3.times { Fabricate(:ssh_key_pair, account_id: account.canonical_uuid) }
 
           Fabricate(:ssh_key_pair, account_id: Fabricate(:account).canonical_uuid)
         end
 
         it "shows only the ones belonging the the requester's account" do
-          get("ssh_key_pairs",
-               params,
-               Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
-
           expect(body.first["total"]).to eq 3
           expect(body.first["results"].size).to eq 3
         end
       end
 
       context "with deleted ssh keys in the database" do
-        before(:each) do
+        let(:before_api_call) do
           3.times { Fabricate(:ssh_key_pair, account_id: account.canonical_uuid).destroy }
         end
 
         it "does not show the deleted keys" do
-          get("ssh_key_pairs",
-               params,
-               Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
-
           expect(body).to eq [{
            "total" => 0,
            "start" => 0,
