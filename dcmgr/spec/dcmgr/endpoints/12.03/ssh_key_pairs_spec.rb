@@ -29,14 +29,15 @@ describe "ssh_key_pairs" do
   end
 
   describe "GET" do
-    context "with no parameters" do
-      before(:each) do
-        before_api_call
+    before(:each) do
+      before_api_call
 
-        get("ssh_key_pairs",
-             params,
-             Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
-      end
+      get("ssh_key_pairs",
+           params,
+           Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
+    end
+
+    context "with no parameters" do
 
       let(:params) { Hash.new }
 
@@ -77,6 +78,40 @@ describe "ssh_key_pairs" do
            "results" => []
           }]
         end
+      end
+    end
+
+    context "with the 'service type' parameter" do
+      let(:before_api_call) do
+        Fabricate(:ssh_key_pair, account_id: account.canonical_uuid,
+                                 service_type: 'std')
+
+        Fabricate(:ssh_key_pair, account_id: account.canonical_uuid,
+                                 service_type: 'lb')
+      end
+
+      let(:params) { { service_type: 'std' } }
+
+      it "shows only keys with the provided service type" do
+        expect(body.first["total"]).to eq 1
+        expect(body.first["results"].first["service_type"]).to eq "std"
+      end
+    end
+
+    context "with the 'display name' parameter" do
+      let(:before_api_call) do
+        Fabricate(:ssh_key_pair, account_id: account.canonical_uuid,
+                                 display_name: 'joske')
+
+        Fabricate(:ssh_key_pair, account_id: account.canonical_uuid,
+                                 display_name: 'jefke')
+      end
+
+      let(:params) { { display_name: 'joske' } }
+
+      it "shows only keys with the provided display name" do
+        expect(body.first["total"]).to eq 1
+        expect(body.first["results"].first["display_name"]).to eq "joske"
       end
     end
   end
