@@ -86,6 +86,8 @@ describe Dcmgr::Endpoints::V1203::CoreAPI, "POST instances" do
       let(:headers) { Hash.new }
 
       it_does_not_crash
+
+      it_returns_error(:AccountNotSet, 400, 'Please provide an account id in the request headers.')
     end
 
     context "when the image provided has nil as its backup object" do

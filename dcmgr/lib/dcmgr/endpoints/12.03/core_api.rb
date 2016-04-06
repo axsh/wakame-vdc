@@ -61,7 +61,7 @@ module Dcmgr::Endpoints::V1203
     before do
       requester_account_id = request.env[HTTP_X_VDC_ACCOUNT_UUID]
       if requester_account_id.nil?
-        @account = nil
+        raise E::AccountNotSet, 'Please provide an account id in the request headers.'
       else
         begin
           # find or create account entry.

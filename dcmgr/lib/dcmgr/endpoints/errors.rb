@@ -178,5 +178,6 @@ module Dcmgr
     define_error(:UnknownEvaluationPeriods, 400, '199')
     define_error(:UnknownNotificationPeriods, 400, '200')
     define_error(:PasswordNotInDatabase, 410, '201')
+    define_error(:AccountNotSet, 400, '202')
   end
 end
