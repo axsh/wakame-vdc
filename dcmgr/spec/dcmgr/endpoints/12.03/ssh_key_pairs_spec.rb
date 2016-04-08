@@ -36,6 +36,27 @@ describe "ssh_key_pairs" do
       end
     end
 
+    context "without the public key parameter" do
+      let (:params) { example_parameters.tap { |ep| ep.delete(:public_key) } }
+
+      it "returns the private key" do
+        expect(body["private_key"]).not_to be_empty
+      end
+    end
+
+    context "with all accepted parameters" do
+      let(:params) { example_parameters }
+
+      it "creates a new ssh key pair with all parameters set" do
+        expect(last_response).to be_ok
+        key_pair = M::SshKeyPair.first
+
+        example_parameters.each do |key, value|
+          expect(key_pair[key]).to eq(value)
+        end
+      end
+    end
+
     example_parameters.each do |key, value|
       context "with only the '#{key}' parameter" do
         let(:params) { { key => value } }
