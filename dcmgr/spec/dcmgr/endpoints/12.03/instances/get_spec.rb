@@ -42,7 +42,7 @@ describe Dcmgr::Endpoints::V1203::CoreAPI, "GET instances" do
       end
     end
 
-    context "with instances belonging to different accountes" do
+    context "with instances belonging to different accounts" do
       before(:each) do
         2.times { Fabricate(:instance, account_id: account.canonical_uuid) }
 
