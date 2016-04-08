@@ -6,11 +6,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
   register V1203::Helpers::ResourceLabel
   enable_resource_label(M::SshKeyPair)
 
+  desc "List the ssh key pairs currently in the database."
+  param :start, :Integer,
+                desc: "The index to start listing from."
+  param :limit, :Integer,
+                desc: "The maximum amount of ssh_key_pairs to list."
+  param :service_type, :String,
+                in: Dcmgr::Configurations.dcmgr.service_types,
+                desc: "Show only ssh key pairs of this service type."
+  param :display_name, :String,
+                desc: "Show only ssh key pairs with this display name."
   get do
-    ds = M::SshKeyPair.dataset
-    if params[:account_id]
-      ds = ds.filter(:account_id=>params[:account_id])
-    end
+    ds = M::SshKeyPair.dataset.filter(account_id: @account.canonical_uuid)
 
     ds = datetime_range_params_filter(:created, ds)
     ds = datetime_range_params_filter(:deleted, ds)
@@ -31,12 +38,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     end
   end
 
+  desc "Retrieve details about a single ssh key pair"
+  param :id, :String,
+             required: true,
+             desc: "The UUID of the ssh key pair to describe."
   get '/:id' do
-    # description "Retrieve details about ssh key pair"
-    # params :id required
-    # params :format optional [openssh,putty]
     ssh = find_by_uuid(:SshKeyPair, params[:id])
-    raise UnknownSshKeyPair, parmas[:id] if ssh.nil?
+    raise UnknownSshKeyPair, params[:id] if ssh.nil?
 
     respond_with(R::SshKeyPair.new(ssh).generate)
   end
