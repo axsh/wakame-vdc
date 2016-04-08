@@ -57,20 +57,10 @@ end
 
 #TODO: Move this to a module
 def it_returns_error(error, http_status = nil, message = nil)
-  it "returns error #{error}" do
+  it "returns error #{http_status} '#{error}' #{message}" do
     expect(body['error']).to eq "Dcmgr::Endpoints::Errors::#{error}"
-  end
-
-  if http_status
-    it "fails with http status #{http_status}" do
-      expect(last_response.status).to eq http_status
-    end
-  end
-
-  if message
-    it "has error message: #{message}" do
-      expect(body['message']).to eq message
-    end
+    expect(last_response.status).to eq(http_status) if http_status
+    expect(body['message']).to eq(message) if message
   end
 end
 
