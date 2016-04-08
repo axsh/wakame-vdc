@@ -44,7 +44,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
              desc: "The UUID of the ssh key pair to describe."
   get '/:id' do
     ssh = find_by_uuid(:SshKeyPair, params[:id])
-    raise UnknownSshKeyPair, params[:id] if ssh.nil?
 
     respond_with(R::SshKeyPair.new(ssh).generate)
   end
