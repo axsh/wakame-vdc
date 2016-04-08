@@ -119,9 +119,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                 desc: "The index to start listing from."
   param :limit, :Integer,
                 desc: "The maximum amount of instances to list."
-  #TODO: Remove this. Account ID is set in the http headers.
-  param :account_id, :String,
-                desc: "Show only instances from this account id."
   param :state, :String,
                 in: INSTANCE_META_STATE + INSTANCE_STATE
   param :created_since, :DateTime,
@@ -140,7 +137,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   param :display_name, :String,
                        desc: "Show only instances with this display name."
   get do
-    ds = M::Instance.dataset
+    ds = M::Instance.dataset.filter(account_id: @account.canonical_uuid)
 
     if params[:state]
       ds = case params[:state]
@@ -164,10 +161,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       uuid = params[:id].split("i-")[1]
       uuid = params[:id] if uuid.nil?
       ds = ds.filter(:uuid.like("#{uuid}%"))
-    end
-
-    if params[:account_id]
-      ds = ds.filter(:account_id=>params[:account_id])
     end
 
     ds = datetime_range_params_filter(:created, ds)

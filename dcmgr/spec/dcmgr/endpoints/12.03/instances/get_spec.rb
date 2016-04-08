@@ -41,5 +41,20 @@ describe Dcmgr::Endpoints::V1203::CoreAPI, "GET instances" do
         expect(body.first["results"].size).to eq 3
       end
     end
+
+    context "with instances belonging to different accountes" do
+      before(:each) do
+        2.times { Fabricate(:instance, account_id: account.canonical_uuid) }
+
+        Fabricate(:instance, account_id: Fabricate(:account).canonical_uuid)
+
+        get("instances", params, headers)
+      end
+
+      it "shows only the instances belonging to the account in the headers" do
+        expect(body.first["total"]).to eq 2
+        expect(body.first["results"].size).to eq 2
+      end
+    end
   end
 end
