@@ -76,7 +76,7 @@ end
 
 def it_does_not_crash
   it "doesn't crash" do
-    if last_response.body == "<h1>Internal Server Error</h1>"
+    if !last_response.errors.empty?
       raise "The API crashed with the following stacktrace: #{last_response.errors}"
     end
   end
