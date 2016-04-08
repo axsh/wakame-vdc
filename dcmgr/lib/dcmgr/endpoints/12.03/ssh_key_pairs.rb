@@ -48,11 +48,21 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     respond_with(R::SshKeyPair.new(ssh).generate)
   end
 
+  desc "Have Wakame-vdc generate a new ssh key pair or register your existing public key."
+  param :display_name, :String,
+                       desc: "Human readable name for this resource."
+  param :description, :String,
+                      desc: "Human readable description of this resource. " +
+                            "Usually longer than display_name."
+  param :public_key, :String,
+                     desc: "The public key you want to register with Wakame-vdc. " +
+                           "If left blank, Wakame-vdc will renerate a new key pair."
+  param :service_type, :String,
+                       desc: "The service type to assign to this key pair."
   quota 'ssh_key_pair.count'
   post do
-    # description "Create ssh key pair information"
-    # params :display_name optional
     private_key = nil
+
     ssh = M::SshKeyPair.entry_new(@account) do |s|
 
       if params[:public_key] && !params[:public_key].empty?
