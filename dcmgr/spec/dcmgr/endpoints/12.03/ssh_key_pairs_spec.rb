@@ -18,10 +18,33 @@ describe "ssh_key_pairs" do
       post("ssh_key_pairs", params, headers)
     end
 
+    example_parameters = {
+      display_name: "sir key",
+      description: "a key that got padded on the back with a sword by the queen",
+      service_type: "std",
+      public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAm1RVr7PUgF15xm5cE12tuYlwve/F41L+rYXRZllp+7juHUOQj8w8lzmQFMnOyd1jISQ4IK24kX6ysxhWoBZviH6O1mfMWyGdLNqOBx7F8shFDiKJ10aoGoQFY4ZX1oXwDF4NiPAZrE57cqOJCxHidG2Wc1xD//ghWAvVTPVbOqJWb+usJeYfNDrJSjTCvuwOYmbcinMaV6rPOcrAzXQuE8orX2FLnxAJUTXX/TYAbH6HVO3O/XnpDiYH3FKN03YVenufD+gp1pWLuMTqWuwnj7kQ+I2yQw5c5qIYq2GsjHcLVTCRgCEdHX6WlZFVW4jP2XQMU7GrcA+XO69DVQyJHw=="
+      #TODO: add test for labels
+    }
+
     context "with no parameters" do
       let(:params) { Hash.new }
 
       it_does_not_crash
+
+      it "creates a new ssh key pair" do
+        expect(M::SshKeyPair.count).to eq 1
+      end
+    end
+
+    example_parameters.each do |key, value|
+      context "with only the '#{key}' parameter" do
+        let(:params) { { key => value } }
+
+        it "creates a new ssh key pair with '#{key}' set" do
+          expect(last_response).to be_ok
+          expect(M::SshKeyPair.first[key]).to eq(value)
+        end
+      end
     end
   end
 
