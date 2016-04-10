@@ -6,6 +6,7 @@ module Dcmgr
   module Drivers
     class Lxc < LinuxContainer
       include Dcmgr::Logger
+      include Dcmgr::Helpers::NicHelper
 
       def self.local_store_class
         LinuxLocalStore
@@ -185,6 +186,13 @@ module Dcmgr
         log_level = Dcmgr::Configurations.hva.lxc_log_level.to_s.upcase
         sh("lxc-start -n %s -d -c %s/console.log -o %s/lxc.log -l %s",
           [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst_data_dir, log_level])
+
+        if Dcmgr::Configurations.hva.edge_networking == 'openvnet'
+          ctx.inst[:instance_nics].each do |nic|
+            bridge = bridge_if_name(nic[:network][:dc_network])
+            sh("ovs-vsctl add-port #{bridge} #{nic[:uuid].gsub("vif","if")}")
+          end
+        end
       end
 
       def lxc_current_state(instance_uuid)
