@@ -6,6 +6,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
   register V1203::Helpers::ResourceLabel
   enable_resource_label(M::SshKeyPair)
 
+  def self.post_put_shared_params
+    param :display_name, :String,
+                         desc: "Human readable name for this ssh key pair."
+
+    param :description, :String,
+                        desc: "Human readable description of this ssh key pair. " +
+                              "Usually longer than display_name."
+
+    param :service_type, :String,
+                         desc: "The service type to assign to this ssh key pair."
+  end
+
   desc "List the ssh key pairs currently in the database."
   param :service_type, :String,
                 in: Dcmgr::Configurations.dcmgr.service_types,
@@ -46,16 +58,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
   end
 
   desc "Have Wakame-vdc generate a new ssh key pair or register your existing public key."
-  param :display_name, :String,
-                       desc: "Human readable name for this resource."
-  param :description, :String,
-                      desc: "Human readable description of this resource. " +
-                            "Usually longer than display_name."
+  post_put_shared_params
   param :public_key, :String,
                      desc: "The public key you want to register with Wakame-vdc. " +
                            "If left blank, Wakame-vdc will renerate a new key pair."
-  param :service_type, :String,
-                       desc: "The service type to assign to this key pair."
   param :labels, :Hash,
                  desc: "Any resource labels you wish to set to this key pair."
   quota 'ssh_key_pair.count'
@@ -116,7 +122,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
   param :force, :Boolean,
                 desc: "Flag that allows removing ssh key pairs that are still assigned to instances."
   delete '/:id' do
-    # params :id required
     ssh = find_by_uuid(:SshKeyPair, params[:id])
 
     begin
@@ -133,15 +138,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     respond_with([ssh.canonical_uuid])
   end
 
+  desc "Update an ssh key pair"
+  param :id, :String,
+              required: true,
+              desc: "The UUID of the ssh key pair to update"
+  post_put_shared_params
   put '/:id' do
-    # description "Update ssh key pair information"
     ssh = find_by_uuid(:SshKeyPair, params[:id])
+
     ssh.description = params[:description] if params[:description]
+
     if params[:service_type]
       validate_service_type(params[:service_type])
       ssh.service_type = params[:service_type]
     end
+
     ssh.display_name = params[:display_name] if params[:display_name]
+
     ssh.save_changes
 
     respond_with([ssh.canonical_uuid])
