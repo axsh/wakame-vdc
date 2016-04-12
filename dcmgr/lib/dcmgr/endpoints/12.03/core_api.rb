@@ -22,6 +22,20 @@ module Dcmgr::Endpoints::V1203
 
     disable :remove_undefined_parameters
 
+    def self.paging_params(resource_name)
+      param :start, :Integer,
+                    default: 0,
+                    desc: "The index to start listing #{resource_name} from."
+      param :limit, :Integer,
+                    default: 250,
+                    min: 1,
+                    desc: "The maximum amount of #{resource_name} to list."
+      param :sort_by, :String,
+                      in: ['asc', 'desc'],
+                      default: 'desc',
+                      desc: "The order in which to list the #{resource_name}."
+    end
+
     if Dcmgr::Configurations.dcmgr.features.openvnet
       register Sinatra::VnetWebapi
       enable_vnet_webapi
@@ -120,10 +134,6 @@ module Dcmgr::Endpoints::V1203
     end
 
     helpers do
-      #
-      #  - start
-      #  - limit
-      #  - sort_by
       def dataset_filter(ds, filter)
         filter_list = filter.class == Array ? filter : [filter]
         filter_list.each { |filter|
@@ -138,42 +148,26 @@ module Dcmgr::Endpoints::V1203
         ds
       end
 
+      #
+      #  - start
+      #  - limit
+      #  - sort_by
       def paging_params_filter(ds)
         ds = dataset_filter(ds, params[:filter]) if params[:filter]
 
         total = ds.count
 
-        start = if params[:start]
-                  if params[:start] =~ /^\d+$/
-                    params[:start].to_i
-                  else
-                    raise E::InvalidParameter, :start
-                  end
-                else
-                  0
-                end
-        limit = if params[:limit]
-                  if params[:limit] =~ /^\d+$/
-                    params[:limit].to_i
-                  else
-                    raise E::InvalidParameter, :limit
-                  end
-                else
-                  0
-                end
-        limit = limit < 1 ? 250 : limit
-        ds = if params[:sort_by]
-               m = /^(\w+)(\.desc|\.asc)?$/.match(params[:sort_by]) || raise(E::InvalidParameter, :sort_by)
-
-               case m[2]
-               when '.asc' then ds.order(Sequel.asc(m[1].to_sym))
-               when '.desc' then ds.order(Sequel.desc(m[1].to_sym))
-               end
-             else
-               ds.order(:id.desc)
-             end
+        start = params[:start]
+        limit = params[:limit]
 
         ds = ds.limit(limit, start)
+
+        ds = if params[:sort_by] == "asc"
+          ds.order(:id)
+        else
+          ds.reverse_order(:id)
+        end
+
         [ds, total, start, limit]
       end
 
