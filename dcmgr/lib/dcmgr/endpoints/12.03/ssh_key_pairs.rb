@@ -7,15 +7,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
   enable_resource_label(M::SshKeyPair)
 
   desc "List the ssh key pairs currently in the database."
-  param :start, :Integer,
-                desc: "The index to start listing from."
-  param :limit, :Integer,
-                desc: "The maximum amount of ssh_key_pairs to list."
   param :service_type, :String,
                 in: Dcmgr::Configurations.dcmgr.service_types,
                 desc: "Show only ssh key pairs of this service type."
   param :display_name, :String,
                 desc: "Show only ssh key pairs with this display name."
+  paging_params("ssh key pairs")
   get do
     ds = M::SshKeyPair.dataset.filter(account_id: @account.canonical_uuid)
 
@@ -59,6 +56,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
                            "If left blank, Wakame-vdc will renerate a new key pair."
   param :service_type, :String,
                        desc: "The service type to assign to this key pair."
+  param :labels, :Hash,
+                 desc: "Any resource labels you wish to set to this key pair."
   quota 'ssh_key_pair.count'
   post do
     private_key = nil
@@ -110,22 +109,25 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     respond_with(R::SshKeyPair.new(ssh, private_key).generate)
   end
 
+  desc "Remove an ssh key pair from Wakame-vdc's database"
+  param :id, :String,
+             required: true,
+             desc: "The UUID of the ssh key pair to remove."
+  param :force, :Boolean,
+                desc: "Flag that allows removing ssh key pairs that are still assigned to instances."
   delete '/:id' do
-    # description "Remove ssh key pair information"
     # params :id required
     ssh = find_by_uuid(:SshKeyPair, params[:id])
-    raise E::UnknownSshKeyPair, params[:id] if ssh.nil?
-
-    force = false
-    if params[:force] == 'true'
-      force = true
-    end
 
     begin
-      ssh.force = force
+      ssh.force = params[:force]
       ssh.destroy
-    rescue => e
-      raise E::ExistsRegisteredInstance, e.message
+    rescue RuntimeError => e
+      if e.message =~ /^Number of instance reference is not zero: \d+\.$/
+        raise E::ExistsRegisteredInstance, e.message
+      else
+        raise
+      end
     end
 
     respond_with([ssh.canonical_uuid])
