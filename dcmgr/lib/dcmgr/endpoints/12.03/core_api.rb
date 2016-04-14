@@ -37,10 +37,10 @@ module Dcmgr::Endpoints::V1203
     end
 
     def self.datetime_range_params(param_name, resource_name)
-      param "#{param_name}_since", :DateTime,
+      param "#{param_name}_since".to_sym, :DateTime,
         desc: "Show only #{resource_name} #{param_name} after the time provided."
 
-      param "#{param_name}_until", :DateTime,
+      param "#{param_name}_until".to_sym, :DateTime,
         desc: "Show only #{resource_name} #{param_name} before the time provided."
     end
 
@@ -179,7 +179,6 @@ module Dcmgr::Endpoints::V1203
         [ds, total, start, limit]
       end
 
-      # #{param}_since and #{param}_until
       def datetime_range_params_filter(param, ds)
         since_time = params["#{param}_since"]
         until_time = params["#{param}_until"]
