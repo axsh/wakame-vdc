@@ -5,6 +5,8 @@ require 'spec_helper'
 require "rack"
 require "rack/test"
 
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].each { |f| require f }
+
 M = Dcmgr::Models
 C = Dcmgr::Constants
 

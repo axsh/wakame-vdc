@@ -126,6 +126,8 @@ describe "ssh_key_pairs" do
       get("ssh_key_pairs", params, headers)
     end
 
+    include_examples 'paging get request', :ssh_key_pair
+
     context "with no parameters" do
 
       let(:params) { Hash.new }
