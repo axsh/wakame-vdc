@@ -126,7 +126,7 @@ describe "ssh_key_pairs" do
       get("ssh_key_pairs", params, headers)
     end
 
-    include_examples 'paging get request', :ssh_key_pair
+    it_behaves_like 'a paging get request', :ssh_key_pair
 
     context "with no parameters" do
 
