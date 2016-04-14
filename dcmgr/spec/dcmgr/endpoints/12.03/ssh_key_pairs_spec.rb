@@ -128,7 +128,7 @@ describe "ssh_key_pairs" do
 
     it_behaves_like 'a paging get request', :ssh_key_pair
     it_behaves_like 'a get request with datetime range filtering', :created, :ssh_key_pair
-    it_behaves_like 'a get request with datetime range filtering', :deleted, :ssh_key_pair
+    it_behaves_like 'a get request with datetime range filtering', :deleted, :ssh_key_pair, {with_deleted: true}
 
     context "with no parameters" do
 

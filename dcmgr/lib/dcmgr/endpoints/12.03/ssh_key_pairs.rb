@@ -15,6 +15,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
                               "Usually longer than display_name."
 
     param :service_type, :String,
+                         in: Dcmgr::Configurations.dcmgr.service_types,
                          desc: "The service type to assign to this ssh key pair."
   end
 
@@ -24,6 +25,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
                 desc: "Show only ssh key pairs of this service type."
   param :display_name, :String,
                 desc: "Show only ssh key pairs with this display name."
+  param :with_deleted, :Boolean,
+                default: false,
+                desc: "Include deleted ssh key pairs in the results."
+  #TODO: Write helper method for the params needed by datetime_range_params_filter
   paging_params("ssh key pairs")
   get do
     ds = M::SshKeyPair.dataset.filter(account_id: @account.canonical_uuid)
@@ -40,7 +45,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       ds = ds.filter(:display_name=>params[:display_name])
     end
 
-    ds = ds.alives
+    ds = ds.alives if !params[:with_deleted]
 
     collection_respond_with(ds) do |paging_ds|
       R::SshKeyPairCollection.new(paging_ds).generate

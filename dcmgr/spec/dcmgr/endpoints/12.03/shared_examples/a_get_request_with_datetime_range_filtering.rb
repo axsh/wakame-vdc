@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-shared_examples 'a get request with datetime range filtering' do |param_name, fabricator|
+shared_examples 'a get request with datetime range filtering' do |param_name, fabricator, extra_params = {}|
   let(:before_api_call) do
     Fabricate(fabricator, account_id: account.canonical_uuid,
                           "#{param_name}_at".to_sym => time1)
@@ -17,7 +17,7 @@ shared_examples 'a get request with datetime range filtering' do |param_name, fa
   let(:time3) { time2 + 7200 }
 
   context "with the '#{param_name}_since' parameter" do
-    let(:params) { {"#{param_name}_since" => (time2 - 10).iso8601} }
+    let(:params) { {"#{param_name}_since" => (time2 - 10).iso8601}.merge(extra_params) }
 
     it "shows only the #{fabricator} #{param_name} after the time provided" do
       expect(body.first["results"].length).to eq 2
@@ -29,7 +29,7 @@ shared_examples 'a get request with datetime range filtering' do |param_name, fa
   end
 
   context "with the '#{param_name}_until' parameter" do
-    let(:params) { {"#{param_name}_until" => (time2 + 10).iso8601} }
+    let(:params) { {"#{param_name}_until" => (time2 + 10).iso8601}.merge(extra_params) }
 
     it "shows only the #{fabricator} #{param_name} before the time provided" do
       expect(body.first["results"].length).to eq 2
