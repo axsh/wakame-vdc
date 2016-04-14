@@ -36,6 +36,14 @@ module Dcmgr::Endpoints::V1203
                       desc: "The order in which to list the #{resource_name}."
     end
 
+    def self.datetime_range_params(param_name, resource_name)
+      param "#{param_name}_since", :DateTime,
+        desc: "Show only #{resource_name} #{param_name} after the time provided."
+
+      param "#{param_name}_until", :DateTime,
+        desc: "Show only #{resource_name} #{param_name} before the time provided."
+    end
+
     if Dcmgr::Configurations.dcmgr.features.openvnet
       register Sinatra::VnetWebapi
       enable_vnet_webapi
@@ -173,36 +181,12 @@ module Dcmgr::Endpoints::V1203
 
       # #{param}_since and #{param}_until
       def datetime_range_params_filter(param, ds)
-        since_time = until_time = nil
-        since_key = "#{param}_since"
-        until_key = "#{param}_until"
-        if params[since_key]
-          since_time = begin
-                         Time.iso8601(params[since_key].to_s).utc
-                       rescue ArgumentError
-                         raise E::InvalidParameter, since_key
-                       end
-        end
-        if params[until_key]
-          until_time = begin
-                         Time.iso8601(params[until_key].to_s).utc
-                       rescue ArgumentError
-                         raise E::InvalidParameter, until_key
-                       end
-        end
+        since_time = params["#{param}_since"]
+        until_time = params["#{param}_until"]
 
-        ds = if since_time && until_time
-               if !(since_time < until_time)
-                 raise E::InvalidParameter, "#{since_key} is larger than #{until_key}"
-               end
-               ds.filter("#{param}_at >= ?", since_time).filter("#{param}_at <= ?", until_time)
-             elsif since_time
-               ds.filter("#{param}_at >= ?", since_time)
-             elsif until_time
-               ds.filter("#{param}_at <= ?", until_time)
-             else
-               ds
-             end
+        ds = ds.filter("#{param}_at >= ?", since_time) if since_time
+        ds = ds.filter("#{param}_at <= ?", until_time) if until_time
+
         ds
       end
 

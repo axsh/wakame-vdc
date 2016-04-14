@@ -28,7 +28,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
   param :with_deleted, :Boolean,
                 default: false,
                 desc: "Include deleted ssh key pairs in the results."
-  #TODO: Write helper method for the params needed by datetime_range_params_filter
+  datetime_range_params(:created, "ssh key pairs")
+  datetime_range_params(:deleted, "ssh key pairs")
   paging_params("ssh key pairs")
   get do
     ds = M::SshKeyPair.dataset.filter(account_id: @account.canonical_uuid)
