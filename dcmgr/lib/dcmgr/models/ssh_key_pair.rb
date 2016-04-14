@@ -49,7 +49,7 @@ module Dcmgr::Models
     end
 
     def self.entry_new(account, &blk)
-      raise ArgurmentError unless account.is_a?(Account)
+      argument_type_check(account, Account)
 
       ssh = self.new &blk
       ssh.account_id = account.canonical_uuid
