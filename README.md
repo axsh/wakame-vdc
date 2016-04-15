@@ -55,11 +55,11 @@ Users
 
 Wakame-vdc is currently used by the following companies.
 
-* Kyushu Electric Power Co., Ltd. ( http://www.kyuden.co.jp/en_index.html )
-* National Institute of Informatics ( http://www.nii.ac.jp/en/ )
-* NTT PC Communications ( http://www.nttpc.co.jp/english/ )
+* [Kyushu Electric Power Co., Ltd.](http://www.kyuden.co.jp/en_index.html)
+* [National Institute of Informatics](http://www.nii.ac.jp/en/)
+* [NTT PC Communications](http://www.nttpc.co.jp/english/)
   - [NTT PC Web Arena VPS Cloud](http://web.arena.ne.jp/vps-cloud/)
-* Kyocera Communication Systems Co., Ltd. ( http://www.kccs.co.jp/english/ )
+* [Kyocera Communication Systems Co., Ltd.](http://www.kccs.co.jp/english/)
   - [KCCS GreenOffice Unified Cloud](https://gouc.datacenter.ne.jp)
 * [TIS Inc.](http://www.tis.com/)
 
@@ -72,6 +72,12 @@ Special thanks to all contributors for submitting patches. A full list
 of contributors including their patches can be found at:
 
 https://github.com/axsh/wakame-vdc/contributors
+
+Supporters
+----------
+
+* Servers for Continuous Integration
+  - [NHN Techorus Corp.](https://nhn-techorus.com/en/)
 
 License
 ---------
