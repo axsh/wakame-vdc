@@ -11,6 +11,8 @@ describe "ssh_key_pairs" do
   # Contexts can override this let to execute code before the api calls
   let(:before_api_call) {}
 
+  include_examples "an endpoint with resource labels enabled", :ssh_key_pair, 'ssh_key_pairs'
+
   describe "POST" do
     before(:each) do
       before_api_call
