@@ -21,25 +21,44 @@ shared_examples "an endpoint with resource labels enabled" do |fabricator, api_s
         string_value "some other string value"
       end
 
-      get("#{api_suffix}/#{resource.canonical_uuid}/labels", {}, headers)
+      get("#{api_suffix}/#{resource.canonical_uuid}/labels", params, headers)
     end
 
-    it_does_not_crash
 
-    it "Shows all labels belonging to a resource" do
-      expect(body.length).to eq 2
+    context "without any parameters" do
+      let(:params) { Hash.new }
 
-      first_result = body[0]
-      expect(first_result["resource_uuid"]).to eq resource.canonical_uuid
-      expect(first_result["name"]).to eq "some label"
-      expect(first_result["value_type"]).to eq 1
-      expect(first_result["value"]).to eq "i am some value"
+      it_does_not_crash
 
-      second_result = body[1]
-      expect(second_result["resource_uuid"]).to eq resource.canonical_uuid
-      expect(second_result["name"]).to eq "some other label"
-      expect(second_result["value_type"]).to eq 1
-      expect(second_result["value"]).to eq "some other string value"
+      it "Shows all labels belonging to a resource" do
+        expect(body.length).to eq 2
+
+        first_result = body[0]
+        expect(first_result["resource_uuid"]).to eq resource.canonical_uuid
+        expect(first_result["name"]).to eq "some label"
+        expect(first_result["value_type"]).to eq 1
+        expect(first_result["value"]).to eq "i am some value"
+
+        second_result = body[1]
+        expect(second_result["resource_uuid"]).to eq resource.canonical_uuid
+        expect(second_result["name"]).to eq "some other label"
+        expect(second_result["value_type"]).to eq 1
+        expect(second_result["value"]).to eq "some other string value"
+      end
+    end
+
+    context "with the 'name' parameter" do
+      let(:params) { {name: "some label"} }
+
+      it "shows only the labels with the exact name" do
+        expect(body.length).to eq 1
+
+        first_result = body[0]
+        expect(first_result["resource_uuid"]).to eq resource.canonical_uuid
+        expect(first_result["name"]).to eq "some label"
+        expect(first_result["value_type"]).to eq 1
+        expect(first_result["value"]).to eq "i am some value"
+      end
     end
   end
 end
