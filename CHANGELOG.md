@@ -7,6 +7,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 `Added` Security groups support to the OpenVNet integration.
 
+`Added` A [Terraform](https://www.terraform.io) provider. This makes it possible to use Terraform to create and manage Wakame-vdc resources.
+
+`Added` A [go](https://golang.org) library to make calls to Wakame-vdc's Web API.
+
 `Fixed` A crash that occurred when performing a POST request to the ssh_key_pairs endpoint without including the "public_key" field in the parameters.
 
 `Fixed` A bug in the `lxc-start` command generation, causing LXC instances to crash on startup.
