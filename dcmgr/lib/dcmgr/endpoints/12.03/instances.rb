@@ -115,10 +115,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
   #TODO: Add some uuid validation
   describe "Shows a list of the instances that currently exist."
-  param :start, :Integer,
-                desc: "The index to start listing from."
-  param :limit, :Integer,
-                desc: "The maximum amount of instances to list."
   param :state, :String,
                 in: INSTANCE_META_STATE + INSTANCE_STATE
   param :created_since, :DateTime,
@@ -136,6 +132,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                        desc: "Show only instances of this service type."
   param :display_name, :String,
                        desc: "Show only instances with this display name."
+  paging_params("instances")
   get do
     ds = M::Instance.dataset.filter(account_id: @account.canonical_uuid)
 
