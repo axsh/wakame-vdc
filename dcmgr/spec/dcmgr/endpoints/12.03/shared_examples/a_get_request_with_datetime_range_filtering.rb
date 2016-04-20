@@ -39,4 +39,26 @@ shared_examples 'a get request with datetime range filtering' do |param_name, fa
       end
     end
   end
+
+  context "with SQL inected into the '#{param_name}_since' parameter" do
+    let(:params) do
+      {"#{param_name}_since" => "1 = 1; insert into resource_labels values(10, \"aa\", \"aa\", 1, \"\", \"\", Now(), Now());"}
+    end
+
+    it "does not execute the SQL code that was injected" do
+      expect(M::ResourceLabel.filter(id: 10)).to be_empty
+    end
+
+  end
+
+  context "with SQL inected into the '#{param_name}_until' parameter" do
+    let(:params) do
+      {"#{param_name}_until" => "1 = 1; insert into resource_labels values(10, \"aa\", \"aa\", 1, \"\", \"\", Now(), Now());"}
+    end
+
+    it "does not execute the SQL code that was injected" do
+      expect(M::ResourceLabel.filter(id: 10)).to be_empty
+    end
+
+  end
 end
