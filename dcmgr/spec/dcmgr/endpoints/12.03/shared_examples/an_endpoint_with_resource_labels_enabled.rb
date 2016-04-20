@@ -72,5 +72,15 @@ shared_examples "an endpoint with resource labels enabled" do |fabricator, api_s
         expect(body[1]["name"]).to eq "some other label"
       end
     end
+
+    context "with SQL injected into the 'name' parameter" do
+      let(:params) do
+        { name: "blah; insert into resource_labels values(10, \"aa\", \"aa\", 1, "", "", Now(), Now());" }
+      end
+
+      it "does not execute the provided SQL statement" do
+        expect(M::ResourceLabel.filter(id: 10)).to be_empty
+      end
+    end
   end
 end

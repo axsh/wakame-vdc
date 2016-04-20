@@ -86,16 +86,14 @@ module Dcmgr::Endpoints::V1203::Helpers
     end
 
     LABELS_ROUTES = proc {
+
+      desc "Shows the labels assigned to a resource."
+      param :id, :String, desc: "The UUID belonging to this resource."
+      param :name, :String, desc: "show only the labels whose name start with pattern."
       get do
         ds = @uuid_resource.resource_labels_dataset
 
-        if !params['name'].blank?
-          ds = if params['name'] =~ /(.+)*$/
-                 ds.grep(:name, "#{$1}%")
-               else
-                 ds.filter(:name=>params['name'])
-               end
-        end
+        ds = ds.grep(:name, "#{params[:name]}%") if params[:name]
 
         respond_with(R::ResourceLabelCollection.new(ds).generate)
       end
