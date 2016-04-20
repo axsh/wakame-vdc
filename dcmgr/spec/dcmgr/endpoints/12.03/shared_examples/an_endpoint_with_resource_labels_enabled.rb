@@ -75,7 +75,7 @@ shared_examples "an endpoint with resource labels enabled" do |fabricator, api_s
 
     context "with SQL injected into the 'name' parameter" do
       let(:params) do
-        { name: "blah; insert into resource_labels values(10, \"aa\", \"aa\", 1, "", "", Now(), Now());" }
+        { name: "blah; insert into resource_labels values(10, \"aa\", \"aa\", 1, \"\", \"\", Now(), Now());" }
       end
 
       it "does not execute the provided SQL statement" do
