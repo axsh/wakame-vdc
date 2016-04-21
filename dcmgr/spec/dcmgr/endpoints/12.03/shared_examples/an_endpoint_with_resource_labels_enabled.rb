@@ -102,7 +102,7 @@ shared_examples "an endpoint with resource labels enabled" do |fabricator, api_s
       end
     end
 
-    describe "#{verb.to_s.upcase} /:id/labels/:name" do
+    describe "#{verb.to_s.upcase} /:id/labels" do
       before(:each) { send(verb, "#{api_suffix}/#{resource.canonical_uuid}/labels", params, headers) }
 
       context "with two array parameters called name and value" do
@@ -110,6 +110,27 @@ shared_examples "an endpoint with resource labels enabled" do |fabricator, api_s
           {
             name: ["a", "b", "c"],
             value: ["1", "2", "3"]
+          }
+        end
+
+        it "sets a resource label for each name/value pair" do
+          expect(resource.resource_labels_dataset.count).to eq 3
+
+          labels = resource.resource_labels_dataset
+          expect(labels.where(name: "a").first.value).to eq "1"
+          expect(labels.where(name: "b").first.value).to eq "2"
+          expect(labels.where(name: "c").first.value).to eq "3"
+        end
+      end
+
+      context "with one array parameter called label" do
+        let(:params) do
+          {
+            label: [
+              { name: "a", value: "1" },
+              { name: "b", value: "2" },
+              { name: "c", value: "3" },
+            ]
           }
         end
 
