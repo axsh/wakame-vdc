@@ -85,19 +85,22 @@ shared_examples "an endpoint with resource labels enabled" do |fabricator, api_s
     end
   end
 
-  describe "POST /:id/labels/:name" do
-    before(:each) { post("#{api_suffix}/#{resource.canonical_uuid}/labels/joske", params, headers) }
+  [:post, :put].each do |verb|
+    describe "#{verb.to_s.upcase} /:id/labels/:name" do
+      before(:each) { send(verb, "#{api_suffix}/#{resource.canonical_uuid}/labels/joske", params, headers) }
 
-    context "with a correct name/value pair" do
-      let(:params) { { value: 'jefke'} }
+      context "with a correct name/value pair" do
+        let(:params) { { value: 'jefke'} }
 
-      it "sets a resource label with the name and value" do
-        expect(resource.resource_labels_dataset.count).to eq 1
+        it "sets a resource label with the name and value" do
+          expect(resource.resource_labels_dataset.count).to eq 1
 
-        label = resource.resource_labels.first
-        expect(label.name).to eq "joske"
-        expect(label.string_value).to eq "jefke"
+          label = resource.resource_labels.first
+          expect(label.name).to eq "joske"
+          expect(label.string_value).to eq "jefke"
+        end
       end
     end
+
   end
 end
