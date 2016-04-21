@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 shared_examples "an endpoint with resource labels enabled" do |fabricator, api_suffix|
+  let(:resource) { Fabricate(fabricator, account_id: account.canonical_uuid) }
+
   describe "GET /:id/labels" do
-    let(:resource) { Fabricate(fabricator, account_id: account.canonical_uuid) }
 
     before(:each) do
       test_resource_uuid = resource.canonical_uuid
@@ -80,6 +81,22 @@ shared_examples "an endpoint with resource labels enabled" do |fabricator, api_s
 
       it "does not execute the provided SQL statement" do
         expect(M::ResourceLabel.filter(id: 10)).to be_empty
+      end
+    end
+  end
+
+  describe "POST /:id/labels/:name" do
+    before(:each) { post("#{api_suffix}/#{resource.canonical_uuid}/labels/joske", params, headers) }
+
+    context "with a correct name/value pair" do
+      let(:params) { { value: 'jefke'} }
+
+      it "sets a resource label with the name and value" do
+        expect(resource.resource_labels_dataset.count).to eq 1
+
+        label = resource.resource_labels.first
+        expect(label.name).to eq "joske"
+        expect(label.string_value).to eq "jefke"
       end
     end
   end
