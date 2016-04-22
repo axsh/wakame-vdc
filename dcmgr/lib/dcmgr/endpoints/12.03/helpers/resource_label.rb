@@ -149,24 +149,12 @@ module Dcmgr::Endpoints::V1203::Helpers
       end
 
       def each_bulk_label_params(&blk)
-        if params['name'].is_a?(Array) && params['value'].is_a?(Array)
-          # name[]=n1&value[]=v1&name[]=n2&value[]=v2
-          raise E::InvalidParameter unless params['name'].size == params['value'].size
-          params['name'].size.times { |idx|
-            blk.call(params['name'][idx], params['value'][idx])
-          }
-        elsif params['label'].is_a?(Array)
-          # label[][name]=xxx&label[][value]=yyy&label[][name]=xxx1&label[][value]=yyy1
-          params['label'].each { |l|
-            if !l['name'].blank? && l.has_key?('value')
-              blk.call(l['name'], l['value'])
-            else
-              logger.warn("Invalid name & value pair: #{l.inspect}")
-            end
-          }
-        else
-          raise E::InvalidParameter, "Unknown input parameter"
-        end
+        # name[]=n1&value[]=v1&name[]=n2&value[]=v2
+        raise E::InvalidParameter, "'name' and 'value' arrays must be of the same size.'" unless params['name'].size == params['value'].size
+
+        params['name'].size.times { |idx|
+          blk.call(params['name'][idx], params['value'][idx])
+        }
       end
     }
 
