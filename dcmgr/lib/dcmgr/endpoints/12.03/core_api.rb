@@ -22,6 +22,17 @@ module Dcmgr::Endpoints::V1203
 
     disable :remove_undefined_parameters
 
+    def self.param_uuid(name = :id, options = {})
+      final_options = {
+        format: Dcmgr::Models::Taggable::UUID_REGEX,
+        desc: "The UUID belonging to this resource."
+      }
+
+      final_options.merge!(options)
+
+      param name, :String, final_options
+    end
+
     def self.paging_params(resource_name)
       param :start, :Integer,
                     default: 0,

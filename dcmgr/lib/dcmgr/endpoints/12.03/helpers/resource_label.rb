@@ -88,7 +88,7 @@ module Dcmgr::Endpoints::V1203::Helpers
     LABELS_ROUTES = proc {
 
       desc "Shows the labels assigned to a resource."
-      param :id, :String, desc: "The UUID belonging to this resource."
+      param_uuid
       param :name, :String, desc: "show only the labels whose name start with pattern."
       get do
         ds = @uuid_resource.resource_labels_dataset
@@ -98,6 +98,9 @@ module Dcmgr::Endpoints::V1203::Helpers
         respond_with(R::ResourceLabelCollection.new(ds).generate)
       end
 
+      desc "Shows a single label assigned to a resource"
+      param_uuid
+      param :name, :String, desc: "show only the label with exactly this name."
       get '/:name' do
         l = @uuid_resource.label(params['name']) || raise(E::UnknownResourceLabel, params['id'], params['name'])
         respond_with(R::ResourceLabel.new(l).generate)
