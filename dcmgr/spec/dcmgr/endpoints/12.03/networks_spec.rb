@@ -7,10 +7,15 @@ describe "networks" do
   M = Dcmgr::Models
   C = Dcmgr::Constants
 
+  before(:each) { stub_dcmgr_syncronized_message_ready }
+
+  let(:account) { Fabricate(:account) }
+  let(:headers) do
+    { Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid }
+  end
+
   describe "POST" do
     use_database_cleaner_strategy_for_this_context :truncation
-
-    let(:account) { Fabricate(:account) }
 
     let(:online_kvm_host_node) do
       Fabricate(:host_node, hypervisor: C::HostNode::HYPERVISOR_KVM)
@@ -36,9 +41,7 @@ describe "networks" do
       }
       stub_vnet_request("networks", vnet_network_required_params)
 
-      post("networks",
-           params,
-           Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID => account.canonical_uuid)
+      post("networks", params, headers)
     end
 
     context "with only the required parameters" do
@@ -59,5 +62,15 @@ describe "networks" do
         expect(body['network_mode']).to eq params[:network_mode]
       end
     end
+  end
+
+  describe "GET" do
+    before(:each) do
+      before_api_call
+      get("networks", params, headers)
+    end
+
+    it_behaves_like 'a paging get request', :network
+    it_behaves_like 'a get request with datetime range filtering', :created, :network
   end
 end

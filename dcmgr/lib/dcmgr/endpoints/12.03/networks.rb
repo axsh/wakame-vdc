@@ -14,10 +14,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     return service_address.to_s
   end
 
+  desc "List the networks currently in the database."
+  datetime_range_params(:created, "networks")
+  paging_params("networks")
   get do
-    # description "List networks in account"
-    # params start, fixnum, optional
-    # params limit, fixnum, optional
     ds = M::Network.dataset
 
     ds = ds.filter(:networks__account_id => params[:account_id]) if params[:account_id]
@@ -25,8 +25,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     ds = ds.where_with_services(:network_services__name => params[:has_service]) if params[:has_service]
     ds = ds.where_with_dc_networks(:dc_networks__uuid => M::DcNetwork.trim_uuid(params[:dc_network])) if params[:dc_network]
 
-    ds = datetime_range_params_filter(:networks__created, ds)
-    ds = datetime_range_params_filter(:networks__deleted, ds)
+    ds = datetime_range_params_filter(:created, ds)
 
     if params[:service_type]
       validate_service_type(params[:service_type])
