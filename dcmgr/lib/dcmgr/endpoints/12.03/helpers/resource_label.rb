@@ -100,24 +100,44 @@ module Dcmgr::Endpoints::V1203::Helpers
 
       desc "Shows a single label assigned to a resource"
       param_uuid
-      param :name, :String, desc: "show only the label with exactly this name."
+      param :name, :String, desc: "Show only the label with exactly this name."
       get '/:name' do
         l = @uuid_resource.label(params['name']) || raise(E::UnknownResourceLabel, params['id'], params['name'])
         respond_with(R::ResourceLabel.new(l).generate)
       end
 
+      def self.single_label_set_params
+        desc "Assign a single label to a resource."
+        param_uuid
+        param :name, :String, required: true, desc: "The name to of this label."
+        param :value, :String, required: true, desc: "The value to of this label."
+      end
+
+      single_label_set_params
       post '/:name' do
         single_label_set
       end
 
+      single_label_set_params
       put '/:name' do
         single_label_set
       end
 
+      def self.bulk_label_set_params
+        desc "Assign multiple labels to a resource."
+        param_uuid
+        param :name, :Array, required: true
+                     desc: "An array containing the names of the labels to assign."
+        param :value, :Array, required: true,
+                     desc: "An array containing the values of the labels to assign."
+      end
+
+      bulk_label_set_params
       post do
         bulk_label_set
       end
 
+      bulk_label_set_params
       put do
         bulk_label_set
       end
