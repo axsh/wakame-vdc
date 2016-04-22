@@ -107,7 +107,7 @@ module Dcmgr::Endpoints::V1203::Helpers
       end
 
       def self.single_label_set_params
-        desc "Assign a single label to a resource."
+        desc "Assigns a single label to a resource."
         param_uuid
         param :name, :String, required: true, desc: "The name to of this label."
         param :value, :String, required: true, desc: "The value to of this label."
@@ -124,9 +124,9 @@ module Dcmgr::Endpoints::V1203::Helpers
       end
 
       def self.bulk_label_set_params
-        desc "Assign multiple labels to a resource."
+        desc "Assigns multiple labels to a resource."
         param_uuid
-        param :name, :Array, required: true
+        param :name, :Array, required: true,
                      desc: "An array containing the names of the labels to assign."
         param :value, :Array, required: true,
                      desc: "An array containing the values of the labels to assign."
@@ -142,14 +142,20 @@ module Dcmgr::Endpoints::V1203::Helpers
         bulk_label_set
       end
 
-      # delete a label.
+      desc "Delete a single label from a resource."
+      param_uuid
+      param :name, :String, required: true,
+                   desc: "The name of the label to delete."
       delete '/:name' do
         @uuid_resource.unset_label(params[:name])
+        respond_with @uuid_resource.canonical_uuid
       end
 
-      # clear all labels.
+      desc "Delete all labels from a resource."
+      param_uuid
       delete do
-        @uuid_resource.unset_label(params[:name])
+        @uuid_resource.resource_labels.each { |l| l.destroy }
+        respond_with @uuid_resource.canonical_uuid
       end
 
       private

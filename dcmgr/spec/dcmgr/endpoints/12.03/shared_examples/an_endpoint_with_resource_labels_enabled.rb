@@ -2,32 +2,35 @@
 
 shared_examples "an endpoint with resource labels enabled" do |fabricator, api_suffix|
   let(:resource) { Fabricate(fabricator, account_id: account.canonical_uuid) }
+  let(:labels) do
+    test_resource_uuid = resource.canonical_uuid
+
+    [Fabricate(:resource_label) do
+      resource_uuid test_resource_uuid
+      name "some label"
+      value_type 1
+      string_value "i am some value"
+    end,
+
+    Fabricate(:resource_label) do
+      resource_uuid test_resource_uuid
+      name "some other label"
+      value_type 1
+      string_value "some other string value"
+    end,
+
+    Fabricate(:resource_label) do
+      resource_uuid test_resource_uuid
+      name "yet another label"
+      value_type 1
+      string_value "there's no place like... I wanna be a witch!"
+    end]
+  end
 
   describe "GET /:id/labels" do
 
     before(:each) do
-      test_resource_uuid = resource.canonical_uuid
-
-      Fabricate(:resource_label) do
-        resource_uuid test_resource_uuid
-        name "some label"
-        value_type 1
-        string_value "i am some value"
-      end
-
-      Fabricate(:resource_label) do
-        resource_uuid test_resource_uuid
-        name "some other label"
-        value_type 1
-        string_value "some other string value"
-      end
-
-      Fabricate(:resource_label) do
-        resource_uuid test_resource_uuid
-        name "yet another label"
-        value_type 1
-        string_value "there's no place like... I wanna be a witch!"
-      end
+      labels
 
       get("#{api_suffix}/#{resource.canonical_uuid}/labels", params, headers)
     end
@@ -124,6 +127,30 @@ shared_examples "an endpoint with resource labels enabled" do |fabricator, api_s
       end
 
     end
+  end
 
+  describe "DELETE /:id/labels/:name" do
+    before(:each) do
+      labels
+
+      delete("#{api_suffix}/#{resource.canonical_uuid}/labels/some%20label", {}, headers)
+    end
+
+    it "deletes a single label from a resource" do
+      expect(resource.resource_labels_dataset.count).to eq 2
+      expect(M::ResourceLabel.filter(name: "some label")).to be_empty
+    end
+  end
+
+  describe "Deleted /:id/labels" do
+    before(:each) do
+      labels
+
+      delete("#{api_suffix}/#{resource.canonical_uuid}/labels", {}, headers)
+    end
+
+    it "deletes all labels assigned to a resource" do
+      expect(resource.resource_labels_dataset).to be_empty
+    end
   end
 end
