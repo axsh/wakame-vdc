@@ -70,19 +70,19 @@ describe "networks" do
     before(:each) do
       before_api_call
 
-      get("networks/#{network_id}", {}, headers)
+      get("networks/#{object_id}", {}, headers)
     end
 
-    context "with an existing network id" do
+    context "with an existing uuid" do
       let(:network) { Fabricate(:network, account_id: account.canonical_uuid) }
-      let(:network_id) { network.canonical_uuid }
+      let(:object_id) { network.canonical_uuid }
 
       it "shows the network" do
         expect(last_response).to be_ok
 
         expect(body).to eq({
-          "id" => network_id,
-          "uuid" => network_id,
+          "id" => object_id,
+          "uuid" => object_id,
           "account_id" => account.canonical_uuid,
           "ipv4_network" => network.ipv4_network,
           "ipv4_gw" => network.ipv4_gw,
@@ -110,25 +110,8 @@ describe "networks" do
       end
     end
 
-    context "with an existing network belonging to a different account" do
-      let(:network_id) do
-        other_acc = Fabricate(:account)
-        Fabricate(:network, account_id: other_acc.canonical_uuid).canonical_uuid
-      end
+    it_behaves_like 'a get request describing a single resource', :network, M::Network
 
-      it_returns_error(:UnknownUUIDResource, 404)
-    end
-
-    context "with a non existing network id" do
-      let(:network_id) { "nw-nothere" }
-      it_returns_error(:UnknownUUIDResource, 404)
-    end
-
-    context "with a malformed uuid" do
-      let(:network_id) { "koekenbakkenvlaaien" }
-
-      it_returns_error(:InvalidParameter, 400, "Invalid UUID Syntax: koekenbakkenvlaaien")
-    end
   end
 
   describe "GET" do

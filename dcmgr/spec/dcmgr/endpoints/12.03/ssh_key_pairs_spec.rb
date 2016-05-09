@@ -75,12 +75,12 @@ describe "ssh_key_pairs" do
     before(:each) do
       before_api_call
 
-      get("ssh_key_pairs/#{key_pair_id}", {}, headers)
+      get("ssh_key_pairs/#{object_id}", {}, headers)
     end
 
     context "with an existing key pair id" do
       let(:key_pair) { Fabricate(:ssh_key_pair, account_id: account.canonical_uuid) }
-      let(:key_pair_id) { key_pair.canonical_uuid }
+      let(:object_id) { key_pair.canonical_uuid }
 
       it "shows the key pair" do
         expect(body).to eq({
@@ -100,25 +100,8 @@ describe "ssh_key_pairs" do
       end
     end
 
-    context "with a non existing key pair id" do
-      let(:key_pair_id) { "ssh-nothere" }
-      it_returns_error(:UnknownUUIDResource, 404)
-    end
+    it_behaves_like 'a get request describing a single resource', :ssh_key_pair, M::SshKeyPair
 
-    context "with an existing key pair belonging to a different account" do
-      let(:key_pair_id) do
-        other_acc = Fabricate(:account)
-        Fabricate(:ssh_key_pair, account_id: other_acc.canonical_uuid).canonical_uuid
-      end
-
-      it_returns_error(:UnknownUUIDResource, 404)
-    end
-
-    context "with a malformed uuid" do
-      let(:key_pair_id) { "koekenbakkenvlaaien" }
-
-      it_returns_error(:InvalidParameter, 400, "Invalid UUID Syntax: koekenbakkenvlaaien")
-    end
   end
 
   describe "GET" do
