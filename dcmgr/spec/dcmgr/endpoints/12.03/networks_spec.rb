@@ -109,6 +109,26 @@ describe "networks" do
         })
       end
     end
+
+    context "with an existing network belonging to a different account" do
+      let(:network_id) do
+        other_acc = Fabricate(:account)
+        Fabricate(:network, account_id: other_acc.canonical_uuid).canonical_uuid
+      end
+
+      it_returns_error(:UnknownUUIDResource, 404)
+    end
+
+    context "with a non existing network id" do
+      let(:network_id) { "nw-nothere" }
+      it_returns_error(:UnknownUUIDResource, 404)
+    end
+
+    context "with a malformed uuid" do
+      let(:network_id) { "koekenbakkenvlaaien" }
+
+      it_returns_error(:InvalidParameter, 400, "Invalid UUID Syntax: koekenbakkenvlaaien")
+    end
   end
 
   describe "GET" do
