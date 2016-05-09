@@ -14,7 +14,6 @@ module Dcmgr::Endpoints::V1203::Responses
       api_hash.merge!({ :id => @object.canonical_uuid,
                         :dc_network => @object.dc_network ? DcNetwork.new(@object.dc_network).generate : nil,
                         :nat_network_id => @object.nat_network ? @object.nat_network.canonical_uuid : nil,
-                        :network_services => [],
                       })
       [:dc_network_id, :gateway_network_id].each { |k| api_hash.delete(k) }
 
