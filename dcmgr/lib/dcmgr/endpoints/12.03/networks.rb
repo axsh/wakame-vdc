@@ -41,11 +41,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     end
   end
 
+  desc "Retrieve details about a network."
+  param :id, :String,
+             required: true,
+             desc: "The UUID of the network to describe."
   get '/:id' do
-    # description "Retrieve details about a network"
-    # params :id required
     nw = find_by_uuid(M::Network, params[:id])
-    raise E::UnknownNetwork, params[:id] if nw.nil?
 
     respond_with(R::Network.new(nw).generate)
   end

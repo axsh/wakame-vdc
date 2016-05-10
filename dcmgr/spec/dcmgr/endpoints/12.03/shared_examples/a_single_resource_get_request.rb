@@ -12,6 +12,7 @@ shared_examples 'a get request describing a single resource' do |fabricator, mod
 
   context "with a non existing uuid" do
     let(:object_id) { "#{model.uuid_prefix}-nothere" }
+
     it_returns_error(:UnknownUUIDResource, 404)
   end
 
