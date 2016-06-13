@@ -165,7 +165,7 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"scheduling", "initializing", "pending", "starting"},
-		Target:     "running",
+		Target:     []string{"running"},
 		Refresh:    InstanceStateRefreshFunc(client, d.Id()),
 		Timeout:    10 * time.Minute,
 		Delay:      10 * time.Second,
@@ -292,7 +292,7 @@ func resourceWakamevdcInstanceDelete(d *schema.ResourceData, m interface{}) erro
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"scheduling", "pending", "starting", "running", "shuttingdown", "halted", "stopping"},
-		Target:     "terminated",
+		Target:     []string{"terminated"},
 		Refresh:    InstanceStateRefreshFunc(client, d.Id()),
 		Timeout:    10 * time.Minute,
 		Delay:      10 * time.Second,
