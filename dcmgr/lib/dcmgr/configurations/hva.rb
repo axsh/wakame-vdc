@@ -278,7 +278,7 @@ module Dcmgr
       param :lxc_log_level, :default => :error
 
       # network interface down script for lxc (ovs)
-      param :lxc_ifdown, :default => '/opt/axsh/wakame-vdc/scripts/lxc-ifdown'
+      param :lxc_ovs_ifdown, :default => '/opt/axsh/wakame-vdc/scripts/lxc-ifdown'
 
       def validate(errors)
         if @config[:vm_data_dir].nil?
