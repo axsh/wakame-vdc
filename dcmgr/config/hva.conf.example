@@ -57,6 +57,9 @@ config.ovs_run_dir = '/var/lib/wakame-vdc/ovs/var/run/openvswitch'
 # Path for ovs-ofctl
 config.ovs_ofctl_path = '/var/lib/wakame-vdc/ovs/bin/ovs-ofctl'
 
+# network interface down script for lxc (ovs)
+config.lxc_ovs_ifdown = '/opt/axsh/wakame-vdc/scripts/lxc-ifdown'
+
 # Trema base directory
 config.trema_dir = '/var/lib/wakame-vdc/trema'
 config.trema_tmp = '/var/lib/wakame-vdc/tmp/trema'
