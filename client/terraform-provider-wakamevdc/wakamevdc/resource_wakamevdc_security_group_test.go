@@ -12,6 +12,7 @@ import (
 const testConfigSGMinimal = `
 resource "wakamevdc_security_group" "sg1" {
   display_name = "sg1"
+  rules = ""
 }
 `
 
