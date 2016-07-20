@@ -17,21 +17,21 @@ resource "wakamevdc_security_group" "sg1" {
 }
 
 resource "wakamevdc_instance" "inst1" {
-  display_name = "inst1"
-  cpu_cores = 1
-  memory_size = 512
-  image_id = "wmi-centos1d64"
-  hypervisor = "openvz"
-  ssh_key_id = "ssh-demo"
+	display_name = "inst1"
+	cpu_cores = 1
+	memory_size = 512
+	image_id = "wmi-centos1d64"
+	hypervisor = "openvz"
+	ssh_key_id = "ssh-demo"
 
 	user_data = "joske"
 
-  vif {
-    network_id = "nw-demo1"
+	vif {
+		network_id = "nw-demo1"
 		security_groups = [
 			"${wakamevdc_security_group.sg1.id}",
 		]
-  }
+	}
 }
 `
 
@@ -47,23 +47,23 @@ resource "wakamevdc_security_group" "sg2" {
 }
 
 resource "wakamevdc_instance" "inst1" {
-  display_name = "updated display name"
-  cpu_cores = 1
-  memory_size = 512
-  image_id = "wmi-centos1d64"
-  hypervisor = "openvz"
-  ssh_key_id = "ssh-demo"
+	display_name = "updated display name"
+	cpu_cores = 1
+	memory_size = 512
+	image_id = "wmi-centos1d64"
+	hypervisor = "openvz"
+	ssh_key_id = "ssh-demo"
 
 	user_data = "joske"
 
-  vif {
-    network_id = "nw-demo1"
+	vif {
+		network_id = "nw-demo1"
 
 		security_groups = [
 			"${wakamevdc_security_group.sg1.id}",
 			"${wakamevdc_security_group.sg2.id}",
 		]
-  }
+	}
 }
 `
 
@@ -79,22 +79,22 @@ resource "wakamevdc_security_group" "sg2" {
 }
 
 resource "wakamevdc_instance" "inst1" {
-  display_name = "updated display name"
-  cpu_cores = 1
-  memory_size = 512
-  image_id = "wmi-centos1d64"
-  hypervisor = "openvz"
-  ssh_key_id = "ssh-demo"
+	display_name = "updated display name"
+	cpu_cores = 1
+	memory_size = 512
+	image_id = "wmi-centos1d64"
+	hypervisor = "openvz"
+	ssh_key_id = "ssh-demo"
 
 	user_data = "joske"
 
-  vif {
-    network_id = "nw-demo1"
+	vif {
+		network_id = "nw-demo1"
 
 		security_groups = [
 			"${wakamevdc_security_group.sg1.id}",
 		]
-  }
+	}
 }
 `
 
@@ -105,18 +105,18 @@ resource "wakamevdc_security_group" "sg1" {
 }
 
 resource "wakamevdc_instance" "inst1" {
-  display_name = "updated display name"
-  cpu_cores = 1
-  memory_size = 512
-  image_id = "wmi-centos1d64"
-  hypervisor = "openvz"
-  ssh_key_id = "ssh-demo"
+	display_name = "updated display name"
+	cpu_cores = 1
+	memory_size = 512
+	image_id = "wmi-centos1d64"
+	hypervisor = "openvz"
+	ssh_key_id = "ssh-demo"
 
 	user_data = "joske"
 
-  vif {
-    network_id = "nw-demo1"
-  }
+	vif {
+		network_id = "nw-demo1"
+	}
 }
 `
 
