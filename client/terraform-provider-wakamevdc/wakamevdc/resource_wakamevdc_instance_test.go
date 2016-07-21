@@ -233,6 +233,22 @@ func testTerraformResourceWakameInstance(instance string) (resource.TestCheckFun
 				return err
 			}
 
+			attr = fmt.Sprintf("vif.%v.ip_address", i)
+			if vif.IPv4.Address != rs.Primary.Attributes[attr] {
+				return parameterCheckFailed(attr,
+					vif.IPv4.Address,
+					rs.Primary.Attributes[attr])
+			}
+
+			if attr := fmt.Sprintf("vif.%v.index", i); len(attr) > 0 {
+				vifIndex := strconv.Itoa(vif.Index)
+				if vifIndex != rs.Primary.Attributes[attr] {
+					return parameterCheckFailed(attr,
+						vifIndex,
+						rs.Primary.Attributes[attr])
+				}
+			}
+
 			if len(vif.SecurityGroupIDs) != sgCount {
 				return fmt.Errorf("Security group count for vif '%v' didn't match.\n"+
 					"Wakame-vdc had: %v\n"+
