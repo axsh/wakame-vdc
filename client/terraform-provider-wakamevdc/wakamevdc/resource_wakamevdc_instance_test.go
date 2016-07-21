@@ -149,6 +149,54 @@ func TestResourceWakamevdcInstance(t *testing.T) {
 	})
 }
 
+
+const testInstanceMultipleVifsConfig = `
+resource "wakamevdc_security_group" "sg3" {
+	display_name = "sg3"
+	rules = ""
+}
+
+resource "wakamevdc_instance" "inst2" {
+	display_name = "inst2"
+	cpu_cores = 1
+	memory_size = 512
+	image_id = "wmi-centos1d64"
+	hypervisor = "openvz"
+	ssh_key_id = "ssh-demo"
+	host_node_id = "hn-1box64"
+
+	user_data = "joske"
+
+	vif {
+		index = 0
+		network_id = "nw-demo1"
+		ip_address = "10.0.2.130"
+	}
+	vif {
+		index = 1
+		network_id = "nw-demo1"
+		ip_address = "10.0.2.135"
+	}
+}
+`
+
+func TestResourceWakamevdcMultipleVifInstance(t *testing.T) {
+
+	testCheck, testCheckDestroy := testTerraformResourceWakameInstance("wakamevdc_instance.inst2")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     nil,
+		Providers:    testVdcProviders,
+		CheckDestroy: testCheckDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testInstanceMultipleVifsConfig,
+				Check:  testCheck,
+			},
+		},
+	})
+}
+
 func testTerraformResourceWakameInstance(instance string) (resource.TestCheckFunc, resource.TestCheckFunc) {
 	var resourceID string
 
