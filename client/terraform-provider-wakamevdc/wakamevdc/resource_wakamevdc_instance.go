@@ -93,8 +93,10 @@ func resourceWakamevdcInstance() *schema.Resource {
 						},
 
 						"index": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional:  true,
+							Type:    schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
 						},
 
 						"ip_address": &schema.Schema{
@@ -131,6 +133,7 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 			vifStruct := wakamevdc.InstanceCreateVIFParams{
 				NetworkID:   vifMap["network_id"].(string),
 				IPv4Address: vifMap["ip_address"].(string),
+				Index:       vifMap["index"].(int),
 			}
 
 			if vifMap["security_groups"] != nil {
@@ -142,10 +145,6 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 				}
 
 				vifStruct.SecurityGroupIDs = securityGroupIDs
-			}
-
-			if vifMap["index"] != nil {
-				vifStruct.Index = vifMap["index"].(int)
 			}
 
 			key := fmt.Sprintf("eth%v", i)
