@@ -58,7 +58,7 @@ type InstanceService struct {
 
 type InstanceCreateVIFParams struct {
 	NetworkID        string   `json:"network"`
-	Index            int      `json:"index"`
+	Index            int      `json:"index,omitempty"`
 	SecurityGroupIDs []string `json:"security_groups,omitempty"`
 	IPv4Address      string   `json:"ipv4_addr,omitempty"`
 	NATNetworkID     string   `json:"nat_network,omitempty"`
