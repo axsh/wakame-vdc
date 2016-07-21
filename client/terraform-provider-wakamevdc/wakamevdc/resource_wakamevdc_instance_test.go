@@ -121,10 +121,39 @@ resource "wakamevdc_instance" "inst1" {
 `
 
 func TestResourceWakamevdcInstance(t *testing.T) {
+
+	testCheck, testCheckDestroy := testTerraformResourceWakameInstance("wakamevdc_instance.inst1")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     nil,
+		Providers:    testVdcProviders,
+		CheckDestroy: testCheckDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testInstanceConfig1,
+				Check:  testCheck,
+			},
+			resource.TestStep{
+				Config: testInstanceConfigUpdate,
+				Check:  testCheck,
+			},
+			resource.TestStep{
+				Config: testInstanceConfigUpdate2,
+				Check:  testCheck,
+			},
+			resource.TestStep{
+				Config: testInstanceConfigUpdate3,
+				Check:  testCheck,
+			},
+		},
+	})
+}
+
+func testTerraformResourceWakameInstance(instance string) (resource.TestCheckFunc, resource.TestCheckFunc) {
 	var resourceID string
 
-	testCheck := func(s *terraform.State) error {
-		rs, inst, err := getTerraformResourceAndWakameInstance(s, "wakamevdc_instance.inst1")
+	return func(s *terraform.State) error {
+		rs, inst, err := getTerraformResourceAndWakameInstance(s, instance)
 		if err != nil {
 			return err
 		}
@@ -223,9 +252,7 @@ func TestResourceWakamevdcInstance(t *testing.T) {
 
 		resourceID = rs.Primary.ID
 		return nil
-	}
-
-	testCheckDestroy := func(s *terraform.State) error {
+	}, func(s *terraform.State) error {
 		client := testVdcProvider.Meta().(*wakamevdc.Client)
 
 		inst, _, err := client.Instance.GetByID(resourceID)
@@ -237,31 +264,8 @@ func TestResourceWakamevdcInstance(t *testing.T) {
 		}
 		return nil
 	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     nil,
-		Providers:    testVdcProviders,
-		CheckDestroy: testCheckDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testInstanceConfig1,
-				Check:  testCheck,
-			},
-			resource.TestStep{
-				Config: testInstanceConfigUpdate,
-				Check:  testCheck,
-			},
-			resource.TestStep{
-				Config: testInstanceConfigUpdate2,
-				Check:  testCheck,
-			},
-			resource.TestStep{
-				Config: testInstanceConfigUpdate3,
-				Check:  testCheck,
-			},
-		},
-	})
 }
+
 
 func getTerraformResourceAndWakameInstance(s *terraform.State, resourceName string) (*terraform.ResourceState, *wakamevdc.Instance, error) {
 	rs, ok := s.RootModule().Resources[resourceName]
