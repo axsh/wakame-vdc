@@ -38,6 +38,7 @@ type Instance struct {
 	} `json:"volume"`
 	VIFs []struct {
 		ID               string   `json:"vif_id"`
+		Index            int      `json:"index"`
 		NetworkID        string   `json:"network_id"`
 		SecurityGroupIDs []string `json:"security_groups"`
 		IPv4             struct {
@@ -57,6 +58,7 @@ type InstanceService struct {
 
 type InstanceCreateVIFParams struct {
 	NetworkID        string   `json:"network"`
+	Index            int      `json:"index,omitempty"`
 	SecurityGroupIDs []string `json:"security_groups,omitempty"`
 	IPv4Address      string   `json:"ipv4_addr,omitempty"`
 	NATNetworkID     string   `json:"nat_network,omitempty"`

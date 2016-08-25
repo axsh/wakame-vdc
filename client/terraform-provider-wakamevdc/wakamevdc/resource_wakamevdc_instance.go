@@ -92,6 +92,13 @@ func resourceWakamevdcInstance() *schema.Resource {
 							ForceNew: true,
 						},
 
+						"index": &schema.Schema{
+							Type:    schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+						},
+
 						"ip_address": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
@@ -126,6 +133,7 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 			vifStruct := wakamevdc.InstanceCreateVIFParams{
 				NetworkID:   vifMap["network_id"].(string),
 				IPv4Address: vifMap["ip_address"].(string),
+				Index:       vifMap["index"].(int),
 			}
 
 			if vifMap["security_groups"] != nil {
@@ -165,7 +173,7 @@ func resourceWakamevdcInstanceCreate(d *schema.ResourceData, m interface{}) erro
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"scheduling", "initializing", "pending", "starting"},
-		Target:     "running",
+		Target:     []string{"running"},
 		Refresh:    InstanceStateRefreshFunc(client, d.Id()),
 		Timeout:    10 * time.Minute,
 		Delay:      10 * time.Second,
@@ -198,6 +206,7 @@ func resourceWakamevdcInstanceRead(d *schema.ResourceData, m interface{}) error 
 	for i, vif := range inst.VIFs {
 		vifs[i] = make(map[string]interface{})
 		vifs[i]["id"] = vif.ID
+		vifs[i]["index"] = vif.Index
 		vifs[i]["network_id"] = vif.NetworkID
 		vifs[i]["ip_address"] = vif.IPv4.Address
 		vifs[i]["security_groups"] = vif.SecurityGroupIDs
@@ -292,7 +301,7 @@ func resourceWakamevdcInstanceDelete(d *schema.ResourceData, m interface{}) erro
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"scheduling", "pending", "starting", "running", "shuttingdown", "halted", "stopping"},
-		Target:     "terminated",
+		Target:     []string{"terminated"},
 		Refresh:    InstanceStateRefreshFunc(client, d.Id()),
 		Timeout:    10 * time.Minute,
 		Delay:      10 * time.Second,

@@ -59,6 +59,7 @@ module Dcmgr::Endpoints::V1203::Responses
           ent = {
             :vif_id => vif.canonical_uuid,
             :network_id => network.nil? ? nil : network.canonical_uuid,
+            :index => vif.device_index,
           }
 
           direct_lease = direct_lease_ds.first

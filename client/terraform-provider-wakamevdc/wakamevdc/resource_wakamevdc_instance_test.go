@@ -17,21 +17,21 @@ resource "wakamevdc_security_group" "sg1" {
 }
 
 resource "wakamevdc_instance" "inst1" {
-  display_name = "inst1"
-  cpu_cores = 1
-  memory_size = 512
-  image_id = "wmi-centos1d64"
-  hypervisor = "openvz"
-  ssh_key_id = "ssh-demo"
+	display_name = "inst1"
+	cpu_cores = 1
+	memory_size = 512
+	image_id = "wmi-centos1d64"
+	hypervisor = "openvz"
+	ssh_key_id = "ssh-demo"
 
 	user_data = "joske"
 
-  vif {
-    network_id = "nw-demo1"
+	vif {
+		network_id = "nw-demo1"
 		security_groups = [
 			"${wakamevdc_security_group.sg1.id}",
 		]
-  }
+	}
 }
 `
 
@@ -47,23 +47,23 @@ resource "wakamevdc_security_group" "sg2" {
 }
 
 resource "wakamevdc_instance" "inst1" {
-  display_name = "updated display name"
-  cpu_cores = 1
-  memory_size = 512
-  image_id = "wmi-centos1d64"
-  hypervisor = "openvz"
-  ssh_key_id = "ssh-demo"
+	display_name = "updated display name"
+	cpu_cores = 1
+	memory_size = 512
+	image_id = "wmi-centos1d64"
+	hypervisor = "openvz"
+	ssh_key_id = "ssh-demo"
 
 	user_data = "joske"
 
-  vif {
-    network_id = "nw-demo1"
+	vif {
+		network_id = "nw-demo1"
 
 		security_groups = [
 			"${wakamevdc_security_group.sg1.id}",
 			"${wakamevdc_security_group.sg2.id}",
 		]
-  }
+	}
 }
 `
 
@@ -79,22 +79,22 @@ resource "wakamevdc_security_group" "sg2" {
 }
 
 resource "wakamevdc_instance" "inst1" {
-  display_name = "updated display name"
-  cpu_cores = 1
-  memory_size = 512
-  image_id = "wmi-centos1d64"
-  hypervisor = "openvz"
-  ssh_key_id = "ssh-demo"
+	display_name = "updated display name"
+	cpu_cores = 1
+	memory_size = 512
+	image_id = "wmi-centos1d64"
+	hypervisor = "openvz"
+	ssh_key_id = "ssh-demo"
 
 	user_data = "joske"
 
-  vif {
-    network_id = "nw-demo1"
+	vif {
+		network_id = "nw-demo1"
 
 		security_groups = [
 			"${wakamevdc_security_group.sg1.id}",
 		]
-  }
+	}
 }
 `
 
@@ -105,26 +105,103 @@ resource "wakamevdc_security_group" "sg1" {
 }
 
 resource "wakamevdc_instance" "inst1" {
-  display_name = "updated display name"
-  cpu_cores = 1
-  memory_size = 512
-  image_id = "wmi-centos1d64"
-  hypervisor = "openvz"
-  ssh_key_id = "ssh-demo"
+	display_name = "updated display name"
+	cpu_cores = 1
+	memory_size = 512
+	image_id = "wmi-centos1d64"
+	hypervisor = "openvz"
+	ssh_key_id = "ssh-demo"
 
 	user_data = "joske"
 
-  vif {
-    network_id = "nw-demo1"
-  }
+	vif {
+		network_id = "nw-demo1"
+	}
 }
 `
 
 func TestResourceWakamevdcInstance(t *testing.T) {
+
+	testCheck, testCheckDestroy := testTerraformResourceWakameInstance("wakamevdc_instance.inst1")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     nil,
+		Providers:    testVdcProviders,
+		CheckDestroy: testCheckDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testInstanceConfig1,
+				Check:  testCheck,
+			},
+			resource.TestStep{
+				Config: testInstanceConfigUpdate,
+				Check:  testCheck,
+			},
+			resource.TestStep{
+				Config: testInstanceConfigUpdate2,
+				Check:  testCheck,
+			},
+			resource.TestStep{
+				Config: testInstanceConfigUpdate3,
+				Check:  testCheck,
+			},
+		},
+	})
+}
+
+
+const testInstanceMultipleVifsConfig = `
+resource "wakamevdc_security_group" "sg3" {
+	display_name = "sg3"
+	rules = ""
+}
+
+resource "wakamevdc_instance" "inst2" {
+	display_name = "inst2"
+	cpu_cores = 1
+	memory_size = 512
+	image_id = "wmi-centos1d64"
+	hypervisor = "openvz"
+	ssh_key_id = "ssh-demo"
+	host_node_id = "hn-1box64"
+
+	user_data = "joske"
+
+	vif {
+		index = 0
+		network_id = "nw-demo1"
+		ip_address = "10.0.2.130"
+	}
+	vif {
+		index = 1
+		network_id = "nw-demo1"
+		ip_address = "10.0.2.135"
+	}
+}
+`
+
+func TestResourceWakamevdcMultipleVifInstance(t *testing.T) {
+
+	testCheck, testCheckDestroy := testTerraformResourceWakameInstance("wakamevdc_instance.inst2")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     nil,
+		Providers:    testVdcProviders,
+		CheckDestroy: testCheckDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testInstanceMultipleVifsConfig,
+				Check:  testCheck,
+			},
+		},
+	})
+}
+
+func testTerraformResourceWakameInstance(instance string) (resource.TestCheckFunc, resource.TestCheckFunc) {
 	var resourceID string
 
-	testCheck := func(s *terraform.State) error {
-		rs, inst, err := getTerraformResourceAndWakameInstance(s, "wakamevdc_instance.inst1")
+	return func(s *terraform.State) error {
+		rs, inst, err := getTerraformResourceAndWakameInstance(s, instance)
 		if err != nil {
 			return err
 		}
@@ -204,6 +281,22 @@ func TestResourceWakamevdcInstance(t *testing.T) {
 				return err
 			}
 
+			attr = fmt.Sprintf("vif.%v.ip_address", i)
+			if vif.IPv4.Address != rs.Primary.Attributes[attr] {
+				return parameterCheckFailed(attr,
+					vif.IPv4.Address,
+					rs.Primary.Attributes[attr])
+			}
+
+			if attr := fmt.Sprintf("vif.%v.index", i); len(attr) > 0 {
+				vifIndex := strconv.Itoa(vif.Index)
+				if vifIndex != rs.Primary.Attributes[attr] {
+					return parameterCheckFailed(attr,
+						vifIndex,
+						rs.Primary.Attributes[attr])
+				}
+			}
+
 			if len(vif.SecurityGroupIDs) != sgCount {
 				return fmt.Errorf("Security group count for vif '%v' didn't match.\n"+
 					"Wakame-vdc had: %v\n"+
@@ -223,9 +316,7 @@ func TestResourceWakamevdcInstance(t *testing.T) {
 
 		resourceID = rs.Primary.ID
 		return nil
-	}
-
-	testCheckDestroy := func(s *terraform.State) error {
+	}, func(s *terraform.State) error {
 		client := testVdcProvider.Meta().(*wakamevdc.Client)
 
 		inst, _, err := client.Instance.GetByID(resourceID)
@@ -237,31 +328,8 @@ func TestResourceWakamevdcInstance(t *testing.T) {
 		}
 		return nil
 	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     nil,
-		Providers:    testVdcProviders,
-		CheckDestroy: testCheckDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testInstanceConfig1,
-				Check:  testCheck,
-			},
-			resource.TestStep{
-				Config: testInstanceConfigUpdate,
-				Check:  testCheck,
-			},
-			resource.TestStep{
-				Config: testInstanceConfigUpdate2,
-				Check:  testCheck,
-			},
-			resource.TestStep{
-				Config: testInstanceConfigUpdate3,
-				Check:  testCheck,
-			},
-		},
-	})
 }
+
 
 func getTerraformResourceAndWakameInstance(s *terraform.State, resourceName string) (*terraform.ResourceState, *wakamevdc.Instance, error) {
 	rs, ok := s.RootModule().Resources[resourceName]
