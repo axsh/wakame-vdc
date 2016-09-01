@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "7P0J627oSUIrPWhssldsgxjwMSA=",
+			"path": "github.com/dghubble/sling",
+			"revision": "52e88a7b75a5db3b49f8911f16d49d9b7b67adc5",
+			"revisionTime": "2016-08-21T06:16:55Z"
+		},
+		{
+			"checksumSHA1": "F+7lTlQMULu2pqest14vkT8vc7g=",
+			"path": "github.com/google/go-querystring/query",
+			"revision": "9235644dd9e52eeae6fa48efd539fdc351a0af53",
+			"revisionTime": "2016-03-11T01:20:12Z"
+		}
+	],
+	"rootPath": "github.com/axsh/wakame-vdc/client/go-wakamevdc"
+}
