@@ -41,6 +41,18 @@ Type: ``wakamevdc``
 
 ## Build & Install
 
+Go (>= 1.6) is recommended to build. [govendor](https://github.com/kardianos/govendor) is the tool to manage the dependencies.
+
+```bash
+go get -u github.com/kardianos/govendor
+go get -u github.com/axsh/wakame-vdc/client/packer-builder-wakamevdc
+cd $GOPATH/src/github.com/axsh/wakame-vdc/client/go-wakamevdc
+govendor sync
+cd $GOPATH/src/github.com/axsh/wakame-vdc/client/packer-builder-wakamevdc
+govendor sync
+go build
+```
+
 Once you complete to build, you'll see the ``packer-builder-wakamevdc`` binary. It can be installed to:
 
 - Same folder where ``packer`` is in.
