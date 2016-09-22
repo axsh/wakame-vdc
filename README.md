@@ -37,7 +37,7 @@ If you happen to be in Tokyo, you can also attend one of our Wakame Users Group 
 
 * [@axsh_en](https://twitter.com/axsh_en): The English Axsh company account
 
-* [@axsh_jp](https://twitter.com/axsh_jp): The English Axsh company account
+* [@axsh_jp](https://twitter.com/axsh_jp): The Japanese Axsh company account
 
 Documentation
 -------------
