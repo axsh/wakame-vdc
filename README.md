@@ -35,15 +35,9 @@ If you happen to be in Tokyo, you can also attend one of our Wakame Users Group 
 
 #### Twitter
 
-* [@WakameTech](https://twitter.com/WakameTech): Japanese Wakame-vdc account
+* [@axsh_en](https://twitter.com/axsh_en): The English Axsh company account
 
-* [@Wakamevdc](https://twitter.com/wakamevdc): English Wakame-vdc acccount
-
-* [@axsh_co_ltd](https://twitter.com/axsh_co_ltd): The Axsh company account
-
-#### Facebook
-
-* [Wakame-vdc Facebook page](https://www.facebook.com/datacenterhypervisor)
+* [@axsh_jp](https://twitter.com/axsh_jp): The English Axsh company account
 
 Documentation
 -------------
