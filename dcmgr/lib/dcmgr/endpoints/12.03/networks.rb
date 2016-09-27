@@ -85,6 +85,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     savedata[:ip_assignment] = params[:ip_assignment] if params[:ip_assignment]
     savedata[:editable] = params[:editable] if params[:editable]
     savedata[:metric] = params[:metric] if params[:metric]
+    savedata[:segment_uuid] = params[:segment_uuid] if params[:segment_uuid]
 
     network_address = IPAddress::IPv4.new("#{savedata[:ipv4_network]}/#{savedata[:prefix]}")
     network_services = []
