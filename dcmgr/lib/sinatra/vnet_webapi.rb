@@ -28,23 +28,22 @@ module Sinatra
         if request.request_method == "POST"
           r = r.symbolize_keys
 
+          vnet_params = {}
+
+          vnet_params[:uuid] = r[:uuid]
+          vnet_params[:display_name] = params[:display_name] || r[:uuid]
+
           if request.path_info == "/networks"
-            VNetAPIClient::Network.create(
-              uuid: r[:uuid],
-              display_name: params[:display_name] || r[:uuid],
-              ipv4_network: params[:network],
-              ipv4_prefix: params[:prefix],
-              network_mode: 'virtual'
-            )
+            vnet_params[:ipv4_network] = params[:network]
+            vnet_params[:ipv4_prefix] = params[:prefix]
+            vnet_params[:network_mode] = 'virtual'
+            VNetAPIClient::Network.create(vnet_params)
           end
 
           if request.path_info == "/security_groups"
-            VNetAPIClient::SecurityGroup.create(
-              uuid: r[:uuid],
-              display_name: params[:display_name] || r[:uuid],
-              description: params[:description],
-              rules: openvnet_rules(params[:rule]).join("\n")
-            )
+            vnet_params[:description] = params[:description]
+            vnet_params[:rules] = openvnet_rules(params[:rule]).join("\n")
+            VNetAPIClient::SecurityGroup.create(vnet_params)
           end
         elsif request.request_method == "PUT"
           _, path, uuid = request.path_info.split("/")
