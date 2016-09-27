@@ -24,6 +24,7 @@ type Network struct {
 	MetadataServerPort int      `json:"metadata_server_port"`
 	NetworkMode        string   `json:"network_mode"`
 	NetworkServices    []string `json:"network_services"`
+	SegmentUUID        string   `json:"segment_uuid"`
 	DCNetwork          struct {
 		ID                   string   `json:"id"`
 		Name                 string   `json:"name"`
@@ -60,6 +61,7 @@ type NetworkCreateParams struct {
 	ServiceType  string `url:"service_type,omitempty"`
 	Description  string `url:"description,omitempty"`
 	DisplayName  string `url:"display_name,omitempty"`
+	SegmentUUID  string `url:"segment_uuid,omitempty"`
 	// TODO: service_dhcp, service_dns, service_gateway
 }
 

@@ -102,6 +102,11 @@ func resourceWakamevdcNetwork() *schema.Resource {
 				Computed: true,
 			},
 
+			"segment_uuid": &schema.Schema{
+				Type: schema.TypeString,
+				Optional: true,
+			},
+
 			"dhcp_range": &schema.Schema{
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -140,6 +145,7 @@ func resourceWakamevdcNetworkCreate(d *schema.ResourceData, m interface{}) error
 		Editable:     d.Get("editable").(bool),
 		DisplayName:  d.Get("display_name").(string),
 		Description:  d.Get("description").(string),
+		SegmentUUID:  d.Get("segment_uuid").(string),
 	}
 
 	if _, ok := d.GetOk("dc_network_id"); ok {
@@ -199,6 +205,7 @@ func resourceWakamevdcNetworkRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("network_mode", nw.NetworkMode)
 	d.Set("ip_assignment", nw.IPAssignment)
 	d.Set("display_name", nw.DisplayName)
+	d.Set("segment_uuid", nw.SegmentUUID)
 	return nil
 }
 
