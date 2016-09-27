@@ -36,6 +36,7 @@ module Sinatra
           if request.path_info == "/networks"
             vnet_params[:ipv4_network] = params[:network]
             vnet_params[:ipv4_prefix] = params[:prefix]
+            vnet_params[:segment_uuid] = params[:segment_uuid] if params[:segment_uuid]
             vnet_params[:network_mode] = 'virtual'
             VNetAPIClient::Network.create(vnet_params)
           end
