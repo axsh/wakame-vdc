@@ -8,12 +8,14 @@ module Dcmgr
         include Dcmgr::EdgeNetworking::Netfilter
         attr_accessor :hva_ip
 
-        def initialize(hva_ip,enable_logging = false,log_prefix = nil)
+        def initialize(enable_logging = false, log_prefix = nil)
           super()
-          self.hva_ip = hva_ip
+
+          rule = "-p ARP --arp-mac-dst 00:00:00:00:00:00 --dst ff:ff:ff:ff:ff:ff" +
+                 " #{EbtablesRule.log_arp(log_prefix) if enable_logging} -j ACCEPT"
 
           # Allow broadcast from the host
-          self.rules << EbtablesRule.new(:filter,:output,:arp,:outgoing,"--protocol arp --arp-opcode Request --arp-ip-src=#{self.hva_ip} #{EbtablesRule.log_arp(log_prefix) if enable_logging} -j ACCEPT")
+          self.rules << EbtablesRule.new(:filter, :output, :arp, :outgoing, rule)
         end
       end
 
