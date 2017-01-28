@@ -132,6 +132,9 @@ grep -v '\s*#' <<CMDSET | /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage -e
   network dc add-network-mode public securitygroup
 CMDSET
 
+# Set the backup instances feature to use the backup storage we just created
+sudo sed -i "s/backup_storage_id\ 'bkst-demo2'/backup_storage_id\ 'bkst-local'/g" /etc/wakame-vdc/dcmgr.conf
+
 # Add the network gateway if it was set
 if [ -n "$GATEWAY" ]; then
   /opt/axsh/wakame-vdc/dcmgr/bin/vdc-manage network modify nw-demo1 --ipv4-gw "$GATEWAY"
