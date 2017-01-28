@@ -1,0 +1,20 @@
+language: ruby
+
+rvm:
+  - 1.9.3
+  - 2.0.0
+
+gemfile:
+  - client/ruby-hijiki/Gemfile
+  - dcmgr/Gemfile
+  - dolphin/Gemfile
+  - frontend/admin/Gemfile
+  - frontend/dcmgr_gui/Gemfile
+
+before_install:
+ - sudo apt-get update -qq
+ # for trema
+ - sudo apt-get install libpcap-dev -qq
+
+script:
+  - true
