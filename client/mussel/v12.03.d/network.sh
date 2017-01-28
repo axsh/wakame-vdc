@@ -18,6 +18,7 @@ task_create() {
     $(add_param network) \
     $(add_param network_mode) \
     $(add_param prefix) \
+    $(add_param metric) \
     $(add_param service_dhcp) \
     $(add_param account_id) \
   ) \
@@ -51,4 +52,16 @@ task_update() {
     $(add_param account_id) \
    ) \
    $(base_uri)/${namespace}s/${uuid}.$(suffix)
+}
+
+task_add_services() {
+  local namespace=$1 cmd=$2 uuid=$3
+
+  call_api -X POST $(urlencode_data \
+    $(add_param name) \
+    $(add_param incoming_port) \
+    $(add_param outgoing_port) \
+    $(add_param ipv4)\
+   ) \
+   $(base_uri)/${namespace}s/${uuid}/services.$(suffix)
 }
