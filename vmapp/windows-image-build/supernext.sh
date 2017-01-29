@@ -183,6 +183,24 @@ AAAAAAD/6QMBAAAAAAQAAwADAQAAAAAEAAMAAwEAAAAABAADAA==
 EOF
 }
 
+kvm-ui-simulate-click-in-middle()
+{
+    # clicks once in the upper left part of the screen
+    # but close enough to the middle to raise an already
+    # showing powershell window
+    base64 -d  <<EOF | kvm-ui-feed-slowly-via-vnc
+UkZCIDAwMy4wMDgKAQAAAAAACAYAAQADAAMAAwQCAAAAAAIAAAf///8R////IQAAABAAAAABAAA
+ABQAAAAIAAAAAAwAAAAAABAADAAMBAAAAAAQAAwAFAAByAAAFAAB0AAMFAAB1AAYFAAB3AAkFAA
+B4AAwFAAB6ABEFAAB8ABUFAAB9ABkFAAB/AB0FAACBACEFAACCACUFAACEACgFAACFACwFAACHA
+DAFAACIADUFAACLADoFAACNAD4FAACPAEEFAACQAEUFAACSAEkFAACUAE0FAACWAFAFAACZAFUF
+AACbAFgFAACdAF0FAAChAGQFAAClAGsFAACrAHUFAACwAH8FAAC1AIYFAAC7AI0FAAC/AJQFAAD
+DAJsFAADHAKMFAADLAKoFAADPALEFAADTALgFAADZAMEFAADeAMkFAADkANAFAADoANYFAADsAN
+wFAADwAOEFAADyAOUFAAD0AOoFAAD2AO8FAAD4APMFAAD6APcFAAD8APoFAAD+AP8FAAEAAQIFA
+AECAQYFAAEDAQoFAAEEAQsFAAEGAQ4FAAEFAQ0FAAEGAQ4FAAEGAQ0FAAEFAQ0FAQEFAQ0FAAEF
+AQ0=
+EOF
+}
+
 #######
 ####### TOP-LEVEL CODE
 #######
@@ -264,6 +282,14 @@ supernext-simulate-user-actions-after()
 	    kvm-ui-take-screenshot # for debugging
 	    touch $build_dir/open-powershell-click
 	    kvm-ui-simulate  open-powershell-click
+
+	    sleep "$SLEEPFOR"
+	    # Sometimes (only seen in 2012) the PowerShell window opens but does
+	    # not become the frontmost window and does not accept keyboard input.
+	    # An extra click will bring it frontmost, or have no effect otherwise.
+	    kvm-ui-take-screenshot # for debugging
+	    touch $build_dir/type-click-in-middle
+	    kvm-ui-simulate  click-in-middle
 
 	    sleep "$SLEEPFOR"
 	    kvm-ui-take-screenshot # for debugging
