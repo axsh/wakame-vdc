@@ -25,8 +25,7 @@ Dcmgr::Models::Network.after_create do |network|
     :ipv4_network => :ipv4_network,
     :ipv4_prefix => :prefix,
     :domain_name => :domain_name,
-    :network_mode => 'virtual',
-    :editable => :editable
+    :network_mode => 'virtual'
   })
 end
 
