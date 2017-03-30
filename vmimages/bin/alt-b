@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# NOTE: Sometimes all the keys above are typed OK and the ks.cfg file
+# is read in OK, but the installation does not start until the user
+# clicks on the "Begin" button.  One possible cause could be the VNC
+# windows being open and some UI events being sent to the graphical
+# installer, which senses the human there and politely asks for
+# confirmation.
+
+# Update: Nope. Did not work even with no vncviewer connected.  Looks like
+# alt-B will select that button.  Seems to take at least 20 seconds to get
+# to that screen so....
+
+if [[ $# -eq 1 ]];
+  sleep $1
+else
+  sleep 60
+fi
+
+echo sendkey alt-b | nc 127.0.0.1 4567
+
+echo
+echo "Just sent an extra alt-b just in case"
+echo "it is stuck on the confirm install screen"
+echo
+

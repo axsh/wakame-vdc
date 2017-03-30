@@ -1,0 +1,1 @@
+../../post-scripts/udev_clean.sh

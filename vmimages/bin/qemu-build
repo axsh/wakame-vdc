@@ -1,0 +1,192 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+# Environment variables
+ISO_CACHE_DIR=${ISO_CACHE_DIR:-"."}
+
+# Configuration parameters in .conf.
+install_iso=
+kickstart_file=
+target_image=
+qemu_binary="qemu-kvm"
+iso_checksum_type="md5"
+iso_checksum=
+declare -a iso_urls=()
+declare -a boot_commands=
+declare -a post_scripts=()
+declare -a local_scripts=()
+
+# option parameters
+is_overwrite_image=
+
+reportfailed()
+{
+    echo "Script failed...exiting. ($*)" 1>&2
+    exit 255
+}
+
+usage_deps() {
+  cat <<END
+qemu-img qemu-kvm mtools dosfstools nc curl
+END
+}
+
+usage() {
+  cat <<END
+$(basename $0) [options] <conf>
+
+Options:
+  --force,-f : Overwrite existing image file.
+
+Install dependencies:
+yum install -y \$($0 --show-deps)
+END
+}
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+   --help|-h)
+     usage
+     exit 
+     ;;
+   --show-deps)
+     usage_deps
+     exit
+     ;;
+   --force|-f)
+     is_overwrite_image=1
+     shift
+     ;;
+   *)
+     break
+     ;;
+  esac
+done
+
+# Load .conf
+if [[ $# -eq 1 && -f $1 ]]; then
+  CONF_PATH=$1
+  shopt -s nullglob
+  . $CONF_PATH
+  shopt -u nullglob
+else
+  reportfailed "Unknown conf path: $1"
+fi
+
+cd $(dirname $CONF_PATH)
+
+# Minimal parameter checking to catch typos:
+if [[ -z $install_iso ]]; then
+  [[ -n $iso_checksum ]] || reportfailed "iso_checksum not found."
+  [[ -n $iso_checksum_type ]] || reportfailed "iso_checksum_type not found."
+
+  if [[ -f "${ISO_CACHE_DIR}/${iso_checksum}.iso" ]]; then
+    install_iso="${ISO_CACHE_DIR}/${iso_checksum}.iso"
+  else
+    for u in ${iso_urls[@]}
+    do
+      curl --show-error -L -o "${ISO_CACHE_DIR}/${iso_checksum}.iso" "$u"
+      if [[ $? -eq 0 ]]; then
+        sum_val=$("${iso_checksum_type}sum" "${ISO_CACHE_DIR}/${iso_checksum}.iso" | cut -f 1 -d ' ')
+        if [[ "${sum_val}" == "${iso_checksum}" ]]; then
+          install_iso="${ISO_CACHE_DIR}/${iso_checksum}.iso"
+          break
+        else
+          rm -f "${ISO_CACHE_DIR}/${iso_checksum}.iso"
+        fi
+      fi
+    done
+  fi
+fi
+[ -f "$install_iso" ] || reportfailed "Iso ($install_iso) not found."
+
+[ -f "$kickstart_file" ] || reportfailed " ($kickstart_file) not found."
+
+if [[ -z "$is_overwrite_image" ]]; then
+  [ -f "$target_image" ] && reportfailed "$target_image already exists"
+fi
+
+# Make sure it is writable
+touch "$target_image" || reportfailed "Could not create '$target_image' (the third parameter)"
+
+TARGET_DIR="$(cd "$(dirname "$(readlink -f "$target_dir")")" && pwd -P)" || reportfailed
+
+WORK_DIR=$(mktemp -d)
+trap "rm -rf $WORK_DIR" EXIT
+
+# Variables can be referenced from child processes.
+export WORK_DIR CONF_PATH TARGET_DIR KVM_PID
+
+(
+    rm -f "$target_image"
+    qemu-img create -f qcow2 "$target_image" 10000M
+) || reportfailed "Problem while creating empty qcow2 image"
+
+KSFPY="$WORK_DIR/kickstart_floppy.img"
+
+(
+    dd if=/dev/zero of="$KSFPY" count=1440 bs=1k
+    /sbin/mkfs.msdos "$KSFPY"
+    if [[ -f $kickstart_file ]]; then
+      mcopy -i "$KSFPY" "$kickstart_file" ::/ks.cfg
+    fi
+    if [[ ${#post_scripts} -gt 0 ]]; then
+      for src in ${post_scripts[@]}
+      do
+        mcopy -i "$KSFPY" "$src" ::/$(basename $src)
+      done
+    fi
+    mdir -i "$KSFPY"
+) || reportfailed "Problem while creating floppy with kickstart file"
+
+
+kvmcmdline=(
+    $qemu_binary
+    -name ksvm
+
+    -fda "$KSFPY"
+    -drive "file=$target_image,if=virtio,cache=writeback,discard=ignore"
+
+    -machine type=pc,accel=kvm
+
+    -netdev user,id=user.0,hostfwd=tcp::2224-:22
+    -device virtio-net,netdev=user.0
+    -monitor telnet:0.0.0.0:4567,server,nowait
+    -vnc 0.0.0.0:47
+    $qemu_args
+    )
+
+#echo "${kvmcmdline[@]}" >runscript.sh
+#chmod +x runscript.sh
+
+echo "${kvmcmdline[@]}" -boot once=d -cdrom "$install_iso"
+if ! type $qemu_binary > /dev/null 2>&1; then
+  reportfailed "Not found $qemu_binary"
+fi
+"${kvmcmdline[@]}" -boot once=d -cdrom "$install_iso" >"$WORK_DIR/kvm.stdout" 2>"$WORK_DIR/kvm.stderr" &
+KVM_PID=$!
+echo "$KVM_PID" >"$WORK_DIR/kvm.pid"
+echo "Qemu launched ($KVM_PID)"
+
+sleep 15
+
+if [[ ${#boot_commands} -gt 0 ]]; then
+  echo "Sending boot command..."
+  echo ${boot_commands[@]}
+  for k in ${boot_commands[@]}
+  do
+    echo sendkey $k
+  done | nc 127.0.0.1 4567 > $WORK_DIR/boot_command.log
+fi
+
+if [[ ${#local_scripts} -gt 0 ]]; then
+  for i in "${local_scripts[@]}"
+  do
+    echo "Local script: $i"
+    $i
+  done
+fi
+
+echo "Now waiting for kvm to exit. (FYI, ^c will kill KVM)"
+wait

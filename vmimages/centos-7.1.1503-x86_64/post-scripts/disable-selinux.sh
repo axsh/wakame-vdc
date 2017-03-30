@@ -1,0 +1,1 @@
+../../post-scripts/disable-selinux.sh

@@ -1,0 +1,88 @@
+#!/bin/bash
+# Watch qemu screen and detect stall during installation.
+
+set -e -o pipefail
+
+WORK_DIR=${WORK_DIR:?"ERROR WORK_DIR not found"}
+KVM_PID=${KVM_PID:?"ERROR KVM_PID not found"}
+
+function detect_stall_screen() {
+  local stall_sec=$1
+  # Checks if $max_hits continuous lines have same checksums.
+  tac $WORK_DIR/screen-watch.log | awk '
+    BEGIN {count=0}
+    count > max_hits { print "STALL"; exit; }
+    { if($2 == csum){ count++; }
+     csum=$2; }
+  ' max_hits=$(($stall_sec / $option_poll_sec))
+}
+
+option_save_last=
+option_poll_sec=10
+option_stall_sec=600
+option_kill_qemu=
+
+while [[ $# -gt 0 ]]
+do
+  case $1 in
+    --save-last)
+      option_save_last=1
+      shift; 
+    ;;
+    --stall-sec)
+      option_stall_sec=$2
+      shift; shift;
+    ;;
+    --kill-qemu)
+      option_kill_qemu=1
+      shift; 
+    ;;
+    --poll-sec)
+      option_poll_sec=$2
+      shift; shift;
+    ;;
+    *)
+     echo "ERROR: Unknown option $1" > /dev/stderr
+     exit 1
+    ;;
+  esac
+done
+
+if [[ $option_stall_sec -lt $option_poll_sec ]]; then
+  echo "ERROR: --stall-sec must be larger than --poll-sec" > /dev/stderr
+  exit 1
+fi
+
+cat <<END
+option_save_last=$option_save_last
+option_poll_sec=$option_poll_sec
+option_stall_sec=$option_stall_sec
+option_kill_qemu=$option_kill_qemu
+END
+# Start qemu watch process in background.
+(
+while [[ -d /proc/${KVM_PID} ]]
+do
+  dump_path=$WORK_DIR/$(date +'%Y%m%d-%H%M%S').ppm
+  # Ignore any netcat errors.
+  echo screendump $dump_path | nc 127.0.0.1 4567 >/dev/null || :
+  # log format: $SECONDS<sp>MD5SUM<sp>PATH.ppm
+  # $SECONDS is bash built-in.
+  echo $SECONDS $(md5sum $dump_path) >> $WORK_DIR/screen-watch.log
+  if [[ $(detect_stall_screen "$option_stall_sec") == "STALL" ]]; then
+    echo "ERROR: Qemu (${KVM_PID}) seems to be stalled over $option_stall_sec sec" > /dev/stderr
+
+    if [[ -n $option_save_last ]]; then
+      cp $dump_path $TARGET_DIR/stalled-screen.ppm
+    fi
+    if [[ -n $option_kill_qemu ]]; then
+      echo "Terminating qemu (${KVM_PID})..."
+      kill ${KVM_PID}
+      exit 2
+    fi
+  fi
+  rm -f $dump_path
+  sleep $option_poll_sec
+done
+) &
+echo $! > $WORK_DIR/screen-watch.pid
