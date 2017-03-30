@@ -3,16 +3,16 @@
 
     
     <url>
-     <loc>None/</loc>
-     <lastmod>2015-10-30</lastmod>
+     <loc>/</loc>
+     <lastmod>2017-03-30</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
 
     
     <url>
-     <loc>None/concept/</loc>
-     <lastmod>2015-10-30</lastmod>
+     <loc>/concept/</loc>
+     <lastmod>2017-03-30</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -20,48 +20,20 @@
     
         
     <url>
-     <loc>None/demo-image/</loc>
-     <lastmod>2015-10-30</lastmod>
+     <loc>/demo-image/</loc>
+     <lastmod>2017-03-30</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
-     <loc>None/installation/</loc>
-     <lastmod>2015-10-30</lastmod>
+     <loc>/installation/</loc>
+     <lastmod>2017-03-30</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
-     <loc>None/development/</loc>
-     <lastmod>2015-10-30</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    
-
-    
-        
-    <url>
-     <loc>None/usage/</loc>
-     <lastmod>2015-10-30</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>None/usage/custom-machine-images/</loc>
-     <lastmod>2015-10-30</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>None/instance-backup/</loc>
-     <lastmod>2015-10-30</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>None/security-groups/</loc>
-     <lastmod>2015-10-30</lastmod>
+     <loc>/development/</loc>
+     <lastmod>2017-03-30</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -70,20 +42,48 @@
     
         
     <url>
-     <loc>None/jargon-dictionary/</loc>
-     <lastmod>2015-10-30</lastmod>
+     <loc>/usage/</loc>
+     <lastmod>2017-03-30</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
-     <loc>None/faq/</loc>
-     <lastmod>2015-10-30</lastmod>
+     <loc>/usage/custom-machine-images/</loc>
+     <lastmod>2017-03-30</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
-     <loc>None/community/</loc>
-     <lastmod>2015-10-30</lastmod>
+     <loc>/instance-backup/</loc>
+     <lastmod>2017-03-30</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/security-groups/</loc>
+     <lastmod>2017-03-30</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    
+
+    
+        
+    <url>
+     <loc>/jargon-dictionary/</loc>
+     <lastmod>2017-03-30</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/faq/</loc>
+     <lastmod>2017-03-30</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/community/</loc>
+     <lastmod>2017-03-30</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
