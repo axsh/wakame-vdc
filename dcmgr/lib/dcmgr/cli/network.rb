@@ -774,7 +774,7 @@ __END
     desc "show [UUID/NAME]", "Show/List dc network"
     def show(name=nil)
       if name
-        dc = find_by_name_or_uuid(uuid)
+        dc = find_by_name_or_uuid(name)
         print ERB.new(<<__END, nil, '-').result(binding)
 DC Network UUID: <%= dc.canonical_uuid %>
 DC Network Name: <%= dc.name %>
