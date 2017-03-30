@@ -462,6 +462,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     else
       on_after_commit do
         Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
+
+        if Dcmgr::Configurations.dcmgr.features.openvnet
+          Dcmgr.messaging.submit("vnet-collector",
+                                 'delete_vifs', i.canonical_uuid)
+        end
       end
     end
     respond_with([i.canonical_uuid])
