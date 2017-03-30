@@ -99,6 +99,26 @@ kvm-ui-feed-slowly-via-vnc()
     echo "End send to VNC" 1>&2
 }
 
+kvm-ui-record-raw-vnc-protocol()
+{
+    theip="$1"
+    theport="$2"
+    
+    tf="$(mktemp -d /tmp/kvmutils.XXXXXX)/kvm-ui-fifo"
+    mkfifo "$tf"
+    exec 22> >(cat >"$tf")
+    exec 44< "$tf"  # will block until cat's shell opens the fifo
+    rm -fr "${tf%/*}" # so OK to delete
+
+    lport=5955
+    [ "$localport" != "" ] && lport="$localport"
+
+    echo "Make sure standard output is redirected to a file, and" 1>&2
+    echo "connect vncviewer to this machine at port $lport" 1>&2
+    exec 11<&1
+    <&44 nc -l "$lport" | tee >(base64 -w 75 >&11) | nc "$theip" "$theport" >&22
+}
+
 kvm-ui-take-screenshot()
 {
     check-required-env
