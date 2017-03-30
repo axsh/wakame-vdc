@@ -54,7 +54,6 @@ Wakame-vdc is currently used by the following companies.
 * [NTT PC Communications](http://www.nttpc.co.jp/english/)
   - [NTT PC Web Arena VPS Cloud](http://web.arena.ne.jp/vps-cloud/)
 * [Kyocera Communication Systems Co., Ltd.](http://www.kccs.co.jp/english/)
-  - [KCCS GreenOffice Unified Cloud](https://gouc.datacenter.ne.jp)
 * [TIS Inc.](http://www.tis.com/)
 
 If you already use this software, please let us know. Thank you.
