@@ -1,0 +1,25 @@
+{
+  "builders": [
+    {
+      "type": "wakamevdc",
+      "api_endpoint": "http://localhost:9001/api/12.03/",
+      "image_id": "wmi-centos1d64",
+      "hypervisor": "openvz",
+      "cpu_cores": 1,
+      "memory_size": 1024,
+      "network_id": "nw-demo1",
+      "ssh_username": "root",
+      "ssh_timeout": "60m"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "echo RUN Provisioner.",
+        "echo \"nameserver 8.8.8.8\" >> /etc/resolve.conf",
+        "yum install -y httpd"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,266 @@
+{
+	"comment": "",
+	"ignore": "test github.com/axsh/wakame-vdc/client/go-wakamevdc",
+	"package": [
+		{
+			"checksumSHA1": "LxbUydpP5v/OHYJwDFWM7i/g69o=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/dylanmei/iso8601",
+			"path": "github.com/dylanmei/iso8601",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "VouXWSVlKOI0daCPAoHELxFMPSY=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/dylanmei/winrmtest",
+			"path": "github.com/dylanmei/winrmtest",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "pP0b9eRHl4ZFD4zTcWxTZH4CPq0=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/hashicorp/errwrap",
+			"path": "github.com/hashicorp/errwrap",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "DvGmf2sDyNBK6H8PhlmJZFKwEBw=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/hashicorp/go-multierror",
+			"path": "github.com/hashicorp/go-multierror",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "EpQtumfEmrEF/8SXn+Y255E/Cuo=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/hashicorp/go-version",
+			"path": "github.com/hashicorp/go-version",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "Is4tKxuLcbiLzEG5LpwkkTpeCpw=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/hashicorp/yamux",
+			"path": "github.com/hashicorp/yamux",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "nvGuYn0dr8PhD6jFH9N/VGJQ2gg=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/kr/fs",
+			"path": "github.com/kr/fs",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "Qj0//kmojTaaIA4fUUwvwoCuTuU=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/masterzen/simplexml/dom",
+			"path": "github.com/masterzen/simplexml/dom",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "zVaCiA60yAnMfm1rrac8fyineGs=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/masterzen/winrm/soap",
+			"path": "github.com/masterzen/winrm/soap",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "NIaCaW5FywMpF9vzWmB70dFv9RM=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/masterzen/winrm/winrm",
+			"path": "github.com/masterzen/winrm/winrm",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "DW4478al92N1vZEBQVHFRFjj7EY=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/masterzen/xmlpath",
+			"path": "github.com/masterzen/xmlpath",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "m1hOjbN3vFl5y+g515lDeYqWanA=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/mitchellh/go-fs",
+			"path": "github.com/mitchellh/go-fs",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "Ag1vNLT2WjhlrDv9roDfMO1zG0w=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/mitchellh/go-fs/fat",
+			"path": "github.com/mitchellh/go-fs/fat",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "2N4BljlHw470zqjKVMcK1uL38bk=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/mitchellh/iochan",
+			"path": "github.com/mitchellh/iochan",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "OfuWpFpWCTAM9dfbhxjz5JMx2bQ=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/mitchellh/mapstructure",
+			"path": "github.com/mitchellh/mapstructure",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "pCCSJoPXp4dvTFsioPp+lHUDRok=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/mitchellh/multistep",
+			"path": "github.com/mitchellh/multistep",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "91TcWpkNmv98Z4x+VKc2RM5TAwA=",
+			"path": "github.com/mitchellh/packer/common",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "uid6VWkpioHmt2A0gfQ56tXRKA0=",
+			"path": "github.com/mitchellh/packer/common/ssh",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "Dim3j68HeCZW/z53YV8Ha2sqQQ8=",
+			"path": "github.com/mitchellh/packer/common/uuid",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "ddX9sYvka2TrVT/2ToPvo0F4saU=",
+			"path": "github.com/mitchellh/packer/communicator/none",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "Bth1PTz8VFL2rQTWOtdURNfeHko=",
+			"path": "github.com/mitchellh/packer/communicator/ssh",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "02wyrAeOs4VfgDoeloUgHjC3U18=",
+			"path": "github.com/mitchellh/packer/communicator/winrm",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "xiBFWwHgaq0DcpaS8WKtKrX27hc=",
+			"path": "github.com/mitchellh/packer/helper/builder/testing",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "31TuTMlyGrcnrJXurB8YLuS+MMM=",
+			"path": "github.com/mitchellh/packer/helper/communicator",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "7Dd7niSNVBa3fFrHETUIyYJCrn4=",
+			"path": "github.com/mitchellh/packer/helper/config",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "VwUOgwgtLknXJwL9AqEAC6kiA7w=",
+			"path": "github.com/mitchellh/packer/packer",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "aYwAUqfUFJynx6YxW2B4V337qAY=",
+			"path": "github.com/mitchellh/packer/packer/plugin",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "hZpkPUJejlckkcmGs+4STwpNwFk=",
+			"path": "github.com/mitchellh/packer/packer/rpc",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "+J1UFwomaURMZH/zb6oJlym5YIM=",
+			"path": "github.com/mitchellh/packer/template",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "JdcKa934mDV2lGKdPIsO2I521Nk=",
+			"path": "github.com/mitchellh/packer/template/interpolate",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "zATM6foYk5+zTcGobwO35SK7a90=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/mitchellh/reflectwalk",
+			"path": "github.com/mitchellh/reflectwalk",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "jTwXALBikWAgWtFJtfN5IBQLK0E=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/nu7hatch/gouuid",
+			"path": "github.com/nu7hatch/gouuid",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "IWV8ksuLYseXhyqMbrwRA1BFtSs=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/packer-community/winrmcp/winrmcp",
+			"path": "github.com/packer-community/winrmcp/winrmcp",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "vHYHm7ZgmhroBZ+YCKZX9LQWu8A=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/pkg/sftp",
+			"path": "github.com/pkg/sftp",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "gcEMcYxY1rLvGi5DU8CeIPHR/vE=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/satori/go.uuid",
+			"path": "github.com/satori/go.uuid",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "POPK0OfIbZKdUNJ38bbRG+ayfXs=",
+			"origin": "github.com/mitchellh/packer/vendor/github.com/ugorji/go/codec",
+			"path": "github.com/ugorji/go/codec",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "v4e3DAqDKcsgzKJoUQk9V48jWds=",
+			"origin": "github.com/mitchellh/packer/vendor/golang.org/x/crypto/curve25519",
+			"path": "golang.org/x/crypto/curve25519",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "iYX0qfJmLIrOjgXpCvQOtWnQ1qY=",
+			"origin": "github.com/mitchellh/packer/vendor/golang.org/x/crypto/ssh",
+			"path": "golang.org/x/crypto/ssh",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		},
+		{
+			"checksumSHA1": "q+/wYnZutlwGt9E+vKStbj7k8HM=",
+			"origin": "github.com/mitchellh/packer/vendor/golang.org/x/crypto/ssh/agent",
+			"path": "golang.org/x/crypto/ssh/agent",
+			"revision": "4e5f65131b5491ab44ff8aa0626abe4a85597ac0",
+			"revisionTime": "2016-05-07T07:19:36Z"
+		}
+	],
+	"rootPath": "github.com/axsh/wakame-vdc/client/packer-builder-wakamevdc"
+}
