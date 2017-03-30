@@ -49,14 +49,9 @@ module Dcmgr
 
       # Find first matching loop device path from the result of "losetup -a"
       def find_loopdev(path)
-        stat = File.stat(path)
-        `losetup -a`.split(/\n/).each {|i|
-          # /dev/loop0: [0f11]:1179651 (/home/katsuo/dev/wakame-vdc/tmp/instances/i-5....)
-          if i =~ %r{^(/dev/loop\d+): \[([0-9a-f]+)\]:(\d+) } && $2.hex == stat.dev && $3.to_i == stat.ino
-            return $1
-          end
-        }
-        nil
+        loopdev = `losetup -j #{path} | cut -d: -f 1 | head -n 1`
+        return nil if loopdev.empty?
+        loopdev
       end
 
       # "kpartx -d" gets failed occasionally. so we use "dmsetup" and
